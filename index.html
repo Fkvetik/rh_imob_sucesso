@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RH IMOB • Inteligência Comercial Imobiliária</title>
+  <meta name="description" content="RH IMOB • Inteligência Comercial Imobiliária. Plataforma, operação, recrutamento, grupos e suporte para o mercado imobiliário." />
+  <meta name="theme-color" content="#6C0070" />
+  <style>
+    :root{
+      --bg:#f6f3f8;
+      --card:rgba(255,255,255,.96);
+      --text:#1d2430;
+      --muted:#677184;
+      --line:#ece7f1;
+      --line-soft:rgba(108,0,112,.08);
+      --brand:#6C0070;
+      --brand-dark:#680068;
+      --accent:#F89A45;
+      --ok:#15803d;
+      --shadow:0 18px 44px rgba(25,33,52,.08);
+      --shadow-soft:0 10px 24px rgba(25,33,52,.05);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:15px/1.5 Arial,Helvetica,sans-serif}
+    body{position:relative;min-height:100vh}
+    body::before{
+      content:'';position:fixed;inset:0;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(108,0,112,.07), transparent 28%),
+        radial-gradient(circle at 86% 10%, rgba(248,154,69,.10), transparent 22%),
+        linear-gradient(rgba(247,244,249,.93),rgba(247,244,249,.96)),
+        url('https://res.cloudinary.com/dlp78sixn/image/upload/v1774116054/Design_sem_nome_5_fgrbz7.jpg');
+      background-position:center;
+      background-size:cover;
+      z-index:0;
+    }
+    a{text-decoration:none;color:inherit}
+    .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:20px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;border:1px solid rgba(255,255,255,.7);border-radius:22px;background:rgba(255,255,255,.78);box-shadow:var(--shadow)}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand-logo{width:54px;height:54px;border-radius:16px;object-fit:cover;background:#fff;padding:6px;box-shadow:var(--shadow-soft);border:1px solid rgba(108,0,112,.12)}
+    .brand h1{margin:0;font-size:24px;letter-spacing:-.02em}
+    .brand p{margin:4px 0 0;color:var(--muted)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn,.btn-outline,.btn-whatsapp,.btn-instagram,.btn-ghost-brand{
+      border:0;border-radius:14px;padding:12px 16px;cursor:pointer;font-weight:700;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      transition:.18s transform,.18s box-shadow,.18s background,.18s border-color;
+    }
+    .btn{background:linear-gradient(135deg,var(--brand),#8b118d);color:#fff;box-shadow:0 14px 28px rgba(108,0,112,.18)}
+    .btn-outline{background:#fff;color:var(--brand-dark);border:1px solid rgba(108,0,112,.14);box-shadow:var(--shadow-soft)}
+    .btn-whatsapp{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;box-shadow:0 14px 28px rgba(25,33,52,.10)}
+    .btn-instagram{background:linear-gradient(135deg,#833AB4 0%,#FD1D1D 52%,#FCAF45 100%);color:#fff;box-shadow:0 14px 28px rgba(25,33,52,.10)}
+    .btn-ghost-brand{border:1px solid rgba(255,255,255,.26);color:#fff;background:rgba(255,255,255,.08);box-shadow:0 14px 28px rgba(15,23,42,.14)}
+    .btn:hover,.btn-outline:hover,.btn-whatsapp:hover,.btn-instagram:hover,.btn-ghost-brand:hover{transform:translateY(-1px)}
+    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.94));border:1px solid var(--line-soft);border-radius:var(--radius);box-shadow:var(--shadow-soft);padding:20px}
+    .hero-copy{position:relative;overflow:hidden;color:#fff;border:1px solid rgba(255,255,255,.18);background-image:radial-gradient(circle at 14% 18%, rgba(248,154,69,.18), transparent 28%),radial-gradient(circle at 82% 14%, rgba(255,255,255,.12), transparent 24%),linear-gradient(135deg, rgba(78,0,81,.98), rgba(108,0,112,.92) 52%, rgba(130,28,130,.88));box-shadow:0 22px 52px rgba(63,4,71,.20)}
+    .hero-copy h2{margin:0 0 12px;font-size:36px;line-height:1.03;letter-spacing:-.03em;max-width:13ch}
+    .hero-copy p{margin:0 0 12px;max-width:60ch;color:rgba(255,255,255,.92)}
+    .badge{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:700;color:#fff;margin-bottom:14px}
+    .note{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.92);line-height:1.55}
+    .hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+    .section{margin-top:18px}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .section-head h3{margin:0;font-size:24px;letter-spacing:-.02em}
+    .section-head p{margin:4px 0 0;color:var(--muted)}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .mini-card{padding:18px;border-radius:18px;background:#fff;border:1px solid rgba(108,0,112,.10);display:grid;gap:10px}
+    .mini-kicker{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(108,0,112,.08);border:1px solid rgba(108,0,112,.16);font-size:12px;font-weight:700;color:var(--brand);width:max-content}
+    .mini-card h4{margin:0;font-size:20px;line-height:1.2}
+    .mini-card p{margin:0;color:var(--muted)}
+    .price{font-size:30px;font-weight:800;color:var(--brand);line-height:1}
+    .list{display:grid;gap:8px;margin:0;padding-left:18px}
+    .list li{color:var(--text)}
+    .cta-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .cta-box{padding:16px;border-radius:18px;background:#fff;border:1px solid rgba(108,0,112,.10);display:grid;gap:10px;text-align:center}
+    .cta-box strong{font-size:18px}
+    .cta-box span{color:var(--muted);font-size:13px}
+    .warning{padding:14px 16px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}
+    .footer{margin:18px 0 8px;color:var(--muted);font-size:13px;text-align:center}
+    code.inline{background:#f8fafc;border:1px solid #e2e8f0;padding:2px 6px;border-radius:8px}
+    @media (max-width:980px){
+      .hero,.grid-3,.cta-strip,.grid-2{grid-template-columns:1fr}
+      .hero-copy h2{max-width:none;font-size:28px}
+      .wrap{padding:12px}
+    }
+    @media (max-width:640px){
+      .topbar{padding:12px 14px}
+      .brand{align-items:flex-start}
+      .brand h1{font-size:18px}
+      .hero-actions{grid-template-columns:1fr}
+      .actions{width:100%}
+      .actions a{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <img class="brand-logo" src="https://res.cloudinary.com/dlp78sixn/image/upload/v1774116054/download_1_bwohru.png" alt="RH IMOB" />
+        <div>
+          <h1>RH IMOB • Inteligência Comercial Imobiliária</h1>
+          <p>Conexões, operação e inteligência para o mercado imobiliário.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn-whatsapp" href="https://wa.me/5511973767304?text=Ol%C3%A1%21%20Quero%20entender%20melhor%20como%20a%20RH%20IMOB%20pode%20me%20ajudar%20na%20contrata%C3%A7%C3%A3o." target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <a class="btn-instagram" href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </div>
+    </header>
+
+    <section class="hero section">
+      <div class="card hero-copy">
+        <div class="badge">RH IMOB • Plataforma e operação comercial</div>
+        <h2>Conexões, recrutamento e inteligência comercial imobiliária.</h2>
+        <p>A RH IMOB organiza oportunidades, estrutura operações e aproxima profissionais, imobiliárias e empresas com mais clareza comercial, apoio operacional e governança.</p>
+        <div class="note">Este site é a sua porta de entrada. A plataforma operacional continua no Apps Script e abre por um botão separado, sem mexer no que já está validado.</div>
+        <div class="hero-actions">
+          <a class="btn" id="btnEntrarPlataforma" href="https://script.google.com/macros/s/AKfycbydCLB0CQaw9idv-VUqNruonsX7rqiP5PuX6MsVkP2K6YUUYoLT04T1O2IdkI1djh-O/exec" target="_blank" rel="noopener noreferrer">Entrar na plataforma</a>
+          <a class="btn-ghost-brand" href="https://wa.me/5511973767304?text=Preciso%20de%20uma%20opera%C3%A7%C3%A3o%20especializada%20para%20contratar%20novos%20talentos%20e%20corretores%20com%20CRECI%20ativo." target="_blank" rel="noopener noreferrer">Falar sobre operação</a>
+          <a class="btn-ghost-brand" href="https://wa.me/5511973767304?text=Preciso%20de%20gerente" target="_blank" rel="noopener noreferrer">Falar sobre liderança</a>
+          <a class="btn-ghost-brand" href="https://www.linkedin.com/services/page/5419b83232700ba4b4/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-head">
+          <div>
+            <h3>Passo rápido</h3>
+            <p>Use esse bloco para não se perder.</p>
+          </div>
+        </div>
+        <div class="warning">
+          Antes de publicar, troque o link <code class="inline">https://script.google.com/macros/s/AKfycbydCLB0CQaw9idv-VUqNruonsX7rqiP5PuX6MsVkP2K6YUUYoLT04T1O2IdkI1djh-O/exec</code> pela URL real da sua plataforma.
+        </div>
+        <ol class="list">
+          <li>Renomeie este arquivo para <strong>index.html</strong>.</li>
+          <li>Suba este arquivo para o GitHub no repositório <strong>SITE_RHIMOB</strong>.</li>
+          <li>Importe esse repositório na Vercel.</li>
+          <li>Adicione <strong>rhimob.com.br</strong> e <strong>www.rhimob.com.br</strong> na Vercel.</li>
+          <li>Copie os DNS da Vercel para o Registro.br.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3>Como a RH IMOB atua</h3>
+          <p>Baseado na proposta comercial e institucional já existente da sua operação.</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="mini-card">
+          <div class="mini-kicker">Mercado + operação</div>
+          <h4>Experiência prática no imobiliário</h4>
+          <p>A RH IMOB apoia recrutamento, seleção, inteligência comercial e estruturação de operação para imobiliárias, gerentes e diretores.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Dados + tecnologia</div>
+          <h4>Ambiente construído para gerar tração</h4>
+          <p>A ferramenta cruza fontes públicas e operacionais para organizar oportunidades com foco comercial e ganho de velocidade.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Equipe + governança</div>
+          <h4>Núcleo multidisciplinar e consultivo</h4>
+          <p>Operação, comercial, tecnologia e liderança trabalham juntos para entregar um ambiente profissional e utilizável.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3>Frentes de atuação</h3>
+          <p>Entradas rápidas para os principais interesses do público.</p>
+        </div>
+      </div>
+      <div class="cta-strip">
+        <div class="cta-box">
+          <strong>Corretores ativos</strong>
+          <span>Acesso a profissionais com CRECI ativo e operação comercial organizada.</span>
+        </div>
+        <div class="cta-box">
+          <strong>Novos talentos</strong>
+          <span>Captação, triagem e aproximação de perfis em transição ou entrada no mercado.</span>
+        </div>
+        <div class="cta-box">
+          <strong>Imobiliárias</strong>
+          <span>Parcerias, recrutamento e estrutura comercial para empresas do setor.</span>
+        </div>
+        <div class="cta-box">
+          <strong>Grupos e suporte</strong>
+          <span>Canais de aquecimento, comunidade e atendimento comercial da RH IMOB.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3>Modelo de parceria</h3>
+          <p>Faixas alinhadas à configuração atual da sua operação.</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="mini-card">
+          <div class="mini-kicker">Entrada estratégica</div>
+          <h4>Plano Free</h4>
+          <div class="price">R$ 0</div>
+          <p>Acesso de demonstração para validar a experiência, a ambientação da plataforma e a navegação inicial.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Operação enxuta</div>
+          <h4>Plano Start RH</h4>
+          <div class="price">R$ 499/mês</div>
+          <p>Entrada profissional para quem precisa contratar corretores, novos talentos e parceiros com operação enxuta e previsível.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Mais volume</div>
+          <h4>Plano Growth RH</h4>
+          <div class="price">R$ 899/mês</div>
+          <p>Mais volume para times comerciais e recrutamento recorrente, com folga para múltiplas frentes de abordagem.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Estrutura consolidada</div>
+          <h4>Plano Pro RH</h4>
+          <div class="price">R$ 1.490/mês</div>
+          <p>Plano para operação estruturada, com mais usuários ativos, mais velocidade de consulta e rotina comercial intensa.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Cobertura ampla</div>
+          <h4>Plano Scale RH</h4>
+          <div class="price">R$ 2.490/mês</div>
+          <p>Estrutura indicada para imobiliárias e operações compartilhadas que precisam de cobertura ampla e times maiores.</p>
+        </div>
+        <div class="mini-card">
+          <div class="mini-kicker">Camada empresarial</div>
+          <h4>Plano Enterprise RH</h4>
+          <div class="price">R$ 4.500/mês</div>
+          <p>Camada empresarial para operações de alta escala, múltiplos operadores, volume agressivo e uso intenso dos filtros.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card">
+        <div class="section-head">
+          <div>
+            <h3>Botão da plataforma</h3>
+            <p>Você só precisa ajustar um link antes de subir para a Vercel.</p>
+          </div>
+        </div>
+        <ol class="list">
+          <li>Abra este arquivo <strong>index.html</strong> em um editor simples.</li>
+          <li>Procure o texto <code class="inline">https://script.google.com/macros/s/AKfycbydCLB0CQaw9idv-VUqNruonsX7rqiP5PuX6MsVkP2K6YUUYoLT04T1O2IdkI1djh-O/exec</code>.</li>
+          <li>Apague esse texto e cole a URL real do seu Web App do Apps Script.</li>
+          <li>Salve o arquivo.</li>
+          <li>Suba para o GitHub.</li>
+        </ol>
+      </div>
+    </section>
+
+    <p class="footer">RH IMOB • Site público pronto para GitHub + Vercel.</p>
+  </div>
+</body>
+</html>
