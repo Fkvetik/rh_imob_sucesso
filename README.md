@@ -1,49 +1,28 @@
-# RH IMOB — Site institucional para Vercel
+# RH IMOB
 
-Site estático, sem dependências externas, pronto para subir no GitHub e publicar na Vercel.
+Site estático para Vercel/GitHub.
 
-## Arquivos principais
+## Estrutura
 
-- `index.html` — landing page principal
-- `styles.css` — visual completo do site
-- `script.js` — menu mobile, animações e formulário para WhatsApp
-- `politica.html` — política de privacidade simples
-- `assets/rhimob-mark.svg` — marca/ícone criado em SVG
-- `assets/rhimob-logo.svg` — logotipo horizontal em SVG
-- `vercel.json` — configuração básica da Vercel
-- `robots.txt` — liberação de indexação
+- `index.html`: tela inicial com dois caminhos, área "Preciso contratar", área "Vagas" e formulários.
+- `styles.css`: identidade visual, responsividade e componentes.
+- `script.js`: menu, filtros de vagas, modal de candidatura e mensagens para WhatsApp.
+- `assets/`: logos, favicon, ícones e imagem social, todos locais.
+- `site.webmanifest`, `robots.txt`, `sitemap.xml`, `vercel.json`: publicação e SEO.
 
-## Como publicar no GitHub + Vercel
+## Contatos configurados
 
-1. Crie um repositório no GitHub.
-2. Envie todos os arquivos deste pacote para a raiz do repositório.
-3. Na Vercel, clique em **Add New Project**.
-4. Selecione o repositório.
-5. Framework Preset: **Other** ou **Static**.
-6. Build Command: deixar vazio.
-7. Output Directory: deixar vazio ou `.`.
-8. Publicar.
+- Empresas / contratação: Fernando — `+55 11 97872-5515`
+- Vagas / candidatura: Mariana — `+55 11 95397-3268`
 
-## WhatsApp configurado
+## Como adicionar novas vagas
 
-O número oficial configurado no site é:
+No arquivo `script.js`, edite a lista `JOBS`. Cada vaga possui:
+`id`, `title`, `category`, `location`, `contract`, `pay`, `summary`, `highlights`, `details` e `badge`.
 
-`55 11 97872-5515`
+A identidade visual usa apenas arquivos locais do próprio projeto.
 
-No código está como:
 
-```js
-const WHATSAPP_NUMBER = '5511978725515';
-```
+## Atualização - Banco Confidencial de Talentos
 
-Para alterar futuramente, edite a primeira constante do arquivo `script.js`.
-
-## Formulário
-
-O formulário não envia e-mail nesta versão. Ele monta uma mensagem com os dados preenchidos e abre o WhatsApp oficial da RH IMOB.
-
-## E-mail reservado para versão futura
-
-`fernandorhimob@gmail.com`
-
-Para envio por e-mail automático será necessário configurar backend, serviço externo ou função serverless.
+Esta versão inclui uma área discreta na seção Vagas para corretores ativos e profissionais do mercado imobiliário que desejam receber propostas de empresas parceiras. O cadastro abre uma mensagem pronta no WhatsApp da Mariana, mantendo o site estático, leve e sem dependência de backend.
