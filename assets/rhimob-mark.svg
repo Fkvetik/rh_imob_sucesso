@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="RH IMOB">
   <rect width="320" height="320" rx="64" fill="#ffffff"/>
-  <image href="https://res.cloudinary.com/dlp78sixn/image/upload/v1774116054/download_1_bwohru.png" x="22" y="22" width="276" height="276" preserveAspectRatio="xMidYMid meet"/>
+  <path d="M52 92 L160 36 L268 92" fill="none" stroke="#6C0070" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="160" y="172" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="500" letter-spacing="3" fill="#6C0070">RH</text>
+  <text x="160" y="232" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="500" letter-spacing="4" fill="#6C0070">IMOB</text>
 </svg>
