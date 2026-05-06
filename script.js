@@ -1,5 +1,5 @@
 (() => {
-  const EMPRESA_WHATSAPP = '5511978725515';
+  const EMPRESA_WHATSAPP = '5511997213584';
   const VAGAS_WHATSAPP = '5511953973268';
   const DEFAULT_EMPRESA_MESSAGE = 'Olá, vim pelo site da RH IMOB e gostaria de entender melhor como vocês podem apoiar minha empresa no recrutamento imobiliário.';
   const DEFAULT_VAGA_MESSAGE = 'Olá, Mariana. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
