@@ -5,197 +5,443 @@
   const DEFAULT_VAGA_MESSAGE = 'Olá, Mariana. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
 
   const JOBS = [
-  {
-    "id": "analista-credito-osasco",
-    "title": "Analista de Crédito Imobiliário",
-    "category": "Crédito imobiliário",
-    "location": "Osasco/SP",
-    "contract": "PJ",
-    "pay": "R$ 4.000 fixo + premiação por contrato assinado",
-    "summary": "Atuação com análise e acompanhamento de contratos de financiamento habitacional.",
-    "highlights": [
-      "Experiência em crédito imobiliário",
-      "Prática com sistemas da Caixa Econômica Federal",
-      "Atuação presencial em Osasco"
-    ],
-    "details": [
-      "Perfil organizado, analítico e focado em resultados",
-      "Necessário fácil acesso à região de Osasco",
-      "Foco em análise e acompanhamento de contratos de financiamento habitacional"
-    ],
-    "badge": "Vaga especializada"
-  },
-  {
-    "id": "gerente-treinamentos-osasco",
-    "title": "Gerente de Treinamentos",
-    "category": "Treinamento e liderança",
-    "location": "Osasco/SP",
-    "contract": "Presencial",
-    "pay": "Salário fixo + comissão",
-    "summary": "Capacitação técnica de equipes comerciais no setor imobiliário.",
-    "highlights": [
-      "Mínimo de 5 anos no mercado imobiliário",
-      "Expertise em crédito associativo",
-      "Treinamentos para lançamentos e performance comercial"
-    ],
-    "details": [
-      "Vivência com treinamentos técnicos voltados para lançamentos",
-      "Disponibilidade e acesso facilitado à região de Osasco",
-      "Perfil de liderança, didática e desenvolvimento de corretores/equipes"
-    ],
-    "badge": "Liderança"
-  },
-  {
-    "id": "novos-talentos-direcoes",
-    "title": "Novos Talentos – Mercado Imobiliário",
-    "category": "Novos talentos",
-    "location": "Oeste/SP + Guarulhos",
-    "contract": "Formação comercial",
-    "pay": "Curso de TTI + ajuda de custo + comissão",
-    "summary": "Oportunidade para entrar no mercado imobiliário com processo formativo e acompanhamento.",
-    "highlights": [
-      "A empresa investe no curso técnico (TTI)",
-      "Ajuda de custo mensal",
-      "Comissões a partir de R$ 6.000 por venda"
-    ],
-    "details": [
-      "Indicado para quem quer começar sem experiência prévia no mercado imobiliário",
-      "Treinamentos e acompanhamento diário",
-      "Estrutura comercial e metodologia de trabalho",
-      "Regiões de referência: Barueri, Carapicuíba, Osasco, Guarulhos e entorno"
-    ],
-    "badge": "Entrada no mercado"
-  },
-  {
-    "id": "gerente-vendas-osasco",
-    "title": "Gerente de Vendas",
-    "category": "Gerência comercial",
-    "location": "Osasco/SP",
-    "contract": "Início imediato",
-    "pay": "Ajuda de custo + comissão",
-    "summary": "Operação com estrutura comercial ativa para liderar equipe e acelerar vendas.",
-    "highlights": [
-      "Estrutura pronta e operação ativa",
-      "Rotina de performance com foco em resultado",
-      "Autonomia para gestão, metas e indicadores"
-    ],
-    "details": [
-      "Desejável experiência como gerente comercial no mercado imobiliário",
-      "Possibilidade de trazer colaboradores/equipe própria",
-      "Treinamento e acompanhamento do time comercial"
-    ],
-    "badge": "Início imediato"
-  },
-  {
-    "id": "gerente-vendas-centro-sp",
-    "title": "Gerente de Vendas – Centro",
-    "category": "Gerência comercial",
-    "location": "Centro de São Paulo/SP",
-    "contract": "Com experiência",
-    "pay": "Ajuda de custo: R$ 5.000 + comissão",
-    "summary": "Busca de líder para estruturar e acelerar time comercial na região central de São Paulo.",
-    "highlights": [
-      "Atuação na região central de São Paulo",
-      "Ajuda de custo de R$ 5.000",
-      "Foco em gestão de funil, metas, treinamento e performance"
-    ],
-    "details": [
-      "Ter no mínimo 5 corretores",
-      "Experiência comercial no mercado imobiliário",
-      "Perfil para formar, acompanhar e acelerar operação"
-    ],
-    "badge": "Centro SP"
-  },
-  {
-    "id": "sdr-consolacao",
-    "title": "Telemarketing Ativo / SDR",
-    "category": "SDR e atendimento",
-    "location": "Consolação/SP",
-    "contract": "PJ",
-    "pay": "R$ 2.500 fixo + comissão",
-    "summary": "Atuação com prospecção, qualificação de leads e geração de oportunidades comerciais.",
-    "highlights": [
-      "Contato ativo com leads e potenciais clientes",
-      "Prospecção e qualificação de oportunidades",
-      "Horário flexível com opções de turno"
-    ],
-    "details": [
-      "Boa comunicação e clareza ao falar",
-      "Perfil proativo e organizado",
-      "Resiliência para metas e objeções",
-      "Interesse em crescimento na área comercial"
-    ],
-    "badge": "PJ"
-  },
-  {
-    "id": "gerente-vendas-sao-paulo-10k",
-    "title": "Gerente de Vendas – Imobiliário",
-    "category": "Gerência comercial",
-    "location": "São Paulo/SP",
-    "contract": "Autônomo",
-    "pay": "Ajuda de custo mensal de R$ 10.000 + comissão",
-    "summary": "Oportunidade estratégica para líder com equipe própria e histórico de resultado.",
-    "highlights": [
-      "Ajuda de custo mensal de R$ 10.000",
-      "Autonomia para gestão e desenvolvimento de equipe",
-      "Atuação direta em operações e lançamentos imobiliários"
-    ],
-    "details": [
-      "Vivência comprovada em liderança comercial",
-      "Equipe própria com no mínimo 10 profissionais ativos",
-      "Capacidade de cobrar, acompanhar e desenvolver performance",
-      "Organização, leitura de indicadores e tomada de decisão"
-    ],
-    "badge": "Estratégica"
-  },
-  {
-    "id": "jovem-aprendiz-imobiliario",
-    "title": "Jovem Aprendiz – Formação no Mercado Imobiliário",
-    "category": "Novos talentos",
-    "location": "São Paulo/SP",
-    "contract": "Formação",
-    "pay": "Bolsa integral do curso técnico + possível ajuda de custo",
-    "summary": "Para jovens até 23 anos que desejam se formar e iniciar carreira no mercado imobiliário.",
-    "highlights": [
-      "Bolsa integral do curso técnico",
-      "Treinamento prático e teórico desde o início",
-      "Acompanhamento, capacitação e suporte diário"
-    ],
-    "details": [
-      "Não exige experiência prévia no mercado imobiliário",
-      "Indicado para quem tem vontade de aprender, crescer e se desenvolver",
-      "Plantões em diversas regiões de São Paulo, com imóveis populares, médio padrão, alto padrão e boutique",
-      "Em alguns casos, ajuda de custo avaliada individualmente"
-    ],
-    "badge": "Formação"
-  },
-  {
-    "id": "telemarketing-pirituba",
-    "title": "Telemarketing Ativo",
-    "category": "SDR e atendimento",
-    "location": "Pirituba/SP",
-    "contract": "Com experiência",
-    "pay": "Salário R$ 2.500 + VT + VR",
-    "summary": "Contato ativo com clientes e leads, apresentação de ofertas, follow-up e agendamentos.",
-    "highlights": [
-      "Salário R$ 2.500",
-      "Vale transporte e vale refeição",
-      "Função orientada a metas e resultados"
-    ],
-    "details": [
-      "Boa comunicação e poder de persuasão",
-      "Inteligência emocional e resiliência",
-      "Organização e foco em resultado",
-      "Empatia e cordialidade no atendimento",
-      "Ensino médio completo"
-    ],
-    "badge": "Pirituba"
-  }
-];
+    {
+      "id": "corretor-locacao-vila-madalena-clt",
+      "title": "Corretor(a) de Locação",
+      "category": "Locação",
+      "location": "Vila Madalena – São Paulo/SP",
+      "contract": "CLT",
+      "pay": "Fixo R$ 2.100 + comissão de 10%",
+      "schedule": "Seg. a sex. 9h às 18h • sáb. 9h às 13h",
+      "summary": "Vaga CLT para profissional comercial atuar com locação, atendimento, negociação e relacionamento com clientes em imobiliária estruturada na Vila Madalena.",
+      "highlights": [
+        "Salário fixo de R$ 2.100,00",
+        "Média de ganhos entre R$ 3.000,00 e R$ 6.000,00",
+        "Vale combustível de R$ 800,00",
+        "Veículo próprio imprescindível"
+      ],
+      "details": [
+        "Comissão de 10% sobre a produção",
+        "Premiações e campanhas variáveis",
+        "Vale alimentação de R$ 375,00",
+        "Assistência odontológica subsidiada em 50%",
+        "Auxílio de 50% no seguro do veículo",
+        "Seguro de vida, Gympass e day off",
+        "Cursos e treinamentos para desenvolvimento profissional",
+        "Experiência com vendas, representação comercial ou mercado imobiliário",
+        "Perfil comercial, comunicativo e com facilidade em negociação",
+        "Desejável vivência com atendimento ao cliente e captação de imóveis"
+      ],
+      "sections": [
+        {
+          "title": "Ganhos e comissões",
+          "items": [
+            "Comissão de 10% sobre a produção",
+            "Média de ganhos entre R$ 3.000,00 e R$ 6.000,00",
+            "Premiações e campanhas variáveis"
+          ]
+        },
+        {
+          "title": "Benefícios",
+          "items": [
+            "Vale combustível de R$ 800,00",
+            "Vale alimentação de R$ 375,00",
+            "Assistência odontológica subsidiada em 50%",
+            "Auxílio de 50% no seguro do veículo",
+            "Seguro de vida",
+            "Gympass",
+            "Day off",
+            "Cursos e treinamentos"
+          ]
+        },
+        {
+          "title": "Requisitos",
+          "items": [
+            "Veículo próprio imprescindível",
+            "Experiência com vendas, representação comercial ou mercado imobiliário",
+            "Perfil comercial, comunicativo e com facilidade em negociação",
+            "Desejável vivência com atendimento ao cliente e captação de imóveis"
+          ]
+        }
+      ],
+      "badge": "CLT + benefícios",
+      "featured": true
+    },
+    {
+      "id": "corretor-imoveis-terceiros-vila-madalena",
+      "title": "Corretor(a) de Imóveis – Terceiros",
+      "category": "Vendas terceiros",
+      "location": "Vila Madalena – São Paulo/SP",
+      "contract": "Autônomo",
+      "pay": "Comissão até 33% + ajuda de custo",
+      "schedule": "Seg. a sex. 9h às 18h • sáb. até 13h",
+      "summary": "A Imobiliária Pacheco, com mais de 45 anos de atuação, busca profissionais comerciais para venda e captação de imóveis de terceiros.",
+      "highlights": [
+        "Comissão de até 33%",
+        "Ajuda de custo de R$ 3.000,00 por 3 meses",
+        "Imobiliária tradicional na Vila Madalena",
+        "Atuação com captação, venda e negociação"
+      ],
+      "details": [
+        "Atendimento e relacionamento com clientes",
+        "Captação e venda de imóveis de terceiros",
+        "Apresentação e negociação de imóveis",
+        "Identificação do perfil e necessidade do cliente",
+        "Acompanhamento de todo o processo de venda",
+        "Ser corretor(a) de imóveis ou estar cursando TTI",
+        "Também serão avaliados profissionais com experiência em vendas",
+        "Possuir veículo próprio",
+        "Perfil comunicativo, comercial e com foco em resultados"
+      ],
+      "sections": [
+        {
+          "title": "Principais atividades",
+          "items": [
+            "Atendimento e relacionamento com clientes",
+            "Captação e venda de imóveis de terceiros",
+            "Apresentação e negociação de imóveis",
+            "Identificação do perfil e necessidade do cliente",
+            "Acompanhamento de todo o processo de venda"
+          ]
+        },
+        {
+          "title": "Requisitos",
+          "items": [
+            "Ser corretor(a) de imóveis ou estar cursando TTI",
+            "Profissionais com experiência em vendas também serão avaliados",
+            "Possuir veículo próprio",
+            "Perfil comunicativo, comercial e com foco em resultados"
+          ]
+        }
+      ],
+      "badge": "Terceiros",
+      "featured": true
+    },
+    {
+      "id": "vistoriador-saida-entrega-chaves-vila-madalena",
+      "title": "Vistoriador de Saída",
+      "category": "Vistoria",
+      "location": "Vila Madalena – São Paulo/SP",
+      "contract": "Presencial",
+      "pay": "Salário R$ 3.000 + benefícios",
+      "schedule": "Seg. a sex. 9h às 18h • sábados alternados 9h às 13h",
+      "summary": "Atuação no departamento de entrega de chaves, realizando vistorias, registros, comunicação e negociação de manutenções com inquilinos.",
+      "highlights": [
+        "Salário de R$ 3.000,00",
+        "Vale combustível de R$ 850,00",
+        "VA R$ 375,00 + VT",
+        "Preferência por vivência em imobiliária"
+      ],
+      "details": [
+        "Realizar visitas aos imóveis para verificar o estado de manutenção",
+        "Preencher fichas de descrição ao final de cada visita",
+        "Registrar, comunicar e negociar serviços de manutenção com inquilinos",
+        "Tirar fotos e filmar os imóveis vistoriados",
+        "Comunicação verbal e escrita",
+        "Organização, relacionamento interpessoal e flexibilidade",
+        "Vivência comprovada em atendimento ao público",
+        "Preferência para profissionais que tenham atuado em imobiliária",
+        "Habilitação",
+        "Assistência odontológica 50%, seguro parcial do carro, Gympass e Conexa Saúde"
+      ],
+      "sections": [
+        {
+          "title": "Atividades",
+          "items": [
+            "Visitar imóveis para verificar estado de manutenção",
+            "Preencher fichas de descrição ao final de cada visita",
+            "Registrar, comunicar e negociar serviços de manutenção com inquilinos",
+            "Tirar fotos e filmar"
+          ]
+        },
+        {
+          "title": "Habilidades",
+          "items": [
+            "Comunicação verbal e escrita",
+            "Organização",
+            "Relacionamento interpessoal",
+            "Flexibilidade"
+          ]
+        },
+        {
+          "title": "Conhecimentos e experiência",
+          "items": [
+            "Vivência comprovada em atendimento ao público",
+            "Preferência para profissionais que tenham atuado em imobiliária",
+            "Habilitação"
+          ]
+        },
+        {
+          "title": "Benefícios",
+          "items": [
+            "VA R$ 375,00",
+            "VT",
+            "50% de assistência odontológica",
+            "Seguro parcial do carro",
+            "Vale combustível de R$ 850,00",
+            "Gympass",
+            "Conexa Saúde"
+          ]
+        }
+      ],
+      "badge": "Entrega de chaves",
+      "featured": true
+    },
+    {
+      "id": "gestor-negocios-imobiliarios-cuiaba-mt",
+      "title": "Gestor de Negócios Imobiliários",
+      "category": "Gestão imobiliária",
+      "location": "Cuiabá/MT e região",
+      "contract": "Expansão comercial",
+      "pay": "Fixo na faixa de R$ 10.000 + comissão + moradia",
+      "schedule": "Disponibilidade para mudança de estado",
+      "summary": "Construtora consolidada busca gestor para expansão comercial, abertura de mercado e parcerias imobiliárias em Cuiabá e cidades próximas.",
+      "highlights": [
+        "Fixo na faixa de R$ 10.000,00",
+        "Comissão e moradia",
+        "Foco em expansão e novos lançamentos",
+        "CRECI ativo e networking regional"
+      ],
+      "details": [
+        "Desenvolver parcerias estratégicas com imobiliárias da região",
+        "Abrir frente comercial para novos lançamentos imobiliários",
+        "Fortalecer networking e relacionamento com o mercado local",
+        "Estruturar e acompanhar operações voltadas ao segmento econômico/popular",
+        "Atuar diretamente na expansão da construtora em novas cidades",
+        "CRECI ativo",
+        "Experiência no segmento imobiliário econômico/popular",
+        "Vivência sólida com parcerias imobiliárias",
+        "Experiência como gestor comercial ou gestor imobiliário",
+        "Perfil estratégico, comercial e com forte networking",
+        "Disponibilidade para mudança de estado"
+      ],
+      "sections": [
+        {
+          "title": "Responsabilidades",
+          "items": [
+            "Desenvolver parcerias estratégicas com imobiliárias da região",
+            "Abrir frente comercial para novos lançamentos imobiliários",
+            "Fortalecer networking e relacionamento com o mercado local",
+            "Estruturar e acompanhar operações do segmento econômico/popular",
+            "Atuar na expansão da construtora em novas cidades"
+          ]
+        },
+        {
+          "title": "Requisitos",
+          "items": [
+            "CRECI ativo",
+            "Experiência no segmento imobiliário econômico/popular",
+            "Vivência sólida com parcerias imobiliárias",
+            "Experiência como gestor comercial ou gestor imobiliário",
+            "Perfil estratégico, comercial e com forte networking",
+            "Disponibilidade para mudança de estado"
+          ]
+        },
+        {
+          "title": "Oferta",
+          "items": [
+            "Fixo na faixa de R$ 10.000,00",
+            "Comissão",
+            "Moradia",
+            "Grande potencial de crescimento em empresa em expansão"
+          ]
+        }
+      ],
+      "badge": "Cuiabá/MT",
+      "featured": true
+    },
+    {
+      "id": "analista-credito-osasco",
+      "title": "Analista de Crédito Imobiliário",
+      "category": "Crédito imobiliário",
+      "location": "Osasco/SP",
+      "contract": "PJ",
+      "pay": "R$ 4.000 fixo + premiação por contrato assinado",
+      "summary": "Atuação com análise e acompanhamento de contratos de financiamento habitacional.",
+      "highlights": [
+        "Experiência em crédito imobiliário",
+        "Prática com sistemas da Caixa Econômica Federal",
+        "Atuação presencial em Osasco"
+      ],
+      "details": [
+        "Perfil organizado, analítico e focado em resultados",
+        "Necessário fácil acesso à região de Osasco",
+        "Foco em análise e acompanhamento de contratos de financiamento habitacional"
+      ],
+      "badge": "Vaga especializada"
+    },
+    {
+      "id": "gerente-treinamentos-osasco",
+      "title": "Gerente de Treinamentos",
+      "category": "Treinamento e liderança",
+      "location": "Osasco/SP",
+      "contract": "Presencial",
+      "pay": "Salário fixo + comissão",
+      "summary": "Capacitação técnica de equipes comerciais no setor imobiliário.",
+      "highlights": [
+        "Mínimo de 5 anos no mercado imobiliário",
+        "Expertise em crédito associativo",
+        "Treinamentos para lançamentos e performance comercial"
+      ],
+      "details": [
+        "Vivência com treinamentos técnicos voltados para lançamentos",
+        "Disponibilidade e acesso facilitado à região de Osasco",
+        "Perfil de liderança, didática e desenvolvimento de corretores/equipes"
+      ],
+      "badge": "Liderança"
+    },
+    {
+      "id": "novos-talentos-direcoes",
+      "title": "Novos Talentos – Mercado Imobiliário",
+      "category": "Novos talentos",
+      "location": "Oeste/SP + Guarulhos",
+      "contract": "Formação comercial",
+      "pay": "Curso de TTI + ajuda de custo + comissão",
+      "summary": "Oportunidade para entrar no mercado imobiliário com processo formativo e acompanhamento.",
+      "highlights": [
+        "A empresa investe no curso técnico (TTI)",
+        "Ajuda de custo mensal",
+        "Comissões a partir de R$ 6.000 por venda"
+      ],
+      "details": [
+        "Indicado para quem quer começar sem experiência prévia no mercado imobiliário",
+        "Treinamentos e acompanhamento diário",
+        "Estrutura comercial e metodologia de trabalho",
+        "Regiões de referência: Barueri, Carapicuíba, Osasco, Guarulhos e entorno"
+      ],
+      "badge": "Entrada no mercado"
+    },
+    {
+      "id": "gerente-vendas-osasco",
+      "title": "Gerente de Vendas",
+      "category": "Gerência comercial",
+      "location": "Osasco/SP",
+      "contract": "Início imediato",
+      "pay": "Ajuda de custo + comissão",
+      "summary": "Operação com estrutura comercial ativa para liderar equipe e acelerar vendas.",
+      "highlights": [
+        "Estrutura pronta e operação ativa",
+        "Rotina de performance com foco em resultado",
+        "Autonomia para gestão, metas e indicadores"
+      ],
+      "details": [
+        "Desejável experiência como gerente comercial no mercado imobiliário",
+        "Possibilidade de trazer colaboradores/equipe própria",
+        "Treinamento e acompanhamento do time comercial"
+      ],
+      "badge": "Início imediato"
+    },
+    {
+      "id": "gerente-vendas-centro-sp",
+      "title": "Gerente de Vendas – Centro",
+      "category": "Gerência comercial",
+      "location": "Centro de São Paulo/SP",
+      "contract": "Com experiência",
+      "pay": "Ajuda de custo: R$ 5.000 + comissão",
+      "summary": "Busca de líder para estruturar e acelerar time comercial na região central de São Paulo.",
+      "highlights": [
+        "Atuação na região central de São Paulo",
+        "Ajuda de custo de R$ 5.000",
+        "Foco em gestão de funil, metas, treinamento e performance"
+      ],
+      "details": [
+        "Ter no mínimo 5 corretores",
+        "Experiência comercial no mercado imobiliário",
+        "Perfil para formar, acompanhar e acelerar operação"
+      ],
+      "badge": "Centro SP"
+    },
+    {
+      "id": "sdr-consolacao",
+      "title": "Telemarketing Ativo / SDR",
+      "category": "SDR e atendimento",
+      "location": "Consolação/SP",
+      "contract": "PJ",
+      "pay": "R$ 2.500 fixo + comissão",
+      "summary": "Atuação com prospecção, qualificação de leads e geração de oportunidades comerciais.",
+      "highlights": [
+        "Contato ativo com leads e potenciais clientes",
+        "Prospecção e qualificação de oportunidades",
+        "Horário flexível com opções de turno"
+      ],
+      "details": [
+        "Boa comunicação e clareza ao falar",
+        "Perfil proativo e organizado",
+        "Resiliência para metas e objeções",
+        "Interesse em crescimento na área comercial"
+      ],
+      "badge": "PJ"
+    },
+    {
+      "id": "gerente-vendas-sao-paulo-10k",
+      "title": "Gerente de Vendas – Imobiliário",
+      "category": "Gerência comercial",
+      "location": "São Paulo/SP",
+      "contract": "Autônomo",
+      "pay": "Ajuda de custo mensal de R$ 10.000 + comissão",
+      "summary": "Oportunidade estratégica para líder com equipe própria e histórico de resultado.",
+      "highlights": [
+        "Ajuda de custo mensal de R$ 10.000",
+        "Autonomia para gestão e desenvolvimento de equipe",
+        "Atuação direta em operações e lançamentos imobiliários"
+      ],
+      "details": [
+        "Vivência comprovada em liderança comercial",
+        "Equipe própria com no mínimo 10 profissionais ativos",
+        "Capacidade de cobrar, acompanhar e desenvolver performance",
+        "Organização, leitura de indicadores e tomada de decisão"
+      ],
+      "badge": "Estratégica"
+    },
+    {
+      "id": "jovem-aprendiz-imobiliario",
+      "title": "Jovem Aprendiz – Formação no Mercado Imobiliário",
+      "category": "Novos talentos",
+      "location": "São Paulo/SP",
+      "contract": "Formação",
+      "pay": "Bolsa integral do curso técnico + possível ajuda de custo",
+      "summary": "Para jovens até 23 anos que desejam se formar e iniciar carreira no mercado imobiliário.",
+      "highlights": [
+        "Bolsa integral do curso técnico",
+        "Treinamento prático e teórico desde o início",
+        "Acompanhamento, capacitação e suporte diário"
+      ],
+      "details": [
+        "Não exige experiência prévia no mercado imobiliário",
+        "Indicado para quem tem vontade de aprender, crescer e se desenvolver",
+        "Plantões em diversas regiões de São Paulo, com imóveis populares, médio padrão, alto padrão e boutique",
+        "Em alguns casos, ajuda de custo avaliada individualmente"
+      ],
+      "badge": "Formação"
+    },
+    {
+      "id": "telemarketing-pirituba",
+      "title": "Telemarketing Ativo",
+      "category": "SDR e atendimento",
+      "location": "Pirituba/SP",
+      "contract": "Com experiência",
+      "pay": "Salário R$ 2.500 + VT + VR",
+      "summary": "Contato ativo com clientes e leads, apresentação de ofertas, follow-up e agendamentos.",
+      "highlights": [
+        "Salário R$ 2.500",
+        "Vale transporte e vale refeição",
+        "Função orientada a metas e resultados"
+      ],
+      "details": [
+        "Boa comunicação e poder de persuasão",
+        "Inteligência emocional e resiliência",
+        "Organização e foco em resultado",
+        "Empatia e cordialidade no atendimento",
+        "Ensino médio completo"
+      ],
+      "badge": "Pirituba"
+    }
+  ];
 
   const $ = (selector, context = document) => context.querySelector(selector);
   const $$ = (selector, context = document) => Array.from(context.querySelectorAll(selector));
   const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+  const escapeHTML = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
 
   function openWhatsApp(number, message) {
     const text = encodeURIComponent(message || '');
@@ -310,23 +556,42 @@
     });
   }
 
+  function renderJobDetails(job) {
+    const sections = Array.isArray(job.sections) && job.sections.length
+      ? job.sections
+      : [{ title: 'Detalhes da vaga', items: job.details || [] }];
+
+    return sections.map((section) => {
+      const items = (section.items || []).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
+      if (!items) return '';
+      return `<div class="job-more-section"><strong>${escapeHTML(section.title)}</strong><ul>${items}</ul></div>`;
+    }).join('');
+  }
+
   function createJobCard(job) {
-    const highlights = job.highlights.slice(0, 3).map((item) => `<li>${item}</li>`).join('');
+    const highlights = (job.highlights || []).slice(0, 4).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
+    const details = renderJobDetails(job);
+    const schedule = job.schedule ? `<span>🕒 ${escapeHTML(job.schedule)}</span>` : '';
+    const featured = job.featured ? ' job-featured' : '';
+    const aria = `Detalhes da vaga ${job.title}`;
+
     return `
-      <article class="job-card reveal in-view" data-category="${job.category}">
+      <article class="job-card${featured} reveal in-view" data-category="${escapeHTML(job.category)}">
         <div class="job-card-head">
-          <span class="job-badge">${job.badge}</span>
-          <h3>${job.title}</h3>
-          <div class="job-location">📍 ${job.location}</div>
+          <span class="job-badge">${escapeHTML(job.badge)}</span>
+          <h3>${escapeHTML(job.title)}</h3>
+          <div class="job-location">📍 ${escapeHTML(job.location)}</div>
         </div>
         <div class="job-card-body">
-          <p>${job.summary}</p>
+          <p>${escapeHTML(job.summary)}</p>
           <div class="job-meta">
-            <span>💼 ${job.contract}</span>
-            <span>💰 ${job.pay}</span>
+            <span>💼 ${escapeHTML(job.contract)}</span>
+            <span>💰 ${escapeHTML(job.pay)}</span>
+            ${schedule}
           </div>
           <ul class="job-list">${highlights}</ul>
-          <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${job.id}">Tenho interesse</button>
+          ${details ? `<details class="job-more"><summary aria-label="${escapeHTML(aria)}">Ver mais detalhes</summary>${details}</details>` : ''}
+          <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${escapeHTML(job.id)}">Tenho interesse</button>
         </div>
       </article>
     `;

@@ -1,0 +1,23 @@
+Alterações aplicadas em 06/05/2026
+
+1. Adicionadas 4 vagas novas no topo da área de vagas:
+   - Corretor(a) de Locação – Vila Madalena/SP
+   - Corretor(a) de Imóveis – Terceiros – Vila Madalena/SP
+   - Vistoriador de Saída – Vila Madalena/SP
+   - Gestor de Negócios Imobiliários – Cuiabá/MT
+
+2. As vagas agora exibem informações principais primeiro e escondem detalhes longos em “Ver mais detalhes”.
+
+3. Criada página independente /vagas.html para publicação/indexação no Google.
+
+4. Atualizado sitemap.xml incluindo https://rhimob0305.vercel.app/vagas.html.
+
+5. Atualizados filtros de vagas para incluir Locação, Terceiros, Vistoria e Gestão Imobiliária.
+
+Arquivos alterados/criados:
+- index.html
+- script.js
+- styles.css
+- sitemap.xml
+- vagas.html
+- ALTERACOES_VAGAS_2026_05_06.txt

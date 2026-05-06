@@ -9,22 +9,22 @@
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://rhimob0305.vercel.app/" />
 
-  <link rel="icon" href="/favicon.ico?v=20260505talentos" sizes="any" />
-  <link rel="icon" href="/favicon.svg?v=20260505talentos" type="image/svg+xml" />
-  <link rel="shortcut icon" href="/favicon.ico?v=20260505talentos" />
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=20260505talentos" />
-  <link rel="manifest" href="/site.webmanifest?v=20260505talentos" />
+  <link rel="icon" href="/favicon.ico?v=20260506vagas" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260506vagas" type="image/svg+xml" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260506vagas" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=20260506vagas" />
+  <link rel="manifest" href="/site.webmanifest?v=20260506vagas" />
 
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pt_BR" />
   <meta property="og:site_name" content="RH IMOB" />
   <meta property="og:title" content="RH IMOB | Recrutamento imobiliário e vagas" />
   <meta property="og:description" content="Precisa contratar, ver vagas ou entrar no banco confidencial de talentos imobiliários? A RH IMOB organiza esse caminho." />
-  <meta property="og:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260505talentos" />
+  <meta property="og:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260506vagas" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260505talentos" />
+  <meta name="twitter:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260506vagas" />
 
-  <link rel="stylesheet" href="styles.css?v=20260505talentos" />
+  <link rel="stylesheet" href="styles.css?v=20260506vagas" />
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -32,7 +32,7 @@
   <header class="site-header" id="topo">
     <div class="container header-inner">
       <a class="brand" href="#inicio" aria-label="RH IMOB - início">
-        <img src="/assets/rhimob-mark.svg?v=20260505talentos" alt="" class="brand-mark" />
+        <img src="/assets/rhimob-mark.svg?v=20260506vagas" alt="" class="brand-mark" />
         <span>
           <strong>RH IMOB</strong>
           <small>Recrutamento imobiliário</small>
@@ -45,8 +45,8 @@
 
       <nav class="main-nav" id="menu-principal" aria-label="Menu principal">
         <a href="#contratar">Preciso contratar</a>
-        <a href="#vagas">Vagas</a>
-        <a href="#banco-talentos">Banco de talentos</a>
+        <a href="/vagas.html">Vagas</a>
+        <a href="/vagas.html#banco-talentos">Banco de talentos</a>
         <a href="#como-funciona">Como funciona</a>
         <a href="#contato">Contato</a>
       </nav>
@@ -60,7 +60,7 @@
       <div class="container gateway-grid">
         <div class="gateway-copy reveal">
           <div class="gateway-brand-lockup" aria-label="RH IMOB">
-            <img src="/assets/rhimob-mark.svg?v=20260505logo" alt="" aria-hidden="true" />
+            <img src="/assets/rhimob-mark.svg?v=20260506vagas" alt="" aria-hidden="true" />
             <div>
               <strong>RH IMOB</strong>
               <span>Recrutamento imobiliário</span>
@@ -75,7 +75,7 @@
               <strong>Preciso contratar</strong>
               <span>Sou imobiliária, incorporadora ou gestor e quero contratar melhor.</span>
             </a>
-            <a class="gateway-card-action vagas" href="#vagas">
+            <a class="gateway-card-action vagas" href="/vagas.html">
               <strong>Vagas</strong>
               <span>Quero ver vagas abertas ou entrar no banco de talentos.</span>
             </a>
@@ -209,8 +209,8 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="section-kicker">Vagas abertas</span>
-          <h2>Oportunidades no mercado imobiliário com atendimento da Mariana.</h2>
-          <p>Escolha uma vaga aberta ou, se você já atua no mercado imobiliário, entre no banco confidencial de talentos para receber propostas de empresas parceiras.</p>
+          <h2>Oportunidades em destaque no mercado imobiliário.</h2>
+          <p>As informações principais aparecem primeiro. Quando a vaga tiver muitos detalhes, clique em <strong>Ver mais detalhes</strong> para abrir requisitos, benefícios, atividades e condições completas.</p>
         </div>
 
         <div class="talent-bank-card reveal" id="banco-talentos">
@@ -233,6 +233,10 @@
 
         <div class="job-toolbar reveal">
           <button class="job-filter is-active" type="button" data-filter="todas">Todas</button>
+          <button class="job-filter" type="button" data-filter="Locação">Locação</button>
+          <button class="job-filter" type="button" data-filter="Vendas terceiros">Terceiros</button>
+          <button class="job-filter" type="button" data-filter="Vistoria">Vistoria</button>
+          <button class="job-filter" type="button" data-filter="Gestão imobiliária">Gestão imobiliária</button>
           <button class="job-filter" type="button" data-filter="Gerência comercial">Gerência</button>
           <button class="job-filter" type="button" data-filter="SDR e atendimento">SDR/Telemarketing</button>
           <button class="job-filter" type="button" data-filter="Novos talentos">Novos talentos</button>
@@ -274,7 +278,7 @@
         </div>
         <div class="cta-actions">
           <a class="btn btn-primary btn-large" href="#contratar">Preciso contratar</a>
-          <a class="btn btn-light btn-large" href="#vagas">Ver vagas</a>
+          <a class="btn btn-light btn-large" href="/vagas.html">Ver vagas</a>
         </div>
       </div>
     </section>
@@ -439,7 +443,7 @@
     <div class="container footer-grid">
       <div>
         <a class="brand footer-brand" href="#inicio" aria-label="RH IMOB - início">
-          <img src="/assets/rhimob-mark.svg?v=20260505talentos" alt="" class="brand-mark" />
+          <img src="/assets/rhimob-mark.svg?v=20260506vagas" alt="" class="brand-mark" />
           <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
         </a>
         <p>Recrutamento imobiliário com tecnologia, inteligência e operação especializada.</p>
@@ -447,8 +451,8 @@
       <div>
         <h3>Navegação</h3>
         <a href="#contratar">Preciso contratar</a>
-        <a href="#vagas">Vagas</a>
-        <a href="#banco-talentos">Banco de talentos</a>
+        <a href="/vagas.html">Vagas</a>
+        <a href="/vagas.html#banco-talentos">Banco de talentos</a>
         <a href="#como-funciona">Como funciona</a>
         <a href="#contato">Contato</a>
       </div>
@@ -456,7 +460,7 @@
         <h3>Contatos</h3>
         <a class="js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e gostaria de receber mais informações.">Empresas: Fernando</a>
         <a href="https://wa.me/5511953973268?text=Ol%C3%A1%2C%20Mariana.%20Vim%20pelo%20site%20da%20RH%20IMOB%20e%20quero%20saber%20sobre%20vagas." target="_blank" rel="noopener">Vagas: Mariana</a>
-        <a href="#banco-talentos">Banco de talentos confidencial</a>
+        <a href="/vagas.html#banco-talentos">Banco de talentos confidencial</a>
         <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram: @rh_imob</a>
       </div>
       <div>
@@ -473,6 +477,6 @@
 
   <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB no WhatsApp" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e gostaria de entender melhor as soluções de recrutamento imobiliário.">WhatsApp</a>
 
-  <script src="script.js?v=20260505talentos"></script>
+  <script src="script.js?v=20260506vagas"></script>
 </body>
 </html>
