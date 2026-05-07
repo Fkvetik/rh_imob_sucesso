@@ -1,6 +1,6 @@
 (() => {
   // HOTFIX v1.2 — prévia pública sem login + detalhes somente com login.
-  const rawCfg = window.RHIMOB_SUPABASE_CONFIG || {};
+  const rawCfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || window.RHIMOB_SUPABASE_CONFIG || {};
   const cfg = {
     url: rawCfg.url || rawCfg.supabaseUrl || rawCfg.SUPABASE_URL || '',
     publishableKey: rawCfg.publishableKey || rawCfg.anonKey || rawCfg.supabaseAnonKey || rawCfg.SUPABASE_ANON_KEY || '',
@@ -52,6 +52,38 @@
   function onlyDigits(value) {
     return String(value || '').replace(/\D+/g, '');
   }
+
+  function friendlyError(error) {
+    const raw = String(error && error.message ? error.message : error || '');
+
+    if (
+      raw.includes('Could not find the table') ||
+      raw.includes('schema cache') ||
+      raw.includes('PGRST205') ||
+      raw.includes('PGRST204')
+    ) {
+      return 'A prévia da Plataforma Novos Talentos ainda não está disponível neste ambiente. Atualize a página ou fale com o suporte para revisar a conexão da plataforma.';
+    }
+
+    if (
+      raw.toLowerCase().includes('permission') ||
+      raw.toLowerCase().includes('not authorized') ||
+      raw.toLowerCase().includes('row-level security')
+    ) {
+      return 'A prévia protegida ainda não foi liberada para consulta. Fale com o suporte para ativar a visualização inicial.';
+    }
+
+    if (
+      raw.toLowerCase().includes('failed to fetch') ||
+      raw.toLowerCase().includes('network') ||
+      raw.toLowerCase().includes('load failed')
+    ) {
+      return 'Não foi possível carregar a plataforma agora. Verifique sua conexão e atualize a página.';
+    }
+
+    return 'Não foi possível carregar a prévia neste momento. Atualize a página ou fale com o suporte.';
+  }
+
 
   function getClient() {
     if (sb) return sb;
@@ -805,9 +837,9 @@
         await search(true);
       } catch (err) {
         console.warn('[NT] Falha ao carregar prévia pública:', err);
-        status('Não foi possível carregar a prévia neste momento. Atualize a página ou fale com o suporte.');
+        status(friendlyError(err));
         const grid = $('#cardsGrid');
-        if (grid) grid.innerHTML = `<div class="nt-empty">${esc(err.message || err)}</div>`;
+        if (grid) grid.innerHTML = `<div class="nt-empty">${esc(friendlyError(err))}</div>`;
       }
       return;
     }
