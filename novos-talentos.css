@@ -1,3 +1,17 @@
+
+/* HOTFIX NT v1.1: força elementos com hidden a sumirem mesmo quando classes têm display:flex/grid */
+[hidden] {
+  display: none !important;
+}
+
+.nt-form-message.error {
+  color: var(--red);
+}
+
+.nt-form-message.success {
+  color: #0d8755;
+}
+
 :root {
   --purple-950: #190827;
   --purple-900: #24103f;
