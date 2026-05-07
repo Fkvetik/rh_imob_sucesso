@@ -722,3 +722,34 @@ input:focus, textarea:focus, select:focus {
     display: grid;
   }
 }
+
+
+
+/* RH IMOB NT v6 — filtros completos */
+.nt-filters--talentos {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.nt-filter-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+.nt-filters--talentos .nt-filter-actions .nt-btn {
+  min-width: 108px;
+}
+@media (max-width: 980px) {
+  .nt-filters--talentos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .nt-filter-actions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 680px) {
+  .nt-filters--talentos {
+    grid-template-columns: 1fr;
+  }
+  .nt-filter-actions {
+    display: grid;
+  }
+}

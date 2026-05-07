@@ -1,6 +1,10 @@
 (() => {
-  // RH IMOB • Novos Talentos v5
-  // Supabase separado + prévia pública + filtros completos.
+  'use strict';
+
+  // RH IMOB • Novos Talentos v6
+  // Correção: Supabase separado, prévia pública direta nas tabelas mascaradas,
+  // filtros completos e mensagens comerciais sem texto técnico.
+
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
     url: 'https://tnzmxpoxvdlckmjwdala.supabase.co',
@@ -8,19 +12,27 @@
   };
 
   const rawCfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || EMBEDDED_NT_CONFIG;
+
   const cfg = {
-    url: rawCfg.url || rawCfg.supabaseUrl || rawCfg.SUPABASE_URL || '',
-    publishableKey: rawCfg.publishableKey || rawCfg.anonKey || rawCfg.supabaseAnonKey || rawCfg.SUPABASE_ANON_KEY || '',
-    enabled: rawCfg.enabled !== false
+    enabled: rawCfg.enabled !== false,
+    url: String(rawCfg.url || EMBEDDED_NT_CONFIG.url).replace(/\/+$/, ''),
+    publishableKey: rawCfg.publishableKey || rawCfg.anonKey || rawCfg.key || EMBEDDED_NT_CONFIG.publishableKey
   };
 
+  const PRODUCT_CODE = 'NOVOS_TALENTOS';
   const PAGE_SIZE = 24;
+  const FILTER_SAMPLE_LIMIT = 6000;
+
   let sb = null;
 
   const state = {
     session: null,
     context: null,
     frases: [],
+    offset: 0,
+    total: 0,
+    loading: false,
+    currentTalent: null,
     filters: {
       cidade: '',
       estado_uf: '',
@@ -31,11 +43,7 @@
       cargo: '',
       estacao: '',
       termo: ''
-    },
-    offset: 0,
-    total: 0,
-    loading: false,
-    currentTalent: null
+    }
   };
 
   const DEFAULT_FRASE = '{saudacao_completa}, {primeiro_nome}. Aqui é {operador}. Temos uma oportunidade comercial em {cidade} e seu perfil apareceu em uma busca próxima da nossa operação. Se fizer sentido, te passo os detalhes por aqui.';
@@ -45,6 +53,10 @@
 
   function normalize(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function lower(value) {
+    return normalize(value).toLowerCase();
   }
 
   function esc(value) {
@@ -60,26 +72,41 @@
     return String(value || '').replace(/\D+/g, '');
   }
 
+  function getClient() {
+    if (sb) return sb;
+    if (!window.supabase || !cfg.enabled || !cfg.url || !cfg.publishableKey) return null;
+
+    sb = window.supabase.createClient(cfg.url, cfg.publishableKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    return sb;
+  }
+
   function friendlyError(error) {
     const raw = String(error && error.message ? error.message : error || '');
 
     if (
       raw.includes('Could not find the table') ||
-      raw.includes('Could not find the function') ||
       raw.includes('schema cache') ||
-      raw.includes('PGRST202') ||
-      raw.includes('PGRST204') ||
-      raw.includes('PGRST205')
+      raw.includes('PGRST205') ||
+      raw.includes('PGRST204')
     ) {
-      return 'A prévia da Plataforma Novos Talentos ainda não está disponível neste ambiente. Rode o SQL de ativação da V5 no Supabase correto e atualize a página.';
+      return 'A prévia ainda não está disponível neste ambiente. Atualize a página em alguns instantes ou fale com o suporte para revisar a conexão.';
     }
 
     if (
       raw.toLowerCase().includes('permission') ||
       raw.toLowerCase().includes('not authorized') ||
-      raw.toLowerCase().includes('row-level security')
+      raw.toLowerCase().includes('row-level security') ||
+      raw.toLowerCase().includes('unauthorized') ||
+      raw.toLowerCase().includes('jwt')
     ) {
-      return 'A prévia protegida ainda não foi liberada para consulta. Fale com o suporte para ativar a visualização inicial.';
+      return 'A prévia protegida ainda não foi liberada para visualização. Fale com o suporte para ativar o acesso inicial.';
     }
 
     if (
@@ -93,51 +120,6 @@
     return 'Não foi possível carregar a prévia neste momento. Atualize a página ou fale com o suporte.';
   }
 
-  function getClient() {
-    if (sb) return sb;
-    if (!window.supabase || !cfg.url || !cfg.publishableKey) return null;
-    sb = window.supabase.createClient(cfg.url, cfg.publishableKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
-    return sb;
-  }
-
-  async function rpc(fn, payload = {}, requireLogin = false) {
-    if (requireLogin && !state.session?.access_token) {
-      throw new Error('Faça login para continuar.');
-    }
-
-    const base = String(cfg.url || '').replace(/\/+$/, '');
-    const token = state.session?.access_token || cfg.publishableKey;
-
-    const res = await fetch(`${base}/rest/v1/rpc/${fn}`, {
-      method: 'POST',
-      headers: {
-        apikey: cfg.publishableKey,
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const raw = await res.text();
-      let msg = raw;
-      try {
-        const parsed = JSON.parse(raw);
-        msg = parsed.message || parsed.details || raw;
-      } catch (_) {}
-      throw new Error(msg);
-    }
-
-    return res.json();
-  }
-
   function setText(id, value) {
     const el = $('#' + id);
     if (el) el.textContent = value == null || value === '' ? '-' : String(value);
@@ -149,7 +131,8 @@
   }
 
   function firstName(value) {
-    return normalize(value).split(' ')[0] || 'Profissional';
+    const txt = normalize(value);
+    return txt.split(' ')[0] || 'Profissional';
   }
 
   function saudacao() {
@@ -159,12 +142,30 @@
     return 'Boa noite';
   }
 
+  function inferMacro(row) {
+    const bairro = lower(row?.bairro);
+    const regiao = normalize(row?.regiao_macro);
+    if (regiao) return regiao;
+
+    if (bairro.includes('zona sul') || bairro.includes('(zona sul)')) return 'Zona Sul';
+    if (bairro.includes('zona norte') || bairro.includes('(zona norte)')) return 'Zona Norte';
+    if (bairro.includes('zona leste') || bairro.includes('(zona leste)')) return 'Zona Leste';
+    if (bairro.includes('zona oeste') || bairro.includes('(zona oeste)')) return 'Zona Oeste';
+    if (bairro.includes('centro') || bairro.includes('sé') || bairro.includes('republica') || bairro.includes('república')) return 'Centro';
+
+    return '';
+  }
+
+  function inferMicro(row) {
+    return normalize(row?.micro_regiao) || normalize(row?.estacao_mais_proxima) || '';
+  }
+
   function openLoginModal() {
     const modal = $('#loginModal');
     if (!modal) return;
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('nt-modal-open');
-    setTimeout(() => $('#loginEmail')?.focus(), 50);
+    setTimeout(() => $('#loginEmail')?.focus(), 60);
   }
 
   function closeLoginModal() {
@@ -219,6 +220,7 @@
 
   function updateSummary() {
     const ctx = state.context;
+
     if (!ctx) {
       setText('summaryConta', 'Prévia pública protegida');
       setText('summaryPlano', 'Entre para liberar contatos');
@@ -226,7 +228,7 @@
       setText('metricSaldo', 'Login');
       setText('metricUsados', 'Prévia');
       setText('metricLimite', 'Plano');
-      setText('summaryText', 'Você pode consultar perfis públicos protegidos. Telefone, e-mail e mensagem só aparecem após login e consumo do plano.');
+      setText('summaryText', 'Você pode consultar perfis públicos protegidos. Telefone, e-mail e mensagem só aparecem após login e liberação do perfil.');
       setText('saldoStatus', 'Prévia pública: detalhes liberados somente com login.');
       return;
     }
@@ -242,23 +244,78 @@
   }
 
   async function loadContext() {
-    const rows = await rpc('nt_app_context', {}, true);
-    const ctx = rows?.[0] || null;
-    if (!ctx) throw new Error('Usuário sem acesso ativo à Plataforma Novos Talentos.');
-    state.context = ctx;
+    const client = getClient();
+    if (!client) throw new Error('Configuração da plataforma indisponível.');
+
+    const { data: userData } = await client.auth.getUser();
+    const authUser = userData?.user;
+    if (!authUser) throw new Error('Sessão não encontrada.');
+
+    const { data: userLink, error: userError } = await client
+      .from('nt_usuarios_conta')
+      .select('usuario_id,usuario_seed_id,conta_id,produto_codigo,nome,email_login,perfil,status,auth_user_id')
+      .eq('auth_user_id', authUser.id)
+      .eq('produto_codigo', PRODUCT_CODE)
+      .eq('status', 'ATIVO')
+      .maybeSingle();
+
+    if (userError) throw userError;
+    if (!userLink) throw new Error('Acesso não liberado para esta plataforma.');
+
+    const { data: conta, error: contaError } = await client
+      .from('nt_contas')
+      .select('conta_id,produto_codigo,nome_conta,plano_tipo,status,limite_total,limite_por_usuario,usuarios_contratados')
+      .eq('conta_id', userLink.conta_id)
+      .eq('produto_codigo', PRODUCT_CODE)
+      .eq('status', 'ATIVA')
+      .maybeSingle();
+
+    if (contaError) throw contaError;
+    if (!conta) throw new Error('Conta não localizada ou inativa.');
+
+    const { count, error: countError } = await client
+      .from('nt_talento_consumos')
+      .select('consumo_id', { count: 'exact', head: true })
+      .eq('conta_id', conta.conta_id)
+      .eq('produto_codigo', PRODUCT_CODE);
+
+    if (countError) throw countError;
+
+    const consumidos = count || 0;
+    const limite = Number(conta.limite_total || 0);
+
+    state.context = {
+      ...userLink,
+      ...conta,
+      consumidos,
+      saldo: limite ? Math.max(limite - consumidos, 0) : 0
+    };
+
     updateSummary();
     updateHeader();
     showWorkspace(true);
-    return ctx;
+    return state.context;
   }
 
   async function loadFrases() {
     state.frases = [{ texto: DEFAULT_FRASE, titulo: 'Frase padrão' }];
 
+    const client = getClient();
+    if (!client || !state.context) return;
+
     try {
-      const rows = await rpc('nt_listar_frases_plano', {}, true);
-      if (Array.isArray(rows) && rows.length) {
-        state.frases = rows
+      const { data, error } = await client
+        .from('nt_frases_abordagem')
+        .select('frase_id,prioridade,titulo,texto,status')
+        .eq('produto_codigo', PRODUCT_CODE)
+        .eq('plano_tipo', state.context.plano_tipo || 'EMPRESARIAL')
+        .eq('status', 'ATIVA')
+        .order('prioridade', { ascending: true });
+
+      if (error) throw error;
+
+      if (Array.isArray(data) && data.length) {
+        state.frases = data
           .map((r) => ({
             frase_id: r.frase_id,
             titulo: normalize(r.titulo) || `Frase ${r.prioridade || ''}`,
@@ -267,13 +324,13 @@
           .filter((r) => r.texto);
       }
     } catch (err) {
-      console.warn('Frases padrão locais carregadas:', err);
+      console.warn('[NT] Frases padrão locais usadas:', err);
     }
   }
 
   function option(label, value, extra = '') {
     const opt = document.createElement('option');
-    opt.value = value || '';
+    opt.value = value;
     opt.textContent = extra ? `${label} (${extra})` : label;
     return opt;
   }
@@ -284,72 +341,31 @@
     select.appendChild(option(placeholder, ''));
   }
 
-  function fillOptions(select, rows, tipo, placeholder) {
+  function addCounter(map, value, label) {
+    const v = normalize(value);
+    if (!v) return;
+    const current = map.get(v) || { valor: v, label: label || v, total: 0 };
+    current.total += 1;
+    if (label) current.label = label;
+    map.set(v, current);
+  }
+
+  function fillFromMap(select, map, placeholder) {
     resetSelect(select, placeholder);
-    (rows || [])
-      .filter((row) => row.tipo === tipo && normalize(row.valor))
-      .forEach((row) => {
-        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
+    const rows = Array.from(map.values())
+      .sort((a, b) => {
+        if (b.total !== a.total) return b.total - a.total;
+        return String(a.label).localeCompare(String(b.label), 'pt-BR');
       });
-  }
 
-  async function loadAllFilterOptions() {
-    const rows = await rpc('nt_opcoes_publicas_v2', {
-      p_cidade: state.filters.cidade || null,
-      p_estado_uf: state.filters.estado_uf || null,
-      p_regiao_macro: state.filters.regiao_macro || null,
-      p_micro_regiao: state.filters.micro_regiao || null,
-      p_bairro: state.filters.bairro || null
-    }, false);
-
-    fillOptions($('#cidadeSelect'), rows, 'cidade', 'Todas as cidades');
-    fillOptions($('#regiaoSelect'), rows, 'regiao_macro', 'Todas as regiões');
-    fillOptions($('#microSelect'), rows, 'micro_regiao', 'Todas as micro regiões');
-    fillOptions($('#bairroSelect'), rows, 'bairro', 'Todos os bairros');
-    fillOptions($('#idadeSelect'), rows, 'faixa_idade', 'Todas as idades');
-    fillOptions($('#cargoSelect'), rows, 'cargo', 'Todos os perfis');
-    fillOptions($('#metroSelect'), rows, 'metro', 'Todas as estações');
-  }
-
-  async function refreshDependentOptions() {
-    const current = {
-      cidade: $('#cidadeSelect')?.value || '',
-      regiao: $('#regiaoSelect')?.value || '',
-      micro: $('#microSelect')?.value || '',
-      bairro: $('#bairroSelect')?.value || '',
-      idade: $('#idadeSelect')?.value || '',
-      cargo: $('#cargoSelect')?.value || '',
-      metro: $('#metroSelect')?.value || ''
-    };
-
-    collectFilters();
-
-    const rows = await rpc('nt_opcoes_publicas_v2', {
-      p_cidade: state.filters.cidade || null,
-      p_estado_uf: state.filters.estado_uf || null,
-      p_regiao_macro: state.filters.regiao_macro || null,
-      p_micro_regiao: state.filters.micro_regiao || null,
-      p_bairro: state.filters.bairro || null
-    }, false);
-
-    const selects = [
-      ['regiaoSelect', 'regiao_macro', 'Todas as regiões', current.regiao],
-      ['microSelect', 'micro_regiao', 'Todas as micro regiões', current.micro],
-      ['bairroSelect', 'bairro', 'Todos os bairros', current.bairro],
-      ['idadeSelect', 'faixa_idade', 'Todas as idades', current.idade],
-      ['cargoSelect', 'cargo', 'Todos os perfis', current.cargo],
-      ['metroSelect', 'metro', 'Todas as estações', current.metro]
-    ];
-
-    selects.forEach(([id, tipo, placeholder, oldValue]) => {
-      const select = $('#' + id);
-      fillOptions(select, rows, tipo, placeholder);
-      if ([...select.options].some((o) => o.value === oldValue)) select.value = oldValue;
+    rows.forEach((row) => {
+      select.appendChild(option(row.label, row.valor, formatNumber(row.total)));
     });
   }
 
   function collectFilters() {
     const [cidade, uf] = String($('#cidadeSelect')?.value || '').split('||');
+
     state.filters = {
       cidade: cidade || '',
       estado_uf: uf || '',
@@ -361,6 +377,136 @@
       estacao: normalize($('#metroSelect')?.value),
       termo: normalize($('#termoInput')?.value)
     };
+  }
+
+  function applyBaseQuery(query, includeMacro = true) {
+    query = query
+      .eq('produto_codigo', PRODUCT_CODE)
+      .eq('ativo', true);
+
+    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
+    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
+    if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
+    if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
+    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
+    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao);
+
+    if (includeMacro && state.filters.regiao_macro) {
+      const macro = state.filters.regiao_macro.replace(/[,()]/g, ' ');
+      query = query.or(`regiao_macro.eq.${macro},bairro.ilike.%${macro}%`);
+    }
+
+    if (state.filters.micro_regiao) {
+      const micro = state.filters.micro_regiao.replace(/[,()]/g, ' ');
+      query = query.or(`micro_regiao.eq.${micro},estacao_mais_proxima.eq.${micro},bairro.ilike.%${micro}%`);
+    }
+
+    if (state.filters.termo) {
+      const term = state.filters.termo.replace(/[,%]/g, ' ');
+      query = query.or(`nome_mascarado.ilike.%${term}%,cargo.ilike.%${term}%,bairro.ilike.%${term}%,cidade.ilike.%${term}%,tags_publicas.ilike.%${term}%`);
+    }
+
+    return query;
+  }
+
+  async function loadCities() {
+    const client = getClient();
+    if (!client) throw new Error('Configuração da plataforma indisponível.');
+
+    const select = $('#cidadeSelect');
+    resetSelect(select, 'Todas as cidades');
+
+    const { data, error } = await client
+      .from('nt_filtro_cidade')
+      .select('cidade,estado_uf,total')
+      .order('total', { ascending: false })
+      .limit(800);
+
+    if (error) throw error;
+
+    (data || []).forEach((row) => {
+      const cidade = normalize(row.cidade);
+      const uf = normalize(row.estado_uf);
+      if (!cidade || !uf) return;
+      select.appendChild(option(`${cidade}/${uf}`, `${cidade}||${uf}`, formatNumber(row.total)));
+    });
+  }
+
+  async function loadDependentFilters() {
+    const client = getClient();
+    if (!client) throw new Error('Configuração da plataforma indisponível.');
+
+    collectFilters();
+
+    const current = {
+      regiao: $('#regiaoSelect')?.value || '',
+      micro: $('#microSelect')?.value || '',
+      bairro: $('#bairroSelect')?.value || '',
+      idade: $('#idadeSelect')?.value || '',
+      cargo: $('#cargoSelect')?.value || '',
+      metro: $('#metroSelect')?.value || ''
+    };
+
+    let query = client
+      .from('nt_talentos_publicos')
+      .select('cidade,estado_uf,bairro,regiao_macro,micro_regiao,faixa_idade,cargo,estacao_mais_proxima,linha_metro_mais_proxima,ativo')
+      .eq('produto_codigo', PRODUCT_CODE)
+      .eq('ativo', true)
+      .limit(FILTER_SAMPLE_LIMIT);
+
+    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
+    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
+    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const maps = {
+      regiao: new Map(),
+      micro: new Map(),
+      bairro: new Map(),
+      idade: new Map(),
+      cargo: new Map(),
+      metro: new Map()
+    };
+
+    (data || []).forEach((row) => {
+      const macro = inferMacro(row);
+      const micro = inferMicro(row);
+
+      if (state.filters.regiao_macro && macro !== state.filters.regiao_macro) return;
+      if (state.filters.micro_regiao && micro !== state.filters.micro_regiao) return;
+
+      addCounter(maps.regiao, macro);
+      addCounter(maps.micro, micro);
+      addCounter(maps.bairro, row.bairro);
+      addCounter(maps.idade, row.faixa_idade);
+      addCounter(maps.cargo, row.cargo);
+
+      if (normalize(row.estacao_mais_proxima)) {
+        const label = normalize(row.linha_metro_mais_proxima)
+          ? `${normalize(row.estacao_mais_proxima)} • ${normalize(row.linha_metro_mais_proxima)}`
+          : normalize(row.estacao_mais_proxima);
+        addCounter(maps.metro, row.estacao_mais_proxima, label);
+      }
+    });
+
+    const configs = [
+      ['regiaoSelect', maps.regiao, 'Todas as regiões', current.regiao],
+      ['microSelect', maps.micro, 'Todas as micro regiões', current.micro],
+      ['bairroSelect', maps.bairro, 'Todos os bairros', current.bairro],
+      ['idadeSelect', maps.idade, 'Todas as idades', current.idade],
+      ['cargoSelect', maps.cargo, 'Todos os perfis', current.cargo],
+      ['metroSelect', maps.metro, 'Todas as estações', current.metro]
+    ];
+
+    configs.forEach(([id, map, placeholder, oldValue]) => {
+      const select = $('#' + id);
+      fillFromMap(select, map, placeholder);
+      if (oldValue && [...select.options].some((o) => o.value === oldValue)) {
+        select.value = oldValue;
+      }
+    });
   }
 
   function status(message) {
@@ -380,14 +526,16 @@
     }
 
     const html = rows.map((row) => {
+      const macro = inferMacro(row);
+      const micro = inferMicro(row);
+
       const metro = row.estacao_mais_proxima
         ? `${esc(row.estacao_mais_proxima)}${row.linha_metro_mais_proxima ? ` • ${esc(row.linha_metro_mais_proxima)}` : ''}`
-        : 'Sem estação vinculada';
+        : 'Metrô não informado';
 
-      const geo = row.tem_geo ? 'Geolocalizado' : 'Sem geolocalização';
-      const canal = row.tem_whatsapp ? 'WhatsApp disponível' : (row.tem_email ? 'E-mail disponível' : 'Canal protegido');
+      const geo = row.tem_geo ? 'Geolocalizado' : 'Localização aproximada';
+      const canal = row.tem_whatsapp ? 'Canal disponível após login' : (row.tem_email ? 'Contato disponível após login' : 'Contato protegido');
       const idade = row.faixa_idade || (row.idade_anos ? `${row.idade_anos} anos` : 'Idade não informada');
-      const regiao = [row.regiao_macro_ui || row.regiao_macro, row.micro_regiao_ui || row.micro_regiao].filter(Boolean).join(' • ');
 
       return `
         <article class="nt-card" data-key="${esc(row.talento_key)}">
@@ -401,7 +549,7 @@
 
           <div class="nt-card__meta">
             <span>📍 ${esc([row.bairro, row.cidade, row.estado_uf].filter(Boolean).join(' • '))}</span>
-            <span class="nt-region-line">🧭 ${esc(regiao || 'Região em classificação')}</span>
+            <span>🧭 ${esc([macro, micro].filter(Boolean).join(' • ') || 'Região em classificação')}</span>
             <span>🚇 ${metro}</span>
           </div>
 
@@ -427,13 +575,20 @@
   async function search(reset = true) {
     if (state.loading) return;
 
+    const client = getClient();
+    if (!client) {
+      status('Não foi possível carregar a configuração da plataforma.');
+      return;
+    }
+
     state.loading = true;
     collectFilters();
 
     if (reset) {
       state.offset = 0;
       state.total = 0;
-      $('#cardsGrid').innerHTML = '';
+      const grid = $('#cardsGrid');
+      if (grid) grid.innerHTML = '';
     }
 
     const btn = $('#buscarBtn');
@@ -441,22 +596,23 @@
     status('Consultando talentos disponíveis...');
 
     try {
-      const rows = await rpc('nt_listar_talentos_publico_v2', {
-        p_cidade: state.filters.cidade || null,
-        p_estado_uf: state.filters.estado_uf || null,
-        p_regiao_macro: state.filters.regiao_macro || null,
-        p_micro_regiao: state.filters.micro_regiao || null,
-        p_bairro: state.filters.bairro || null,
-        p_faixa_idade: state.filters.faixa_idade || null,
-        p_cargo: state.filters.cargo || null,
-        p_estacao: state.filters.estacao || null,
-        p_termo: state.filters.termo || null,
-        p_limit: PAGE_SIZE,
-        p_offset: state.offset
-      }, false);
+      let query = client
+        .from('nt_talentos_publicos')
+        .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,tags_publicas,ativo,updated_at', { count: 'exact' });
 
-      const list = Array.isArray(rows) ? rows : [];
-      state.total = Number(list[0]?.total_count || state.total || 0);
+      query = applyBaseQuery(query, true);
+
+      const from = state.offset;
+      const to = state.offset + PAGE_SIZE - 1;
+
+      const { data, error, count } = await query
+        .order('updated_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const list = Array.isArray(data) ? data : [];
+      state.total = Number(count || state.total || list.length);
       renderCards(list, !reset);
       state.offset += list.length;
 
@@ -465,10 +621,11 @@
 
       status(`${formatNumber(state.total)} talentos disponíveis para os filtros atuais. Exibindo ${formatNumber(Math.min(state.offset, state.total))}.`);
     } catch (err) {
-      console.error(err);
+      console.error('[NT] search error:', err);
       const msg = friendlyError(err);
       status(msg);
-      $('#cardsGrid').innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
+      const grid = $('#cardsGrid');
+      if (grid) grid.innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
     } finally {
       state.loading = false;
       if (btn) btn.textContent = 'Buscar';
@@ -477,6 +634,7 @@
 
   async function consumirTalento(key, button) {
     if (!key) return;
+
     if (!state.session) {
       setLoginMessage('Entre com seu acesso contratado para liberar telefone, e-mail e mensagem de abordagem.', '');
       openLoginModal();
@@ -484,16 +642,19 @@
     }
 
     const original = button?.textContent;
+
     if (button) {
       button.disabled = true;
       button.textContent = 'Liberando...';
     }
 
     try {
-      const rows = await rpc('nt_consumir_talento', { p_talento_key: key }, true);
-      const talent = rows?.[0];
+      const client = getClient();
+      const { data, error } = await client.rpc('nt_consumir_talento', { p_talento_key: key });
+      if (error) throw error;
 
-      if (!talent) throw new Error('Contato não encontrado.');
+      const talent = Array.isArray(data) ? data[0] : data;
+      if (!talent) throw new Error('Contato não localizado.');
 
       state.currentTalent = talent;
       await loadContext();
@@ -554,7 +715,6 @@
 
     select.value = '0';
     updateMensagem(talent);
-
     select.onchange = () => updateMensagem(talent);
   }
 
@@ -588,6 +748,7 @@
 
     const phone = onlyDigits(talent.whatsapp || talent.telefone_principal);
     const link = $('#abrirWhatsappBtn');
+
     if (link) {
       if (phone.length >= 10) {
         link.href = `https://wa.me/55${phone.replace(/^55/, '')}?text=${encodeURIComponent(msg)}`;
@@ -605,11 +766,11 @@
 
     try {
       await navigator.clipboard.writeText(text);
-      alert('Mensagem copiada.');
+      alert('Abordagem copiada.');
     } catch (_) {
       $('#mensagemTextarea')?.select();
       document.execCommand('copy');
-      alert('Mensagem copiada.');
+      alert('Abordagem copiada.');
     }
   }
 
@@ -645,13 +806,12 @@
       state.session = data.session;
       await loadContext();
       await loadFrases();
-      await loadAllFilterOptions();
 
       closeLoginModal();
       setLoginMessage('', '');
       await search(true);
     } catch (err) {
-      console.error(err);
+      console.error('[NT] login error:', err);
       const raw = String(err && err.message ? err.message : err);
       const msg = raw.toLowerCase().includes('invalid login credentials')
         ? 'E-mail ou senha não conferem. Solicite ao administrador a redefinição do acesso.'
@@ -677,48 +837,52 @@
     updateHeader();
     updateSummary();
     showWorkspace(true);
-
-    await loadAllFilterOptions();
     await search(true);
   }
 
   async function restoreSession() {
     const client = getClient();
+
     if (!client) {
-      showWorkspace(true);
-      status('Não foi possível carregar a configuração da plataforma. Atualize a página ou fale com o suporte.');
-      return;
-    }
-
-    const { data } = await client.auth.getSession();
-    state.session = data.session || null;
-
-    if (!state.session) {
       showWorkspace(true);
       updateHeader();
       updateSummary();
-
-      try {
-        await loadAllFilterOptions();
-        await search(true);
-      } catch (err) {
-        console.warn('[NT] Falha ao carregar prévia pública:', err);
-        const msg = friendlyError(err);
-        status(msg);
-        const grid = $('#cardsGrid');
-        if (grid) grid.innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
-      }
+      status('Não foi possível carregar a configuração da plataforma.');
       return;
     }
 
     try {
-      await loadContext();
-      await loadFrases();
-      await loadAllFilterOptions();
+      const { data } = await client.auth.getSession();
+      state.session = data.session || null;
+
+      showWorkspace(true);
+      updateHeader();
+      updateSummary();
+
+      await loadCities();
+      await loadDependentFilters();
+
+      if (state.session) {
+        try {
+          await loadContext();
+          await loadFrases();
+        } catch (err) {
+          console.warn('[NT] Sessão sem contexto válido:', err);
+          await client.auth.signOut();
+          state.session = null;
+          state.context = null;
+          updateHeader();
+          updateSummary();
+        }
+      }
+
       await search(true);
     } catch (err) {
-      console.warn(err);
-      await logout();
+      console.error('[NT] restore error:', err);
+      const msg = friendlyError(err);
+      status(msg);
+      const grid = $('#cardsGrid');
+      if (grid) grid.innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
     }
   }
 
@@ -739,14 +903,28 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     });
 
-    ['cidadeSelect', 'regiaoSelect', 'microSelect', 'bairroSelect'].forEach((id) => {
-      $('#' + id)?.addEventListener('change', async () => {
-        await refreshDependentOptions();
-        await search(true);
-      });
+    $('#cidadeSelect')?.addEventListener('change', async () => {
+      $('#regiaoSelect').value = '';
+      $('#microSelect').value = '';
+      $('#bairroSelect').value = '';
+      await loadDependentFilters();
+      await search(true);
     });
 
-    ['idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
+    $('#regiaoSelect')?.addEventListener('change', async () => {
+      $('#microSelect').value = '';
+      $('#bairroSelect').value = '';
+      await loadDependentFilters();
+      await search(true);
+    });
+
+    $('#microSelect')?.addEventListener('change', async () => {
+      $('#bairroSelect').value = '';
+      await loadDependentFilters();
+      await search(true);
+    });
+
+    ['bairroSelect', 'idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
       $('#' + id)?.addEventListener('change', () => search(true));
     });
 
@@ -764,8 +942,9 @@
       });
       const termo = $('#termoInput');
       if (termo) termo.value = '';
+
       collectFilters();
-      await loadAllFilterOptions();
+      await loadDependentFilters();
       await search(true);
     });
 
@@ -784,7 +963,6 @@
     setupEvents();
     updateHeader();
     updateSummary();
-
     await restoreSession();
   });
 })();

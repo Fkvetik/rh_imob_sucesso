@@ -1,6 +1,6 @@
 // RH IMOB • Plataforma Novos Talentos
 // Configuração pública específica da base Novos Talentos.
-// Não usar service_role aqui.
+// Não usar service_role neste arquivo.
 
 window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG = {
   enabled: true,
