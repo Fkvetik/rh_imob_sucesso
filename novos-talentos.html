@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plataforma Novos Talentos | RH IMOB</title>
+  <meta name="description" content="Área operacional RH IMOB para consulta controlada de novos talentos comerciais, filtros inteligentes, saldo por plano e abordagem profissional." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#2b124d" />
+  <link rel="icon" href="/favicon.ico?v=20260507nt" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260507nt" type="image/svg+xml" />
+  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt1" />
+</head>
+<body>
+  <header class="nt-topbar">
+    <div class="nt-container nt-topbar__inner">
+      <a class="nt-brand" href="/" aria-label="RH IMOB - início">
+        <img src="/assets/rhimob-mark.svg?v=20260507nt" alt="" />
+        <span>
+          <strong>RH IMOB</strong>
+          <small>Plataforma Novos Talentos</small>
+        </span>
+      </a>
+
+      <nav class="nt-nav" aria-label="Navegação">
+        <a href="/">Início</a>
+        <a href="/corretores.html">Plataforma Corretores</a>
+        <a href="/#contato">Contato</a>
+      </nav>
+
+      <div class="nt-session" id="sessionBox" hidden>
+        <span id="sessionName">Sessão ativa</span>
+        <button type="button" class="nt-link-btn" id="logoutBtn">Sair</button>
+      </div>
+
+      <button class="nt-btn nt-btn-secondary" type="button" id="openLoginBtn">Entrar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="nt-hero">
+      <div class="nt-container nt-hero__grid">
+        <div>
+          <span class="nt-kicker">Área operacional</span>
+          <h1>Novos talentos comerciais com filtros inteligentes e acesso controlado.</h1>
+          <p>Consulte profissionais por cidade, idade, perfil, região e proximidade de metrô. Os dados sensíveis só aparecem quando o contato é liberado dentro do saldo do plano.</p>
+
+          <div class="nt-hero__actions">
+            <button class="nt-btn nt-btn-primary" type="button" id="heroLoginBtn">Entrar na plataforma</button>
+            <a class="nt-btn nt-btn-light" href="#consulta">Ver consulta</a>
+          </div>
+
+          <div class="nt-trust">
+            <span>Saldo por plano</span>
+            <span>Consumo por conta</span>
+            <span>Frases de abordagem</span>
+            <span>Sem misturar com Corretores</span>
+          </div>
+        </div>
+
+        <aside class="nt-panel nt-summary">
+          <div class="nt-panel__head">
+            <div>
+              <strong id="summaryConta">Acesso contratado</strong>
+              <small id="summaryPlano">Entre para carregar seu plano</small>
+            </div>
+            <span class="nt-status" id="summaryStatus">Protegido</span>
+          </div>
+
+          <div class="nt-metrics">
+            <div><strong id="metricSaldo">-</strong><span>saldo</span></div>
+            <div><strong id="metricUsados">-</strong><span>liberados</span></div>
+            <div><strong id="metricLimite">-</strong><span>limite</span></div>
+          </div>
+
+          <p id="summaryText">Nenhum telefone ou e-mail é exibido antes do login e da liberação do contato.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="nt-section" id="consulta">
+      <div class="nt-container">
+        <div class="nt-section-head">
+          <span class="nt-kicker">Consulta</span>
+          <h2>Filtre talentos disponíveis para a sua operação.</h2>
+          <p>O lead liberado some apenas para os operadores do mesmo plano. Para outros planos, ele continua disponível.</p>
+        </div>
+
+        <div class="nt-login-warning" id="loginWarning">
+          <strong>Entre para consultar a base.</strong>
+          <span>Use o login cadastrado para sua conta. A plataforma carrega filtros e resultados após autenticação.</span>
+          <button class="nt-btn nt-btn-primary" type="button" id="warningLoginBtn">Entrar agora</button>
+        </div>
+
+        <div class="nt-workspace" id="workspace" hidden>
+          <div class="nt-filters">
+            <label>Cidade
+              <select id="cidadeSelect"><option value="">Todas as cidades</option></select>
+            </label>
+            <label>Faixa de idade
+              <select id="idadeSelect"><option value="">Todas as idades</option></select>
+            </label>
+            <label>Perfil / cargo
+              <select id="cargoSelect"><option value="">Todos os perfis</option></select>
+            </label>
+            <label>Metrô próximo
+              <select id="metroSelect"><option value="">Todas as estações</option></select>
+            </label>
+            <label>Buscar termo
+              <input id="termoInput" type="search" placeholder="bairro, cargo, região..." />
+            </label>
+            <button class="nt-btn nt-btn-primary" type="button" id="buscarBtn">Buscar</button>
+            <button class="nt-btn nt-btn-secondary" type="button" id="limparBtn">Limpar</button>
+          </div>
+
+          <div class="nt-status-row">
+            <div id="resultadoStatus">Carregando...</div>
+            <div id="saldoStatus">Saldo do plano: -</div>
+          </div>
+
+          <div class="nt-cards" id="cardsGrid" aria-live="polite"></div>
+
+          <div class="nt-load-more">
+            <button class="nt-btn nt-btn-secondary" type="button" id="maisBtn" hidden>Carregar mais</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="nt-modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="nt-modal__backdrop" data-close-login></div>
+    <div class="nt-modal__panel" role="document">
+      <button class="nt-modal__close" type="button" data-close-login aria-label="Fechar">×</button>
+      <span class="nt-kicker">Acesso contratado</span>
+      <h2 id="loginTitle">Entrar na Plataforma Novos Talentos</h2>
+      <p>Use o e-mail e a senha cadastrados para sua conta. Nenhum dado sensível é exibido sem login ativo.</p>
+
+      <form id="loginForm" class="nt-form">
+        <label>E-mail
+          <input type="email" id="loginEmail" autocomplete="email" placeholder="email@empresa.com.br" required />
+        </label>
+        <label>Senha
+          <div class="nt-password">
+            <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Digite sua senha" required />
+            <button type="button" id="togglePassword" aria-label="Mostrar senha">👁</button>
+          </div>
+        </label>
+        <button class="nt-btn nt-btn-primary nt-btn-full" type="submit" id="loginSubmitBtn">Entrar</button>
+        <div class="nt-form-message" id="loginMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="nt-modal" id="talentoModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="talentoTitle">
+    <div class="nt-modal__backdrop" data-close-talento></div>
+    <div class="nt-modal__panel nt-modal__panel--large" role="document">
+      <button class="nt-modal__close" type="button" data-close-talento aria-label="Fechar">×</button>
+      <span class="nt-kicker">Contato liberado</span>
+      <h2 id="talentoTitle">Detalhes do talento</h2>
+      <p id="talentoSubtitle">Contato liberado para sua conta.</p>
+
+      <div class="nt-detail-grid" id="talentoDetalhes"></div>
+
+      <div class="nt-message-box">
+        <div class="nt-message-head">
+          <div>
+            <h3>Mensagem de abordagem</h3>
+            <p>Texto sugerido com placeholders preenchidos. Revise antes de enviar.</p>
+          </div>
+          <select id="fraseSelect" aria-label="Selecionar frase"></select>
+        </div>
+        <textarea id="mensagemTextarea" rows="5"></textarea>
+        <div class="nt-message-actions">
+          <button class="nt-btn nt-btn-secondary" type="button" id="copiarMensagemBtn">Copiar mensagem</button>
+          <a class="nt-btn nt-btn-primary" id="abrirWhatsappBtn" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="nt-footer">
+    <div class="nt-container nt-footer__inner">
+      <span>© <span id="year"></span> RH IMOB • Plataforma Novos Talentos</span>
+      <a href="/">Voltar ao site</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20260507nt"></script>
+  <script src="novos-talentos.js?v=20260507nt1"></script>
+</body>
+</html>
