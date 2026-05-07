@@ -1,9 +1,8 @@
 (() => {
   'use strict';
 
-  // RH IMOB • Novos Talentos v6
-  // Correção: Supabase separado, prévia pública direta nas tabelas mascaradas,
-  // filtros completos e mensagens comerciais sem texto técnico.
+  // RH IMOB • Novos Talentos v8
+  // Filtros com contagem precisa no banco, sem amostra no navegador.
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
@@ -20,9 +19,7 @@
   };
 
   const PRODUCT_CODE = 'NOVOS_TALENTOS';
-  const CONFIG_CHECK_V7_SUPABASE_CORRETO = true;
   const PAGE_SIZE = 24;
-  const FILTER_SAMPLE_LIMIT = 6000;
 
   let sb = null;
 
@@ -56,10 +53,6 @@
     return String(value || '').replace(/\s+/g, ' ').trim();
   }
 
-  function lower(value) {
-    return normalize(value).toLowerCase();
-  }
-
   function esc(value) {
     return String(value || '')
       .replace(/&/g, '&amp;')
@@ -90,6 +83,10 @@
 
   function friendlyError(error) {
     const raw = String(error && error.message ? error.message : error || '');
+
+    if (raw.includes('nt_opcoes_publicas_v8') || raw.includes('nt_listar_talentos_publico_v8')) {
+      return 'A leitura dos filtros ainda não foi ativada neste ambiente. Aguarde a publicação da atualização e recarregue a página.';
+    }
 
     if (
       raw.includes('Could not find the table') ||
@@ -141,24 +138,6 @@
     if (h < 12) return 'Bom dia';
     if (h < 18) return 'Boa tarde';
     return 'Boa noite';
-  }
-
-  function inferMacro(row) {
-    const bairro = lower(row?.bairro);
-    const regiao = normalize(row?.regiao_macro);
-    if (regiao) return regiao;
-
-    if (bairro.includes('zona sul') || bairro.includes('(zona sul)')) return 'Zona Sul';
-    if (bairro.includes('zona norte') || bairro.includes('(zona norte)')) return 'Zona Norte';
-    if (bairro.includes('zona leste') || bairro.includes('(zona leste)')) return 'Zona Leste';
-    if (bairro.includes('zona oeste') || bairro.includes('(zona oeste)')) return 'Zona Oeste';
-    if (bairro.includes('centro') || bairro.includes('sé') || bairro.includes('republica') || bairro.includes('república')) return 'Centro';
-
-    return '';
-  }
-
-  function inferMicro(row) {
-    return normalize(row?.micro_regiao) || normalize(row?.estacao_mais_proxima) || '';
   }
 
   function openLoginModal() {
@@ -242,6 +221,15 @@
     setText('metricLimite', formatNumber(ctx.limite_total));
     setText('summaryText', 'A liberação de contato consome saldo apenas da sua conta.');
     setText('saldoStatus', `Saldo do plano: ${formatNumber(ctx.saldo)} disponíveis • ${formatNumber(ctx.consumidos)} liberados`);
+  }
+
+  async function rpcPublic(fn, payload = {}) {
+    const client = getClient();
+    if (!client) throw new Error('Configuração da plataforma indisponível.');
+
+    const { data, error } = await client.rpc(fn, payload);
+    if (error) throw error;
+    return data || [];
   }
 
   async function loadContext() {
@@ -342,26 +330,18 @@
     select.appendChild(option(placeholder, ''));
   }
 
-  function addCounter(map, value, label) {
-    const v = normalize(value);
-    if (!v) return;
-    const current = map.get(v) || { valor: v, label: label || v, total: 0 };
-    current.total += 1;
-    if (label) current.label = label;
-    map.set(v, current);
-  }
-
-  function fillFromMap(select, map, placeholder) {
+  function fillOptions(select, rows, tipo, placeholder, selectedValue = '') {
     resetSelect(select, placeholder);
-    const rows = Array.from(map.values())
-      .sort((a, b) => {
-        if (b.total !== a.total) return b.total - a.total;
-        return String(a.label).localeCompare(String(b.label), 'pt-BR');
+
+    (rows || [])
+      .filter((row) => row.tipo === tipo && normalize(row.valor))
+      .forEach((row) => {
+        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
       });
 
-    rows.forEach((row) => {
-      select.appendChild(option(row.label, row.valor, formatNumber(row.total)));
-    });
+    if (selectedValue && [...select.options].some((o) => o.value === selectedValue)) {
+      select.value = selectedValue;
+    }
   }
 
   function collectFilters() {
@@ -380,66 +360,11 @@
     };
   }
 
-  function applyBaseQuery(query, includeMacro = true) {
-    query = query
-      .eq('produto_codigo', PRODUCT_CODE)
-      .eq('ativo', true);
-
-    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
-    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
-    if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
-    if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
-    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
-    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao);
-
-    if (includeMacro && state.filters.regiao_macro) {
-      const macro = state.filters.regiao_macro.replace(/[,()]/g, ' ');
-      query = query.or(`regiao_macro.eq.${macro},bairro.ilike.%${macro}%`);
-    }
-
-    if (state.filters.micro_regiao) {
-      const micro = state.filters.micro_regiao.replace(/[,()]/g, ' ');
-      query = query.or(`micro_regiao.eq.${micro},estacao_mais_proxima.eq.${micro},bairro.ilike.%${micro}%`);
-    }
-
-    if (state.filters.termo) {
-      const term = state.filters.termo.replace(/[,%]/g, ' ');
-      query = query.or(`nome_mascarado.ilike.%${term}%,cargo.ilike.%${term}%,bairro.ilike.%${term}%,cidade.ilike.%${term}%,tags_publicas.ilike.%${term}%`);
-    }
-
-    return query;
-  }
-
-  async function loadCities() {
-    const client = getClient();
-    if (!client) throw new Error('Configuração da plataforma indisponível.');
-
-    const select = $('#cidadeSelect');
-    resetSelect(select, 'Todas as cidades');
-
-    const { data, error } = await client
-      .from('nt_filtro_cidade')
-      .select('cidade,estado_uf,total')
-      .order('total', { ascending: false })
-      .limit(800);
-
-    if (error) throw error;
-
-    (data || []).forEach((row) => {
-      const cidade = normalize(row.cidade);
-      const uf = normalize(row.estado_uf);
-      if (!cidade || !uf) return;
-      select.appendChild(option(`${cidade}/${uf}`, `${cidade}||${uf}`, formatNumber(row.total)));
-    });
-  }
-
-  async function loadDependentFilters() {
-    const client = getClient();
-    if (!client) throw new Error('Configuração da plataforma indisponível.');
-
+  async function loadAllOptions(preserve = true) {
     collectFilters();
 
     const current = {
+      cidade: $('#cidadeSelect')?.value || '',
       regiao: $('#regiaoSelect')?.value || '',
       micro: $('#microSelect')?.value || '',
       bairro: $('#bairroSelect')?.value || '',
@@ -448,66 +373,25 @@
       metro: $('#metroSelect')?.value || ''
     };
 
-    let query = client
-      .from('nt_talentos_publicos')
-      .select('cidade,estado_uf,bairro,regiao_macro,micro_regiao,faixa_idade,cargo,estacao_mais_proxima,linha_metro_mais_proxima,ativo')
-      .eq('produto_codigo', PRODUCT_CODE)
-      .eq('ativo', true)
-      .limit(FILTER_SAMPLE_LIMIT);
-
-    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
-    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
-    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
-
-    const { data, error } = await query;
-    if (error) throw error;
-
-    const maps = {
-      regiao: new Map(),
-      micro: new Map(),
-      bairro: new Map(),
-      idade: new Map(),
-      cargo: new Map(),
-      metro: new Map()
-    };
-
-    (data || []).forEach((row) => {
-      const macro = inferMacro(row);
-      const micro = inferMicro(row);
-
-      if (state.filters.regiao_macro && macro !== state.filters.regiao_macro) return;
-      if (state.filters.micro_regiao && micro !== state.filters.micro_regiao) return;
-
-      addCounter(maps.regiao, macro);
-      addCounter(maps.micro, micro);
-      addCounter(maps.bairro, row.bairro);
-      addCounter(maps.idade, row.faixa_idade);
-      addCounter(maps.cargo, row.cargo);
-
-      if (normalize(row.estacao_mais_proxima)) {
-        const label = normalize(row.linha_metro_mais_proxima)
-          ? `${normalize(row.estacao_mais_proxima)} • ${normalize(row.linha_metro_mais_proxima)}`
-          : normalize(row.estacao_mais_proxima);
-        addCounter(maps.metro, row.estacao_mais_proxima, label);
-      }
+    const rows = await rpcPublic('nt_opcoes_publicas_v8', {
+      p_cidade: state.filters.cidade || null,
+      p_estado_uf: state.filters.estado_uf || null,
+      p_regiao_macro: state.filters.regiao_macro || null,
+      p_micro_regiao: state.filters.micro_regiao || null,
+      p_bairro: state.filters.bairro || null,
+      p_faixa_idade: state.filters.faixa_idade || null,
+      p_cargo: state.filters.cargo || null,
+      p_estacao: state.filters.estacao || null,
+      p_termo: state.filters.termo || null
     });
 
-    const configs = [
-      ['regiaoSelect', maps.regiao, 'Todas as regiões', current.regiao],
-      ['microSelect', maps.micro, 'Todas as micro regiões', current.micro],
-      ['bairroSelect', maps.bairro, 'Todos os bairros', current.bairro],
-      ['idadeSelect', maps.idade, 'Todas as idades', current.idade],
-      ['cargoSelect', maps.cargo, 'Todos os perfis', current.cargo],
-      ['metroSelect', maps.metro, 'Todas as estações', current.metro]
-    ];
-
-    configs.forEach(([id, map, placeholder, oldValue]) => {
-      const select = $('#' + id);
-      fillFromMap(select, map, placeholder);
-      if (oldValue && [...select.options].some((o) => o.value === oldValue)) {
-        select.value = oldValue;
-      }
-    });
+    fillOptions($('#cidadeSelect'), rows, 'cidade', 'Todas as cidades', preserve ? current.cidade : '');
+    fillOptions($('#regiaoSelect'), rows, 'regiao_macro', 'Todas as regiões', preserve ? current.regiao : '');
+    fillOptions($('#microSelect'), rows, 'micro_regiao', 'Todas as micro regiões', preserve ? current.micro : '');
+    fillOptions($('#bairroSelect'), rows, 'bairro', 'Todos os bairros', preserve ? current.bairro : '');
+    fillOptions($('#idadeSelect'), rows, 'faixa_idade', 'Todas as idades', preserve ? current.idade : '');
+    fillOptions($('#cargoSelect'), rows, 'cargo', 'Todos os perfis', preserve ? current.cargo : '');
+    fillOptions($('#metroSelect'), rows, 'metro', 'Todas as estações', preserve ? current.metro : '');
   }
 
   function status(message) {
@@ -527,8 +411,8 @@
     }
 
     const html = rows.map((row) => {
-      const macro = inferMacro(row);
-      const micro = inferMicro(row);
+      const macro = normalize(row.macro_calc || row.regiao_macro);
+      const micro = normalize(row.micro_calc || row.micro_regiao || row.estacao_mais_proxima);
 
       const metro = row.estacao_mais_proxima
         ? `${esc(row.estacao_mais_proxima)}${row.linha_metro_mais_proxima ? ` • ${esc(row.linha_metro_mais_proxima)}` : ''}`
@@ -576,12 +460,6 @@
   async function search(reset = true) {
     if (state.loading) return;
 
-    const client = getClient();
-    if (!client) {
-      status('Não foi possível carregar a configuração da plataforma.');
-      return;
-    }
-
     state.loading = true;
     collectFilters();
 
@@ -597,23 +475,22 @@
     status('Consultando talentos disponíveis...');
 
     try {
-      let query = client
-        .from('nt_talentos_publicos')
-        .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,tags_publicas,ativo,updated_at', { count: 'exact' });
+      const rows = await rpcPublic('nt_listar_talentos_publico_v8', {
+        p_cidade: state.filters.cidade || null,
+        p_estado_uf: state.filters.estado_uf || null,
+        p_regiao_macro: state.filters.regiao_macro || null,
+        p_micro_regiao: state.filters.micro_regiao || null,
+        p_bairro: state.filters.bairro || null,
+        p_faixa_idade: state.filters.faixa_idade || null,
+        p_cargo: state.filters.cargo || null,
+        p_estacao: state.filters.estacao || null,
+        p_termo: state.filters.termo || null,
+        p_limit: PAGE_SIZE,
+        p_offset: state.offset
+      });
 
-      query = applyBaseQuery(query, true);
-
-      const from = state.offset;
-      const to = state.offset + PAGE_SIZE - 1;
-
-      const { data, error, count } = await query
-        .order('updated_at', { ascending: false })
-        .range(from, to);
-
-      if (error) throw error;
-
-      const list = Array.isArray(data) ? data : [];
-      state.total = Number(count || state.total || list.length);
+      const list = Array.isArray(rows) ? rows : [];
+      state.total = Number(list[0]?.total_count || state.total || list.length);
       renderCards(list, !reset);
       state.offset += list.length;
 
@@ -860,8 +737,7 @@
       updateHeader();
       updateSummary();
 
-      await loadCities();
-      await loadDependentFilters();
+      await loadAllOptions(false);
 
       if (state.session) {
         try {
@@ -908,32 +784,42 @@
       $('#regiaoSelect').value = '';
       $('#microSelect').value = '';
       $('#bairroSelect').value = '';
-      await loadDependentFilters();
+      await loadAllOptions(true);
       await search(true);
     });
 
     $('#regiaoSelect')?.addEventListener('change', async () => {
       $('#microSelect').value = '';
       $('#bairroSelect').value = '';
-      await loadDependentFilters();
+      await loadAllOptions(true);
       await search(true);
     });
 
     $('#microSelect')?.addEventListener('change', async () => {
       $('#bairroSelect').value = '';
-      await loadDependentFilters();
+      await loadAllOptions(true);
       await search(true);
     });
 
     ['bairroSelect', 'idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
-      $('#' + id)?.addEventListener('change', () => search(true));
+      $('#' + id)?.addEventListener('change', async () => {
+        await loadAllOptions(true);
+        await search(true);
+      });
     });
 
-    $('#termoInput')?.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') search(true);
+    $('#termoInput')?.addEventListener('keydown', async (event) => {
+      if (event.key === 'Enter') {
+        await loadAllOptions(true);
+        await search(true);
+      }
     });
 
-    $('#buscarBtn')?.addEventListener('click', () => search(true));
+    $('#buscarBtn')?.addEventListener('click', async () => {
+      await loadAllOptions(true);
+      await search(true);
+    });
+
     $('#maisBtn')?.addEventListener('click', () => search(false));
 
     $('#limparBtn')?.addEventListener('click', async () => {
@@ -945,7 +831,7 @@
       if (termo) termo.value = '';
 
       collectFilters();
-      await loadDependentFilters();
+      await loadAllOptions(false);
       await search(true);
     });
 
