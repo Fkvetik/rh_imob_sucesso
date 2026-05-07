@@ -39,3 +39,42 @@ body.modal-open{overflow:hidden}.auth-mini{display:inline-flex;align-items:cente
 .admin-recent{margin-top:0}
 @media(max-width:980px){.admin-head,.admin-grid{grid-template-columns:1fr}.admin-cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.admin-section{padding:52px 0}.admin-cards{grid-template-columns:1fr}.admin-head .btn{width:100%}.admin-table{min-width:640px}}
+
+/* RH IMOB - Ajuste operacional final: operadores, limite e mensagens */
+.admin-messages{margin-top:18px}
+.phrase-editor{padding:18px;border-top:1px solid var(--line);display:grid;gap:14px;background:linear-gradient(180deg,#fff,var(--p50))}
+.phrase-editor textarea{width:100%;border:1px solid rgba(43,18,77,.14);border-radius:16px;padding:12px;resize:vertical;outline:none;color:var(--ink);background:#fff}
+.phrase-editor textarea:focus{border-color:rgba(109,45,242,.5);box-shadow:0 0 0 4px rgba(109,45,242,.09)}
+.phrase-editor-grid{display:grid;grid-template-columns:160px 140px 160px auto auto;gap:12px;align-items:end}
+.check-label{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 10px;border:1px solid rgba(43,18,77,.10);background:#fff;border-radius:15px}
+.check-label input{width:auto;min-height:auto}
+.phrase-help{margin:0;color:var(--muted);font-size:13px;font-weight:750}
+.phrase-table{min-width:860px}
+.phrase-table td:nth-child(2){max-width:520px;white-space:normal;line-height:1.35}
+.mini-action{border:1px solid var(--line);background:#fff;color:var(--p700);border-radius:999px;min-height:32px;padding:0 10px;font-size:12px;font-weight:950;cursor:pointer;white-space:nowrap;box-shadow:0 6px 16px rgba(43,18,77,.05)}
+.mini-action:hover{background:var(--p50)}
+.mini-action[disabled]{opacity:.45;cursor:not-allowed}
+.nowrap{white-space:nowrap}
+.plan-warning{padding:12px 14px;border-radius:18px;border:1px solid var(--line);margin-bottom:14px;font-weight:900;background:#f8f4ff;color:var(--p900)}
+.plan-warning.warn{background:#fff4e8;color:#91510a}.plan-warning.error{background:#fff0f0;color:#a42222}.plan-warning.success{background:rgba(31,185,120,.10);color:#0d8755}
+@media(max-width:980px){.phrase-editor-grid{grid-template-columns:1fr 1fr}.phrase-editor-grid .btn{width:100%}}
+@media(max-width:640px){.phrase-editor-grid{grid-template-columns:1fr}.admin-box-head{align-items:flex-start;flex-direction:column}.admin-box-head .btn{width:100%}}
+
+
+/* RH IMOB - Aviso geral de plano após abertura de contato */
+.plan-warning-box{
+  max-width:1180px;
+  margin:14px auto 18px;
+  padding:14px 18px;
+  border-radius:18px;
+  border:1px solid rgba(109,45,242,.16);
+  background:#f8f4ff;
+  color:var(--p900);
+  font-weight:900;
+  box-shadow:0 10px 28px rgba(43,18,77,.08)
+}
+.plan-warning-box.info{background:#f8f4ff;color:var(--p900)}
+.plan-warning-box.success{background:rgba(31,185,120,.10);color:#0d8755;border-color:rgba(31,185,120,.18)}
+.plan-warning-box.warn{background:#fff4e8;color:#91510a;border-color:rgba(255,122,26,.28)}
+.plan-warning-box.error{background:#fff0f0;color:#a42222;border-color:rgba(164,34,34,.18)}
+.plan-warning-box[hidden]{display:none}

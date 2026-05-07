@@ -14,12 +14,11 @@
     cargo: '',
     term: '',
     offset: 0,
-    page: 1,
     loading: false,
     session: null,
     profile: null,
-    frases: [],
-    adminLoaded: false
+    frases: DEFAULT_FRASES.slice(),
+    currentPhraseId: null
   };
 
   let sb = null;
@@ -72,15 +71,14 @@
     if (!cfg.enabled || !cfg.url || !cfg.publishableKey) {
       throw new Error('Configuração pública do Supabase não encontrada.');
     }
-    const token = authTokenOrPublic();
     const res = await fetch(restUrl(path, params), {
       headers: {
         apikey: cfg.publishableKey,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${authTokenOrPublic()}`,
         Accept: 'application/json'
       }
     });
-    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}: ${(await res.text()).slice(0, 260)}`);
+    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}: ${(await res.text()).slice(0, 400)}`);
     return res.json();
   }
 
@@ -100,7 +98,15 @@
       },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error(`Supabase RPC ${res.status}: ${(await res.text()).slice(0, 400)}`);
+    if (!res.ok) {
+      const raw = await res.text();
+      let detail = raw;
+      try {
+        const parsed = JSON.parse(raw);
+        detail = parsed.message || parsed.details || raw;
+      } catch (_) {}
+      throw new Error(`Supabase RPC ${res.status}: ${detail.slice(0, 700)}`);
+    }
     return res.json();
   }
 
@@ -123,6 +129,43 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  function setText(id, value) {
+    const el = $('#' + id);
+    if (el) el.textContent = value == null || value === '' ? '-' : String(value);
+  }
+
+  function firstName(value) {
+    const base = String(value || '').split('@')[0].replace(/[._-]+/g, ' ');
+    return normalize(base).split(' ')[0] || 'Profissional';
+  }
+
+  function isAdminProfile() {
+    const perfil = String(state.profile?.perfil || '').toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'MASTER';
+  }
+
+  function formatDateBR(value) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString('pt-BR');
+  }
+
+  function formatDateTimeBR(value) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function statusTypeFromSaldo(saldo) {
+    const n = Number(saldo || 0);
+    if (n <= 10) return 'error';
+    if (n <= 30) return 'warn';
+    if (n <= 50) return 'info';
+    return 'success';
   }
 
   function openLoginModal() {
@@ -162,69 +205,31 @@
     el.className = `form-message ${type}`.trim();
   }
 
-  function firstName(nameOrEmail) {
-    const base = String(nameOrEmail || '').split('@')[0].replace(/[._-]+/g, ' ');
-    return normalize(base).split(' ')[0] || 'Operador';
-  }
-
-  function isAdminProfile() {
-    const perfil = String(state.profile?.perfil || '').toUpperCase();
-    return perfil === 'ADMIN' || perfil === 'MASTER';
-  }
-
-  function formatDateBR(value) {
-    if (!value) return '-';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleDateString('pt-BR');
-  }
-
-  function formatDateTimeBR(value) {
-    if (!value) return '-';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  }
-
-  function sameLocalDay(a, b = new Date()) {
-    const d = new Date(a);
-    if (Number.isNaN(d.getTime())) return false;
-    return d.getFullYear() === b.getFullYear() && d.getMonth() === b.getMonth() && d.getDate() === b.getDate();
-  }
-
-  function postgrestInList(values) {
-    const clean = Array.from(new Set((values || []).map((v) => String(v || '').trim()).filter(Boolean)));
-    if (!clean.length) return '';
-    return 'in.(' + clean.map((v) => '"' + v.replace(/"/g, '\"') + '"').join(',') + ')';
-  }
-
   async function loadUserProfile() {
     state.profile = null;
     const userId = state.session?.user?.id;
     if (!userId) return null;
-    try {
-      const rows = await api('usuarios_conta', {
-        select: 'id,conta_id,nome,email,perfil,status,telefone',
-        auth_user_id: `eq.${userId}`,
-        limit: 1
-      });
-      state.profile = rows?.[0] || null;
-    } catch (e) {
-      console.warn('Não foi possível carregar usuarios_conta:', e);
-    }
-    return state.profile;
+    const rows = await api('usuarios_conta', {
+      select: 'id,conta_id,nome,email,perfil,status,telefone',
+      auth_user_id: `eq.${userId}`,
+      limit: 1
+    });
+    const profile = rows?.[0] || null;
+    if (!profile || String(profile.status || '').toUpperCase() !== 'ATIVO') return null;
+    state.profile = profile;
+    return profile;
   }
 
   async function loadFrases() {
     state.frases = DEFAULT_FRASES.slice();
     if (!state.session) return state.frases;
     try {
-      const rows = await api('frases_abordagem', {
-        select: 'texto,prioridade,status',
-        status: 'eq.ATIVA',
-        order: 'prioridade.asc'
-      });
-      const list = (rows || []).map((r) => normalize(r.texto)).filter(Boolean);
+      const rows = await rpc('rhi_listar_frases_abordagem', {});
+      const list = (rows || [])
+        .filter((r) => String(r.status || '').toUpperCase() === 'ATIVA')
+        .sort((a, b) => Number(a.prioridade || 0) - Number(b.prioridade || 0))
+        .map((r) => normalize(r.texto))
+        .filter(Boolean);
       if (list.length) state.frases = list;
     } catch (e) {
       console.warn('Usando frases fallback:', e);
@@ -233,7 +238,7 @@
   }
 
   function updateAuthUI() {
-    const logged = !!state.session;
+    const logged = !!state.session && !!state.profile;
     document.body.classList.toggle('is-logged', logged);
 
     const loginTop = $('#loginTopBtn');
@@ -241,24 +246,45 @@
     const authMini = $('#authMini');
     const authMiniName = $('#authMiniName');
     const authStatus = $('#authStatusText');
+    const adminPanel = $('#adminPanel');
 
     if (loginTop) loginTop.hidden = logged;
-    if (heroLogin) heroLogin.textContent = logged ? 'Sessão ativa' : 'Entrar com login e senha';
-    if (heroLogin) heroLogin.disabled = logged;
+    if (heroLogin) {
+      heroLogin.textContent = logged ? 'Sessão ativa' : 'Entrar com login e senha';
+      heroLogin.disabled = logged;
+    }
     if (authMini) authMini.hidden = !logged;
-
-    const displayName = state.profile?.nome || state.session?.user?.email || 'Sessão ativa';
-    if (authMiniName) authMiniName.textContent = logged ? displayName : '';
+    if (authMiniName) authMiniName.textContent = logged ? (state.profile?.nome || state.session?.user?.email || 'Sessão ativa') : '';
     if (authStatus) {
       authStatus.textContent = logged
         ? 'Login ativo. Ao abrir contato, o lead será consumido apenas para este plano.'
         : 'Dados mascarados. Entre para liberar contatos completos.';
     }
+    if (adminPanel) adminPanel.hidden = !(logged && isAdminProfile());
+  }
 
-    const adminPanel = $('#adminPanel');
-    if (adminPanel) {
-      adminPanel.hidden = !(logged && isAdminProfile());
+  async function refreshLoggedState(session) {
+    state.session = session || null;
+    state.profile = null;
+    if (!state.session) {
+      state.frases = DEFAULT_FRASES.slice();
+      updateAuthUI();
+      return false;
     }
+    const profile = await loadUserProfile();
+    if (!profile) {
+      const client = getSupabaseClient();
+      if (client) await client.auth.signOut();
+      state.session = null;
+      state.profile = null;
+      state.frases = DEFAULT_FRASES.slice();
+      updateAuthUI();
+      return false;
+    }
+    await loadFrases();
+    updateAuthUI();
+    if (isAdminProfile()) setTimeout(() => loadAdminDashboard({ silent: true }), 250);
+    return true;
   }
 
   async function setupAuth() {
@@ -269,25 +295,10 @@
     }
 
     const sessionResult = await client.auth.getSession();
-    state.session = sessionResult?.data?.session || null;
-    if (state.session) {
-      await loadUserProfile();
-      await loadFrases();
-      if (isAdminProfile()) setTimeout(() => loadAdminDashboard({ silent: true }), 250);
-    }
-    updateAuthUI();
+    await refreshLoggedState(sessionResult?.data?.session || null);
 
     client.auth.onAuthStateChange(async (_event, session) => {
-      state.session = session || null;
-      if (state.session) {
-        await loadUserProfile();
-        await loadFrases();
-        if (isAdminProfile()) setTimeout(() => loadAdminDashboard({ silent: true }), 250);
-      } else {
-        state.profile = null;
-        state.frases = DEFAULT_FRASES.slice();
-      }
-      updateAuthUI();
+      await refreshLoggedState(session);
       search();
     });
   }
@@ -325,18 +336,14 @@
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
 
-      if (error) {
-        setLoginMessage('Login não autorizado. Confira e-mail, senha e usuário ativo no plano.', 'error');
-        return;
-      }
+      if (error) return setLoginMessage('Login não autorizado. Confira e-mail, senha e usuário ativo no plano.', 'error');
 
-      state.session = data.session;
-      await loadUserProfile();
-      await loadFrases();
-      updateAuthUI();
-      if (isAdminProfile()) setTimeout(() => loadAdminDashboard(), 350);
+      const ok = await refreshLoggedState(data.session);
+      if (!ok) return setLoginMessage('Usuário inativo ou não vinculado a um plano ativo.', 'error');
+
       setLoginMessage('Login realizado com sucesso.', 'success');
       setTimeout(closeLoginModal, 450);
+      search();
     });
 
     document.addEventListener('keydown', (event) => {
@@ -381,7 +388,7 @@
     select.appendChild(opt(city && year ? 'Todos os perfis' : 'Selecione cidade e ano primeiro', ''));
     if (!(city && year)) return;
 
-    // Importante: este filtro lê a coluna normalizada CARGO, não CARGO_RAW.
+    // Usa a coluna normalizada CARGO. Não usa cargo_raw.
     const rows = await api(cfg.publicTable || 'leads_publicos', {
       select: 'cargo',
       cidade: `eq.${city}`,
@@ -408,7 +415,7 @@
 
   function card(r) {
     const perfil = perfilTexto(r);
-    const logged = !!state.session;
+    const logged = !!state.session && !!state.profile;
     const ctx = `${r.cidade || 'cidade'} / ${r.ano_inscricao || 'ano'} / ${perfil}`;
     const action = logged
       ? `<button class="btn btn-primary js-open-lead" type="button" data-lead-key="${esc(r.lead_key)}">Abrir contato completo</button>`
@@ -442,60 +449,62 @@
     state.loading = true;
     const grid = $('#cardsGrid');
     const more = $('#maisBtn');
-    if (!append) { state.offset = 0; state.page = 1; grid.innerHTML = ''; }
+    if (!append) { state.offset = 0; grid.innerHTML = ''; }
     more.hidden = true;
     status(append ? 'Carregando mais resultados...' : 'Buscando corretores...');
 
     let rows = [];
 
-    if (state.session) {
-      rows = await rpc('search_leads_plano', {
-        p_cidade: state.city || null,
-        p_ano: state.year || null,
-        p_cargo: state.cargo || null,
-        p_page: state.page,
-        p_page_size: PAGE_SIZE,
-        p_ocultar_consumidos: true
-      });
-    } else {
-      const params = {
-        select: 'lead_key,cidade,nome_mascarado,creci_mascarado,ano_inscricao,cargo,tem_canal_telefone,tem_canal_instagram,tags_publicas,updated_at',
-        ativo: 'eq.true',
-        order: 'updated_at.desc',
-        limit: PAGE_SIZE,
-        offset: state.offset
-      };
-      if (state.city) params.cidade = `eq.${state.city}`;
-      if (state.year) params.ano_inscricao = `eq.${state.year}`;
-      if (state.cargo) params.cargo = `eq.${state.cargo}`;
-      rows = await api(cfg.publicTable || 'leads_publicos', params);
-    }
+    try {
+      if (state.session && state.profile) {
+        rows = await rpc('search_leads_plano', {
+          p_cidade: state.city || null,
+          p_ano_inscricao: state.year || null,
+          p_cargo: state.cargo || null,
+          p_termo: state.term || null,
+          p_limit: PAGE_SIZE,
+          p_offset: state.offset
+        });
+      } else {
+        const params = {
+          select: 'lead_key,cidade,nome_mascarado,creci_mascarado,ano_inscricao,cargo,tem_canal_telefone,tem_canal_instagram,tags_publicas,updated_at',
+          ativo: 'eq.true',
+          order: 'updated_at.desc',
+          limit: PAGE_SIZE,
+          offset: state.offset
+        };
+        if (state.city) params.cidade = `eq.${state.city}`;
+        if (state.year) params.ano_inscricao = `eq.${state.year}`;
+        if (state.cargo) params.cargo = `eq.${state.cargo}`;
+        rows = await api(cfg.publicTable || 'leads_publicos', params);
+        if (state.term) {
+          const term = state.term.toLowerCase();
+          rows = rows.filter((r) => [r.cidade, r.cargo, r.tags_publicas, r.ano_inscricao].join(' ').toLowerCase().includes(term));
+        }
+      }
 
-    let filtered = rows;
-    if (state.term) {
-      const term = state.term.toLowerCase();
-      filtered = rows.filter((r) => [r.cidade, r.cargo, r.tags_publicas, r.ano_inscricao].join(' ').toLowerCase().includes(term));
-    }
+      if (!append && !rows.length) {
+        grid.innerHTML = '<div class="empty">Nenhum resultado encontrado. Tente outra cidade, ano ou perfil.</div>';
+      } else {
+        grid.insertAdjacentHTML('beforeend', rows.map(card).join(''));
+        bindLeadButtons(grid);
+      }
 
-    if (!append && !filtered.length) {
-      grid.innerHTML = '<div class="empty">Nenhum resultado encontrado. Tente outra cidade, ano ou perfil.</div>';
-    } else {
-      grid.insertAdjacentHTML('beforeend', filtered.map(card).join(''));
-      bindLeadButtons(grid);
+      state.offset += rows.length;
+      more.hidden = rows.length < PAGE_SIZE;
+      status(`${rows.length} resultados exibidos nesta página${state.session ? ' • consumidos do seu plano ficam ocultos' : ''}`);
+    } catch (e) {
+      console.error(e);
+      if (!append) grid.innerHTML = `<div class="error">Não foi possível carregar os resultados. Detalhe: ${esc(e.message)}</div>`;
+      status('Falha ao carregar resultados.');
+    } finally {
+      state.loading = false;
     }
-
-    state.offset += rows.length;
-    state.page += 1;
-    more.hidden = rows.length < PAGE_SIZE;
-    status(`${filtered.length} resultados exibidos nesta página${state.session ? ' • consumidos do seu plano ficam ocultos' : ''}`);
-    state.loading = false;
   }
 
   function bindLeadButtons(context) {
     $$('.js-login-lead', context).forEach((btn) => btn.addEventListener('click', openLoginModal));
-    $$('.js-open-lead', context).forEach((btn) => {
-      btn.addEventListener('click', () => abrirLead(btn.dataset.leadKey));
-    });
+    $$('.js-open-lead', context).forEach((btn) => btn.addEventListener('click', () => abrirLead(btn.dataset.leadKey)));
   }
 
   function buildMessage(template, lead) {
@@ -517,32 +526,124 @@
     return `https://wa.me/${phone}?text=${encodeURIComponent(message || '')}`;
   }
 
+  function friendlyOpenLeadError(message) {
+    if (/LIMITE_DE_ACESSOS_DO_PLANO_ESGOTADO/i.test(message)) {
+      return 'Seu plano atingiu o limite de acessos contratados. Fale com a RH IMOB para renovar ou fazer upgrade.';
+    }
+    if (/USUARIO_SEM_CONTA_ATIVA|CONTA_INATIVA/i.test(message)) {
+      return 'Seu usuário ou plano não está ativo. Fale com o administrador do plano ou com a RH IMOB.';
+    }
+    return 'Não foi possível liberar este contato.\n\n' + message;
+  }
+
+  function normalizarRetornoAbrirLead(data) {
+    if (!data) return null;
+
+    if (typeof data === 'string') {
+      try {
+        return JSON.parse(data);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    if (Array.isArray(data)) {
+      if (!data.length) return null;
+      const first = data[0];
+      if (first?.lead) return first;
+      if (first?.abrir_lead) return normalizarRetornoAbrirLead(first.abrir_lead);
+      if (first?.result) return normalizarRetornoAbrirLead(first.result);
+      if (first?.data) return normalizarRetornoAbrirLead(first.data);
+      return first;
+    }
+
+    if (data.lead) return data;
+    if (data.abrir_lead) return normalizarRetornoAbrirLead(data.abrir_lead);
+    if (data.result) return normalizarRetornoAbrirLead(data.result);
+    if (data.data) return normalizarRetornoAbrirLead(data.data);
+
+    return data;
+  }
+
+  function mostrarAvisoPlano(mensagem, type = 'info') {
+    if (!mensagem) return;
+
+    setAdminAlert(mensagem, type);
+
+    let box = $('#planWarningBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'planWarningBox';
+      box.className = 'plan-warning-box';
+      const target = $('#resultadoStatus') || $('.status-row') || $('.filters') || $('main') || document.body;
+      target.insertAdjacentElement('afterend', box);
+    }
+
+    box.textContent = mensagem;
+    box.className = `plan-warning-box ${type || 'info'}`.trim();
+    box.hidden = false;
+  }
+
   async function abrirLead(leadKey) {
-    if (!state.session) return openLoginModal();
+    if (!leadKey) {
+      alert('Lead inválido. Atualize a página e tente novamente.');
+      return;
+    }
+
+    if (!state.session || !state.profile) return openLoginModal();
+
     try {
       status('Liberando contato completo...');
-      const rows = await rpc('abrir_lead', { p_lead_key: leadKey });
-      const lead = rows?.[0];
-      if (!lead) throw new Error('Lead não retornado pelo Supabase.');
-      renderLeadDetail(lead);
+
+      const raw = await rpc('abrir_lead', { p_lead_key: leadKey });
+      const result = normalizarRetornoAbrirLead(raw);
+
+      console.log('[RHIMOB][abrir_lead][raw]', raw);
+      console.log('[RHIMOB][abrir_lead][result]', result);
+
+      const lead = result?.lead || null;
+      if (!lead || !lead.lead_key) {
+        throw new Error(
+          'Lead não retornado pelo Supabase. Retorno bruto: ' +
+          JSON.stringify(raw).slice(0, 700)
+        );
+      }
+
+      const plano = result?.plano || null;
+      renderLeadDetail(lead, plano, !!result?.ja_consumido_antes);
       openLeadModal();
-      status(`Contato liberado. Consumidos: ${lead.leads_consumidos} • Disponíveis: ${lead.leads_disponiveis}`);
+
+      if (plano?.aviso) {
+        mostrarAvisoPlano(plano.aviso, statusTypeFromSaldo(plano.leads_restantes));
+      }
+
+      status(
+        `Contato liberado. Consumidos: ${plano?.leads_consumidos ?? '-'} • Disponíveis: ${plano?.leads_restantes ?? '-'}`
+      );
+
       if (isAdminProfile()) loadAdminDashboard({ silent: true });
+      search();
     } catch (e) {
-      console.error(e);
-      alert('Não foi possível liberar este contato.\n\n' + e.message);
+      console.error('[RHIMOB][abrirLead][error]', e);
+      alert(friendlyOpenLeadError(e.message || String(e)));
       status('Falha ao liberar contato.');
     }
   }
 
-  function renderLeadDetail(lead) {
+  function renderLeadDetail(lead, plano, jaConsumidoAntes) {
     const frases = state.frases.length ? state.frases : DEFAULT_FRASES;
     const firstMsg = buildMessage(frases[0], lead);
     const waUrl = whatsappLeadUrl(lead, firstMsg);
     const content = $('#leadDetailContent');
     if (!content) return;
 
+    const subtitle = $('#leadModalSubtitle');
+    if (subtitle) {
+      subtitle.textContent = plano?.aviso || (jaConsumidoAntes ? 'Este lead já estava liberado para o seu plano.' : 'Este lead foi consumido para o seu plano.');
+    }
+
     content.innerHTML = `
+      ${plano?.aviso ? `<div class="plan-warning ${esc(statusTypeFromSaldo(plano.leads_restantes))}">${esc(plano.aviso)}</div>` : ''}
       <div class="detail-grid">
         <div><strong>Nome completo</strong><span>${esc(lead.nome_completo || 'Não informado')}</span></div>
         <div><strong>CRECI</strong><span>${esc(lead.creci || 'Não informado')}</span></div>
@@ -551,7 +652,7 @@
         <div><strong>Perfil</strong><span>${esc(lead.cargo || 'Perfil imobiliário')}</span></div>
         <div><strong>Telefone</strong><span>${esc(lead.telefone_txt || lead.telefone_base || 'Não informado')}</span></div>
         <div><strong>Instagram</strong><span>${lead.instagram_url ? `<a href="${esc(lead.instagram_url)}" target="_blank" rel="noopener">${esc(lead.instagram_username || lead.instagram_url)}</a>` : 'Não informado'}</span></div>
-        <div><strong>Consumo</strong><span>${lead.newly_consumed ? 'Consumido agora' : 'Já consumido neste plano'}</span></div>
+        <div><strong>Consumo</strong><span>${jaConsumidoAntes ? 'Já consumido neste plano' : 'Consumido agora'}</span></div>
       </div>
       ${lead.bio ? `<div class="bio-box"><strong>Bio / sinais públicos</strong><p>${esc(lead.bio)}</p></div>` : ''}
       <div class="message-box">
@@ -596,90 +697,66 @@
     el.className = `admin-alert ${type}`.trim();
   }
 
-  function setCellText(id, value) {
-    const el = $('#' + id);
-    if (el) el.textContent = value == null || value === '' ? '-' : String(value);
-  }
-
   function renderAdminUsers(users = []) {
     const tbody = $('#adminUsersTable');
     if (!tbody) return;
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="4">Nenhum usuário cadastrado neste plano.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6">Nenhum usuário cadastrado neste plano.</td></tr>';
       return;
     }
-    tbody.innerHTML = users.map((u) => `
-      <tr>
+    tbody.innerHTML = users.map((u) => {
+      const ativo = String(u.status || '').toUpperCase() === 'ATIVO';
+      const self = state.profile?.id && u.usuario_id === state.profile.id;
+      const nextStatus = ativo ? 'INATIVO' : 'ATIVO';
+      return `<tr>
         <td>${esc(u.nome || '-')}</td>
         <td>${esc(u.email || '-')}</td>
         <td><span class="pill ${String(u.perfil || '').toLowerCase()}">${esc(u.perfil || '-')}</span></td>
         <td><span class="status-chip ${String(u.status || '').toLowerCase()}">${esc(u.status || '-')}</span></td>
-      </tr>
-    `).join('');
+        <td><strong>${Number(u.consumidos_total || 0)}</strong></td>
+        <td><button class="mini-action js-user-status" data-user-id="${esc(u.usuario_id)}" data-next-status="${nextStatus}" ${self ? 'disabled title="Você não pode inativar a si mesmo"' : ''}>${ativo ? 'Inativar' : 'Reativar'}</button></td>
+      </tr>`;
+    }).join('');
+
+    $$('.js-user-status', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => alterarStatusOperador(btn.dataset.userId, btn.dataset.nextStatus));
+    });
   }
 
-  function renderAdminReport(users = [], consumos = []) {
+  function renderAdminReport(rows = []) {
     const tbody = $('#adminReportTable');
     if (!tbody) return;
-
-    const byAuth = new Map();
-    const byEmail = new Map();
-    users.forEach((u) => {
-      if (u.auth_user_id) byAuth.set(u.auth_user_id, { user: u, hoje: 0, total: 0, ultimo: null });
-      if (u.email) byEmail.set(String(u.email).toLowerCase(), { user: u, hoje: 0, total: 0, ultimo: null });
-    });
-
-    consumos.forEach((c) => {
-      const email = String(c.usuario_email || '').toLowerCase();
-      let item = byAuth.get(c.auth_user_id) || byEmail.get(email);
-      if (!item) {
-        item = { user: { nome: c.usuario_email || 'Operador não identificado', email }, hoje: 0, total: 0, ultimo: null };
-        byEmail.set(email || ('sem-email-' + byEmail.size), item);
-      }
-      item.total += 1;
-      if (sameLocalDay(c.data_consumo || c.created_at)) item.hoje += 1;
-      const dt = c.data_consumo || c.created_at;
-      if (!item.ultimo || new Date(dt) > new Date(item.ultimo)) item.ultimo = dt;
-    });
-
-    const rows = Array.from(new Set([...byAuth.values(), ...byEmail.values()]))
-      .sort((a, b) => b.total - a.total || String(a.user.nome || '').localeCompare(String(b.user.nome || ''), 'pt-BR'));
-
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="4">Sem consumo registrado.</td></tr>';
       return;
     }
-
     tbody.innerHTML = rows.map((r) => `
       <tr>
-        <td>${esc(r.user.nome || r.user.email || 'Operador')}</td>
-        <td><strong>${r.hoje}</strong></td>
-        <td><strong>${r.total}</strong></td>
-        <td>${esc(formatDateTimeBR(r.ultimo))}</td>
+        <td>${esc(r.nome || r.email || 'Operador')}</td>
+        <td><strong>${Number(r.consumidos_hoje || 0)}</strong></td>
+        <td><strong>${Number(r.consumidos_7_dias || 0)}</strong></td>
+        <td><strong>${Number(r.consumidos_total || 0)}</strong></td>
       </tr>
     `).join('');
   }
 
-  function renderAdminRecent(consumos = [], leadsMap = new Map()) {
+  function renderAdminRecent(rows = []) {
     const tbody = $('#adminRecentTable');
     if (!tbody) return;
-    const rows = consumos.slice(0, 20);
-    if (!rows.length) {
+    const list = (rows || []).slice(0, 30);
+    if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="5">Sem contatos liberados.</td></tr>';
       return;
     }
-    tbody.innerHTML = rows.map((c) => {
-      const lead = leadsMap.get(c.lead_key) || {};
-      return `
-        <tr>
-          <td>${esc(formatDateTimeBR(c.data_consumo || c.created_at))}</td>
-          <td>${esc(c.usuario_email || 'Operador')}</td>
-          <td>${esc(lead.nome_mascarado || c.lead_key || '-')}</td>
-          <td>${esc(lead.cidade || '-')}</td>
-          <td>${esc(lead.cargo || '-')}</td>
-        </tr>
-      `;
-    }).join('');
+    tbody.innerHTML = list.map((r) => `
+      <tr>
+        <td>${esc(formatDateTimeBR(r.data_consumo))}</td>
+        <td>${esc(r.operador || r.usuario_email || 'Operador')}</td>
+        <td>${esc(r.nome_mascarado || r.lead_key || '-')}</td>
+        <td>${esc(r.cidade || '-')}</td>
+        <td>${esc(r.cargo || '-')}</td>
+      </tr>
+    `).join('');
   }
 
   async function loadAdminDashboard({ silent = false } = {}) {
@@ -690,63 +767,163 @@
     if (!silent) setAdminAlert('Atualizando relatório do plano...', 'info');
 
     try {
-      const contaId = state.profile.conta_id;
-      if (!contaId) throw new Error('Usuário logado sem CONTA_ID vinculado. Verifique USUARIOS_MODELO.');
+      const data = await rpc('rhi_painel_plano', {});
+      const conta = data?.conta || {};
+      const operadores = data?.operadores || [];
+      const consumo = data?.consumo_operadores || [];
+      const ultimos = data?.ultimos_contatos || [];
 
-      const [contas, users, consumos] = await Promise.all([
-        api('contas', { select: 'id,nome_empresa,status,usuarios_contratados,limite_leads,data_inicio,data_fim,observacao', id: `eq.${contaId}`, limit: 1 }),
-        api('usuarios_conta', { select: 'id,conta_id,auth_user_id,nome,email,perfil,status,telefone,created_at', conta_id: `eq.${contaId}`, order: 'nome.asc' }),
-        api('lead_consumos', { select: 'id,conta_id,lead_key,user_id,auth_user_id,usuario_email,data_consumo,status,created_at', conta_id: `eq.${contaId}`, order: 'data_consumo.desc', limit: 10000 })
-      ]);
+      setText('adminEmpresa', conta.nome_empresa || 'Plano sem nome');
+      setText('adminPlanoStatus', `Status: ${conta.status || '-'} • Conta: ${String(conta.id || '').slice(0, 8)}...`);
+      setText('adminUsuariosResumo', `${conta.usuarios_ativos || 0}/${conta.usuarios_contratados || 0}`);
+      setText('adminUsuariosStatus', `${conta.usuarios_disponiveis || 0} usuário(s) disponível(is)`);
+      setText('adminLeadsConsumidos', conta.leads_consumidos || 0);
+      setText('adminLeadsDisponiveis', `${conta.leads_disponiveis || 0} disponíveis`);
+      setText('adminPeriodo', `${formatDateBR(conta.data_inicio)} até ${formatDateBR(conta.data_fim)}`);
+      setText('adminLimite', `Limite: ${conta.limite_leads || 0} leads`);
+      setText('adminUsersCount', `${operadores.length} usuário(s)`);
+      setText('adminRecentCount', `${ultimos.length} registro(s) recentes`);
 
-      const conta = contas?.[0] || {};
-      const activeUsers = (users || []).filter((u) => String(u.status || '').toUpperCase() === 'ATIVO');
-      const contracted = Number(conta.usuarios_contratados || 0);
-      const limit = Number(conta.limite_leads || 0);
-      const consumed = (consumos || []).length;
-      const available = Math.max(0, limit - consumed);
+      const alertMsg = conta.aviso_consumo || conta.aviso_usuarios || 'Relatório atualizado com sucesso.';
+      const alertType = conta.aviso_consumo ? statusTypeFromSaldo(conta.leads_disponiveis) : 'success';
+      setAdminAlert(alertMsg, alertType);
 
-      setCellText('adminEmpresa', conta.nome_empresa || 'Plano sem nome');
-      setCellText('adminPlanoStatus', `Status: ${conta.status || '-'} • Conta: ${String(conta.id || contaId).slice(0, 8)}...`);
-      setCellText('adminUsuariosResumo', `${activeUsers.length}/${contracted || activeUsers.length}`);
-      setCellText('adminUsuariosStatus', contracted && activeUsers.length > contracted ? 'Acima do contratado' : 'Dentro do plano');
-      setCellText('adminLeadsConsumidos', consumed);
-      setCellText('adminLeadsDisponiveis', limit ? `${available} disponíveis` : 'Limite não definido');
-      setCellText('adminPeriodo', `${formatDateBR(conta.data_inicio)} até ${formatDateBR(conta.data_fim)}`);
-      setCellText('adminLimite', limit ? `Limite: ${limit} leads` : 'Sem limite configurado');
-      setCellText('adminUsersCount', `${users.length} usuário(s)`);
-      setCellText('adminRecentCount', `${Math.min(consumed, 20)} registro(s) recentes`);
-
-      if (contracted && activeUsers.length > contracted) {
-        setAdminAlert(`Atenção: este plano tem ${contracted} usuário(s) contratado(s), mas ${activeUsers.length} usuário(s) ativo(s). Ajuste a planilha ou aumente o plano.`, 'warn');
-      } else {
-        setAdminAlert('Relatório atualizado com sucesso.', 'success');
-      }
-
-      renderAdminUsers(users || []);
-      renderAdminReport(users || [], consumos || []);
-
-      let leadsMap = new Map();
-      const keys = (consumos || []).slice(0, 20).map((c) => c.lead_key).filter(Boolean);
-      const inFilter = postgrestInList(keys);
-      if (inFilter) {
-        try {
-          const leads = await api(cfg.publicTable || 'leads_publicos', {
-            select: 'lead_key,nome_mascarado,cidade,ano_inscricao,cargo',
-            lead_key: inFilter,
-            limit: 50
-          });
-          leadsMap = new Map((leads || []).map((l) => [l.lead_key, l]));
-        } catch (leadErr) {
-          console.warn('Não foi possível detalhar leads recentes:', leadErr);
-        }
-      }
-      renderAdminRecent(consumos || [], leadsMap);
-      state.adminLoaded = true;
+      renderAdminUsers(operadores);
+      renderAdminReport(consumo);
+      renderAdminRecent(ultimos);
+      await loadAdminPhrases({ silent: true });
     } catch (e) {
       console.error(e);
       setAdminAlert('Não foi possível carregar o painel do plano. Detalhe: ' + e.message, 'error');
     }
+  }
+
+  async function alterarStatusOperador(usuarioId, nextStatus) {
+    if (!usuarioId || !nextStatus) return;
+    const label = nextStatus === 'INATIVO' ? 'inativar' : 'reativar';
+    if (!confirm(`Confirmar ${label} este operador?`)) return;
+    try {
+      setAdminAlert('Atualizando operador...', 'info');
+      await rpc('rhi_admin_alterar_status_operador', {
+        p_usuario_id: usuarioId,
+        p_status: nextStatus
+      });
+      setAdminAlert('Operador atualizado com sucesso.', 'success');
+      await loadAdminDashboard({ silent: true });
+    } catch (e) {
+      console.error(e);
+      setAdminAlert('Falha ao alterar operador: ' + e.message, 'error');
+    }
+  }
+
+  function renderPhrases(rows = []) {
+    const tbody = $('#adminPhrasesTable');
+    if (!tbody) return;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5">Nenhuma frase encontrada.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((f) => {
+      const ativa = String(f.status || '').toUpperCase() === 'ATIVA';
+      return `<tr>
+        <td>${esc(f.prioridade || '-')}</td>
+        <td>${esc(f.texto || '-')}</td>
+        <td><span class="status-chip ${ativa ? 'ativo' : 'inativo'}">${esc(f.status || '-')}</span></td>
+        <td>${esc(f.escopo || '-')}</td>
+        <td class="nowrap">
+          <button class="mini-action js-edit-phrase" data-id="${esc(f.id)}">Editar</button>
+          <button class="mini-action js-toggle-phrase" data-id="${esc(f.id)}" data-status="${ativa ? 'INATIVA' : 'ATIVA'}">${ativa ? 'Inativar' : 'Ativar'}</button>
+        </td>
+      </tr>`;
+    }).join('');
+    $$('.js-edit-phrase', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = state.phrasesAdmin?.find((x) => x.id === btn.dataset.id);
+        if (!item) return;
+        state.currentPhraseId = item.id;
+        $('#phraseText').value = item.texto || '';
+        $('#phraseStatus').value = item.status || 'ATIVA';
+        $('#phrasePriority').value = item.prioridade || 1;
+        $('#phraseFavorite').checked = !!item.is_favorite;
+        $('#phraseText')?.focus();
+      });
+    });
+    $$('.js-toggle-phrase', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => togglePhrase(btn.dataset.id, btn.dataset.status));
+    });
+  }
+
+  async function loadAdminPhrases({ silent = false } = {}) {
+    if (!state.session || !isAdminProfile()) return;
+    try {
+      const rows = await rpc('rhi_listar_frases_abordagem', {});
+      state.phrasesAdmin = rows || [];
+      renderPhrases(state.phrasesAdmin);
+      const own = state.phrasesAdmin.some((f) => String(f.escopo || '').toUpperCase() === 'PLANO');
+      const note = $('#phrasesNote');
+      if (note) note.textContent = own ? 'Este plano está usando frases próprias.' : 'Este plano está usando frases padrão RH IMOB. Para editar, clique em Personalizar frases para este plano.';
+    } catch (e) {
+      console.error(e);
+      if (!silent) setAdminAlert('Não foi possível carregar frases: ' + e.message, 'error');
+    }
+  }
+
+  async function savePhrase() {
+    try {
+      const texto = normalize($('#phraseText')?.value);
+      if (!texto || texto.length < 10) return setAdminAlert('Digite uma frase com pelo menos 10 caracteres.', 'warn');
+      await rpc('rhi_salvar_frase_abordagem', {
+        p_id: state.currentPhraseId || null,
+        p_texto: texto,
+        p_status: $('#phraseStatus')?.value || 'ATIVA',
+        p_prioridade: Number($('#phrasePriority')?.value || 1),
+        p_is_favorite: !!$('#phraseFavorite')?.checked
+      });
+      state.currentPhraseId = null;
+      $('#phraseText').value = '';
+      $('#phrasePriority').value = '';
+      $('#phraseFavorite').checked = false;
+      await loadAdminPhrases();
+      await loadFrases();
+      setAdminAlert('Frase salva com sucesso.', 'success');
+    } catch (e) {
+      console.error(e);
+      setAdminAlert('Falha ao salvar frase: ' + e.message, 'error');
+    }
+  }
+
+  async function togglePhrase(id, statusValue) {
+    if (!id) return;
+    try {
+      await rpc('rhi_alterar_status_frase_abordagem', { p_id: id, p_status: statusValue });
+      await loadAdminPhrases();
+      await loadFrases();
+      setAdminAlert('Status da frase atualizado.', 'success');
+    } catch (e) {
+      console.error(e);
+      setAdminAlert('Falha ao alterar status da frase: ' + e.message, 'error');
+    }
+  }
+
+  async function clonePhrases() {
+    if (!confirm('Personalizar frases para este plano? As frases padrão serão copiadas para edição deste cliente.')) return;
+    try {
+      const res = await rpc('rhi_clonar_frases_padrao_para_plano', {});
+      await loadAdminPhrases();
+      await loadFrases();
+      setAdminAlert(`Frases personalizadas para o plano. Clonadas: ${res?.clonadas ?? 0}.`, 'success');
+    } catch (e) {
+      console.error(e);
+      setAdminAlert('Falha ao personalizar frases: ' + e.message, 'error');
+    }
+  }
+
+  function clearPhraseForm() {
+    state.currentPhraseId = null;
+    if ($('#phraseText')) $('#phraseText').value = '';
+    if ($('#phraseStatus')) $('#phraseStatus').value = 'ATIVA';
+    if ($('#phrasePriority')) $('#phrasePriority').value = '';
+    if ($('#phraseFavorite')) $('#phraseFavorite').checked = false;
   }
 
   function bind() {
@@ -789,16 +966,7 @@
     });
 
     $('#limparBtn').addEventListener('click', async () => {
-      state = {
-        ...state,
-        city: '',
-        year: '',
-        cargo: '',
-        term: '',
-        offset: 0,
-        page: 1,
-        loading: false
-      };
+      state = { ...state, city: '', year: '', cargo: '', term: '', offset: 0, loading: false };
       cidade.value = '';
       termo.value = '';
       await loadYears('');
@@ -807,6 +975,9 @@
 
     $('#maisBtn').addEventListener('click', () => search({ append: true }));
     $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
+    $('#clonePhrasesBtn')?.addEventListener('click', clonePhrases);
+    $('#savePhraseBtn')?.addEventListener('click', savePhrase);
+    $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
   }
 
   async function init() {

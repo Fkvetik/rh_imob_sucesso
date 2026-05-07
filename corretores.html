@@ -8,15 +8,15 @@
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#2b124d" />
   <link rel="canonical" href="https://rhimob0305.vercel.app/corretores" />
-  <link rel="icon" href="/favicon.ico?v=20260506admin" sizes="any" />
-  <link rel="icon" href="/favicon.svg?v=20260506admin" type="image/svg+xml" />
-  <link rel="stylesheet" href="corretores.css?v=20260506admin" />
+  <link rel="icon" href="/favicon.ico?v=20260506operacional" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260506operacional" type="image/svg+xml" />
+  <link rel="stylesheet" href="corretores.css?v=20260506operacional" />
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar__inner">
       <a class="brand" href="/">
-        <img src="/assets/rhimob-mark.svg?v=20260506admin" alt="" />
+        <img src="/assets/rhimob-mark.svg?v=20260506operacional" alt="" />
         <span><strong>RH IMOB</strong><small>Plataforma Corretores</small></span>
       </a>
       <nav>
@@ -92,8 +92,8 @@
         <div class="admin-head">
           <div>
             <span class="kicker">Painel do plano</span>
-            <h2>Relatórios do administrador</h2>
-            <p>Visão do plano, usuários cadastrados, consumo por operador e últimos contatos liberados. Disponível apenas para perfis ADMIN ou MASTER.</p>
+            <h2>Operação, consumo e mensagens</h2>
+            <p>Disponível apenas para ADMIN ou MASTER. O painel lista operadores, permite inativar/reativar, acompanha consumo por operador e administra frases de abordagem do plano.</p>
           </div>
           <button class="btn btn-secondary" id="adminRefreshBtn" type="button">Atualizar relatório</button>
         </div>
@@ -102,27 +102,27 @@
 
         <div class="admin-cards">
           <article class="admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
-          <article class="admin-card"><small>Usuários</small><strong id="adminUsuariosResumo">-</strong><span id="adminUsuariosStatus">-</span></article>
-          <article class="admin-card"><small>Leads consumidos</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
+          <article class="admin-card"><small>Usuários ativos</small><strong id="adminUsuariosResumo">-</strong><span id="adminUsuariosStatus">-</span></article>
+          <article class="admin-card"><small>Acessos consumidos</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
           <article class="admin-card"><small>Período do plano</small><strong id="adminPeriodo">-</strong><span id="adminLimite">-</span></article>
         </div>
 
         <div class="admin-grid">
           <article class="admin-box">
-            <div class="admin-box-head"><h3>Usuários do plano</h3><span id="adminUsersCount">0 usuários</span></div>
+            <div class="admin-box-head"><h3>Operadores do plano</h3><span id="adminUsersCount">0 usuários</span></div>
             <div class="table-wrap">
               <table class="admin-table">
-                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
-                <tbody id="adminUsersTable"><tr><td colspan="4">Entre como administrador.</td></tr></tbody>
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Total</th><th>Ação</th></tr></thead>
+                <tbody id="adminUsersTable"><tr><td colspan="6">Entre como administrador.</td></tr></tbody>
               </table>
             </div>
           </article>
 
           <article class="admin-box">
-            <div class="admin-box-head"><h3>Consumo por operador</h3><span>Hoje e total</span></div>
+            <div class="admin-box-head"><h3>Consumo por operador</h3><span>Hoje, 7 dias e total</span></div>
             <div class="table-wrap">
               <table class="admin-table">
-                <thead><tr><th>Operador</th><th>Hoje</th><th>Total</th><th>Último consumo</th></tr></thead>
+                <thead><tr><th>Operador</th><th>Hoje</th><th>7 dias</th><th>Total</th></tr></thead>
                 <tbody id="adminReportTable"><tr><td colspan="4">Sem dados carregados.</td></tr></tbody>
               </table>
             </div>
@@ -138,6 +138,41 @@
             </table>
           </div>
         </article>
+
+        <article class="admin-box admin-messages">
+          <div class="admin-box-head">
+            <div>
+              <h3>Mensagens de abordagem</h3>
+              <span id="phrasesNote">Carregando frases...</span>
+            </div>
+            <button class="btn btn-secondary" id="clonePhrasesBtn" type="button">Personalizar frases para este plano</button>
+          </div>
+
+          <div class="phrase-editor">
+            <label>Texto da frase
+              <textarea id="phraseText" rows="4" placeholder="Ex.: Olá, {nome}. Aqui é {Usuário}. Vi seu perfil em {cidade} e gostaria de falar com você."></textarea>
+            </label>
+            <div class="phrase-editor-grid">
+              <label>Status
+                <select id="phraseStatus"><option value="ATIVA">ATIVA</option><option value="INATIVA">INATIVA</option></select>
+              </label>
+              <label>Prioridade
+                <input id="phrasePriority" type="number" min="1" placeholder="1" />
+              </label>
+              <label class="check-label"><input id="phraseFavorite" type="checkbox" /> Favorita</label>
+              <button class="btn btn-secondary" id="newPhraseBtn" type="button">Nova frase</button>
+              <button class="btn btn-primary" id="savePhraseBtn" type="button">Salvar frase</button>
+            </div>
+            <p class="phrase-help">Placeholders permitidos: <strong>{nome}</strong>, <strong>{cidade}</strong> e <strong>{Usuário}</strong>.</p>
+          </div>
+
+          <div class="table-wrap">
+            <table class="admin-table phrase-table">
+              <thead><tr><th>Prior.</th><th>Texto</th><th>Status</th><th>Escopo</th><th>Ação</th></tr></thead>
+              <tbody id="adminPhrasesTable"><tr><td colspan="5">Sem frases carregadas.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -145,8 +180,8 @@
       <div class="container cta__inner">
         <div>
           <span class="kicker">Acesso completo</span>
-          <h2>Login, consumo por plano e WhatsApp pronto.</h2>
-          <p>Quando um operador libera um lead, ele fica consumido apenas para a conta/plano daquele cliente. Outros planos continuam visualizando o mesmo lead normalmente.</p>
+          <h2>Login, consumo por plano, relatório e mensagens prontas.</h2>
+          <p>Quando um operador libera um lead, ele consome apenas o saldo do plano daquele cliente. O administrador acompanha operadores, consumo e mensagens de abordagem.</p>
         </div>
         <a class="btn btn-light" id="bottomWhatsapp" href="#" target="_blank" rel="noopener">Falar com Fernando</a>
       </div>
@@ -195,7 +230,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js?v=20260506admin"></script>
-  <script src="corretores.js?v=20260506admin"></script>
+  <script src="supabase-config.js?v=20260506operacional"></script>
+  <script src="corretores.js?v=20260506operacional"></script>
 </body>
 </html>
