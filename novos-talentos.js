@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  // RH IMOB • Novos Talentos v11
-  // Detalhes/consumo em JSON para evitar conflito de funções antigas no Supabase. Filtros preservados.
+  // RH IMOB • Novos Talentos v14
+  // Tratamento visual de acentos/caixa em cidades, bairros, cargos e filtros.
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
@@ -32,6 +32,7 @@
     total: 0,
     loading: false,
     loadingFilters: false,
+    filterRequestSeq: 0,
     currentTalent: null,
     filters: {
       cidade: '',
@@ -58,6 +59,77 @@
   function lower(value) {
     return normalize(value).toLowerCase();
   }
+
+
+  function fixAccentCase(value) {
+    return String(value || '')
+      .replace(/Á/g, 'á')
+      .replace(/À/g, 'à')
+      .replace(/Â/g, 'â')
+      .replace(/Ã/g, 'ã')
+      .replace(/É/g, 'é')
+      .replace(/Ê/g, 'ê')
+      .replace(/Í/g, 'í')
+      .replace(/Ó/g, 'ó')
+      .replace(/Ô/g, 'ô')
+      .replace(/Õ/g, 'õ')
+      .replace(/Ú/g, 'ú')
+      .replace(/Ç/g, 'ç');
+  }
+
+  function capitalizeWord(word) {
+    const lowerWord = fixAccentCase(word).toLowerCase();
+
+    const keepLower = new Set([
+      'de', 'da', 'do', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos',
+      'a', 'o', 'as', 'os', 'para', 'por'
+    ]);
+
+    if (keepLower.has(lowerWord)) return lowerWord;
+
+    const upperAll = new Set(['SP', 'RJ', 'MG', 'BA', 'PR', 'SC', 'RS', 'PE', 'CE', 'GO', 'DF', 'ES', 'PA', 'AM', 'MA', 'MT', 'MS', 'RN', 'PB', 'PI', 'AL', 'SE', 'RO', 'RR', 'AC', 'AP', 'TO']);
+    if (upperAll.has(word.toUpperCase())) return word.toUpperCase();
+
+    return lowerWord.charAt(0).toUpperCase() + lowerWord.slice(1);
+  }
+
+  function titleCaseSmart(value) {
+    let text = fixAccentCase(normalize(value));
+    if (!text) return '';
+
+    text = text
+      .replace(/\bSÃO\b/gi, 'São')
+      .replace(/\bSAO\b/gi, 'São')
+      .replace(/\bGUARUJ[aá]\b/gi, 'Guarujá')
+      .replace(/\bBALNE[aá]RIO\b/gi, 'Balneário')
+      .replace(/\bATL[aâ]NTICA\b/gi, 'Atlântica')
+      .replace(/\bATLANTICA\b/gi, 'Atlântica')
+      .replace(/\bSERVI[cç]OS\b/gi, 'Serviços')
+      .replace(/\bADMINISTRATIVO\b/gi, 'Administrativo')
+      .replace(/\bAUXILIAR\b/gi, 'Auxiliar')
+      .replace(/\bASSISTENTE\b/gi, 'Assistente')
+      .replace(/\bPROFESSOR\b/gi, 'Professor')
+      .replace(/\bPROFESSORA\b/gi, 'Professora');
+
+    return text.split(/(\s+|\/|•|-)/).map(part => {
+      if (!part || /^\s+$/.test(part) || ['/', '•', '-'].includes(part)) return part;
+      if (/^\d/.test(part)) return part;
+      return capitalizeWord(part);
+    }).join('')
+      .replace(/\bSão\b/g, 'São')
+      .replace(/\bGuarujá\b/g, 'Guarujá')
+      .replace(/\bBalneário\b/g, 'Balneário')
+      .replace(/\bAtlântica\b/g, 'Atlântica');
+  }
+
+  function displayText(value) {
+    return titleCaseSmart(value);
+  }
+
+  function displayJoin(values, separator = ' • ') {
+    return values.filter(Boolean).map(displayText).join(separator);
+  }
+
 
   function esc(value) {
     return String(value || '')
@@ -170,6 +242,53 @@
   function inferMicro(row) {
     return normalize(row?.micro_calc || row?.micro_regiao || row?.estacao_mais_proxima || row?.bairro);
   }
+
+
+  function parseKm(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const normalized = String(value).replace(',', '.').replace(/[^\d.]+/g, '');
+    const n = Number(normalized);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function formatKm(value) {
+    const n = parseKm(value);
+    if (n === null) return '';
+    return `${n.toLocaleString('pt-BR', { minimumFractionDigits: n < 1 ? 2 : 1, maximumFractionDigits: 2 })} km`;
+  }
+
+  function getMetroInfo(row) {
+    const estacao = normalize(row?.estacao_mais_proxima);
+    const linha = normalize(row?.linha_metro_mais_proxima);
+    const distancia = parseKm(row?.distancia_metro_km);
+
+    if (!estacao) {
+      return {
+        label: 'Metrô não informado',
+        detail: '',
+        isNear: false,
+        hasMetro: false
+      };
+    }
+
+    if (distancia !== null && distancia > 5) {
+      return {
+        label: 'Metrô acima de 5 km',
+        detail: `${estacao}${linha ? ` • ${linha}` : ''} • ${formatKm(distancia)}`,
+        isNear: false,
+        hasMetro: true
+      };
+    }
+
+    const distanciaTxt = distancia !== null ? ` • ${formatKm(distancia)}` : '';
+    return {
+      label: `${estacao}${linha ? ` • ${linha}` : ''}${distanciaTxt}`,
+      detail: distancia !== null ? `Até 5 km do metrô • ${formatKm(distancia)}` : 'Metrô próximo informado',
+      isNear: true,
+      hasMetro: true
+    };
+  }
+
 
   function openLoginModal() {
     const modal = $('#loginModal');
@@ -372,7 +491,7 @@
   function option(label, value, extra = '') {
     const opt = document.createElement('option');
     opt.value = value;
-    opt.textContent = extra ? `${label} (${extra})` : label;
+    opt.textContent = extra ? `${displayText(label)} (${extra})` : displayText(label);
     return opt;
   }
 
@@ -520,6 +639,21 @@
     return Array.from(map.values()).sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'pt-BR'));
   }
 
+  async function loadSelectedOptions(types, preserve = true) {
+    collectFilters();
+
+    const seq = ++state.filterRequestSeq;
+    status('Atualizando filtros...');
+
+    await Promise.all(types.map((tipo) => loadOptionsForType(tipo, preserve)));
+
+    // Evita aplicar resultado antigo quando o operador troca filtros rápido.
+    if (seq !== state.filterRequestSeq) return false;
+
+    collectFilters();
+    return true;
+  }
+
   async function loadAllOptions(preserve = true) {
     if (state.loadingFilters) return;
     state.loadingFilters = true;
@@ -527,7 +661,9 @@
     try {
       collectFilters();
 
-      const tipos = [
+      // Carregamento inicial/limpar: todos os filtros em paralelo.
+      // Antes era sequencial, gerando sensação de travamento.
+      await loadSelectedOptions([
         'cidade',
         'regiao_macro',
         'micro_regiao',
@@ -535,18 +671,37 @@
         'faixa_idade',
         'cargo',
         'metro'
-      ];
-
-      for (const tipo of tipos) {
-        await loadOptionsForType(tipo, preserve);
-        collectFilters();
-      }
+      ], preserve);
     } catch (err) {
       console.error('[NT] filtros:', err);
       status(friendlyError(err));
     } finally {
       state.loadingFilters = false;
     }
+  }
+
+  async function reloadDependentsAndSearch(resetChildren = [], typesToReload = []) {
+    resetChildren.forEach((id) => {
+      const el = $('#' + id);
+      if (el) el.value = '';
+    });
+
+    collectFilters();
+
+    if (typesToReload.length) {
+      await loadSelectedOptions(typesToReload, true);
+    }
+
+    await search(true);
+  }
+
+  function scheduleFilterAction(resetChildren = [], typesToReload = []) {
+    clearTimeout(state.filterTimer);
+    status('Preparando consulta...');
+
+    state.filterTimer = setTimeout(() => {
+      reloadDependentsAndSearch(resetChildren, typesToReload);
+    }, 180);
   }
 
   function status(message) {
@@ -569,9 +724,8 @@
       const macro = inferMacro(row);
       const micro = inferMicro(row);
 
-      const metro = row.estacao_mais_proxima
-        ? `${esc(row.estacao_mais_proxima)}${row.linha_metro_mais_proxima ? ` • ${esc(row.linha_metro_mais_proxima)}` : ''}`
-        : 'Metrô não informado';
+      const metroInfo = getMetroInfo(row);
+      const metro = displayText(metroInfo.label);
 
       const geo = row.tem_geo ? 'Geolocalizado' : 'Localização aproximada';
       const canal = row.tem_whatsapp ? 'Canal disponível após login' : (row.tem_email ? 'Contato disponível após login' : 'Contato protegido');
@@ -581,21 +735,21 @@
         <article class="nt-card" data-key="${esc(row.talento_key)}">
           <div class="nt-card__top">
             <div>
-              <h3>${esc(row.nome_mascarado || row.primeiro_nome || 'Profissional')}</h3>
-              <p>${esc(row.cargo || 'Perfil comercial')}</p>
+              <h3>${esc(displayText(row.nome_mascarado || row.primeiro_nome || 'Profissional'))}</h3>
+              <p>${esc(displayText(row.cargo || 'Perfil comercial'))}</p>
             </div>
             <span class="nt-pill">${esc(idade)}</span>
           </div>
 
           <div class="nt-card__meta">
-            <span>📍 ${esc([row.bairro, row.cidade, row.estado_uf].filter(Boolean).join(' • '))}</span>
-            <span>🧭 ${esc([macro, micro].filter(Boolean).join(' • ') || 'Região em classificação')}</span>
+            <span>📍 ${esc(displayJoin([row.bairro, row.cidade, row.estado_uf]))}</span>
+            <span>🧭 ${esc(displayJoin([macro, micro]) || 'Região em classificação')}</span>
             <span>🚇 ${metro}</span>
           </div>
 
           <div class="nt-card__signals">
             <span class="nt-signal">${esc(canal)}</span>
-            <span class="nt-signal ${row.tem_geo ? '' : 'muted'}">${esc(geo)}</span>
+            <span class="nt-signal ${metroInfo.isNear ? '' : 'muted'}">${esc(metroInfo.detail || geo)}</span>
           </div>
 
           <button class="nt-btn nt-btn-primary js-consumir" type="button" data-key="${esc(row.talento_key)}">Ver detalhes</button>
@@ -769,7 +923,13 @@
   }
 
   function detail(label, value) {
-    return `<div class="nt-detail"><small>${esc(label)}</small><strong>${esc(value || '-')}</strong></div>`;
+    const shouldTreat = [
+      'Nome', 'Cargo', 'Cidade', 'Bairro', 'Idade', 'Pretensão',
+      'Metrô próximo', 'Distância até o metrô', 'Região', 'CEP'
+    ].includes(label);
+
+    const shown = shouldTreat ? displayText(value || '-') : (value || '-');
+    return `<div class="nt-detail"><small>${esc(label)}</small><strong>${esc(shown)}</strong></div>`;
   }
 
   function renderTalentModal(talent) {
@@ -788,13 +948,13 @@
         detail('Cargo', talent.cargo),
         detail('WhatsApp', talent.whatsapp || talent.telefone_principal),
         detail('E-mail', talent.email),
-        detail('Cidade', [talent.cidade, talent.estado_uf].filter(Boolean).join('/')),
+        detail('Cidade', displayJoin([talent.cidade, talent.estado_uf], '/')),
         detail('Bairro', talent.bairro),
         detail('Idade', talent.idade_anos ? `${talent.idade_anos} anos` : talent.faixa_idade),
         detail('Pretensão', talent.pretensao_salarial),
-        detail('Metrô próximo', [talent.estacao_mais_proxima, talent.linha_metro_mais_proxima].filter(Boolean).join(' • ')),
-        detail('Distância metrô', talent.distancia_metro_km ? `${talent.distancia_metro_km} km` : ''),
-        detail('Região', [talent.regiao_macro, talent.micro_regiao].filter(Boolean).join(' • ')),
+        detail('Metrô próximo', getMetroInfo(talent).hasMetro ? displayText(getMetroInfo(talent).label) : ''),
+        detail('Distância até o metrô', getMetroInfo(talent).detail || ''),
+        detail('Região', displayJoin([talent.regiao_macro, talent.micro_regiao])),
         detail('CEP', talent.cep)
       ].join('');
     }
@@ -982,17 +1142,6 @@
     }
   }
 
-  async function onFilterChange(resetChildren = []) {
-    resetChildren.forEach((id) => {
-      const el = $('#' + id);
-      if (el) el.value = '';
-    });
-
-    collectFilters();
-    await loadAllOptions(true);
-    await search(true);
-  }
-
   function setupEvents() {
     ['openLoginBtn', 'heroLoginBtn', 'warningLoginBtn'].forEach((id) => {
       $('#' + id)?.addEventListener('click', openLoginModal);
@@ -1010,21 +1159,34 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     });
 
-    $('#cidadeSelect')?.addEventListener('change', () => onFilterChange(['regiaoSelect', 'microSelect', 'bairroSelect']));
-    $('#regiaoSelect')?.addEventListener('change', () => onFilterChange(['microSelect', 'bairroSelect']));
-    $('#microSelect')?.addEventListener('change', () => onFilterChange(['bairroSelect']));
+    $('#cidadeSelect')?.addEventListener('change', () => scheduleFilterAction(
+      ['regiaoSelect', 'microSelect', 'bairroSelect'],
+      ['regiao_macro', 'micro_regiao', 'bairro', 'faixa_idade', 'cargo', 'metro']
+    ));
 
+    $('#regiaoSelect')?.addEventListener('change', () => scheduleFilterAction(
+      ['microSelect', 'bairroSelect'],
+      ['micro_regiao', 'bairro', 'faixa_idade', 'cargo', 'metro']
+    ));
+
+    $('#microSelect')?.addEventListener('change', () => scheduleFilterAction(
+      ['bairroSelect'],
+      ['bairro', 'faixa_idade', 'cargo', 'metro']
+    ));
+
+    // Filtros finais não precisam recalcular todos os outros filtros a cada clique.
+    // Isso deixa a percepção de resposta muito mais rápida.
     ['bairroSelect', 'idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
-      $('#' + id)?.addEventListener('change', () => onFilterChange([]));
+      $('#' + id)?.addEventListener('change', () => scheduleFilterAction([], []));
     });
 
     $('#termoInput')?.addEventListener('keydown', async (event) => {
       if (event.key === 'Enter') {
-        await onFilterChange([]);
+        scheduleFilterAction([], []);
       }
     });
 
-    $('#buscarBtn')?.addEventListener('click', () => onFilterChange([]));
+    $('#buscarBtn')?.addEventListener('click', () => scheduleFilterAction([], []));
     $('#maisBtn')?.addEventListener('click', () => search(false));
 
     $('#limparBtn')?.addEventListener('click', async () => {

@@ -1,0 +1,26 @@
+RH IMOB • Novos Talentos V12 — Distância do metrô no HTML
+
+O que foi ajustado:
+- Quando houver estação/linha de metrô e distância até 5 km, o card mostra:
+  Estação • Linha • distância em km
+
+Exemplo:
+Vila Mariana • Linha 1-Azul • 1,8 km
+
+- Quando a distância estiver acima de 5 km, o card não vende como "metrô próximo".
+- O modal de detalhes também mostra a distância até o metrô.
+- Não altera filtros.
+- Não altera Supabase.
+- Não altera consumo/detalhes.
+- Não altera Plataforma Corretores.
+
+Subir no GitHub/Vercel:
+- novos-talentos.html
+- novos-talentos.css
+- novos-talentos.js
+- supabase-config-novos-talentos.js
+
+Não precisa rodar SQL para este ajuste.
+
+Teste:
+novos-talentos.html?nt=16

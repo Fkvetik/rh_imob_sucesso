@@ -797,3 +797,35 @@ input:focus, textarea:focus, select:focus {
 .nt-form-message.success{color:#0d8755;}
 .nt-empty strong{color:var(--purple-900);}
 @media(max-width:680px){.nt-filter-actions{display:grid;}}
+
+
+
+/* RH IMOB NT v12 — metrô e distância */
+.nt-card__meta span:nth-child(3) {
+  font-weight: 800;
+}
+.nt-signal.muted {
+  opacity: .72;
+}
+
+
+
+/* RH IMOB NT v13 — percepção de resposta dos filtros */
+#resultadoStatus {
+  min-height: 22px;
+}
+.nt-btn:disabled {
+  opacity: .7;
+  cursor: wait;
+}
+
+
+
+/* RH IMOB NT v14 — tratamento visual de texto */
+.nt-card__meta span,
+.nt-card h3,
+.nt-card p,
+.nt-detail strong,
+.nt-filter select {
+  text-rendering: geometricPrecision;
+}
