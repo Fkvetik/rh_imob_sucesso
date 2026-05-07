@@ -7,8 +7,8 @@
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
-    url: 'https://tnzmxpoxvdlckmjwdala.supabase.co',
-    publishableKey: 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv'
+    url: 'https://pufxvskozfdvfscqnays.supabase.co',
+    publishableKey: 'sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj'
   };
 
   const rawCfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || EMBEDDED_NT_CONFIG;
@@ -20,6 +20,7 @@
   };
 
   const PRODUCT_CODE = 'NOVOS_TALENTOS';
+  const CONFIG_CHECK_V7_SUPABASE_CORRETO = true;
   const PAGE_SIZE = 24;
   const FILTER_SAMPLE_LIMIT = 6000;
 
