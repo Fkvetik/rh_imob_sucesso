@@ -1030,3 +1030,76 @@ textarea { resize: vertical; min-height: 100px; }
   .modal-panel { border-radius: 26px 26px 0 0; max-height: 92vh; }
   .floating-wa { right: 14px; bottom: 14px; height: 54px; }
 }
+
+/* Plataforma Corretores - incremento preservando o site atual */
+.gateway-actions--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gateway-card-action.platform { background: linear-gradient(145deg, #fff, #f4efff); }
+.platform-section {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(109,45,242,.13), transparent 25rem),
+    linear-gradient(180deg, #fff, var(--purple-50));
+}
+.platform-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+  gap: 42px;
+  align-items: center;
+}
+.platform-copy p { color: var(--muted); font-size: 17px; }
+.platform-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 22px 0 8px;
+}
+.platform-list span {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.78);
+  color: var(--muted);
+  font-weight: 800;
+}
+.platform-list span::before {
+  content: "✓";
+  color: var(--green);
+  font-weight: 950;
+}
+.platform-panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.76)),
+    radial-gradient(circle at 90% 0%, rgba(255,143,61,.18), transparent 18rem);
+  border: 1px solid var(--line);
+  border-radius: 34px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.platform-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 18px 0;
+}
+.platform-stats div {
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--purple-950);
+  color: var(--white);
+}
+.platform-stats strong {
+  display: block;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -.05em;
+  margin-bottom: 7px;
+}
+.platform-stats span { color: rgba(255,255,255,.72); font-size: 13px; font-weight: 800; }
+.platform-panel p { color: var(--muted); margin: 0; }
+
+@media (max-width: 980px) {
+  .gateway-actions--three, .platform-grid { grid-template-columns: 1fr; }
+  .platform-list { grid-template-columns: 1fr; }
+}
