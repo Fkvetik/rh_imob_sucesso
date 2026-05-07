@@ -4,26 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Corretores ativos por cidade | RH IMOB</title>
-  <meta name="description" content="Vitrine pública mascarada de corretores ativos por cidade, ano de inscrição e perfil profissional. Contatos completos somente com acesso contratado." />
+  <meta name="description" content="Vitrine pública mascarada de corretores ativos por cidade, ano de inscrição e perfil profissional. Contatos completos somente com login contratado." />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#2b124d" />
-  <link rel="canonical" href="https://rhimob0305.vercel.app/corretores.html" />
-  <link rel="icon" href="/favicon.ico?v=20260506corretores" sizes="any" />
-  <link rel="icon" href="/favicon.svg?v=20260506corretores" type="image/svg+xml" />
-  <link rel="stylesheet" href="corretores.css?v=20260506corretores" />
+  <link rel="canonical" href="https://rhimob0305.vercel.app/corretores" />
+  <link rel="icon" href="/favicon.ico?v=20260506login" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260506login" type="image/svg+xml" />
+  <link rel="stylesheet" href="corretores.css?v=20260506login" />
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar__inner">
       <a class="brand" href="/">
-        <img src="/assets/rhimob-mark.svg?v=20260506corretores" alt="" />
-        <span><strong>RH IMOB</strong><small>Base pública mascarada</small></span>
+        <img src="/assets/rhimob-mark.svg?v=20260506login" alt="" />
+        <span><strong>RH IMOB</strong><small>Plataforma Corretores</small></span>
       </a>
       <nav>
         <a href="/">Início</a>
         <a href="/#vagas">Vagas</a>
         <a href="/#contato">Contato</a>
       </nav>
+      <div class="auth-mini" id="authMini" hidden>
+        <span id="authMiniName">Sessão ativa</span>
+        <button class="link-btn" type="button" id="logoutBtn">Sair</button>
+      </div>
+      <button class="btn btn-secondary" id="loginTopBtn" type="button">Entrar</button>
       <a class="btn btn-primary" id="topWhatsapp" href="#" target="_blank" rel="noopener">Solicitar acesso</a>
     </div>
   </header>
@@ -34,10 +39,10 @@
         <div>
           <span class="kicker">Plataforma RH IMOB</span>
           <h1>Corretores ativos por cidade, ano de CRECI e sinais de contato.</h1>
-          <p>Visualize uma amostra mascarada da inteligência RH IMOB. Nome completo, telefone, Instagram e abordagem pronta ficam disponíveis somente em acesso contratado.</p>
+          <p>Visualize uma amostra mascarada da inteligência RH IMOB. Com login contratado, o operador libera contato completo, consome o lead por plano e abre o WhatsApp com mensagem pronta.</p>
           <div class="actions">
             <a class="btn btn-primary" href="#consulta">Consultar base mascarada</a>
-            <a class="btn btn-secondary" id="heroWhatsapp" href="#" target="_blank" rel="noopener">Quero acesso completo</a>
+            <button class="btn btn-secondary" id="heroLoginBtn" type="button">Entrar com login e senha</button>
           </div>
         </div>
         <aside class="summary">
@@ -47,9 +52,9 @@
           <div class="summary__grid">
             <div><b id="totalCidades">18</b><em>cidades</em></div>
             <div><b>CRECI</b><em>ativo</em></div>
-            <div><b>Seguro</b><em>sem telefone público</em></div>
+            <div><b>Plano</b><em>consumo isolado</em></div>
           </div>
-          <p>A página pública lê somente a tabela <code>leads_publicos</code>. Nenhum contato completo é exposto.</p>
+          <p>A página pública lê somente <code>leads_publicos</code>. O contato completo é liberado apenas via login autenticado e consumo por conta/plano.</p>
         </aside>
       </div>
     </section>
@@ -59,7 +64,7 @@
         <div class="section-head">
           <span class="kicker">Consulta pública</span>
           <h2>Filtre a base mascarada</h2>
-          <p>Selecione cidade, ano e perfil. O objetivo é demonstrar volume e segmentação sem revelar dados sensíveis.</p>
+          <p>O filtro de perfil agora lê a coluna <strong>cargo</strong>, normalizada, evitando repetições como “corretor”, “corretora” e “consultor imobiliário” separados.</p>
         </div>
 
         <div class="filters">
@@ -73,7 +78,7 @@
 
         <div class="status-row">
           <div id="resultadoStatus">Carregando filtros...</div>
-          <div>Dados mascarados. Contato completo apenas com acesso.</div>
+          <div id="authStatusText">Dados mascarados. Entre para liberar contatos completos.</div>
         </div>
 
         <div class="cards" id="cardsGrid" aria-live="polite"></div>
@@ -85,13 +90,47 @@
       <div class="container cta__inner">
         <div>
           <span class="kicker">Acesso completo</span>
-          <h2>Quer liberar WhatsApp, Instagram e mensagem pronta?</h2>
-          <p>No painel completo, o consumo é por plano: se um lead for usado por um plano, ele some apenas para os operadores daquele plano.</p>
+          <h2>Login, consumo por plano e WhatsApp pronto.</h2>
+          <p>Quando um operador libera um lead, ele fica consumido apenas para a conta/plano daquele cliente. Outros planos continuam visualizando o mesmo lead normalmente.</p>
         </div>
         <a class="btn btn-light" id="bottomWhatsapp" href="#" target="_blank" rel="noopener">Falar com Fernando</a>
       </div>
     </section>
   </main>
+
+  <div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-backdrop" data-close-login></div>
+    <div class="modal-panel auth-panel" role="document">
+      <button class="modal-close" type="button" data-close-login aria-label="Fechar">×</button>
+      <span class="kicker">Acesso contratado</span>
+      <h2 id="loginTitle">Entrar na Plataforma Corretores</h2>
+      <p class="modal-text">Use o e-mail e senha cadastrados na planilha-mãe. A autenticação usa Supabase Auth com chave pública; nenhum dado completo é exposto sem sessão.</p>
+      <form id="loginForm" class="login-form">
+        <label>E-mail
+          <input type="email" id="loginEmail" autocomplete="email" placeholder="operador@empresa.com.br" required />
+        </label>
+        <label>Senha
+          <div class="password-wrap">
+            <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Digite sua senha" required />
+            <button type="button" id="togglePassword" aria-label="Mostrar senha">👁</button>
+          </div>
+        </label>
+        <button class="btn btn-primary btn-full" type="submit" id="loginSubmitBtn">Entrar</button>
+        <div class="form-message" id="loginMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="leadModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+    <div class="modal-backdrop" data-close-lead></div>
+    <div class="modal-panel lead-detail" role="document">
+      <button class="modal-close" type="button" data-close-lead aria-label="Fechar">×</button>
+      <span class="kicker">Contato liberado</span>
+      <h2 id="leadModalTitle">Lead completo</h2>
+      <p class="modal-text" id="leadModalSubtitle">Este lead foi consumido para o seu plano.</p>
+      <div id="leadDetailContent" class="lead-detail-content"></div>
+    </div>
+  </div>
 
   <footer class="footer">
     <div class="container footer__inner">
@@ -100,7 +139,8 @@
     </div>
   </footer>
 
-  <script src="supabase-config.js?v=20260506corretores"></script>
-  <script src="corretores.js?v=20260506corretores"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20260506login"></script>
+  <script src="corretores.js?v=20260506login"></script>
 </body>
 </html>
