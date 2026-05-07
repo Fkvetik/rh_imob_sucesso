@@ -6,6 +6,117 @@
 
   const JOBS = [
     {
+      "id": "corretor-terceiros-grupo-kaza-alto-padrao-sp",
+      "title": "Corretor(a) de Imóveis – Terceiros Alto Padrão",
+      "category": "Vendas terceiros",
+      "location": "São Paulo/SP",
+      "contract": "Autônomo",
+      "pay": "Comissionamento compatível com imóveis de alto padrão",
+      "schedule": "Atuação comercial com rotina alinhada à operação",
+      "summary": "O Grupo Kaza busca profissionais comerciais para atuar no setor de terceiros, com foco em imóveis de alto padrão, atendimento consultivo e relacionamento com clientes qualificados.",
+      "highlights": [
+            "Atuação com imóveis de alto padrão",
+            "Carteira voltada a venda de terceiros",
+            "Marca consolidada no mercado imobiliário",
+            "Perfil consultivo e foco em relacionamento"
+      ],
+      "details": [
+            "Atendimento e relacionamento com clientes compradores e proprietários",
+            "Captação, apresentação e negociação de imóveis de terceiros",
+            "Atuação consultiva no segmento de médio e alto padrão",
+            "Acompanhamento do cliente durante o processo comercial",
+            "Desejável CRECI ativo ou disponibilidade para regularização",
+            "Experiência com vendas, atendimento consultivo ou mercado imobiliário será considerada diferencial",
+            "Perfil comunicativo, organizado, comercial e orientado a resultado",
+            "Atuação em regiões estratégicas de São Paulo, com foco em imóveis de maior valor agregado"
+      ],
+      "sections": [
+            {
+                  "title": "Atuação",
+                  "items": [
+                        "Venda de imóveis de terceiros em operação de alto padrão",
+                        "Relacionamento com proprietários e clientes compradores",
+                        "Captação, apresentação, negociação e acompanhamento comercial"
+                  ]
+            },
+            {
+                  "title": "Perfil desejado",
+                  "items": [
+                        "Perfil comercial, consultivo e com boa comunicação",
+                        "Organização para acompanhar carteira, visitas e propostas",
+                        "Experiência com vendas ou mercado imobiliário será diferencial",
+                        "Desejável CRECI ativo ou disponibilidade para regularização"
+                  ]
+            },
+            {
+                  "title": "Diferenciais da oportunidade",
+                  "items": [
+                        "Atuação em imobiliária de alto padrão",
+                        "Contato com imóveis e clientes de maior valor agregado",
+                        "Ambiente estruturado para profissionais que buscam crescimento no mercado imobiliário"
+                  ]
+            }
+      ],
+      "badge": "Grupo Kaza",
+      "featured": true
+},
+    {
+      "id": "corretor-locacao-grupo-kaza-alto-padrao-sp",
+      "title": "Corretor(a) de Locação – Alto Padrão",
+      "category": "Locação",
+      "location": "São Paulo/SP",
+      "contract": "Autônomo",
+      "pay": "Comissionamento compatível com locações de alto padrão",
+      "schedule": "Atuação comercial com rotina alinhada à operação",
+      "summary": "Oportunidade para atuar no setor de locação do Grupo Kaza, em uma operação imobiliária estruturada, com foco em imóveis de alto padrão e atendimento qualificado.",
+      "highlights": [
+            "Foco em locação residencial e comercial",
+            "Atuação com imóveis de maior valor agregado",
+            "Relacionamento com clientes e proprietários",
+            "Imobiliária de alto padrão"
+      ],
+      "details": [
+            "Atendimento a clientes interessados em locação de imóveis",
+            "Apresentação de imóveis e condução de visitas",
+            "Relacionamento com proprietários e potenciais locatários",
+            "Apoio na negociação e avanço das propostas de locação",
+            "Organização do funil de atendimento e acompanhamento dos interessados",
+            "Desejável vivência com locação, atendimento ao cliente ou mercado imobiliário",
+            "Perfil comunicativo, consultivo, ágil e com boa postura profissional",
+            "Boa oportunidade para profissionais que desejam atuar em uma imobiliária consolidada e com foco em alto padrão"
+      ],
+      "sections": [
+            {
+                  "title": "Atuação",
+                  "items": [
+                        "Atendimento a clientes interessados em locação",
+                        "Agendamento e realização de visitas",
+                        "Relacionamento com proprietários e interessados",
+                        "Acompanhamento de propostas e negociações"
+                  ]
+            },
+            {
+                  "title": "Perfil desejado",
+                  "items": [
+                        "Boa comunicação e postura profissional",
+                        "Agilidade no atendimento e organização de rotina",
+                        "Perfil consultivo e orientado a resultado",
+                        "Experiência com locação ou atendimento ao cliente será diferencial"
+                  ]
+            },
+            {
+                  "title": "Diferenciais da oportunidade",
+                  "items": [
+                        "Atuação no segmento de alto padrão",
+                        "Operação imobiliária estruturada",
+                        "Contato com clientes qualificados e imóveis de maior valor agregado"
+                  ]
+            }
+      ],
+      "badge": "Grupo Kaza",
+      "featured": true
+},
+    {
       "id": "corretor-locacao-vila-madalena-clt",
       "title": "Corretor(a) de Locação",
       "category": "Locação",
