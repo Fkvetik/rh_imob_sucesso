@@ -18,7 +18,8 @@
     loading: false,
     session: null,
     profile: null,
-    frases: []
+    frases: [],
+    adminLoaded: false
   };
 
   let sb = null;
@@ -166,6 +167,37 @@
     return normalize(base).split(' ')[0] || 'Operador';
   }
 
+  function isAdminProfile() {
+    const perfil = String(state.profile?.perfil || '').toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'MASTER';
+  }
+
+  function formatDateBR(value) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString('pt-BR');
+  }
+
+  function formatDateTimeBR(value) {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function sameLocalDay(a, b = new Date()) {
+    const d = new Date(a);
+    if (Number.isNaN(d.getTime())) return false;
+    return d.getFullYear() === b.getFullYear() && d.getMonth() === b.getMonth() && d.getDate() === b.getDate();
+  }
+
+  function postgrestInList(values) {
+    const clean = Array.from(new Set((values || []).map((v) => String(v || '').trim()).filter(Boolean)));
+    if (!clean.length) return '';
+    return 'in.(' + clean.map((v) => '"' + v.replace(/"/g, '\"') + '"').join(',') + ')';
+  }
+
   async function loadUserProfile() {
     state.profile = null;
     const userId = state.session?.user?.id;
@@ -222,6 +254,11 @@
         ? 'Login ativo. Ao abrir contato, o lead será consumido apenas para este plano.'
         : 'Dados mascarados. Entre para liberar contatos completos.';
     }
+
+    const adminPanel = $('#adminPanel');
+    if (adminPanel) {
+      adminPanel.hidden = !(logged && isAdminProfile());
+    }
   }
 
   async function setupAuth() {
@@ -236,6 +273,7 @@
     if (state.session) {
       await loadUserProfile();
       await loadFrases();
+      if (isAdminProfile()) setTimeout(() => loadAdminDashboard({ silent: true }), 250);
     }
     updateAuthUI();
 
@@ -244,6 +282,7 @@
       if (state.session) {
         await loadUserProfile();
         await loadFrases();
+        if (isAdminProfile()) setTimeout(() => loadAdminDashboard({ silent: true }), 250);
       } else {
         state.profile = null;
         state.frases = DEFAULT_FRASES.slice();
@@ -295,6 +334,7 @@
       await loadUserProfile();
       await loadFrases();
       updateAuthUI();
+      if (isAdminProfile()) setTimeout(() => loadAdminDashboard(), 350);
       setLoginMessage('Login realizado com sucesso.', 'success');
       setTimeout(closeLoginModal, 450);
     });
@@ -487,6 +527,7 @@
       renderLeadDetail(lead);
       openLeadModal();
       status(`Contato liberado. Consumidos: ${lead.leads_consumidos} • Disponíveis: ${lead.leads_disponiveis}`);
+      if (isAdminProfile()) loadAdminDashboard({ silent: true });
     } catch (e) {
       console.error(e);
       alert('Não foi possível liberar este contato.\n\n' + e.message);
@@ -539,6 +580,173 @@
       const newUrl = whatsappLeadUrl(lead, event.target.value);
       if (link && newUrl) link.href = newUrl;
     });
+  }
+
+  function setAdminAlert(message, type = 'info') {
+    const el = $('#adminAlert');
+    if (!el) return;
+    if (!message) {
+      el.hidden = true;
+      el.textContent = '';
+      el.className = 'admin-alert';
+      return;
+    }
+    el.hidden = false;
+    el.textContent = message;
+    el.className = `admin-alert ${type}`.trim();
+  }
+
+  function setCellText(id, value) {
+    const el = $('#' + id);
+    if (el) el.textContent = value == null || value === '' ? '-' : String(value);
+  }
+
+  function renderAdminUsers(users = []) {
+    const tbody = $('#adminUsersTable');
+    if (!tbody) return;
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="4">Nenhum usuário cadastrado neste plano.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map((u) => `
+      <tr>
+        <td>${esc(u.nome || '-')}</td>
+        <td>${esc(u.email || '-')}</td>
+        <td><span class="pill ${String(u.perfil || '').toLowerCase()}">${esc(u.perfil || '-')}</span></td>
+        <td><span class="status-chip ${String(u.status || '').toLowerCase()}">${esc(u.status || '-')}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function renderAdminReport(users = [], consumos = []) {
+    const tbody = $('#adminReportTable');
+    if (!tbody) return;
+
+    const byAuth = new Map();
+    const byEmail = new Map();
+    users.forEach((u) => {
+      if (u.auth_user_id) byAuth.set(u.auth_user_id, { user: u, hoje: 0, total: 0, ultimo: null });
+      if (u.email) byEmail.set(String(u.email).toLowerCase(), { user: u, hoje: 0, total: 0, ultimo: null });
+    });
+
+    consumos.forEach((c) => {
+      const email = String(c.usuario_email || '').toLowerCase();
+      let item = byAuth.get(c.auth_user_id) || byEmail.get(email);
+      if (!item) {
+        item = { user: { nome: c.usuario_email || 'Operador não identificado', email }, hoje: 0, total: 0, ultimo: null };
+        byEmail.set(email || ('sem-email-' + byEmail.size), item);
+      }
+      item.total += 1;
+      if (sameLocalDay(c.data_consumo || c.created_at)) item.hoje += 1;
+      const dt = c.data_consumo || c.created_at;
+      if (!item.ultimo || new Date(dt) > new Date(item.ultimo)) item.ultimo = dt;
+    });
+
+    const rows = Array.from(new Set([...byAuth.values(), ...byEmail.values()]))
+      .sort((a, b) => b.total - a.total || String(a.user.nome || '').localeCompare(String(b.user.nome || ''), 'pt-BR'));
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="4">Sem consumo registrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map((r) => `
+      <tr>
+        <td>${esc(r.user.nome || r.user.email || 'Operador')}</td>
+        <td><strong>${r.hoje}</strong></td>
+        <td><strong>${r.total}</strong></td>
+        <td>${esc(formatDateTimeBR(r.ultimo))}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderAdminRecent(consumos = [], leadsMap = new Map()) {
+    const tbody = $('#adminRecentTable');
+    if (!tbody) return;
+    const rows = consumos.slice(0, 20);
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5">Sem contatos liberados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((c) => {
+      const lead = leadsMap.get(c.lead_key) || {};
+      return `
+        <tr>
+          <td>${esc(formatDateTimeBR(c.data_consumo || c.created_at))}</td>
+          <td>${esc(c.usuario_email || 'Operador')}</td>
+          <td>${esc(lead.nome_mascarado || c.lead_key || '-')}</td>
+          <td>${esc(lead.cidade || '-')}</td>
+          <td>${esc(lead.cargo || '-')}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadAdminDashboard({ silent = false } = {}) {
+    if (!state.session || !state.profile || !isAdminProfile()) return;
+    const panel = $('#adminPanel');
+    if (panel) panel.hidden = false;
+
+    if (!silent) setAdminAlert('Atualizando relatório do plano...', 'info');
+
+    try {
+      const contaId = state.profile.conta_id;
+      if (!contaId) throw new Error('Usuário logado sem CONTA_ID vinculado. Verifique USUARIOS_MODELO.');
+
+      const [contas, users, consumos] = await Promise.all([
+        api('contas', { select: 'id,nome_empresa,status,usuarios_contratados,limite_leads,data_inicio,data_fim,observacao', id: `eq.${contaId}`, limit: 1 }),
+        api('usuarios_conta', { select: 'id,conta_id,auth_user_id,nome,email,perfil,status,telefone,created_at', conta_id: `eq.${contaId}`, order: 'nome.asc' }),
+        api('lead_consumos', { select: 'id,conta_id,lead_key,user_id,auth_user_id,usuario_email,data_consumo,status,created_at', conta_id: `eq.${contaId}`, order: 'data_consumo.desc', limit: 10000 })
+      ]);
+
+      const conta = contas?.[0] || {};
+      const activeUsers = (users || []).filter((u) => String(u.status || '').toUpperCase() === 'ATIVO');
+      const contracted = Number(conta.usuarios_contratados || 0);
+      const limit = Number(conta.limite_leads || 0);
+      const consumed = (consumos || []).length;
+      const available = Math.max(0, limit - consumed);
+
+      setCellText('adminEmpresa', conta.nome_empresa || 'Plano sem nome');
+      setCellText('adminPlanoStatus', `Status: ${conta.status || '-'} • Conta: ${String(conta.id || contaId).slice(0, 8)}...`);
+      setCellText('adminUsuariosResumo', `${activeUsers.length}/${contracted || activeUsers.length}`);
+      setCellText('adminUsuariosStatus', contracted && activeUsers.length > contracted ? 'Acima do contratado' : 'Dentro do plano');
+      setCellText('adminLeadsConsumidos', consumed);
+      setCellText('adminLeadsDisponiveis', limit ? `${available} disponíveis` : 'Limite não definido');
+      setCellText('adminPeriodo', `${formatDateBR(conta.data_inicio)} até ${formatDateBR(conta.data_fim)}`);
+      setCellText('adminLimite', limit ? `Limite: ${limit} leads` : 'Sem limite configurado');
+      setCellText('adminUsersCount', `${users.length} usuário(s)`);
+      setCellText('adminRecentCount', `${Math.min(consumed, 20)} registro(s) recentes`);
+
+      if (contracted && activeUsers.length > contracted) {
+        setAdminAlert(`Atenção: este plano tem ${contracted} usuário(s) contratado(s), mas ${activeUsers.length} usuário(s) ativo(s). Ajuste a planilha ou aumente o plano.`, 'warn');
+      } else {
+        setAdminAlert('Relatório atualizado com sucesso.', 'success');
+      }
+
+      renderAdminUsers(users || []);
+      renderAdminReport(users || [], consumos || []);
+
+      let leadsMap = new Map();
+      const keys = (consumos || []).slice(0, 20).map((c) => c.lead_key).filter(Boolean);
+      const inFilter = postgrestInList(keys);
+      if (inFilter) {
+        try {
+          const leads = await api(cfg.publicTable || 'leads_publicos', {
+            select: 'lead_key,nome_mascarado,cidade,ano_inscricao,cargo',
+            lead_key: inFilter,
+            limit: 50
+          });
+          leadsMap = new Map((leads || []).map((l) => [l.lead_key, l]));
+        } catch (leadErr) {
+          console.warn('Não foi possível detalhar leads recentes:', leadErr);
+        }
+      }
+      renderAdminRecent(consumos || [], leadsMap);
+      state.adminLoaded = true;
+    } catch (e) {
+      console.error(e);
+      setAdminAlert('Não foi possível carregar o painel do plano. Detalhe: ' + e.message, 'error');
+    }
   }
 
   function bind() {
@@ -598,6 +806,7 @@
     });
 
     $('#maisBtn').addEventListener('click', () => search({ append: true }));
+    $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
   }
 
   async function init() {

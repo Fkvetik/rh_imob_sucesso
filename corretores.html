@@ -8,15 +8,15 @@
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#2b124d" />
   <link rel="canonical" href="https://rhimob0305.vercel.app/corretores" />
-  <link rel="icon" href="/favicon.ico?v=20260506login" sizes="any" />
-  <link rel="icon" href="/favicon.svg?v=20260506login" type="image/svg+xml" />
-  <link rel="stylesheet" href="corretores.css?v=20260506login" />
+  <link rel="icon" href="/favicon.ico?v=20260506admin" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260506admin" type="image/svg+xml" />
+  <link rel="stylesheet" href="corretores.css?v=20260506admin" />
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar__inner">
       <a class="brand" href="/">
-        <img src="/assets/rhimob-mark.svg?v=20260506login" alt="" />
+        <img src="/assets/rhimob-mark.svg?v=20260506admin" alt="" />
         <span><strong>RH IMOB</strong><small>Plataforma Corretores</small></span>
       </a>
       <nav>
@@ -86,6 +86,61 @@
       </div>
     </section>
 
+
+    <section class="admin-section" id="adminPanel" hidden>
+      <div class="container">
+        <div class="admin-head">
+          <div>
+            <span class="kicker">Painel do plano</span>
+            <h2>Relatórios do administrador</h2>
+            <p>Visão do plano, usuários cadastrados, consumo por operador e últimos contatos liberados. Disponível apenas para perfis ADMIN ou MASTER.</p>
+          </div>
+          <button class="btn btn-secondary" id="adminRefreshBtn" type="button">Atualizar relatório</button>
+        </div>
+
+        <div class="admin-alert" id="adminAlert" hidden></div>
+
+        <div class="admin-cards">
+          <article class="admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
+          <article class="admin-card"><small>Usuários</small><strong id="adminUsuariosResumo">-</strong><span id="adminUsuariosStatus">-</span></article>
+          <article class="admin-card"><small>Leads consumidos</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
+          <article class="admin-card"><small>Período do plano</small><strong id="adminPeriodo">-</strong><span id="adminLimite">-</span></article>
+        </div>
+
+        <div class="admin-grid">
+          <article class="admin-box">
+            <div class="admin-box-head"><h3>Usuários do plano</h3><span id="adminUsersCount">0 usuários</span></div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
+                <tbody id="adminUsersTable"><tr><td colspan="4">Entre como administrador.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="admin-box">
+            <div class="admin-box-head"><h3>Consumo por operador</h3><span>Hoje e total</span></div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead><tr><th>Operador</th><th>Hoje</th><th>Total</th><th>Último consumo</th></tr></thead>
+                <tbody id="adminReportTable"><tr><td colspan="4">Sem dados carregados.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <article class="admin-box admin-recent">
+          <div class="admin-box-head"><h3>Últimos contatos liberados</h3><span id="adminRecentCount">0 registros</span></div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Data/hora</th><th>Operador</th><th>Lead</th><th>Cidade</th><th>Perfil</th></tr></thead>
+              <tbody id="adminRecentTable"><tr><td colspan="5">Sem contatos liberados.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <section class="cta">
       <div class="container cta__inner">
         <div>
@@ -140,7 +195,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js?v=20260506login"></script>
-  <script src="corretores.js?v=20260506login"></script>
+  <script src="supabase-config.js?v=20260506admin"></script>
+  <script src="corretores.js?v=20260506admin"></script>
 </body>
 </html>
