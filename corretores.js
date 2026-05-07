@@ -69,7 +69,7 @@
 
   async function api(path, params = {}) {
     if (!cfg.enabled || !cfg.url || !cfg.publishableKey) {
-      throw new Error('Configuração pública do Supabase não encontrada.');
+      throw new Error('Configuração da plataforma não encontrada.');
     }
     const res = await fetch(restUrl(path, params), {
       headers: {
@@ -78,13 +78,13 @@
         Accept: 'application/json'
       }
     });
-    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}: ${(await res.text()).slice(0, 400)}`);
+    if (!res.ok) throw new Error(`Serviço HTTP ${res.status}: ${(await res.text()).slice(0, 400)}`);
     return res.json();
   }
 
   async function rpc(fn, payload = {}) {
     if (!cfg.enabled || !cfg.url || !cfg.publishableKey) {
-      throw new Error('Configuração pública do Supabase não encontrada.');
+      throw new Error('Configuração da plataforma não encontrada.');
     }
     if (!state.session?.access_token) throw new Error('Faça login para acessar esta função.');
     const base = String(cfg.url || '').replace(/\/+$/, '');
@@ -105,7 +105,7 @@
         const parsed = JSON.parse(raw);
         detail = parsed.message || parsed.details || raw;
       } catch (_) {}
-      throw new Error(`Supabase RPC ${res.status}: ${detail.slice(0, 700)}`);
+      throw new Error(`Serviço RPC ${res.status}: ${detail.slice(0, 700)}`);
     }
     return res.json();
   }
@@ -257,8 +257,8 @@
     if (authMiniName) authMiniName.textContent = logged ? (state.profile?.nome || state.session?.user?.email || 'Sessão ativa') : '';
     if (authStatus) {
       authStatus.textContent = logged
-        ? 'Login ativo. Ao abrir contato, o lead será consumido apenas para este plano.'
-        : 'Dados mascarados. Entre para liberar contatos completos.';
+        ? 'Login ativo. Ao abrir contato, o acesso será registrado apenas neste plano.'
+        : 'Prévia protegida. Entre para liberar contatos completos.';
     }
     if (adminPanel) adminPanel.hidden = !(logged && isAdminProfile());
   }
@@ -290,7 +290,7 @@
   async function setupAuth() {
     const client = getSupabaseClient();
     if (!client) {
-      console.warn('Supabase JS não carregado. Login indisponível.');
+      console.warn('Módulo de acesso não carregou. Login indisponível.');
       return;
     }
 
@@ -323,7 +323,7 @@
     $('#loginForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const client = getSupabaseClient();
-      if (!client) return setLoginMessage('Supabase JS não carregou. Recarregue a página.', 'error');
+      if (!client) return setLoginMessage('Módulo de acesso não carregou. Recarregue a página.', 'error');
 
       const email = normalize($('#loginEmail')?.value).toLowerCase();
       const password = String($('#loginPassword')?.value || '');
@@ -423,8 +423,8 @@
 
     return `<article class="lead-card" data-lead-key="${esc(r.lead_key)}">
       <div class="lead-head">
-        <span class="badge">${logged ? 'Acesso autenticado' : 'Dado mascarado'}</span>
-        <h3>${esc(r.nome_mascarado || 'Profissional mascarado')}</h3>
+        <span class="badge">${logged ? 'Acesso autenticado' : 'Prévia protegida'}</span>
+        <h3>${esc(r.nome_mascarado || 'Profissional selecionado')}</h3>
         <div>${esc(r.cidade || 'Cidade não informada')}</div>
       </div>
       <div class="lead-body">
@@ -437,7 +437,7 @@
           <span class="channel ${r.tem_canal_telefone ? 'ok' : ''}">${r.tem_canal_telefone ? 'WhatsApp validado' : 'Telefone não exibido'}</span>
           <span class="channel ${r.tem_canal_instagram ? 'ok' : ''}">${r.tem_canal_instagram ? 'Instagram encontrado' : 'Instagram não exibido'}</span>
         </div>
-        <p class="note">${logged ? 'Ao abrir, o lead será consumido somente para este plano.' : 'Contato completo e mensagem pronta são liberados somente com login contratado.'}</p>
+        <p class="note">${logged ? 'Ao abrir, o contato será registrado somente para este plano.' : 'Contato completo e mensagem pronta ficam disponíveis somente com acesso contratado.'}</p>
         ${action}
         ${!logged ? `<a class="link-access" href="${wa(ctx)}" target="_blank" rel="noopener">Solicitar acesso comercial</a>` : ''}
       </div>
@@ -484,7 +484,7 @@
       }
 
       if (!append && !rows.length) {
-        grid.innerHTML = '<div class="empty">Nenhum resultado encontrado. Tente outra cidade, ano ou perfil.</div>';
+        grid.innerHTML = '<div class="empty">Nenhum perfil encontrado. Tente outra cidade, ano ou atuação.</div>';
       } else {
         grid.insertAdjacentHTML('beforeend', rows.map(card).join(''));
         bindLeadButtons(grid);
@@ -492,10 +492,10 @@
 
       state.offset += rows.length;
       more.hidden = rows.length < PAGE_SIZE;
-      status(`${rows.length} resultados exibidos nesta página${state.session ? ' • consumidos do seu plano ficam ocultos' : ''}`);
+      status(`${rows.length} perfis exibidos nesta página${state.session ? ' • contatos já liberados neste plano ficam ocultos' : ''}`);
     } catch (e) {
       console.error(e);
-      if (!append) grid.innerHTML = `<div class="error">Não foi possível carregar os resultados. Detalhe: ${esc(e.message)}</div>`;
+      if (!append) grid.innerHTML = `<div class="error">Não foi possível carregar os perfis. Detalhe: ${esc(e.message)}</div>`;
       status('Falha ao carregar resultados.');
     } finally {
       state.loading = false;
@@ -586,7 +586,7 @@
 
   async function abrirLead(leadKey) {
     if (!leadKey) {
-      alert('Lead inválido. Atualize a página e tente novamente.');
+      alert('Contato inválido. Atualize a página e tente novamente.');
       return;
     }
 
@@ -604,7 +604,7 @@
       const lead = result?.lead || null;
       if (!lead || !lead.lead_key) {
         throw new Error(
-          'Lead não retornado pelo Supabase. Retorno bruto: ' +
+          'Contato não retornado pela plataforma. Retorno técnico: ' +
           JSON.stringify(raw).slice(0, 700)
         );
       }
@@ -701,7 +701,7 @@
     const tbody = $('#adminUsersTable');
     if (!tbody) return;
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="6">Nenhum usuário cadastrado neste plano.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6">Nenhum operador cadastrado neste plano.</td></tr>';
       return;
     }
     tbody.innerHTML = users.map((u) => {
@@ -727,7 +727,7 @@
     const tbody = $('#adminReportTable');
     if (!tbody) return;
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="4">Sem consumo registrado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4">Nenhum acesso registrado.</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map((r) => `
@@ -745,7 +745,7 @@
     if (!tbody) return;
     const list = (rows || []).slice(0, 30);
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="5">Sem contatos liberados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5">Nenhum contato liberado até agora.</td></tr>';
       return;
     }
     tbody.innerHTML = list.map((r) => `
@@ -780,7 +780,7 @@
       setText('adminLeadsConsumidos', conta.leads_consumidos || 0);
       setText('adminLeadsDisponiveis', `${conta.leads_disponiveis || 0} disponíveis`);
       setText('adminPeriodo', `${formatDateBR(conta.data_inicio)} até ${formatDateBR(conta.data_fim)}`);
-      setText('adminLimite', `Limite: ${conta.limite_leads || 0} leads`);
+      setText('adminLimite', `Limite: ${conta.limite_leads || 0} acessos`);
       setText('adminUsersCount', `${operadores.length} usuário(s)`);
       setText('adminRecentCount', `${ultimos.length} registro(s) recentes`);
 
@@ -990,8 +990,8 @@
       await search();
     } catch (e) {
       console.error(e);
-      $('#cardsGrid').innerHTML = `<div class="error">Não foi possível carregar a vitrine pública agora. Detalhe: ${esc(e.message)}</div>`;
-      status('Falha ao carregar dados públicos.');
+      $('#cardsGrid').innerHTML = `<div class="error">Não foi possível carregar a prévia da plataforma agora. Detalhe: ${esc(e.message)}</div>`;
+      status('Falha ao carregar a consulta.');
     }
   }
 

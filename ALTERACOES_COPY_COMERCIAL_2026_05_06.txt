@@ -1,0 +1,16 @@
+RH IMOB - Ajuste de copy comercial
+
+Objetivo:
+Remover termos técnicos e internos visíveis no site, como Supabase, Vercel, leads_publicos, corretores.html, dados mascarados e contexto de construção.
+
+Arquivos alterados:
+- index.html
+- corretores.html
+- corretores.js
+
+Principais mudanças:
+- "dados mascarados" virou "prévia protegida" ou "visualização protegida".
+- "Supabase + Vercel" saiu da área visível da home.
+- Menções a /corretores.html e leads_publicos foram removidas da copy comercial.
+- Textos de erro ao usuário ficaram genéricos e comerciais, sem expor tecnologia.
+- O posicionamento da Plataforma Corretores ficou mais profissional e voltado a inteligência comercial, saldo, usuários e relatórios por plano.

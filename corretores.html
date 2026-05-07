@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Corretores ativos por cidade | RH IMOB</title>
-  <meta name="description" content="Vitrine pública mascarada de corretores ativos por cidade, ano de inscrição e perfil profissional. Contatos completos somente com login contratado." />
+  <meta name="description" content="Plataforma RH IMOB para localizar corretores ativos por cidade, ano de CRECI e perfil de atuação. Contatos completos disponíveis somente para clientes contratados." />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#2b124d" />
   <link rel="canonical" href="https://rhimob0305.vercel.app/corretores" />
@@ -39,22 +39,22 @@
         <div>
           <span class="kicker">Plataforma RH IMOB</span>
           <h1>Corretores ativos por cidade, ano de CRECI e sinais de contato.</h1>
-          <p>Visualize uma amostra mascarada da inteligência RH IMOB. Com login contratado, o operador libera contato completo, consome o lead por plano e abre o WhatsApp com mensagem pronta.</p>
+          <p>Explore uma prévia protegida da inteligência RH IMOB. Com acesso contratado, sua operação libera contatos completos, controla o saldo do plano e aborda profissionais com mensagens prontas.</p>
           <div class="actions">
-            <a class="btn btn-primary" href="#consulta">Consultar base mascarada</a>
+            <a class="btn btn-primary" href="#consulta">Consultar prévia protegida</a>
             <button class="btn btn-secondary" id="heroLoginBtn" type="button">Entrar com login e senha</button>
           </div>
         </div>
         <aside class="summary">
           <span>Base sincronizada</span>
           <strong>52.569+</strong>
-          <small>perfis mascarados</small>
+          <small>perfis organizados</small>
           <div class="summary__grid">
             <div><b id="totalCidades">18</b><em>cidades</em></div>
             <div><b>CRECI</b><em>ativo</em></div>
             <div><b>Plano</b><em>consumo isolado</em></div>
           </div>
-          <p>A página pública lê somente <code>leads_publicos</code>. O contato completo é liberado apenas via login autenticado e consumo por conta/plano.</p>
+          <p>A visualização inicial preserva informações sensíveis. O contato completo é liberado apenas para clientes com acesso ativo e controle de consumo por plano.</p>
         </aside>
       </div>
     </section>
@@ -63,8 +63,8 @@
       <div class="container">
         <div class="section-head">
           <span class="kicker">Consulta pública</span>
-          <h2>Filtre a base mascarada</h2>
-          <p>O filtro de perfil agora lê a coluna <strong>cargo</strong>, normalizada, evitando repetições como “corretor”, “corretora” e “consultor imobiliário” separados.</p>
+          <h2>Encontre perfis por cidade, ano e atuação</h2>
+          <p>Use os filtros para localizar grupos de profissionais por região, ano de inscrição no CRECI e perfil de atuação comercial.</p>
         </div>
 
         <div class="filters">
@@ -78,7 +78,7 @@
 
         <div class="status-row">
           <div id="resultadoStatus">Carregando filtros...</div>
-          <div id="authStatusText">Dados mascarados. Entre para liberar contatos completos.</div>
+          <div id="authStatusText">Prévia protegida. Entre para liberar contatos completos.</div>
         </div>
 
         <div class="cards" id="cardsGrid" aria-live="polite"></div>
@@ -93,7 +93,7 @@
           <div>
             <span class="kicker">Painel do plano</span>
             <h2>Operação, consumo e mensagens</h2>
-            <p>Disponível apenas para ADMIN ou MASTER. O painel lista operadores, permite inativar/reativar, acompanha consumo por operador e administra frases de abordagem do plano.</p>
+            <p>Disponível para administradores da operação. Acompanhe usuários, consumo, contatos liberados e mensagens de abordagem do plano.</p>
           </div>
           <button class="btn btn-secondary" id="adminRefreshBtn" type="button">Atualizar relatório</button>
         </div>
@@ -103,7 +103,7 @@
         <div class="admin-cards">
           <article class="admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
           <article class="admin-card"><small>Usuários ativos</small><strong id="adminUsuariosResumo">-</strong><span id="adminUsuariosStatus">-</span></article>
-          <article class="admin-card"><small>Acessos consumidos</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
+          <article class="admin-card"><small>Acessos utilizados</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
           <article class="admin-card"><small>Período do plano</small><strong id="adminPeriodo">-</strong><span id="adminLimite">-</span></article>
         </div>
 
@@ -133,7 +133,7 @@
           <div class="admin-box-head"><h3>Últimos contatos liberados</h3><span id="adminRecentCount">0 registros</span></div>
           <div class="table-wrap">
             <table class="admin-table">
-              <thead><tr><th>Data/hora</th><th>Operador</th><th>Lead</th><th>Cidade</th><th>Perfil</th></tr></thead>
+              <thead><tr><th>Data/hora</th><th>Operador</th><th>Perfil</th><th>Cidade</th><th>Perfil</th></tr></thead>
               <tbody id="adminRecentTable"><tr><td colspan="5">Sem contatos liberados.</td></tr></tbody>
             </table>
           </div>
@@ -181,7 +181,7 @@
         <div>
           <span class="kicker">Acesso completo</span>
           <h2>Login, consumo por plano, relatório e mensagens prontas.</h2>
-          <p>Quando um operador libera um lead, ele consome apenas o saldo do plano daquele cliente. O administrador acompanha operadores, consumo e mensagens de abordagem.</p>
+          <p>Quando um operador libera um contato, o acesso é registrado somente no plano daquele cliente. O administrador acompanha usuários, saldo, produção e mensagens de abordagem.</p>
         </div>
         <a class="btn btn-light" id="bottomWhatsapp" href="#" target="_blank" rel="noopener">Falar com Fernando</a>
       </div>
@@ -194,7 +194,7 @@
       <button class="modal-close" type="button" data-close-login aria-label="Fechar">×</button>
       <span class="kicker">Acesso contratado</span>
       <h2 id="loginTitle">Entrar na Plataforma Corretores</h2>
-      <p class="modal-text">Use o e-mail e senha cadastrados na planilha-mãe. A autenticação usa Supabase Auth com chave pública; nenhum dado completo é exposto sem sessão.</p>
+      <p class="modal-text">Use o e-mail e a senha cadastrados para sua operação. O acesso completo libera contatos, relatórios e mensagens conforme as regras do plano contratado.</p>
       <form id="loginForm" class="login-form">
         <label>E-mail
           <input type="email" id="loginEmail" autocomplete="email" placeholder="operador@empresa.com.br" required />
@@ -216,8 +216,8 @@
     <div class="modal-panel lead-detail" role="document">
       <button class="modal-close" type="button" data-close-lead aria-label="Fechar">×</button>
       <span class="kicker">Contato liberado</span>
-      <h2 id="leadModalTitle">Lead completo</h2>
-      <p class="modal-text" id="leadModalSubtitle">Este lead foi consumido para o seu plano.</p>
+      <h2 id="leadModalTitle">Contato completo</h2>
+      <p class="modal-text" id="leadModalSubtitle">Este contato foi registrado no saldo do seu plano.</p>
       <div id="leadDetailContent" class="lead-detail-content"></div>
     </div>
   </div>
