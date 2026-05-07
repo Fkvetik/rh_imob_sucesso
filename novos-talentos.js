@@ -2,7 +2,7 @@
   'use strict';
 
   // RH IMOB • Novos Talentos v10
-  // Filtros separados por tipo, no padrão da Plataforma Corretores.
+  // Estabilidade sem regressão: filtros por tipo, fallback público e consumo protegido por RPC.
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
@@ -20,6 +20,7 @@
 
   const PRODUCT_CODE = 'NOVOS_TALENTOS';
   const PAGE_SIZE = 24;
+  const FALLBACK_LIMIT = 5000;
 
   let sb = null;
 
@@ -30,6 +31,7 @@
     offset: 0,
     total: 0,
     loading: false,
+    loadingFilters: false,
     currentTalent: null,
     filters: {
       cidade: '',
@@ -51,6 +53,10 @@
 
   function normalize(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function lower(value) {
+    return normalize(value).toLowerCase();
   }
 
   function esc(value) {
@@ -88,6 +94,10 @@
       return 'A leitura dos filtros ainda não foi ativada neste ambiente. Aguarde a publicação da atualização e recarregue a página.';
     }
 
+    if (raw.includes('nt_consumir_talento') || raw.toLowerCase().includes('acesso não autorizado')) {
+      return 'Seu acesso entrou, mas ainda não está liberado para consumir contatos neste plano. Sincronize o usuário na planilha ou fale com o administrador.';
+    }
+
     if (
       raw.includes('Could not find the table') ||
       raw.includes('schema cache') ||
@@ -107,6 +117,10 @@
       return 'A prévia protegida ainda não foi liberada para visualização. Fale com o suporte para ativar o acesso inicial.';
     }
 
+    if (raw.toLowerCase().includes('limite do plano')) {
+      return 'O limite contratado para este plano foi atingido. Ajuste o plano ou fale com o administrador.';
+    }
+
     if (
       raw.toLowerCase().includes('failed to fetch') ||
       raw.toLowerCase().includes('network') ||
@@ -115,7 +129,7 @@
       return 'Não foi possível carregar a plataforma agora. Verifique sua conexão e atualize a página.';
     }
 
-    return 'Não foi possível carregar a prévia neste momento. Atualize a página ou fale com o suporte.';
+    return 'Não foi possível concluir essa ação no momento. Atualize a página ou fale com o suporte.';
   }
 
   function setText(id, value) {
@@ -138,6 +152,23 @@
     if (h < 12) return 'Bom dia';
     if (h < 18) return 'Boa tarde';
     return 'Boa noite';
+  }
+
+  function inferMacro(row) {
+    const regiao = normalize(row?.macro_calc || row?.regiao_macro);
+    if (regiao) return regiao;
+
+    const bairro = lower(row?.bairro);
+    if (bairro.includes('zona sul')) return 'Zona Sul';
+    if (bairro.includes('zona norte')) return 'Zona Norte';
+    if (bairro.includes('zona leste')) return 'Zona Leste';
+    if (bairro.includes('zona oeste')) return 'Zona Oeste';
+    if (bairro.includes('centro') || bairro.includes('sé') || bairro.includes('se') || bairro.includes('república') || bairro.includes('republica')) return 'Centro';
+    return '';
+  }
+
+  function inferMicro(row) {
+    return normalize(row?.micro_calc || row?.micro_regiao || row?.estacao_mais_proxima || row?.bairro);
   }
 
   function openLoginModal() {
@@ -223,7 +254,7 @@
     setText('saldoStatus', `Saldo do plano: ${formatNumber(ctx.saldo)} disponíveis • ${formatNumber(ctx.consumidos)} liberados`);
   }
 
-  async function rpcPublic(fn, payload = {}) {
+  async function rpc(fn, payload = {}) {
     const client = getClient();
     if (!client) throw new Error('Configuração da plataforma indisponível.');
 
@@ -236,6 +267,20 @@
     const client = getClient();
     if (!client) throw new Error('Configuração da plataforma indisponível.');
 
+    // Primeiro tenta a função segura. Se RLS das tabelas bloquear, continua funcionando.
+    try {
+      const rows = await rpc('nt_app_context_v10', {});
+      const ctx = Array.isArray(rows) ? rows[0] : rows;
+      if (ctx) {
+        state.context = ctx;
+        updateSummary();
+        updateHeader();
+        return ctx;
+      }
+    } catch (err) {
+      console.warn('[NT] contexto RPC indisponível, tentando leitura direta:', err);
+    }
+
     const { data: userData } = await client.auth.getUser();
     const authUser = userData?.user;
     if (!authUser) throw new Error('Sessão não encontrada.');
@@ -243,7 +288,7 @@
     const { data: userLink, error: userError } = await client
       .from('nt_usuarios_conta')
       .select('usuario_id,usuario_seed_id,conta_id,produto_codigo,nome,email_login,perfil,status,auth_user_id')
-      .eq('auth_user_id', authUser.id)
+      .or(`auth_user_id.eq.${authUser.id},email_login.eq.${authUser.email}`)
       .eq('produto_codigo', PRODUCT_CODE)
       .eq('status', 'ATIVO')
       .maybeSingle();
@@ -262,13 +307,11 @@
     if (contaError) throw contaError;
     if (!conta) throw new Error('Conta não localizada ou inativa.');
 
-    const { count, error: countError } = await client
+    const { count } = await client
       .from('nt_talento_consumos')
       .select('consumo_id', { count: 'exact', head: true })
       .eq('conta_id', conta.conta_id)
       .eq('produto_codigo', PRODUCT_CODE);
-
-    if (countError) throw countError;
 
     const consumidos = count || 0;
     const limite = Number(conta.limite_total || 0);
@@ -282,7 +325,6 @@
 
     updateSummary();
     updateHeader();
-    showWorkspace(true);
     return state.context;
   }
 
@@ -330,20 +372,6 @@
     select.appendChild(option(placeholder, ''));
   }
 
-  function fillOptions(select, rows, tipo, placeholder, selectedValue = '') {
-    resetSelect(select, placeholder);
-
-    (rows || [])
-      .filter((row) => row.tipo === tipo && normalize(row.valor))
-      .forEach((row) => {
-        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
-      });
-
-    if (selectedValue && [...select.options].some((o) => o.value === selectedValue)) {
-      select.value = selectedValue;
-    }
-  }
-
   function collectFilters() {
     const [cidade, uf] = String($('#cidadeSelect')?.value || '').split('||');
 
@@ -358,6 +386,20 @@
       estacao: normalize($('#metroSelect')?.value),
       termo: normalize($('#termoInput')?.value)
     };
+  }
+
+  function fillRows(select, rows, placeholder, selectedValue = '') {
+    resetSelect(select, placeholder);
+
+    (rows || [])
+      .filter((row) => normalize(row.valor))
+      .forEach((row) => {
+        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
+      });
+
+    if (selectedValue && [...select.options].some((o) => o.value === selectedValue)) {
+      select.value = selectedValue;
+    }
   }
 
   async function loadOptionsForType(tipo, preserveValue = true) {
@@ -378,52 +420,126 @@
     const previous = preserveValue ? select.value : '';
     resetSelect(select, placeholder);
 
-    const rows = await rpcPublic('nt_opcoes_filtro_publico_v10', {
-      p_tipo: tipo,
-      p_cidade: state.filters.cidade || null,
-      p_estado_uf: state.filters.estado_uf || null,
-      p_regiao_macro: state.filters.regiao_macro || null,
-      p_micro_regiao: state.filters.micro_regiao || null,
-      p_bairro: state.filters.bairro || null,
-      p_faixa_idade: state.filters.faixa_idade || null,
-      p_cargo: state.filters.cargo || null,
-      p_estacao: state.filters.estacao || null,
-      p_termo: state.filters.termo || null
-    });
-
-    (rows || [])
-      .filter((row) => normalize(row.valor))
-      .forEach((row) => {
-        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
+    try {
+      const rows = await rpc('nt_opcoes_filtro_publico_v10', {
+        p_tipo: tipo,
+        p_cidade: state.filters.cidade || null,
+        p_estado_uf: state.filters.estado_uf || null,
+        p_regiao_macro: state.filters.regiao_macro || null,
+        p_micro_regiao: state.filters.micro_regiao || null,
+        p_bairro: state.filters.bairro || null,
+        p_faixa_idade: state.filters.faixa_idade || null,
+        p_cargo: state.filters.cargo || null,
+        p_estacao: state.filters.estacao || null,
+        p_termo: state.filters.termo || null
       });
 
-    if (previous && [...select.options].some((o) => o.value === previous)) {
-      select.value = previous;
+      fillRows(select, rows, placeholder, previous);
+      return;
+    } catch (err) {
+      console.warn(`[NT] fallback filtro ${tipo}:`, err);
     }
+
+    // Fallback sem RPC: evita tela quebrada se SQL ainda estiver em cache.
+    const fallbackRows = await loadOptionsFallback(tipo);
+    fillRows(select, fallbackRows, placeholder, previous);
+  }
+
+  async function loadOptionsFallback(tipo) {
+    const client = getClient();
+    if (!client) return [];
+
+    if (tipo === 'cidade') {
+      const { data, error } = await client
+        .from('nt_filtro_cidade')
+        .select('cidade,estado_uf,total')
+        .order('total', { ascending: false })
+        .limit(500);
+
+      if (error) throw error;
+
+      return (data || []).map((r) => ({
+        valor: `${r.cidade}||${r.estado_uf}`,
+        label: `${r.cidade}/${r.estado_uf}`,
+        total: r.total || 0
+      }));
+    }
+
+    let query = client
+      .from('nt_talentos_publicos')
+      .select('cidade,estado_uf,bairro,regiao_macro,micro_regiao,faixa_idade,cargo,estacao_mais_proxima,linha_metro_mais_proxima,ativo')
+      .eq('produto_codigo', PRODUCT_CODE)
+      .eq('ativo', true)
+      .limit(FALLBACK_LIMIT);
+
+    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
+    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
+    if (state.filters.regiao_macro) query = query.or(`regiao_macro.eq.${state.filters.regiao_macro},bairro.ilike.%${state.filters.regiao_macro}%`);
+    if (state.filters.micro_regiao) query = query.or(`micro_regiao.eq.${state.filters.micro_regiao},estacao_mais_proxima.eq.${state.filters.micro_regiao},bairro.ilike.%${state.filters.micro_regiao}%`);
+    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
+    if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
+    if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
+    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const map = new Map();
+
+    (data || []).forEach((row) => {
+      let valor = '';
+      let label = '';
+
+      if (tipo === 'regiao_macro') valor = label = inferMacro(row);
+      if (tipo === 'micro_regiao') valor = label = inferMicro(row);
+      if (tipo === 'bairro') valor = label = normalize(row.bairro);
+      if (tipo === 'faixa_idade') valor = label = normalize(row.faixa_idade);
+      if (tipo === 'cargo') valor = label = normalize(row.cargo);
+      if (tipo === 'metro') {
+        valor = normalize(row.estacao_mais_proxima);
+        label = row.linha_metro_mais_proxima ? `${valor} • ${normalize(row.linha_metro_mais_proxima)}` : valor;
+      }
+
+      if (!valor) return;
+
+      const current = map.get(valor) || { valor, label, total: 0 };
+      current.total += 1;
+      map.set(valor, current);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'pt-BR'));
   }
 
   async function loadAllOptions(preserve = true) {
-    collectFilters();
+    if (state.loadingFilters) return;
+    state.loadingFilters = true;
 
-    // Padrão Corretores: cada filtro é carregado por sua própria origem/consulta,
-    // evitando limite de retorno e evitando que "bairros" engulam os demais filtros.
-    const tipos = [
-      'cidade',
-      'regiao_macro',
-      'micro_regiao',
-      'bairro',
-      'faixa_idade',
-      'cargo',
-      'metro'
-    ];
-
-    for (const tipo of tipos) {
-      await loadOptionsForType(tipo, preserve);
+    try {
       collectFilters();
+
+      const tipos = [
+        'cidade',
+        'regiao_macro',
+        'micro_regiao',
+        'bairro',
+        'faixa_idade',
+        'cargo',
+        'metro'
+      ];
+
+      for (const tipo of tipos) {
+        await loadOptionsForType(tipo, preserve);
+        collectFilters();
+      }
+    } catch (err) {
+      console.error('[NT] filtros:', err);
+      status(friendlyError(err));
+    } finally {
+      state.loadingFilters = false;
     }
   }
 
-  function status  function status(message) {
+  function status(message) {
     const el = $('#resultadoStatus');
     if (el) el.textContent = message;
   }
@@ -440,8 +556,8 @@
     }
 
     const html = rows.map((row) => {
-      const macro = normalize(row.macro_calc || row.regiao_macro);
-      const micro = normalize(row.micro_calc || row.micro_regiao || row.estacao_mais_proxima);
+      const macro = inferMacro(row);
+      const micro = inferMicro(row);
 
       const metro = row.estacao_mais_proxima
         ? `${esc(row.estacao_mais_proxima)}${row.linha_metro_mais_proxima ? ` • ${esc(row.linha_metro_mais_proxima)}` : ''}`
@@ -504,22 +620,32 @@
     status('Consultando talentos disponíveis...');
 
     try {
-      const rows = await rpcPublic('nt_listar_talentos_publico_v10', {
-        p_cidade: state.filters.cidade || null,
-        p_estado_uf: state.filters.estado_uf || null,
-        p_regiao_macro: state.filters.regiao_macro || null,
-        p_micro_regiao: state.filters.micro_regiao || null,
-        p_bairro: state.filters.bairro || null,
-        p_faixa_idade: state.filters.faixa_idade || null,
-        p_cargo: state.filters.cargo || null,
-        p_estacao: state.filters.estacao || null,
-        p_termo: state.filters.termo || null,
-        p_limit: PAGE_SIZE,
-        p_offset: state.offset
-      });
+      let list = [];
 
-      const list = Array.isArray(rows) ? rows : [];
-      state.total = Number(list[0]?.total_count || state.total || 0);
+      try {
+        const rows = await rpc('nt_listar_talentos_publico_v10', {
+          p_cidade: state.filters.cidade || null,
+          p_estado_uf: state.filters.estado_uf || null,
+          p_regiao_macro: state.filters.regiao_macro || null,
+          p_micro_regiao: state.filters.micro_regiao || null,
+          p_bairro: state.filters.bairro || null,
+          p_faixa_idade: state.filters.faixa_idade || null,
+          p_cargo: state.filters.cargo || null,
+          p_estacao: state.filters.estacao || null,
+          p_termo: state.filters.termo || null,
+          p_limit: PAGE_SIZE,
+          p_offset: state.offset
+        });
+
+        list = Array.isArray(rows) ? rows : [];
+        state.total = Number(list[0]?.total_count || state.total || 0);
+      } catch (err) {
+        console.warn('[NT] fallback listagem:', err);
+        const fallback = await searchFallback();
+        list = fallback.rows;
+        state.total = fallback.total;
+      }
+
       renderCards(list, !reset);
       state.offset += list.length;
 
@@ -539,7 +665,51 @@
     }
   }
 
-  async function consumirTalento  async function consumirTalento(key, button) {
+  async function searchFallback() {
+    const client = getClient();
+    if (!client) return { rows: [], total: 0 };
+
+    let query = client
+      .from('nt_talentos_publicos')
+      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,tags_publicas,ativo,updated_at', { count: 'exact' })
+      .eq('produto_codigo', PRODUCT_CODE)
+      .eq('ativo', true);
+
+    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
+    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
+    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
+    if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
+    if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
+    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao);
+
+    const from = state.offset;
+    const to = state.offset + PAGE_SIZE - 1;
+
+    const { data, error, count } = await query.order('updated_at', { ascending: false }).range(from, to);
+    if (error) throw error;
+
+    const rows = (data || []).filter((row) => {
+      if (state.filters.regiao_macro && inferMacro(row) !== state.filters.regiao_macro) return false;
+      if (state.filters.micro_regiao && inferMicro(row) !== state.filters.micro_regiao) return false;
+
+      if (state.filters.termo) {
+        const haystack = [
+          row.nome_mascarado,
+          row.cargo,
+          row.bairro,
+          row.cidade,
+          row.tags_publicas
+        ].map(lower).join(' ');
+        if (!haystack.includes(lower(state.filters.termo))) return false;
+      }
+
+      return true;
+    });
+
+    return { rows, total: count || rows.length };
+  }
+
+  async function consumirTalento(key, button) {
     if (!key) return;
 
     if (!state.session) {
@@ -556,29 +726,22 @@
     }
 
     try {
-      const client = getClient();
-      const { data, error } = await client.rpc('nt_consumir_talento', { p_talento_key: key });
-      if (error) throw error;
-
-      const talent = Array.isArray(data) ? data[0] : data;
+      const rows = await rpc('nt_consumir_talento_v10', { p_talento_key: key });
+      const talent = Array.isArray(rows) ? rows[0] : rows;
       if (!talent) throw new Error('Contato não localizado.');
 
       state.currentTalent = talent;
-      await loadContext();
+
+      try {
+        await loadContext();
+      } catch (err) {
+        console.warn('[NT] contexto após consumo:', err);
+      }
+
       renderTalentModal(talent);
       openTalentModal();
     } catch (err) {
-      console.error('[NT] consumir error:', err);
-      const raw = String(err && err.message ? err.message : err || '');
-      let msg = 'Não foi possível liberar este contato. Confira se o plano está ativo, se há saldo disponível e se o usuário está vinculado à conta.';
-      if (raw.toLowerCase().includes('limite')) {
-        msg = 'O limite do plano foi atingido. Ajuste o limite de acessos da conta para continuar.';
-      } else if (raw.toLowerCase().includes('vínculo') || raw.toLowerCase().includes('vinculo') || raw.toLowerCase().includes('autorizado')) {
-        msg = 'Este usuário ainda não está vinculado corretamente ao plano. Atualize o usuário na planilha e sincronize novamente.';
-      } else if (raw.toLowerCase().includes('conta')) {
-        msg = 'A conta não está ativa para liberar contatos. Verifique o status do plano.';
-      }
-      alert(msg);
+      alert(friendlyError(err));
     } finally {
       if (button) {
         button.disabled = false;
@@ -784,8 +947,7 @@
           await loadFrases();
         } catch (err) {
           console.warn('[NT] Sessão sem contexto válido:', err);
-          await client.auth.signOut();
-          state.session = null;
+          // Mantém a sessão logada para o consumo via RPC tentar corrigir vínculo por e-mail.
           state.context = null;
           updateHeader();
           updateSummary();
@@ -800,6 +962,17 @@
       const grid = $('#cardsGrid');
       if (grid) grid.innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
     }
+  }
+
+  async function onFilterChange(resetChildren = []) {
+    resetChildren.forEach((id) => {
+      const el = $('#' + id);
+      if (el) el.value = '';
+    });
+
+    collectFilters();
+    await loadAllOptions(true);
+    await search(true);
   }
 
   function setupEvents() {
@@ -819,46 +992,21 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     });
 
-    $('#cidadeSelect')?.addEventListener('change', async () => {
-      $('#regiaoSelect').value = '';
-      $('#microSelect').value = '';
-      $('#bairroSelect').value = '';
-      await loadAllOptions(true);
-      await search(true);
-    });
-
-    $('#regiaoSelect')?.addEventListener('change', async () => {
-      $('#microSelect').value = '';
-      $('#bairroSelect').value = '';
-      await loadAllOptions(true);
-      await search(true);
-    });
-
-    $('#microSelect')?.addEventListener('change', async () => {
-      $('#bairroSelect').value = '';
-      await loadAllOptions(true);
-      await search(true);
-    });
+    $('#cidadeSelect')?.addEventListener('change', () => onFilterChange(['regiaoSelect', 'microSelect', 'bairroSelect']));
+    $('#regiaoSelect')?.addEventListener('change', () => onFilterChange(['microSelect', 'bairroSelect']));
+    $('#microSelect')?.addEventListener('change', () => onFilterChange(['bairroSelect']));
 
     ['bairroSelect', 'idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
-      $('#' + id)?.addEventListener('change', async () => {
-        await loadAllOptions(true);
-        await search(true);
-      });
+      $('#' + id)?.addEventListener('change', () => onFilterChange([]));
     });
 
     $('#termoInput')?.addEventListener('keydown', async (event) => {
       if (event.key === 'Enter') {
-        await loadAllOptions(true);
-        await search(true);
+        await onFilterChange([]);
       }
     });
 
-    $('#buscarBtn')?.addEventListener('click', async () => {
-      await loadAllOptions(true);
-      await search(true);
-    });
-
+    $('#buscarBtn')?.addEventListener('click', () => onFilterChange([]));
     $('#maisBtn')?.addEventListener('click', () => search(false));
 
     $('#limparBtn')?.addEventListener('click', async () => {
@@ -866,6 +1014,7 @@
         const el = $('#' + id);
         if (el) el.value = '';
       });
+
       const termo = $('#termoInput');
       if (termo) termo.value = '';
 

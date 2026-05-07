@@ -791,5 +791,9 @@ input:focus, textarea:focus, select:focus {
 @media(max-width:680px){.nt-filter-actions{display:grid;}}
 
 
-/* RH IMOB NT v10 — operação corrigida */
-.nt-card .nt-btn[disabled]{opacity:.72;cursor:wait;}
+
+/* RH IMOB NT v10 — estabilidade filtros/detalhes */
+.nt-filter-actions{display:flex;gap:10px;align-items:end;}
+.nt-form-message.success{color:#0d8755;}
+.nt-empty strong{color:var(--purple-900);}
+@media(max-width:680px){.nt-filter-actions{display:grid;}}
