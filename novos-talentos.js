@@ -1,6 +1,13 @@
 (() => {
-  // HOTFIX v1.2 — prévia pública sem login + detalhes somente com login.
-  const rawCfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || window.RHIMOB_SUPABASE_CONFIG || {};
+  // RH IMOB • Novos Talentos v5
+  // Supabase separado + prévia pública + filtros completos.
+  const EMBEDDED_NT_CONFIG = {
+    enabled: true,
+    url: 'https://tnzmxpoxvdlckmjwdala.supabase.co',
+    publishableKey: 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv'
+  };
+
+  const rawCfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || EMBEDDED_NT_CONFIG;
   const cfg = {
     url: rawCfg.url || rawCfg.supabaseUrl || rawCfg.SUPABASE_URL || '',
     publishableKey: rawCfg.publishableKey || rawCfg.anonKey || rawCfg.supabaseAnonKey || rawCfg.SUPABASE_ANON_KEY || '',
@@ -8,8 +15,6 @@
   };
 
   const PAGE_SIZE = 24;
-  const PRODUCT_CODE = 'NOVOS_TALENTOS';
-
   let sb = null;
 
   const state = {
@@ -19,6 +24,9 @@
     filters: {
       cidade: '',
       estado_uf: '',
+      regiao_macro: '',
+      micro_regiao: '',
+      bairro: '',
       faixa_idade: '',
       cargo: '',
       estacao: '',
@@ -27,8 +35,7 @@
     offset: 0,
     total: 0,
     loading: false,
-    currentTalent: null,
-    lastError: ''
+    currentTalent: null
   };
 
   const DEFAULT_FRASE = '{saudacao_completa}, {primeiro_nome}. Aqui é {operador}. Temos uma oportunidade comercial em {cidade} e seu perfil apareceu em uma busca próxima da nossa operação. Se fizer sentido, te passo os detalhes por aqui.';
@@ -58,11 +65,13 @@
 
     if (
       raw.includes('Could not find the table') ||
+      raw.includes('Could not find the function') ||
       raw.includes('schema cache') ||
-      raw.includes('PGRST205') ||
-      raw.includes('PGRST204')
+      raw.includes('PGRST202') ||
+      raw.includes('PGRST204') ||
+      raw.includes('PGRST205')
     ) {
-      return 'A prévia da Plataforma Novos Talentos ainda não está disponível neste ambiente. Atualize a página ou fale com o suporte para revisar a conexão da plataforma.';
+      return 'A prévia da Plataforma Novos Talentos ainda não está disponível neste ambiente. Rode o SQL de ativação da V5 no Supabase correto e atualize a página.';
     }
 
     if (
@@ -84,7 +93,6 @@
     return 'Não foi possível carregar a prévia neste momento. Atualize a página ou fale com o suporte.';
   }
 
-
   function getClient() {
     if (sb) return sb;
     if (!window.supabase || !cfg.url || !cfg.publishableKey) return null;
@@ -98,13 +106,36 @@
     return sb;
   }
 
-  async function rpc(fn, payload = {}) {
-    const client = getClient();
-    if (!client) throw new Error('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte.');
-    if (!state.session?.access_token) throw new Error('Faça login para continuar.');
-    const { data, error } = await client.rpc(fn, payload);
-    if (error) throw error;
-    return data;
+  async function rpc(fn, payload = {}, requireLogin = false) {
+    if (requireLogin && !state.session?.access_token) {
+      throw new Error('Faça login para continuar.');
+    }
+
+    const base = String(cfg.url || '').replace(/\/+$/, '');
+    const token = state.session?.access_token || cfg.publishableKey;
+
+    const res = await fetch(`${base}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: {
+        apikey: cfg.publishableKey,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const raw = await res.text();
+      let msg = raw;
+      try {
+        const parsed = JSON.parse(raw);
+        msg = parsed.message || parsed.details || raw;
+      } catch (_) {}
+      throw new Error(msg);
+    }
+
+    return res.json();
   }
 
   function setText(id, value) {
@@ -118,8 +149,7 @@
   }
 
   function firstName(value) {
-    const txt = normalize(value);
-    return txt.split(' ')[0] || 'Profissional';
+    return normalize(value).split(' ')[0] || 'Profissional';
   }
 
   function saudacao() {
@@ -174,14 +204,6 @@
     if (warn) warn.hidden = show;
   }
 
-  function showLoginWarning(message) {
-    const warn = $('#loginWarning');
-    if (!warn) return;
-    warn.hidden = false;
-    const span = warn.querySelector('span');
-    if (span && message) span.textContent = message;
-  }
-
   function updateHeader() {
     const logged = !!state.session && !!state.context;
     const sessionBox = $('#sessionBox');
@@ -220,121 +242,38 @@
   }
 
   async function loadContext() {
-    const client = getClient();
-    if (!client) throw new Error('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte.');
-
-    try {
-      const rows = await rpc('nt_app_context', {});
-      const ctx = rows?.[0] || null;
-      if (ctx) {
-        state.context = ctx;
-        updateSummary();
-        updateHeader();
-        showWorkspace(true);
-        return ctx;
-      }
-    } catch (err) {
-      console.warn('[NT] nt_app_context indisponível, usando leitura direta:', err);
-    }
-
-    const { data: userData, error: userError } = await client.auth.getUser();
-    if (userError) throw userError;
-    const authUser = userData?.user;
-    if (!authUser?.id) throw new Error('Sessão inválida. Entre novamente.');
-
-    const { data: usuario, error: usuarioError } = await client
-      .from('nt_usuarios_conta')
-      .select('usuario_id,conta_id,produto_codigo,nome,email_login,perfil,status,auth_user_id')
-      .eq('auth_user_id', authUser.id)
-      .eq('produto_codigo', PRODUCT_CODE)
-      .eq('status', 'ATIVO')
-      .maybeSingle();
-
-    if (usuarioError) throw usuarioError;
-    if (!usuario) throw new Error('Login válido, mas o usuário não está vinculado à Plataforma Novos Talentos. Confira auth_user_id em nt_usuarios_conta.');
-
-    const { data: conta, error: contaError } = await client
-      .from('nt_contas')
-      .select('conta_id,produto_codigo,nome_conta,plano_tipo,status,limite_total,limite_por_usuario,usuarios_contratados')
-      .eq('conta_id', usuario.conta_id)
-      .eq('produto_codigo', PRODUCT_CODE)
-      .eq('status', 'ATIVA')
-      .maybeSingle();
-
-    if (contaError) throw contaError;
-    if (!conta) throw new Error('Usuário vinculado, mas a conta está inativa ou não foi localizada em nt_contas.');
-
-    const { count, error: countError } = await client
-      .from('nt_talento_consumos')
-      .select('consumo_id', { count: 'exact', head: true })
-      .eq('conta_id', conta.conta_id)
-      .eq('produto_codigo', PRODUCT_CODE);
-
-    if (countError) throw countError;
-
-    const consumidos = count || 0;
-    state.context = {
-      usuario_id: usuario.usuario_id,
-      conta_id: conta.conta_id,
-      produto_codigo: PRODUCT_CODE,
-      nome: usuario.nome,
-      email_login: usuario.email_login,
-      perfil: usuario.perfil,
-      nome_conta: conta.nome_conta,
-      plano_tipo: conta.plano_tipo,
-      limite_total: Number(conta.limite_total || 0),
-      limite_por_usuario: Number(conta.limite_por_usuario || 0),
-      usuarios_contratados: Number(conta.usuarios_contratados || 0),
-      consumidos,
-      saldo: Math.max(Number(conta.limite_total || 0) - consumidos, 0)
-    };
-
+    const rows = await rpc('nt_app_context', {}, true);
+    const ctx = rows?.[0] || null;
+    if (!ctx) throw new Error('Usuário sem acesso ativo à Plataforma Novos Talentos.');
+    state.context = ctx;
     updateSummary();
     updateHeader();
     showWorkspace(true);
-    return state.context;
+    return ctx;
   }
 
   async function loadFrases() {
-    const client = getClient();
     state.frases = [{ texto: DEFAULT_FRASE, titulo: 'Frase padrão' }];
 
     try {
-      const rows = await rpc('nt_listar_frases_plano', {});
+      const rows = await rpc('nt_listar_frases_plano', {}, true);
       if (Array.isArray(rows) && rows.length) {
-        state.frases = rows.map((r) => ({
-          frase_id: r.frase_id,
-          titulo: normalize(r.titulo) || `Frase ${r.prioridade || ''}`,
-          texto: normalize(r.texto)
-        })).filter((r) => r.texto);
-        return;
+        state.frases = rows
+          .map((r) => ({
+            frase_id: r.frase_id,
+            titulo: normalize(r.titulo) || `Frase ${r.prioridade || ''}`,
+            texto: normalize(r.texto)
+          }))
+          .filter((r) => r.texto);
       }
     } catch (err) {
-      console.warn('[NT] nt_listar_frases_plano indisponível, usando leitura direta:', err);
-    }
-
-    if (!state.context) return;
-    const { data, error } = await client
-      .from('nt_frases_abordagem')
-      .select('frase_id,prioridade,titulo,texto,status')
-      .eq('produto_codigo', PRODUCT_CODE)
-      .eq('plano_tipo', state.context.plano_tipo || 'EMPRESARIAL')
-      .eq('status', 'ATIVA')
-      .order('prioridade', { ascending: true });
-
-    if (error) throw error;
-    if (Array.isArray(data) && data.length) {
-      state.frases = data.map((r) => ({
-        frase_id: r.frase_id,
-        titulo: normalize(r.titulo) || `Frase ${r.prioridade || ''}`,
-        texto: normalize(r.texto)
-      })).filter((r) => r.texto);
+      console.warn('Frases padrão locais carregadas:', err);
     }
   }
 
   function option(label, value, extra = '') {
     const opt = document.createElement('option');
-    opt.value = value;
+    opt.value = value || '';
     opt.textContent = extra ? `${label} (${extra})` : label;
     return opt;
   }
@@ -345,64 +284,67 @@
     select.appendChild(option(placeholder, ''));
   }
 
-  async function loadCidadeOptions() {
-    const client = getClient();
-    const select = $('#cidadeSelect');
-    resetSelect(select, 'Todas as cidades');
-
-    const { data, error } = await client
-      .from('nt_filtro_cidade')
-      .select('cidade,estado_uf,total')
-      .order('cidade', { ascending: true })
-      .limit(1000);
-
-    if (error) throw error;
-
-    (data || []).forEach((row) => {
-      const label = `${row.cidade}/${row.estado_uf}`;
-      const value = `${row.cidade}||${row.estado_uf}`;
-      select.appendChild(option(label, value, formatNumber(row.total)));
-    });
+  function fillOptions(select, rows, tipo, placeholder) {
+    resetSelect(select, placeholder);
+    (rows || [])
+      .filter((row) => row.tipo === tipo && normalize(row.valor))
+      .forEach((row) => {
+        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
+      });
   }
 
-  async function loadDependentFilters() {
-    const client = getClient();
-    const [cidade, uf] = String($('#cidadeSelect')?.value || '').split('||');
+  async function loadAllFilterOptions() {
+    const rows = await rpc('nt_opcoes_publicas_v2', {
+      p_cidade: state.filters.cidade || null,
+      p_estado_uf: state.filters.estado_uf || null,
+      p_regiao_macro: state.filters.regiao_macro || null,
+      p_micro_regiao: state.filters.micro_regiao || null,
+      p_bairro: state.filters.bairro || null
+    }, false);
 
-    state.filters.cidade = cidade || '';
-    state.filters.estado_uf = uf || '';
+    fillOptions($('#cidadeSelect'), rows, 'cidade', 'Todas as cidades');
+    fillOptions($('#regiaoSelect'), rows, 'regiao_macro', 'Todas as regiões');
+    fillOptions($('#microSelect'), rows, 'micro_regiao', 'Todas as micro regiões');
+    fillOptions($('#bairroSelect'), rows, 'bairro', 'Todos os bairros');
+    fillOptions($('#idadeSelect'), rows, 'faixa_idade', 'Todas as idades');
+    fillOptions($('#cargoSelect'), rows, 'cargo', 'Todos os perfis');
+    fillOptions($('#metroSelect'), rows, 'metro', 'Todas as estações');
+  }
 
-    const idadeSelect = $('#idadeSelect');
-    const cargoSelect = $('#cargoSelect');
-    const metroSelect = $('#metroSelect');
+  async function refreshDependentOptions() {
+    const current = {
+      cidade: $('#cidadeSelect')?.value || '',
+      regiao: $('#regiaoSelect')?.value || '',
+      micro: $('#microSelect')?.value || '',
+      bairro: $('#bairroSelect')?.value || '',
+      idade: $('#idadeSelect')?.value || '',
+      cargo: $('#cargoSelect')?.value || '',
+      metro: $('#metroSelect')?.value || ''
+    };
 
-    resetSelect(idadeSelect, 'Todas as idades');
-    resetSelect(cargoSelect, 'Todos os perfis');
-    resetSelect(metroSelect, 'Todas as estações');
+    collectFilters();
 
-    if (!cidade || !uf) return;
+    const rows = await rpc('nt_opcoes_publicas_v2', {
+      p_cidade: state.filters.cidade || null,
+      p_estado_uf: state.filters.estado_uf || null,
+      p_regiao_macro: state.filters.regiao_macro || null,
+      p_micro_regiao: state.filters.micro_regiao || null,
+      p_bairro: state.filters.bairro || null
+    }, false);
 
-    const [idades, cargos, metros] = await Promise.all([
-      client.from('nt_filtro_cidade_idade').select('faixa_idade,total').eq('cidade', cidade).eq('estado_uf', uf).order('faixa_idade', { ascending: true }).limit(1000),
-      client.from('nt_filtro_cidade_cargo').select('cargo,total').eq('cidade', cidade).eq('estado_uf', uf).order('total', { ascending: false }).limit(1000),
-      client.from('nt_filtro_cidade_metro').select('estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,total').eq('cidade', cidade).eq('estado_uf', uf).order('total', { ascending: false }).limit(1000)
-    ]);
+    const selects = [
+      ['regiaoSelect', 'regiao_macro', 'Todas as regiões', current.regiao],
+      ['microSelect', 'micro_regiao', 'Todas as micro regiões', current.micro],
+      ['bairroSelect', 'bairro', 'Todos os bairros', current.bairro],
+      ['idadeSelect', 'faixa_idade', 'Todas as idades', current.idade],
+      ['cargoSelect', 'cargo', 'Todos os perfis', current.cargo],
+      ['metroSelect', 'metro', 'Todas as estações', current.metro]
+    ];
 
-    if (idades.error) throw idades.error;
-    if (cargos.error) throw cargos.error;
-    if (metros.error) throw metros.error;
-
-    (idades.data || []).forEach((row) => {
-      idadeSelect.appendChild(option(row.faixa_idade, row.faixa_idade, formatNumber(row.total)));
-    });
-
-    (cargos.data || []).forEach((row) => {
-      cargoSelect.appendChild(option(row.cargo, row.cargo, formatNumber(row.total)));
-    });
-
-    (metros.data || []).forEach((row) => {
-      const linha = row.linha_metro_mais_proxima ? ` • ${row.linha_metro_mais_proxima}` : '';
-      metroSelect.appendChild(option(`${row.estacao_mais_proxima}${linha}`, row.estacao_mais_proxima, formatNumber(row.total)));
+    selects.forEach(([id, tipo, placeholder, oldValue]) => {
+      const select = $('#' + id);
+      fillOptions(select, rows, tipo, placeholder);
+      if ([...select.options].some((o) => o.value === oldValue)) select.value = oldValue;
     });
   }
 
@@ -411,6 +353,9 @@
     state.filters = {
       cidade: cidade || '',
       estado_uf: uf || '',
+      regiao_macro: normalize($('#regiaoSelect')?.value),
+      micro_regiao: normalize($('#microSelect')?.value),
+      bairro: normalize($('#bairroSelect')?.value),
       faixa_idade: normalize($('#idadeSelect')?.value),
       cargo: normalize($('#cargoSelect')?.value),
       estacao: normalize($('#metroSelect')?.value),
@@ -440,8 +385,9 @@
         : 'Sem estação vinculada';
 
       const geo = row.tem_geo ? 'Geolocalizado' : 'Sem geolocalização';
-      const canal = row.tem_whatsapp ? 'WhatsApp disponível' : (row.tem_email ? 'E-mail disponível' : 'Canal limitado');
+      const canal = row.tem_whatsapp ? 'WhatsApp disponível' : (row.tem_email ? 'E-mail disponível' : 'Canal protegido');
       const idade = row.faixa_idade || (row.idade_anos ? `${row.idade_anos} anos` : 'Idade não informada');
+      const regiao = [row.regiao_macro_ui || row.regiao_macro, row.micro_regiao_ui || row.micro_regiao].filter(Boolean).join(' • ');
 
       return `
         <article class="nt-card" data-key="${esc(row.talento_key)}">
@@ -455,7 +401,7 @@
 
           <div class="nt-card__meta">
             <span>📍 ${esc([row.bairro, row.cidade, row.estado_uf].filter(Boolean).join(' • '))}</span>
-            <span>🧭 ${esc([row.regiao_macro, row.micro_regiao].filter(Boolean).join(' • ') || 'Região não informada')}</span>
+            <span class="nt-region-line">🧭 ${esc(regiao || 'Região em classificação')}</span>
             <span>🚇 ${metro}</span>
           </div>
 
@@ -479,8 +425,6 @@
   }
 
   async function search(reset = true) {
-    // A prévia de talentos segue o padrão da Plataforma Corretores:
-    // sem login mostra dados públicos protegidos; login é exigido apenas para liberar detalhes/contato.
     if (state.loading) return;
 
     state.loading = true;
@@ -497,63 +441,34 @@
     status('Consultando talentos disponíveis...');
 
     try {
-      let rows = null;
+      const rows = await rpc('nt_listar_talentos_publico_v2', {
+        p_cidade: state.filters.cidade || null,
+        p_estado_uf: state.filters.estado_uf || null,
+        p_regiao_macro: state.filters.regiao_macro || null,
+        p_micro_regiao: state.filters.micro_regiao || null,
+        p_bairro: state.filters.bairro || null,
+        p_faixa_idade: state.filters.faixa_idade || null,
+        p_cargo: state.filters.cargo || null,
+        p_estacao: state.filters.estacao || null,
+        p_termo: state.filters.termo || null,
+        p_limit: PAGE_SIZE,
+        p_offset: state.offset
+      }, false);
 
-      try {
-        rows = await rpc('nt_listar_talentos', {
-          p_cidade: state.filters.cidade || null,
-          p_estado_uf: state.filters.estado_uf || null,
-          p_faixa_idade: state.filters.faixa_idade || null,
-          p_cargo: state.filters.cargo || null,
-          p_estacao: state.filters.estacao || null,
-          p_termo: state.filters.termo || null,
-          p_limit: PAGE_SIZE,
-          p_offset: state.offset
-        });
-
-        const list = Array.isArray(rows) ? rows : [];
-        state.total = Number(list[0]?.total_count || state.total || 0);
-        renderCards(list, !reset);
-        state.offset += list.length;
-      } catch (rpcErr) {
-        console.warn('[NT] nt_listar_talentos indisponível, usando leitura direta:', rpcErr);
-        const client = getClient();
-        let q = client
-          .from('nt_talentos_publicos')
-          .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,tags_publicas', { count: 'exact' })
-          .eq('produto_codigo', PRODUCT_CODE)
-          .eq('ativo', true);
-
-        if (state.filters.cidade) q = q.eq('cidade', state.filters.cidade);
-        if (state.filters.estado_uf) q = q.eq('estado_uf', state.filters.estado_uf);
-        if (state.filters.faixa_idade) q = q.eq('faixa_idade', state.filters.faixa_idade);
-        if (state.filters.cargo) q = q.eq('cargo', state.filters.cargo);
-        if (state.filters.estacao) q = q.eq('estacao_mais_proxima', state.filters.estacao);
-
-        if (state.filters.termo) {
-          const term = state.filters.termo.replace(/[%,()]/g, ' ').trim();
-          q = q.or(`cargo.ilike.%${term}%,cidade.ilike.%${term}%,bairro.ilike.%${term}%,regiao_macro.ilike.%${term}%,micro_regiao.ilike.%${term}%,tags_publicas.ilike.%${term}%`);
-        }
-
-        const { data, error, count } = await q
-          .order('cidade', { ascending: true })
-          .range(state.offset, state.offset + PAGE_SIZE - 1);
-
-        if (error) throw error;
-        const list = data || [];
-        state.total = Number(count || list.length || 0);
-        renderCards(list, !reset);
-        state.offset += list.length;
-      }
+      const list = Array.isArray(rows) ? rows : [];
+      state.total = Number(list[0]?.total_count || state.total || 0);
+      renderCards(list, !reset);
+      state.offset += list.length;
 
       const more = $('#maisBtn');
-      if (more) more.hidden = state.offset >= state.total || state.total === 0;
+      if (more) more.hidden = state.offset >= state.total || !list.length;
 
       status(`${formatNumber(state.total)} talentos disponíveis para os filtros atuais. Exibindo ${formatNumber(Math.min(state.offset, state.total))}.`);
     } catch (err) {
       console.error(err);
-      status('Não foi possível consultar agora.');
-      $('#cardsGrid').innerHTML = `<div class="nt-empty">${esc(err.message || err)}</div>`;
+      const msg = friendlyError(err);
+      status(msg);
+      $('#cardsGrid').innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
     } finally {
       state.loading = false;
       if (btn) btn.textContent = 'Buscar';
@@ -575,53 +490,8 @@
     }
 
     try {
-      let talent = null;
-
-      try {
-        const rows = await rpc('nt_consumir_talento', { p_talento_key: key });
-        talent = rows?.[0] || null;
-      } catch (rpcErr) {
-        console.warn('[NT] nt_consumir_talento indisponível, usando fluxo direto:', rpcErr);
-
-        if (!state.context) await loadContext();
-        if (Number(state.context?.limite_total || 0) > 0 && Number(state.context?.saldo || 0) <= 0) {
-          throw new Error('Limite do plano atingido.');
-        }
-
-        const client = getClient();
-        const authUserId = state.session?.user?.id;
-
-        const { error: consumeError } = await client
-          .from('nt_talento_consumos')
-          .upsert({
-            conta_id: state.context.conta_id,
-            produto_codigo: PRODUCT_CODE,
-            talento_key: key,
-            usuario_id: state.context.usuario_id,
-            auth_user_id: authUserId,
-            operador_nome: state.context.nome || '',
-            origem: 'PLATAFORMA_NOVOS_TALENTOS'
-          }, { onConflict: 'conta_id,talento_key', ignoreDuplicates: true });
-
-        if (consumeError) throw consumeError;
-
-        const { data, error } = await client
-          .from('nt_talentos')
-          .select('talento_key,nome_completo,primeiro_nome,email,whatsapp,telefone_principal,cargo,pretensao_salarial,sexo,idade_anos,faixa_idade,cidade,estado_uf,bairro,cep,regiao_macro,micro_regiao,bairro_macro,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,curriculo_url')
-          .eq('talento_key', key)
-          .eq('produto_codigo', PRODUCT_CODE)
-          .maybeSingle();
-
-        if (error) throw error;
-        if (!data) throw new Error('Contato consumido, mas os detalhes não foram liberados pela política. Revise a RLS de nt_talentos.');
-
-        await loadContext();
-        talent = {
-          ...data,
-          consumido_agora: true,
-          saldo_restante: state.context.saldo
-        };
-      }
+      const rows = await rpc('nt_consumir_talento', { p_talento_key: key }, true);
+      const talent = rows?.[0];
 
       if (!talent) throw new Error('Contato não encontrado.');
 
@@ -630,7 +500,7 @@
       renderTalentModal(talent);
       openTalentModal();
     } catch (err) {
-      alert(err.message || 'Não foi possível liberar o contato.');
+      alert(friendlyError(err));
     } finally {
       if (button) {
         button.disabled = false;
@@ -650,7 +520,7 @@
       ? 'Este contato foi liberado agora para sua conta.'
       : 'Este contato já estava liberado para sua conta.';
 
-    setText('talentoSubtitle', `${used} Saldo restante: ${formatNumber(talent.saldo_restante ?? state.context?.saldo)}.`);
+    setText('talentoSubtitle', `${used} Saldo restante: ${formatNumber(talent.saldo_restante)}.`);
 
     const grid = $('#talentoDetalhes');
     if (grid) {
@@ -684,6 +554,7 @@
 
     select.value = '0';
     updateMensagem(talent);
+
     select.onchange = () => updateMensagem(talent);
   }
 
@@ -774,24 +645,23 @@
       state.session = data.session;
       await loadContext();
       await loadFrases();
-      await loadCidadeOptions();
-      await loadDependentFilters();
+      await loadAllFilterOptions();
 
       closeLoginModal();
       setLoginMessage('', '');
       await search(true);
     } catch (err) {
       console.error(err);
-      state.lastError = err.message || String(err);
-      setLoginMessage(state.lastError, 'error');
-      showLoginWarning(`Login aceito, mas os dados da conta não carregaram: ${state.lastError}`);
+      const raw = String(err && err.message ? err.message : err);
+      const msg = raw.toLowerCase().includes('invalid login credentials')
+        ? 'E-mail ou senha não conferem. Solicite ao administrador a redefinição do acesso.'
+        : friendlyError(err);
+      setLoginMessage(msg, 'error');
     } finally {
       if (submit) {
         submit.disabled = false;
         submit.textContent = 'Entrar';
       }
-      updateHeader();
-      updateSummary();
     }
   }
 
@@ -806,19 +676,17 @@
 
     updateHeader();
     updateSummary();
-    showWorkspace(false);
+    showWorkspace(true);
 
-    const grid = $('#cardsGrid');
-    if (grid) grid.innerHTML = '';
+    await loadAllFilterOptions();
+    await search(true);
   }
 
   async function restoreSession() {
     const client = getClient();
     if (!client) {
-      showWorkspace(false);
-      updateHeader();
-      updateSummary();
-      showLoginWarning('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte. Verifique o arquivo supabase-config.js.');
+      showWorkspace(true);
+      status('Não foi possível carregar a configuração da plataforma. Atualize a página ou fale com o suporte.');
       return;
     }
 
@@ -826,20 +694,19 @@
     state.session = data.session || null;
 
     if (!state.session) {
-      // Sem login: carrega prévia pública protegida.
       showWorkspace(true);
       updateHeader();
       updateSummary();
 
       try {
-        await loadCidadeOptions();
-        await loadDependentFilters();
+        await loadAllFilterOptions();
         await search(true);
       } catch (err) {
         console.warn('[NT] Falha ao carregar prévia pública:', err);
-        status(friendlyError(err));
+        const msg = friendlyError(err);
+        status(msg);
         const grid = $('#cardsGrid');
-        if (grid) grid.innerHTML = `<div class="nt-empty">${esc(friendlyError(err))}</div>`;
+        if (grid) grid.innerHTML = `<div class="nt-empty">${esc(msg)}</div>`;
       }
       return;
     }
@@ -847,17 +714,11 @@
     try {
       await loadContext();
       await loadFrases();
-      await loadCidadeOptions();
-      await loadDependentFilters();
+      await loadAllFilterOptions();
       await search(true);
     } catch (err) {
       console.warn(err);
-      state.lastError = err.message || String(err);
-      showWorkspace(false);
-      showLoginWarning(`Sessão encontrada, mas os dados não carregaram: ${state.lastError}`);
-    } finally {
-      updateHeader();
-      updateSummary();
+      await logout();
     }
   }
 
@@ -878,9 +739,11 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     });
 
-    $('#cidadeSelect')?.addEventListener('change', async () => {
-      await loadDependentFilters();
-      await search(true);
+    ['cidadeSelect', 'regiaoSelect', 'microSelect', 'bairroSelect'].forEach((id) => {
+      $('#' + id)?.addEventListener('change', async () => {
+        await refreshDependentOptions();
+        await search(true);
+      });
     });
 
     ['idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
@@ -895,12 +758,14 @@
     $('#maisBtn')?.addEventListener('click', () => search(false));
 
     $('#limparBtn')?.addEventListener('click', async () => {
-      $('#cidadeSelect').value = '';
-      $('#termoInput').value = '';
-      await loadDependentFilters();
-      $('#idadeSelect').value = '';
-      $('#cargoSelect').value = '';
-      $('#metroSelect').value = '';
+      ['cidadeSelect', 'regiaoSelect', 'microSelect', 'bairroSelect', 'idadeSelect', 'cargoSelect', 'metroSelect'].forEach((id) => {
+        const el = $('#' + id);
+        if (el) el.value = '';
+      });
+      const termo = $('#termoInput');
+      if (termo) termo.value = '';
+      collectFilters();
+      await loadAllFilterOptions();
       await search(true);
     });
 
@@ -919,6 +784,7 @@
     setupEvents();
     updateHeader();
     updateSummary();
+
     await restoreSession();
   });
 })();

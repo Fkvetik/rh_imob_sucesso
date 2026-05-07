@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2b124d" />
   <link rel="icon" href="/favicon.ico?v=20260507nt" sizes="any" />
   <link rel="icon" href="/favicon.svg?v=20260507nt" type="image/svg+xml" />
-  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt6" />
+  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt7" />
 </head>
 <body>
   <header class="nt-topbar">
@@ -93,9 +93,18 @@
         </div>
 
         <div class="nt-workspace" id="workspace" hidden>
-          <div class="nt-filters">
+          <div class="nt-filters nt-filters--talentos">
             <label>Cidade
               <select id="cidadeSelect"><option value="">Todas as cidades</option></select>
+            </label>
+            <label>Macro região
+              <select id="regiaoSelect"><option value="">Todas as regiões</option></select>
+            </label>
+            <label>Micro região
+              <select id="microSelect"><option value="">Todas as micro regiões</option></select>
+            </label>
+            <label>Bairro
+              <select id="bairroSelect"><option value="">Todos os bairros</option></select>
             </label>
             <label>Faixa de idade
               <select id="idadeSelect"><option value="">Todas as idades</option></select>
@@ -109,8 +118,10 @@
             <label>Buscar termo
               <input id="termoInput" type="search" placeholder="bairro, cargo, região..." />
             </label>
-            <button class="nt-btn nt-btn-primary" type="button" id="buscarBtn">Buscar</button>
-            <button class="nt-btn nt-btn-secondary" type="button" id="limparBtn">Limpar</button>
+            <div class="nt-filter-actions">
+              <button class="nt-btn nt-btn-primary" type="button" id="buscarBtn">Buscar</button>
+              <button class="nt-btn nt-btn-secondary" type="button" id="limparBtn">Limpar</button>
+            </div>
           </div>
 
           <div class="nt-status-row">
@@ -187,7 +198,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config-novos-talentos.js?v=20260507nt6"></script>
-  <script src="novos-talentos.js?v=20260507nt6"></script>
+  <script src="supabase-config-novos-talentos.js?v=20260507nt7"></script>
+  <script src="novos-talentos.js?v=20260507nt7"></script>
 </body>
 </html>
