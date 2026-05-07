@@ -1,6 +1,6 @@
 (() => {
   const cfg = window.RHIMOB_SUPABASE_CONFIG || {};
-  const WHATSAPP_FERNANDO = '5511997213584';
+  const WHATSAPP_FERNANDO = '5511978725515';
   const PAGE_SIZE = 12;
   const DEFAULT_FRASES = [
     'Olá, {nome}. Aqui é {Usuário}. Vi seu perfil profissional em {cidade} e gostaria de falar com você.',
@@ -69,7 +69,7 @@
 
   async function api(path, params = {}) {
     if (!cfg.enabled || !cfg.url || !cfg.publishableKey) {
-      throw new Error('Configuração da plataforma não encontrada.');
+      throw new Error('Configuração da plataforma indisponível. Recarregue a página ou fale com a RH IMOB.');
     }
     const res = await fetch(restUrl(path, params), {
       headers: {
@@ -78,13 +78,13 @@
         Accept: 'application/json'
       }
     });
-    if (!res.ok) throw new Error(`Serviço HTTP ${res.status}: ${(await res.text()).slice(0, 400)}`);
+    if (!res.ok) throw new Error(`Não foi possível consultar a plataforma neste momento. Código ${res.status}.`);
     return res.json();
   }
 
   async function rpc(fn, payload = {}) {
     if (!cfg.enabled || !cfg.url || !cfg.publishableKey) {
-      throw new Error('Configuração da plataforma não encontrada.');
+      throw new Error('Configuração da plataforma indisponível. Recarregue a página ou fale com a RH IMOB.');
     }
     if (!state.session?.access_token) throw new Error('Faça login para acessar esta função.');
     const base = String(cfg.url || '').replace(/\/+$/, '');
@@ -105,7 +105,7 @@
         const parsed = JSON.parse(raw);
         detail = parsed.message || parsed.details || raw;
       } catch (_) {}
-      throw new Error(`Serviço RPC ${res.status}: ${detail.slice(0, 700)}`);
+      throw new Error(`Não foi possível concluir esta ação. Código ${res.status}: ${detail.slice(0, 500)}`);
     }
     return res.json();
   }
@@ -232,7 +232,7 @@
         .filter(Boolean);
       if (list.length) state.frases = list;
     } catch (e) {
-      console.warn('Usando frases fallback:', e);
+      console.warn('Frases padrão carregadas:', e);
     }
     return state.frases;
   }
@@ -257,7 +257,7 @@
     if (authMiniName) authMiniName.textContent = logged ? (state.profile?.nome || state.session?.user?.email || 'Sessão ativa') : '';
     if (authStatus) {
       authStatus.textContent = logged
-        ? 'Login ativo. Ao abrir contato, o acesso será registrado apenas neste plano.'
+        ? 'Login ativo. Contatos liberados serão registrados no saldo deste plano.'
         : 'Prévia protegida. Entre para liberar contatos completos.';
     }
     if (adminPanel) adminPanel.hidden = !(logged && isAdminProfile());
@@ -290,7 +290,7 @@
   async function setupAuth() {
     const client = getSupabaseClient();
     if (!client) {
-      console.warn('Módulo de acesso não carregou. Login indisponível.');
+      console.warn('Módulo de login não carregou.');
       return;
     }
 
@@ -323,7 +323,7 @@
     $('#loginForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const client = getSupabaseClient();
-      if (!client) return setLoginMessage('Módulo de acesso não carregou. Recarregue a página.', 'error');
+      if (!client) return setLoginMessage('O módulo de login não carregou. Recarregue a página.', 'error');
 
       const email = normalize($('#loginEmail')?.value).toLowerCase();
       const password = String($('#loginPassword')?.value || '');
@@ -388,7 +388,6 @@
     select.appendChild(opt(city && year ? 'Todos os perfis' : 'Selecione cidade e ano primeiro', ''));
     if (!(city && year)) return;
 
-    // Usa a coluna normalizada CARGO. Não usa cargo_raw.
     const rows = await api(cfg.publicTable || 'leads_publicos', {
       select: 'cargo',
       cidade: `eq.${city}`,
@@ -437,7 +436,7 @@
           <span class="channel ${r.tem_canal_telefone ? 'ok' : ''}">${r.tem_canal_telefone ? 'WhatsApp validado' : 'Telefone não exibido'}</span>
           <span class="channel ${r.tem_canal_instagram ? 'ok' : ''}">${r.tem_canal_instagram ? 'Instagram encontrado' : 'Instagram não exibido'}</span>
         </div>
-        <p class="note">${logged ? 'Ao abrir, o contato será registrado somente para este plano.' : 'Contato completo e mensagem pronta ficam disponíveis somente com acesso contratado.'}</p>
+        <p class="note">${logged ? 'Ao abrir, o contato será registrado somente neste plano.' : 'Contato completo e mensagem pronta são liberados somente com login contratado.'}</p>
         ${action}
         ${!logged ? `<a class="link-access" href="${wa(ctx)}" target="_blank" rel="noopener">Solicitar acesso comercial</a>` : ''}
       </div>
@@ -484,7 +483,7 @@
       }
 
       if (!append && !rows.length) {
-        grid.innerHTML = '<div class="empty">Nenhum perfil encontrado. Tente outra cidade, ano ou atuação.</div>';
+        grid.innerHTML = '<div class="empty">Nenhum resultado encontrado. Tente outra cidade, ano ou perfil.</div>';
       } else {
         grid.insertAdjacentHTML('beforeend', rows.map(card).join(''));
         bindLeadButtons(grid);
@@ -492,10 +491,10 @@
 
       state.offset += rows.length;
       more.hidden = rows.length < PAGE_SIZE;
-      status(`${rows.length} perfis exibidos nesta página${state.session ? ' • contatos já liberados neste plano ficam ocultos' : ''}`);
+      status(`${rows.length} resultados exibidos nesta página${state.session ? ' • contatos já liberados ficam fora da lista' : ''}`);
     } catch (e) {
       console.error(e);
-      if (!append) grid.innerHTML = `<div class="error">Não foi possível carregar os perfis. Detalhe: ${esc(e.message)}</div>`;
+      if (!append) grid.innerHTML = `<div class="error">Não foi possível carregar os resultados agora. ${esc(e.message)}</div>`;
       status('Falha ao carregar resultados.');
     } finally {
       state.loading = false;
@@ -538,94 +537,37 @@
 
   function normalizarRetornoAbrirLead(data) {
     if (!data) return null;
-
     if (typeof data === 'string') {
-      try {
-        return JSON.parse(data);
-      } catch (_) {
-        return null;
-      }
+      try { return JSON.parse(data); } catch (_) { return null; }
     }
-
     if (Array.isArray(data)) {
       if (!data.length) return null;
-      const first = data[0];
-      if (first?.lead) return first;
-      if (first?.abrir_lead) return normalizarRetornoAbrirLead(first.abrir_lead);
-      if (first?.result) return normalizarRetornoAbrirLead(first.result);
-      if (first?.data) return normalizarRetornoAbrirLead(first.data);
-      return first;
+      return normalizarRetornoAbrirLead(data[0]);
     }
-
     if (data.lead) return data;
     if (data.abrir_lead) return normalizarRetornoAbrirLead(data.abrir_lead);
     if (data.result) return normalizarRetornoAbrirLead(data.result);
     if (data.data) return normalizarRetornoAbrirLead(data.data);
-
     return data;
   }
 
-  function mostrarAvisoPlano(mensagem, type = 'info') {
-    if (!mensagem) return;
-
-    setAdminAlert(mensagem, type);
-
-    let box = $('#planWarningBox');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = 'planWarningBox';
-      box.className = 'plan-warning-box';
-      const target = $('#resultadoStatus') || $('.status-row') || $('.filters') || $('main') || document.body;
-      target.insertAdjacentElement('afterend', box);
-    }
-
-    box.textContent = mensagem;
-    box.className = `plan-warning-box ${type || 'info'}`.trim();
-    box.hidden = false;
-  }
-
   async function abrirLead(leadKey) {
-    if (!leadKey) {
-      alert('Contato inválido. Atualize a página e tente novamente.');
-      return;
-    }
-
     if (!state.session || !state.profile) return openLoginModal();
-
     try {
       status('Liberando contato completo...');
-
-      const raw = await rpc('abrir_lead', { p_lead_key: leadKey });
-      const result = normalizarRetornoAbrirLead(raw);
-
-      console.log('[RHIMOB][abrir_lead][raw]', raw);
-      console.log('[RHIMOB][abrir_lead][result]', result);
-
-      const lead = result?.lead || null;
-      if (!lead || !lead.lead_key) {
-        throw new Error(
-          'Contato não retornado pela plataforma. Retorno técnico: ' +
-          JSON.stringify(raw).slice(0, 700)
-        );
-      }
-
-      const plano = result?.plano || null;
-      renderLeadDetail(lead, plano, !!result?.ja_consumido_antes);
+      const payload = await rpc('abrir_lead', { p_lead_key: leadKey });
+      const result = normalizarRetornoAbrirLead(payload);
+      const lead = result?.lead || result;
+      if (!lead?.lead_key) throw new Error('Contato não retornado pela plataforma.');
+      renderLeadDetail(lead, result?.plano || null, result?.ja_consumido_antes);
       openLeadModal();
-
-      if (plano?.aviso) {
-        mostrarAvisoPlano(plano.aviso, statusTypeFromSaldo(plano.leads_restantes));
-      }
-
-      status(
-        `Contato liberado. Consumidos: ${plano?.leads_consumidos ?? '-'} • Disponíveis: ${plano?.leads_restantes ?? '-'}`
-      );
-
+      const plano = result?.plano || {};
+      if (plano.aviso) setAdminAlert(plano.aviso, statusTypeFromSaldo(plano.leads_restantes));
+      status(`Contato liberado. Usados: ${plano.leads_consumidos ?? '-'} • Disponíveis: ${plano.leads_restantes ?? '-'}`);
       if (isAdminProfile()) loadAdminDashboard({ silent: true });
-      search();
     } catch (e) {
-      console.error('[RHIMOB][abrirLead][error]', e);
-      alert(friendlyOpenLeadError(e.message || String(e)));
+      console.error(e);
+      alert(friendlyOpenLeadError(e.message));
       status('Falha ao liberar contato.');
     }
   }
@@ -639,7 +581,7 @@
 
     const subtitle = $('#leadModalSubtitle');
     if (subtitle) {
-      subtitle.textContent = plano?.aviso || (jaConsumidoAntes ? 'Este lead já estava liberado para o seu plano.' : 'Este lead foi consumido para o seu plano.');
+      subtitle.textContent = plano?.aviso || (jaConsumidoAntes ? 'Este contato já estava liberado para o seu plano.' : 'Contato liberado para o seu plano.');
     }
 
     content.innerHTML = `
@@ -652,7 +594,7 @@
         <div><strong>Perfil</strong><span>${esc(lead.cargo || 'Perfil imobiliário')}</span></div>
         <div><strong>Telefone</strong><span>${esc(lead.telefone_txt || lead.telefone_base || 'Não informado')}</span></div>
         <div><strong>Instagram</strong><span>${lead.instagram_url ? `<a href="${esc(lead.instagram_url)}" target="_blank" rel="noopener">${esc(lead.instagram_username || lead.instagram_url)}</a>` : 'Não informado'}</span></div>
-        <div><strong>Consumo</strong><span>${jaConsumidoAntes ? 'Já consumido neste plano' : 'Consumido agora'}</span></div>
+        <div><strong>Registro no plano</strong><span>${jaConsumidoAntes ? 'Já liberado neste plano' : 'Liberado agora'}</span></div>
       </div>
       ${lead.bio ? `<div class="bio-box"><strong>Bio / sinais públicos</strong><p>${esc(lead.bio)}</p></div>` : ''}
       <div class="message-box">
@@ -701,7 +643,7 @@
     const tbody = $('#adminUsersTable');
     if (!tbody) return;
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="6">Nenhum operador cadastrado neste plano.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6">Nenhum usuário cadastrado neste plano.</td></tr>';
       return;
     }
     tbody.innerHTML = users.map((u) => {
@@ -727,7 +669,7 @@
     const tbody = $('#adminReportTable');
     if (!tbody) return;
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="4">Nenhum acesso registrado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4">Sem contatos liberados.</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map((r) => `
@@ -745,7 +687,7 @@
     if (!tbody) return;
     const list = (rows || []).slice(0, 30);
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="5">Nenhum contato liberado até agora.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5">Sem contatos liberados.</td></tr>';
       return;
     }
     tbody.innerHTML = list.map((r) => `
@@ -780,7 +722,7 @@
       setText('adminLeadsConsumidos', conta.leads_consumidos || 0);
       setText('adminLeadsDisponiveis', `${conta.leads_disponiveis || 0} disponíveis`);
       setText('adminPeriodo', `${formatDateBR(conta.data_inicio)} até ${formatDateBR(conta.data_fim)}`);
-      setText('adminLimite', `Limite: ${conta.limite_leads || 0} acessos`);
+      setText('adminLimite', `Limite: ${conta.limite_leads || 0} leads`);
       setText('adminUsersCount', `${operadores.length} usuário(s)`);
       setText('adminRecentCount', `${ultimos.length} registro(s) recentes`);
 
@@ -990,8 +932,8 @@
       await search();
     } catch (e) {
       console.error(e);
-      $('#cardsGrid').innerHTML = `<div class="error">Não foi possível carregar a prévia da plataforma agora. Detalhe: ${esc(e.message)}</div>`;
-      status('Falha ao carregar a consulta.');
+      $('#cardsGrid').innerHTML = `<div class="error">Não foi possível carregar a consulta agora. ${esc(e.message)}</div>`;
+      status('Falha ao carregar dados públicos.');
     }
   }
 
