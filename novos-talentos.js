@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  // RH IMOB • Novos Talentos v10
-  // Estabilidade sem regressão: filtros por tipo, fallback público e consumo protegido por RPC.
+  // RH IMOB • Novos Talentos v11
+  // Detalhes/consumo em JSON para evitar conflito de funções antigas no Supabase. Filtros preservados.
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
@@ -94,7 +94,7 @@
       return 'A leitura dos filtros ainda não foi ativada neste ambiente. Aguarde a publicação da atualização e recarregue a página.';
     }
 
-    if (raw.includes('nt_consumir_talento') || raw.toLowerCase().includes('acesso não autorizado')) {
+    if (raw.includes('nt_consumir_talento') || raw.includes('nt_consumir_talento_json_v11') || raw.toLowerCase().includes('acesso não autorizado')) {
       return 'Seu acesso entrou, mas ainda não está liberado para consumir contatos neste plano. Sincronize o usuário na planilha ou fale com o administrador.';
     }
 
@@ -263,14 +263,24 @@
     return data || [];
   }
 
+
+  function unwrapRpcObject(data) {
+    if (Array.isArray(data)) return data[0] || null;
+    return data || null;
+  }
+
+  async function rpcOne(fn, payload = {}) {
+    const data = await rpc(fn, payload);
+    return unwrapRpcObject(data);
+  }
+
   async function loadContext() {
     const client = getClient();
     if (!client) throw new Error('Configuração da plataforma indisponível.');
 
     // Primeiro tenta a função segura. Se RLS das tabelas bloquear, continua funcionando.
     try {
-      const rows = await rpc('nt_app_context_v10', {});
-      const ctx = Array.isArray(rows) ? rows[0] : rows;
+      const ctx = await rpcOne('nt_app_context_json_v11', {});
       if (ctx) {
         state.context = ctx;
         updateSummary();
@@ -726,8 +736,16 @@
     }
 
     try {
-      const rows = await rpc('nt_consumir_talento_v10', { p_talento_key: key });
-      const talent = Array.isArray(rows) ? rows[0] : rows;
+      let talent = null;
+
+      try {
+        talent = await rpcOne('nt_consumir_talento_json_v11', { p_talento_key: key });
+      } catch (v11err) {
+        console.warn('[NT] consumo JSON v11 indisponível, tentando compatibilidade:', v11err);
+        const rows = await rpc('nt_consumir_talento_v10', { p_talento_key: key });
+        talent = Array.isArray(rows) ? rows[0] : rows;
+      }
+
       if (!talent) throw new Error('Contato não localizado.');
 
       state.currentTalent = talent;
