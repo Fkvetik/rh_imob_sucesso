@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2b124d" />
   <link rel="icon" href="/favicon.ico?v=20260507nt" sizes="any" />
   <link rel="icon" href="/favicon.svg?v=20260507nt" type="image/svg+xml" />
-  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt2" />
+  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt4" />
 </head>
 <body>
   <header class="nt-topbar">
@@ -42,8 +42,8 @@
       <div class="nt-container nt-hero__grid">
         <div>
           <span class="nt-kicker">Área operacional</span>
-          <h1>Novos talentos comerciais com filtros inteligentes e acesso controlado.</h1>
-          <p>Consulte profissionais por cidade, idade, perfil, região e proximidade de metrô. Os dados sensíveis só aparecem quando o contato é liberado dentro do saldo do plano.</p>
+          <h1>Talentos comerciais prontos para prospecção, com filtros inteligentes e controle por plano.</h1>
+          <p>Encontre profissionais com potencial comercial por cidade, idade, perfil, bairro e proximidade de metrô. A prévia aparece protegida e o contato completo só é liberado quando sua conta decide consumir o perfil.</p>
 
           <div class="nt-hero__actions">
             <button class="nt-btn nt-btn-primary" type="button" id="heroLoginBtn">Entrar na plataforma</button>
@@ -51,17 +51,17 @@
           </div>
 
           <div class="nt-trust">
-            <span>Saldo por plano</span>
-            <span>Consumo por conta</span>
-            <span>Frases de abordagem</span>
-            <span>Sem misturar com Corretores</span>
+            <span>Saldo controlado por plano</span>
+            <span>Consumo compartilhado por empresa</span>
+            <span>Abordagens prontas</span>
+            <span>Base separada dos Corretores</span>
           </div>
         </div>
 
         <aside class="nt-panel nt-summary">
           <div class="nt-panel__head">
             <div>
-              <strong id="summaryConta">Acesso contratado</strong>
+              <strong id="summaryConta">Acesso empresarial</strong>
               <small id="summaryPlano">Entre para carregar seu plano</small>
             </div>
             <span class="nt-status" id="summaryStatus">Protegido</span>
@@ -73,7 +73,7 @@
             <div><strong id="metricLimite">-</strong><span>limite</span></div>
           </div>
 
-          <p id="summaryText">Nenhum telefone ou e-mail é exibido antes do login e da liberação do contato.</p>
+          <p id="summaryText">A base pode ser consultada em prévia protegida. Telefone, e-mail e mensagem de abordagem só aparecem após login e liberação do perfil.</p>
         </aside>
       </div>
     </section>
@@ -82,14 +82,14 @@
       <div class="nt-container">
         <div class="nt-section-head">
           <span class="nt-kicker">Consulta</span>
-          <h2>Filtre talentos disponíveis para a sua operação.</h2>
-          <p>O lead liberado some apenas para os operadores do mesmo plano. Para outros planos, ele continua disponível.</p>
+          <h2>Filtre talentos com potencial para a sua operação comercial.</h2>
+          <p>Cada contato liberado é registrado na conta da empresa. O mesmo perfil deixa de aparecer para os operadores daquele plano, mas continua disponível para outras contas.</p>
         </div>
 
         <div class="nt-login-warning" id="loginWarning">
-          <strong>Entre para consultar a base.</strong>
-          <span>Use o login cadastrado para sua conta. A plataforma carrega filtros e resultados após autenticação.</span>
-          <button class="nt-btn nt-btn-primary" type="button" id="warningLoginBtn">Entrar agora</button>
+          <strong>Consulte a prévia protegida.</strong>
+          <span>Navegue pela base protegida sem expor dados sensíveis. Para liberar telefone, e-mail e mensagem de abordagem, entre com seu acesso empresarial.</span>
+          <button class="nt-btn nt-btn-primary" type="button" id="warningLoginBtn">Entrar para liberar contato</button>
         </div>
 
         <div class="nt-workspace" id="workspace" hidden>
@@ -132,9 +132,9 @@
     <div class="nt-modal__backdrop" data-close-login></div>
     <div class="nt-modal__panel" role="document">
       <button class="nt-modal__close" type="button" data-close-login aria-label="Fechar">×</button>
-      <span class="nt-kicker">Acesso contratado</span>
-      <h2 id="loginTitle">Entrar na Plataforma Novos Talentos</h2>
-      <p>Use o e-mail e a senha cadastrados para sua conta. Nenhum dado sensível é exibido sem login ativo.</p>
+      <span class="nt-kicker">Acesso empresarial</span>
+      <h2 id="loginTitle">Entrar no ambiente Novos Talentos</h2>
+      <p>Use o acesso liberado para sua empresa. O contato completo só aparece após login e registro de consumo no plano.</p>
 
       <form id="loginForm" class="nt-form">
         <label>E-mail
@@ -156,24 +156,24 @@
     <div class="nt-modal__backdrop" data-close-talento></div>
     <div class="nt-modal__panel nt-modal__panel--large" role="document">
       <button class="nt-modal__close" type="button" data-close-talento aria-label="Fechar">×</button>
-      <span class="nt-kicker">Contato liberado</span>
-      <h2 id="talentoTitle">Detalhes do talento</h2>
-      <p id="talentoSubtitle">Contato liberado para sua conta.</p>
+      <span class="nt-kicker">Perfil liberado</span>
+      <h2 id="talentoTitle">Dados do talento</h2>
+      <p id="talentoSubtitle">Perfil liberado para sua conta.</p>
 
       <div class="nt-detail-grid" id="talentoDetalhes"></div>
 
       <div class="nt-message-box">
         <div class="nt-message-head">
           <div>
-            <h3>Mensagem de abordagem</h3>
-            <p>Texto sugerido com placeholders preenchidos. Revise antes de enviar.</p>
+            <h3>Abordagem sugerida</h3>
+            <p>Mensagem comercial pronta para iniciar a conversa. Revise antes de enviar.</p>
           </div>
           <select id="fraseSelect" aria-label="Selecionar frase"></select>
         </div>
         <textarea id="mensagemTextarea" rows="5"></textarea>
         <div class="nt-message-actions">
-          <button class="nt-btn nt-btn-secondary" type="button" id="copiarMensagemBtn">Copiar mensagem</button>
-          <a class="nt-btn nt-btn-primary" id="abrirWhatsappBtn" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+          <button class="nt-btn nt-btn-secondary" type="button" id="copiarMensagemBtn">Copiar abordagem</button>
+          <a class="nt-btn nt-btn-primary" id="abrirWhatsappBtn" href="#" target="_blank" rel="noopener">Abrir conversa no WhatsApp</a>
         </div>
       </div>
     </div>
@@ -188,6 +188,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=20260507nt"></script>
-  <script src="novos-talentos.js?v=20260507nt2"></script>
+  <script src="novos-talentos.js?v=20260507nt4"></script>
 </body>
 </html>

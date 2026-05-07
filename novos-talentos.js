@@ -1,4 +1,5 @@
 (() => {
+  // HOTFIX v1.2 — prévia pública sem login + detalhes somente com login.
   const rawCfg = window.RHIMOB_SUPABASE_CONFIG || {};
   const cfg = {
     url: rawCfg.url || rawCfg.supabaseUrl || rawCfg.SUPABASE_URL || '',
@@ -67,7 +68,7 @@
 
   async function rpc(fn, payload = {}) {
     const client = getClient();
-    if (!client) throw new Error('Configuração da plataforma indisponível.');
+    if (!client) throw new Error('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte.');
     if (!state.session?.access_token) throw new Error('Faça login para continuar.');
     const { data, error } = await client.rpc(fn, payload);
     if (error) throw error;
@@ -165,14 +166,14 @@
   function updateSummary() {
     const ctx = state.context;
     if (!ctx) {
-      setText('summaryConta', 'Acesso contratado');
-      setText('summaryPlano', 'Entre para carregar seu plano');
-      setText('summaryStatus', 'Protegido');
-      setText('metricSaldo', '-');
-      setText('metricUsados', '-');
-      setText('metricLimite', '-');
-      setText('summaryText', 'Nenhum telefone ou e-mail é exibido antes do login e da liberação do contato.');
-      setText('saldoStatus', 'Saldo do plano: -');
+      setText('summaryConta', 'Prévia pública protegida');
+      setText('summaryPlano', 'Entre para liberar contatos');
+      setText('summaryStatus', 'Prévia');
+      setText('metricSaldo', 'Login');
+      setText('metricUsados', 'Prévia');
+      setText('metricLimite', 'Plano');
+      setText('summaryText', 'Você pode consultar perfis públicos protegidos. Telefone, e-mail e mensagem só aparecem após login e consumo do plano.');
+      setText('saldoStatus', 'Prévia pública: detalhes liberados somente com login.');
       return;
     }
 
@@ -188,7 +189,7 @@
 
   async function loadContext() {
     const client = getClient();
-    if (!client) throw new Error('Configuração da plataforma indisponível.');
+    if (!client) throw new Error('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte.');
 
     try {
       const rows = await rpc('nt_app_context', {});
@@ -446,7 +447,8 @@
   }
 
   async function search(reset = true) {
-    if (!state.session) return;
+    // A prévia de talentos segue o padrão da Plataforma Corretores:
+    // sem login mostra dados públicos protegidos; login é exigido apenas para liberar detalhes/contato.
     if (state.loading) return;
 
     state.loading = true;
@@ -529,6 +531,7 @@
   async function consumirTalento(key, button) {
     if (!key) return;
     if (!state.session) {
+      setLoginMessage('Entre com seu acesso contratado para liberar telefone, e-mail e mensagem de abordagem.', '');
       openLoginModal();
       return;
     }
@@ -712,7 +715,7 @@
 
     const client = getClient();
     if (!client) {
-      setLoginMessage('Configuração da plataforma indisponível.', 'error');
+      setLoginMessage('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte.', 'error');
       return;
     }
 
@@ -783,7 +786,7 @@
       showWorkspace(false);
       updateHeader();
       updateSummary();
-      showLoginWarning('Configuração da plataforma indisponível. Verifique o arquivo supabase-config.js.');
+      showLoginWarning('A plataforma não carregou a configuração de acesso. Atualize a página ou fale com o suporte. Verifique o arquivo supabase-config.js.');
       return;
     }
 
@@ -791,9 +794,21 @@
     state.session = data.session || null;
 
     if (!state.session) {
-      showWorkspace(false);
+      // Sem login: carrega prévia pública protegida.
+      showWorkspace(true);
       updateHeader();
       updateSummary();
+
+      try {
+        await loadCidadeOptions();
+        await loadDependentFilters();
+        await search(true);
+      } catch (err) {
+        console.warn('[NT] Falha ao carregar prévia pública:', err);
+        status('Não foi possível carregar a prévia neste momento. Atualize a página ou fale com o suporte.');
+        const grid = $('#cardsGrid');
+        if (grid) grid.innerHTML = `<div class="nt-empty">${esc(err.message || err)}</div>`;
+      }
       return;
     }
 

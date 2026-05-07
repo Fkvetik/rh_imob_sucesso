@@ -1,5 +1,5 @@
 
-/* HOTFIX NT v1.1: força elementos com hidden a sumirem mesmo quando classes têm display:flex/grid */
+/* HOTFIX NT v1.1/v1.2: força elementos com hidden a sumirem mesmo quando classes têm display:flex/grid */
 [hidden] {
   display: none !important;
 }
@@ -685,3 +685,7 @@ input:focus, textarea:focus, select:focus {
   .nt-pill { margin-top: 10px; }
   .nt-footer__inner { display: grid; }
 }
+
+
+/* HOTFIX NT v1.2 */
+.nt-login-warning[hidden], .nt-workspace[hidden], .nt-session[hidden], #openLoginBtn[hidden] { display: none !important; }
