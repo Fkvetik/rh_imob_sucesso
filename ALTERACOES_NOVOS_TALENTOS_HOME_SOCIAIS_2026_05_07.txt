@@ -1,0 +1,31 @@
+ALTERAÇÕES APLICADAS — SITE RH IMOB + PLATAFORMA NOVOS TALENTOS
+
+Arquivos alterados:
+- index.html
+- styles.css
+- sitemap.xml
+
+Arquivos novos/adicionados:
+- novos-talentos.html
+- novos-talentos.css
+- novos-talentos.js
+- 03_SQL_RPC_NOVOS_TALENTOS_SITE.sql
+
+O que foi ajustado:
+1. Incluído link "Novos Talentos" no menu principal.
+2. Incluído card "Novos Talentos" na primeira dobra da home.
+3. Criada seção comercial "Plataforma Novos Talentos" no HTML principal.
+4. Incluído botão para /novos-talentos.html.
+5. Incluído link para Plataforma Novos Talentos no rodapé.
+6. Incluído Instagram @rh_imob no contato da home e nas vagas.
+7. Incluído LinkedIn da Mariana Souza no contato, vagas e rodapé.
+8. Atualizado sitemap.xml com /novos-talentos.html.
+9. Mantida Plataforma Corretores sem alteração estrutural.
+
+Links sociais aplicados:
+- Instagram RH IMOB: https://www.instagram.com/rh_imob/
+- LinkedIn Mariana: https://br.linkedin.com/in/marianarhimob
+
+Observação:
+Antes de testar /novos-talentos.html, rode no Supabase o arquivo:
+03_SQL_RPC_NOVOS_TALENTOS_SITE.sql
