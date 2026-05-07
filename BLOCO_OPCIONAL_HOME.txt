@@ -1,0 +1,9 @@
+Para linkar a vitrine na home, adicione no menu do index.html:
+
+<a href="corretores.html">Base de corretores</a>
+
+Sugestão de botão em alguma seção:
+
+<a class="btn btn-secondary btn-large" href="corretores.html">
+  Ver base pública de corretores
+</a>

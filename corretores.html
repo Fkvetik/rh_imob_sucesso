@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Corretores ativos por cidade | RH IMOB</title>
+  <meta name="description" content="Vitrine pública mascarada de corretores ativos por cidade, ano de inscrição e perfil profissional. Contatos completos somente com acesso contratado." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#2b124d" />
+  <link rel="canonical" href="https://rhimob0305.vercel.app/corretores.html" />
+  <link rel="icon" href="/favicon.ico?v=20260506corretores" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260506corretores" type="image/svg+xml" />
+  <link rel="stylesheet" href="corretores.css?v=20260506corretores" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" href="/">
+        <img src="/assets/rhimob-mark.svg?v=20260506corretores" alt="" />
+        <span><strong>RH IMOB</strong><small>Base pública mascarada</small></span>
+      </a>
+      <nav>
+        <a href="/">Início</a>
+        <a href="/#vagas">Vagas</a>
+        <a href="/#contato">Contato</a>
+      </nav>
+      <a class="btn btn-primary" id="topWhatsapp" href="#" target="_blank" rel="noopener">Solicitar acesso</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__grid">
+        <div>
+          <span class="kicker">Plataforma RH IMOB</span>
+          <h1>Corretores ativos por cidade, ano de CRECI e sinais de contato.</h1>
+          <p>Visualize uma amostra mascarada da inteligência RH IMOB. Nome completo, telefone, Instagram e abordagem pronta ficam disponíveis somente em acesso contratado.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#consulta">Consultar base mascarada</a>
+            <a class="btn btn-secondary" id="heroWhatsapp" href="#" target="_blank" rel="noopener">Quero acesso completo</a>
+          </div>
+        </div>
+        <aside class="summary">
+          <span>Base sincronizada</span>
+          <strong>52.569+</strong>
+          <small>perfis mascarados</small>
+          <div class="summary__grid">
+            <div><b id="totalCidades">18</b><em>cidades</em></div>
+            <div><b>CRECI</b><em>ativo</em></div>
+            <div><b>Seguro</b><em>sem telefone público</em></div>
+          </div>
+          <p>A página pública lê somente a tabela <code>leads_publicos</code>. Nenhum contato completo é exposto.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="search" id="consulta">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">Consulta pública</span>
+          <h2>Filtre a base mascarada</h2>
+          <p>Selecione cidade, ano e perfil. O objetivo é demonstrar volume e segmentação sem revelar dados sensíveis.</p>
+        </div>
+
+        <div class="filters">
+          <label>Cidade<select id="cidadeSelect"><option value="">Todas as cidades</option></select></label>
+          <label>Ano de inscrição<select id="anoSelect" disabled><option value="">Todos os anos</option></select></label>
+          <label>Perfil / cargo<select id="cargoSelect" disabled><option value="">Todos os perfis</option></select></label>
+          <label>Buscar termo<input id="termoInput" type="search" placeholder="corretor, consultor, imobiliário" /></label>
+          <button class="btn btn-primary" id="buscarBtn" type="button">Buscar</button>
+          <button class="btn btn-secondary" id="limparBtn" type="button">Limpar</button>
+        </div>
+
+        <div class="status-row">
+          <div id="resultadoStatus">Carregando filtros...</div>
+          <div>Dados mascarados. Contato completo apenas com acesso.</div>
+        </div>
+
+        <div class="cards" id="cardsGrid" aria-live="polite"></div>
+        <div class="load-more"><button class="btn btn-secondary" id="maisBtn" type="button" hidden>Carregar mais</button></div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container cta__inner">
+        <div>
+          <span class="kicker">Acesso completo</span>
+          <h2>Quer liberar WhatsApp, Instagram e mensagem pronta?</h2>
+          <p>No painel completo, o consumo é por plano: se um lead for usado por um plano, ele some apenas para os operadores daquele plano.</p>
+        </div>
+        <a class="btn btn-light" id="bottomWhatsapp" href="#" target="_blank" rel="noopener">Falar com Fernando</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span>© RH IMOB</span>
+      <a href="/politica.html">Política de privacidade</a>
+    </div>
+  </footer>
+
+  <script src="supabase-config.js?v=20260506corretores"></script>
+  <script src="corretores.js?v=20260506corretores"></script>
+</body>
+</html>
