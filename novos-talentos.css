@@ -784,3 +784,12 @@ input:focus, textarea:focus, select:focus {
     display: grid;
   }
 }
+
+
+/* RH IMOB NT v9 — padrão Corretores */
+.nt-filter-actions{display:flex;gap:10px;align-items:end;}
+@media(max-width:680px){.nt-filter-actions{display:grid;}}
+
+
+/* RH IMOB NT v10 — operação corrigida */
+.nt-card .nt-btn[disabled]{opacity:.72;cursor:wait;}

@@ -1,6 +1,6 @@
 // RH IMOB • Plataforma Novos Talentos
 // Configuração pública específica da base Novos Talentos.
-// Este arquivo é separado do Supabase da Plataforma Corretores.
+// Separado da Plataforma Corretores.
 // Não usar service_role aqui.
 
 window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG = {
