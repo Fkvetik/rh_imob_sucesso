@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2b124d" />
   <link rel="icon" href="/favicon.ico?v=20260507nt" sizes="any" />
   <link rel="icon" href="/favicon.svg?v=20260507nt" type="image/svg+xml" />
-  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt18" />
+  <link rel="stylesheet" href="novos-talentos.css?v=20260507nt19" />
 </head>
 <body>
   <header class="nt-topbar">
@@ -137,6 +137,112 @@
         </div>
       </div>
     </section>
+
+    <section class="nt-admin-section" id="adminPanel" hidden>
+      <div class="nt-container">
+        <div class="nt-admin-head">
+          <div>
+            <span class="nt-kicker">Painel master</span>
+            <h2>Gestão do plano, operadores e abordagens</h2>
+            <p>Controle usuários do plano, acompanhe produção por período e edite as mensagens padrão usadas na liberação dos talentos.</p>
+          </div>
+          <button class="nt-btn nt-btn-secondary" id="adminRefreshBtn" type="button">Atualizar painel</button>
+        </div>
+
+        <div class="nt-admin-alert" id="adminAlert" hidden></div>
+
+        <div class="nt-admin-cards">
+          <article class="nt-admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
+          <article class="nt-admin-card"><small>Usuários ativos</small><strong id="adminUsuariosResumo">-</strong><span id="adminUsuariosStatus">-</span></article>
+          <article class="nt-admin-card"><small>Contatos liberados</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
+          <article class="nt-admin-card"><small>Produção do mês</small><strong id="adminMesResumo">-</strong><span id="adminQuinzenaResumo">-</span></article>
+        </div>
+
+        <div class="nt-admin-grid">
+          <article class="nt-admin-box">
+            <div class="nt-admin-box-head">
+              <div>
+                <h3>Usuários do plano</h3>
+                <span id="adminUsersCount">0 usuários</span>
+              </div>
+            </div>
+            <div class="nt-table-wrap">
+              <table class="nt-admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Perfil</th>
+                    <th>Status</th>
+                    <th>Hoje</th>
+                    <th>7 dias</th>
+                    <th>15 dias</th>
+                    <th>Mês</th>
+                    <th>Total</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTable"><tr><td colspan="10">Entre como master para gerenciar usuários.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="nt-admin-box">
+            <div class="nt-admin-box-head">
+              <div>
+                <h3>Últimas liberações</h3>
+                <span id="adminRecentCount">0 registros</span>
+              </div>
+            </div>
+            <div class="nt-table-wrap">
+              <table class="nt-admin-table">
+                <thead><tr><th>Data/hora</th><th>Operador</th><th>Talento</th><th>Cidade</th><th>Perfil</th></tr></thead>
+                <tbody id="adminRecentTable"><tr><td colspan="5">Sem contatos liberados.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <article class="nt-admin-box nt-admin-messages">
+          <div class="nt-admin-box-head">
+            <div>
+              <h3>Mensagens de abordagem do plano</h3>
+              <span id="phrasesNote">As frases ativas aparecem no seletor quando o operador libera um talento.</span>
+            </div>
+            <button class="nt-btn nt-btn-secondary" id="newPhraseBtn" type="button">Nova frase</button>
+          </div>
+
+          <div class="nt-phrase-editor">
+            <label>Texto da frase
+              <textarea id="phraseText" rows="4" placeholder="Ex.: {saudacao_completa}, {primeiro_nome}. Aqui é {operador}. Temos uma oportunidade em {cidade} e queria te apresentar."></textarea>
+            </label>
+
+            <div class="nt-phrase-editor-grid">
+              <label>Status
+                <select id="phraseStatus">
+                  <option value="ATIVA">ATIVA</option>
+                  <option value="INATIVA">INATIVA</option>
+                </select>
+              </label>
+              <label>Prioridade
+                <input id="phrasePriority" type="number" min="1" placeholder="1" />
+              </label>
+              <label class="nt-check-label"><input id="phraseFavorite" type="checkbox" /> Favorita</label>
+              <button class="nt-btn nt-btn-primary" id="savePhraseBtn" type="button">Salvar frase</button>
+            </div>
+            <p class="nt-phrase-help">Placeholders permitidos: <strong>{saudacao_completa}</strong>, <strong>{primeiro_nome}</strong>, <strong>{operador}</strong>, <strong>{empresa}</strong> e <strong>{cidade}</strong>.</p>
+          </div>
+
+          <div class="nt-table-wrap">
+            <table class="nt-admin-table nt-phrase-table">
+              <thead><tr><th>Prior.</th><th>Texto</th><th>Status</th><th>Escopo</th><th>Ação</th></tr></thead>
+              <tbody id="adminPhrasesTable"><tr><td colspan="5">Sem frases carregadas.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
   </main>
 
   <div class="nt-modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
@@ -173,6 +279,8 @@
 
       <div class="nt-detail-grid" id="talentoDetalhes"></div>
 
+      <div class="nt-curriculo-box" id="curriculoBox" hidden></div>
+
       <div class="nt-message-box">
         <div class="nt-message-head">
           <div>
@@ -198,7 +306,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config-novos-talentos.js?v=20260507nt18"></script>
-  <script src="novos-talentos.js?v=20260507nt18"></script>
+  <script src="supabase-config-novos-talentos.js?v=20260507nt19"></script>
+  <script src="novos-talentos.js?v=20260507nt19"></script>
 </body>
 </html>

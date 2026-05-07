@@ -1,0 +1,40 @@
+RH IMOB • Novos Talentos V15 — Painel Master
+
+O que esta versão adiciona:
+- Painel master no HTML do Novos Talentos.
+- Ativar/inativar usuários do plano.
+- Relatório por operador: hoje, 7 dias, 15 dias, mês e total.
+- Últimos contatos liberados.
+- Editor de frases de abordagem do plano.
+- Currículo do talento no modal de detalhes.
+
+O que foi preservado:
+- Filtros funcionando.
+- Login funcionando.
+- Ver detalhes/consumo funcionando.
+- Distância do metrô.
+- Tratamento visual dos textos.
+- Plataforma Corretores sem alteração.
+
+Ordem:
+1. Rode no Supabase Novos Talentos:
+   01_RODAR_NO_SUPABASE_ADMIN_MASTER_V15.sql
+
+2. Suba no GitHub/Vercel:
+   novos-talentos.html
+   novos-talentos.css
+   novos-talentos.js
+   supabase-config-novos-talentos.js
+
+3. Teste:
+   novos-talentos.html?nt=19
+
+Quem vê o painel:
+- Usuários com perfil MASTER, ADMIN, SUPER ou SUPER_ADMIN.
+
+Onde aparece:
+- Abaixo da área de consulta, depois que o master faz login.
+
+Observação:
+- Para criar novos usuários, continua sendo pela planilha/Apps Script.
+- No HTML master, a ação é ativar/inativar usuários existentes, editar frases e acompanhar relatórios.

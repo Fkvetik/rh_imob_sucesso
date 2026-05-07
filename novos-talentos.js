@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  // RH IMOB • Novos Talentos v14
-  // Tratamento visual de acentos/caixa em cidades, bairros, cargos e filtros.
+  // RH IMOB • Novos Talentos v15
+  // Painel master, relatórios do plano, frases por plano e currículo no detalhe.
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
@@ -34,6 +34,9 @@
     loadingFilters: false,
     filterRequestSeq: 0,
     currentTalent: null,
+    currentPhraseId: null,
+    phrasesAdmin: [],
+    adminLoaded: false,
     filters: {
       cidade: '',
       estado_uf: '',
@@ -346,6 +349,8 @@
     if (logged) {
       setText('sessionName', `${state.context.nome || 'Usuário'} • ${state.context.perfil || 'Acesso'}`);
     }
+
+    updateAdminVisibility();
   }
 
   function updateSummary() {
@@ -372,6 +377,67 @@
     setText('summaryText', 'A liberação de contato consome saldo apenas da sua conta.');
     setText('saldoStatus', `Saldo do plano: ${formatNumber(ctx.saldo)} disponíveis • ${formatNumber(ctx.consumidos)} liberados`);
   }
+
+
+  function isMasterProfile() {
+    const perfil = String(state.context?.perfil || '').toUpperCase();
+    return ['MASTER', 'ADMIN', 'SUPER', 'SUPER_ADMIN'].includes(perfil);
+  }
+
+  function adminAllowed() {
+    return !!state.session && !!state.context && isMasterProfile();
+  }
+
+  function setAdminAlert(message, type = 'info') {
+    const el = $('#adminAlert');
+    if (!el) return;
+
+    if (!message) {
+      el.hidden = true;
+      el.textContent = '';
+      el.className = 'nt-admin-alert';
+      return;
+    }
+
+    el.hidden = false;
+    el.textContent = message;
+    el.className = `nt-admin-alert ${type}`.trim();
+  }
+
+  function formatDateTimeBR(value) {
+    if (!value) return '-';
+    const dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return String(value);
+    return dt.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function normalizeRpcList(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.items)) return data.items;
+    if (Array.isArray(data.frases)) return data.frases;
+    if (Array.isArray(data.rows)) return data.rows;
+    return [];
+  }
+
+  function updateAdminVisibility() {
+    const panel = $('#adminPanel');
+    if (!panel) return;
+
+    const show = adminAllowed();
+    panel.hidden = !show;
+
+    if (!show) {
+      state.adminLoaded = false;
+      setAdminAlert('', 'info');
+    }
+  }
+
 
   async function rpc(fn, payload = {}) {
     const client = getClient();
@@ -460,8 +526,29 @@
   async function loadFrases() {
     state.frases = [{ texto: DEFAULT_FRASE, titulo: 'Frase padrão' }];
 
+    if (!state.context) return;
+
+    try {
+      const data = await rpc('nt_frases_ativas_json_v15', {});
+      const rows = normalizeRpcList(data);
+
+      if (rows.length) {
+        state.frases = rows
+          .map((r, index) => ({
+            frase_id: r.frase_id || r.id || `FRASE_${index + 1}`,
+            titulo: normalize(r.titulo) || `Frase ${r.prioridade || index + 1}`,
+            texto: normalize(r.texto)
+          }))
+          .filter((r) => r.texto);
+
+        if (state.frases.length) return;
+      }
+    } catch (err) {
+      console.warn('[NT] Frases V15 indisponíveis, tentando leitura direta:', err);
+    }
+
     const client = getClient();
-    if (!client || !state.context) return;
+    if (!client) return;
 
     try {
       const { data, error } = await client
@@ -959,7 +1046,23 @@
       ].join('');
     }
 
+    renderCurriculoBox(talent);
     renderFrases(talent);
+  }
+
+  function renderCurriculoBox(talent) {
+    const box = $('#curriculoBox');
+    if (!box) return;
+
+    const url = normalize(talent?.curriculo_url);
+    if (!url) {
+      box.hidden = true;
+      box.innerHTML = '';
+      return;
+    }
+
+    box.hidden = false;
+    box.innerHTML = `<div><strong>Currículo disponível</strong><span>Abra o currículo original do talento antes de abordar.</span></div><a class="nt-btn nt-btn-secondary" href="${esc(url)}" target="_blank" rel="noopener">Abrir currículo</a>`;
   }
 
   function renderFrases(talent) {
@@ -1032,6 +1135,239 @@
     }
   }
 
+
+  function renderAdminUsers(users = []) {
+    const tbody = $('#adminUsersTable');
+    if (!tbody) return;
+
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="10">Nenhum usuário cadastrado neste plano.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map((u) => {
+      const ativo = String(u.status || '').toUpperCase() === 'ATIVO';
+      const self = state.context?.usuario_id && String(u.usuario_id) === String(state.context.usuario_id);
+      const nextStatus = ativo ? 'INATIVO' : 'ATIVO';
+
+      return `<tr>
+        <td>${esc(displayText(u.nome || '-'))}</td>
+        <td>${esc(u.email_login || u.email || '-')}</td>
+        <td><span class="nt-pill">${esc(u.perfil || '-')}</span></td>
+        <td><span class="nt-status-chip ${ativo ? 'ativo' : 'inativo'}">${esc(u.status || '-')}</span></td>
+        <td><strong>${formatNumber(u.consumidos_hoje || 0)}</strong></td>
+        <td><strong>${formatNumber(u.consumidos_7_dias || 0)}</strong></td>
+        <td><strong>${formatNumber(u.consumidos_15_dias || 0)}</strong></td>
+        <td><strong>${formatNumber(u.consumidos_30_dias || 0)}</strong></td>
+        <td><strong>${formatNumber(u.consumidos_total || 0)}</strong></td>
+        <td><button class="nt-mini-action js-user-status" data-user-id="${esc(u.usuario_id)}" data-next-status="${nextStatus}" ${self ? 'disabled title="Você não pode inativar a si mesmo"' : ''}>${ativo ? 'Inativar' : 'Ativar'}</button></td>
+      </tr>`;
+    }).join('');
+
+    $$('.js-user-status', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => alterarStatusUsuario(btn.dataset.userId, btn.dataset.nextStatus));
+    });
+  }
+
+  function renderAdminRecent(rows = []) {
+    const tbody = $('#adminRecentTable');
+    if (!tbody) return;
+
+    const list = (rows || []).slice(0, 30);
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="5">Sem contatos liberados.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map((r) => `
+      <tr>
+        <td>${esc(formatDateTimeBR(r.created_at || r.data_consumo))}</td>
+        <td>${esc(displayText(r.operador_nome || r.operador || 'Operador'))}</td>
+        <td>${esc(displayText(r.nome_mascarado || r.primeiro_nome || r.talento_key || '-'))}</td>
+        <td>${esc(displayJoin([r.cidade, r.estado_uf], '/'))}</td>
+        <td>${esc(displayText(r.cargo || '-'))}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderPhrases(rows = []) {
+    const tbody = $('#adminPhrasesTable');
+    if (!tbody) return;
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5">Nenhuma frase encontrada.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map((f) => {
+      const ativa = String(f.status || '').toUpperCase() === 'ATIVA';
+      const id = f.frase_id || f.id || '';
+
+      return `<tr>
+        <td>${esc(f.prioridade || '-')}</td>
+        <td>${esc(f.texto || '-')}</td>
+        <td><span class="nt-status-chip ${ativa ? 'ativo' : 'inativo'}">${esc(f.status || '-')}</span></td>
+        <td>${esc(f.escopo || (f.conta_id ? 'CONTA' : 'GLOBAL'))}</td>
+        <td class="nt-nowrap">
+          <button class="nt-mini-action js-edit-phrase" data-id="${esc(id)}">Editar</button>
+          <button class="nt-mini-action js-toggle-phrase" data-id="${esc(id)}" data-status="${ativa ? 'INATIVA' : 'ATIVA'}">${ativa ? 'Inativar' : 'Ativar'}</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    $$('.js-edit-phrase', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = state.phrasesAdmin?.find((x) => String(x.frase_id || x.id) === String(btn.dataset.id));
+        if (!item) return;
+
+        state.currentPhraseId = item.frase_id || item.id;
+        $('#phraseText').value = item.texto || '';
+        $('#phraseStatus').value = item.status || 'ATIVA';
+        $('#phrasePriority').value = item.prioridade || 1;
+        $('#phraseFavorite').checked = !!item.is_favorite;
+        $('#phraseText')?.focus();
+      });
+    });
+
+    $$('.js-toggle-phrase', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => togglePhrase(btn.dataset.id, btn.dataset.status));
+    });
+  }
+
+  async function loadAdminPhrases({ silent = false } = {}) {
+    if (!adminAllowed()) return;
+
+    try {
+      const data = await rpc('nt_admin_listar_frases_json_v15', {});
+      const rows = normalizeRpcList(data);
+
+      state.phrasesAdmin = rows || [];
+      renderPhrases(state.phrasesAdmin);
+
+      const own = state.phrasesAdmin.some((f) => String(f.escopo || '').toUpperCase() === 'CONTA' || f.conta_id);
+      const note = $('#phrasesNote');
+      if (note) {
+        note.textContent = own
+          ? 'Este plano possui frases personalizadas.'
+          : 'Este plano está usando frases padrão. Ao salvar, a frase fica personalizada para esta conta.';
+      }
+    } catch (err) {
+      console.error('[NT] frases admin:', err);
+      if (!silent) setAdminAlert('Não foi possível carregar frases do plano.', 'error');
+    }
+  }
+
+  async function loadAdminDashboard({ silent = false } = {}) {
+    if (!adminAllowed()) return;
+
+    const panel = $('#adminPanel');
+    if (panel) panel.hidden = false;
+
+    if (!silent) setAdminAlert('Atualizando painel master...', 'info');
+
+    try {
+      const data = await rpcOne('nt_admin_painel_json_v15', {});
+      const conta = data?.conta || {};
+      const operadores = data?.operadores || [];
+      const ultimos = data?.ultimos || [];
+
+      setText('adminEmpresa', conta.nome_conta || 'Plano sem nome');
+      setText('adminPlanoStatus', `Status: ${conta.status || '-'} • Conta: ${conta.conta_id || '-'}`);
+      setText('adminUsuariosResumo', `${formatNumber(conta.usuarios_ativos || 0)}/${formatNumber(conta.usuarios_contratados || 0)}`);
+      setText('adminUsuariosStatus', `${formatNumber(conta.usuarios_disponiveis || 0)} usuário(s) disponível(is)`);
+      setText('adminLeadsConsumidos', formatNumber(conta.consumidos || 0));
+      setText('adminLeadsDisponiveis', `${formatNumber(conta.saldo || 0)} disponíveis`);
+      setText('adminMesResumo', formatNumber(conta.consumidos_30_dias || 0));
+      setText('adminQuinzenaResumo', `${formatNumber(conta.consumidos_15_dias || 0)} nos últimos 15 dias`);
+      setText('adminUsersCount', `${formatNumber(operadores.length)} usuário(s)`);
+      setText('adminRecentCount', `${formatNumber(ultimos.length)} registro(s) recentes`);
+
+      renderAdminUsers(operadores);
+      renderAdminRecent(ultimos);
+      await loadAdminPhrases({ silent: true });
+
+      setAdminAlert('Painel atualizado com sucesso.', 'success');
+      state.adminLoaded = true;
+    } catch (err) {
+      console.error('[NT] admin dashboard:', err);
+      setAdminAlert('Não foi possível carregar o painel master. Rode o SQL V15 no Supabase Novos Talentos e tente novamente.', 'error');
+    }
+  }
+
+  async function alterarStatusUsuario(usuarioId, nextStatus) {
+    if (!usuarioId || !nextStatus) return;
+
+    const label = nextStatus === 'INATIVO' ? 'inativar' : 'ativar';
+    if (!confirm(`Confirmar ${label} este usuário?`)) return;
+
+    try {
+      setAdminAlert('Atualizando usuário...', 'info');
+      await rpc('nt_admin_alterar_status_usuario_v15', {
+        p_usuario_id: usuarioId,
+        p_status: nextStatus
+      });
+
+      setAdminAlert('Usuário atualizado com sucesso.', 'success');
+      await loadAdminDashboard({ silent: true });
+    } catch (err) {
+      console.error('[NT] status usuario:', err);
+      setAdminAlert('Falha ao alterar usuário. Verifique se seu acesso é MASTER.', 'error');
+    }
+  }
+
+  async function savePhrase() {
+    try {
+      const texto = normalize($('#phraseText')?.value);
+      if (!texto || texto.length < 10) {
+        return setAdminAlert('Digite uma frase com pelo menos 10 caracteres.', 'warn');
+      }
+
+      await rpc('nt_admin_salvar_frase_v15', {
+        p_frase_id: state.currentPhraseId || null,
+        p_texto: texto,
+        p_status: $('#phraseStatus')?.value || 'ATIVA',
+        p_prioridade: Number($('#phrasePriority')?.value || 1),
+        p_is_favorite: !!$('#phraseFavorite')?.checked
+      });
+
+      clearPhraseForm();
+      await loadAdminPhrases();
+      await loadFrases();
+      setAdminAlert('Frase salva com sucesso.', 'success');
+    } catch (err) {
+      console.error('[NT] salvar frase:', err);
+      setAdminAlert('Falha ao salvar frase. Verifique se seu acesso é MASTER.', 'error');
+    }
+  }
+
+  async function togglePhrase(id, statusValue) {
+    if (!id) return;
+
+    try {
+      await rpc('nt_admin_alterar_status_frase_v15', {
+        p_frase_id: id,
+        p_status: statusValue
+      });
+
+      await loadAdminPhrases();
+      await loadFrases();
+      setAdminAlert('Status da frase atualizado.', 'success');
+    } catch (err) {
+      console.error('[NT] status frase:', err);
+      setAdminAlert('Falha ao alterar status da frase.', 'error');
+    }
+  }
+
+  function clearPhraseForm() {
+    state.currentPhraseId = null;
+
+    if ($('#phraseText')) $('#phraseText').value = '';
+    if ($('#phraseStatus')) $('#phraseStatus').value = 'ATIVA';
+    if ($('#phrasePriority')) $('#phrasePriority').value = '';
+    if ($('#phraseFavorite')) $('#phraseFavorite').checked = false;
+  }
+
+
   async function handleLogin(event) {
     event.preventDefault();
 
@@ -1068,6 +1404,10 @@
       closeLoginModal();
       setLoginMessage('', '');
       await search(true);
+
+      if (adminAllowed()) {
+        await loadAdminDashboard({ silent: true });
+      }
     } catch (err) {
       console.error('[NT] login error:', err);
       const raw = String(err && err.message ? err.message : err);
@@ -1091,6 +1431,9 @@
     state.context = null;
     state.offset = 0;
     state.total = 0;
+    state.adminLoaded = false;
+    state.currentPhraseId = null;
+    state.phrasesAdmin = [];
 
     updateHeader();
     updateSummary();
@@ -1123,6 +1466,10 @@
         try {
           await loadContext();
           await loadFrases();
+
+          if (adminAllowed()) {
+            await loadAdminDashboard({ silent: true });
+          }
         } catch (err) {
           console.warn('[NT] Sessão sem contexto válido:', err);
           // Mantém a sessão logada para o consumo via RPC tentar corrigir vínculo por e-mail.
@@ -1202,6 +1549,10 @@
       await loadAllOptions(false);
       await search(true);
     });
+
+    $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
+    $('#savePhraseBtn')?.addEventListener('click', savePhrase);
+    $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
 
     $('#copiarMensagemBtn')?.addEventListener('click', copyMessage);
 
