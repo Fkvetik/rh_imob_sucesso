@@ -3,16 +3,14 @@
   const VAGAS_WHATSAPP = '5511953973268';
   const DEFAULT_EMPRESA_MESSAGE = 'Olá, vim pelo site da RH IMOB e gostaria de entender melhor como vocês podem apoiar minha empresa no recrutamento imobiliário.';
   const DEFAULT_VAGA_MESSAGE = 'Olá, Mariana. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
-
-  const FALLBACK_JOBS = [];
-
-
-  let JOBS = FALLBACK_JOBS.slice();
   const SITE_VAGAS_TABLE = 'site_vagas_publicas';
+
+  let JOBS = [];
 
   const $ = (selector, context = document) => context.querySelector(selector);
   const $$ = (selector, context = document) => Array.from(context.querySelectorAll(selector));
   const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+  const normalizeLower = (value) => normalize(value).toLowerCase();
   const escapeHTML = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
 
   function openWhatsApp(number, message) {
@@ -24,18 +22,12 @@
     if (!input) return;
     input.addEventListener('input', () => {
       let value = input.value.replace(/\D/g, '').slice(0, 11);
-      if (value.length > 10) {
-        value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
-      } else if (value.length > 6) {
-        value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-      } else if (value.length > 2) {
-        value = value.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
-      }
+      if (value.length > 10) value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+      else if (value.length > 6) value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+      else if (value.length > 2) value = value.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
       input.value = value;
     });
   }
-
-
 
   function getNtSupabaseConfig() {
     const cfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || {};
@@ -64,10 +56,9 @@
   }
 
   async function countSupabaseRows(cfg, table, query = '') {
-    const url = `${cfg.url.replace(/\/$/, '')}/rest/v1/${table}?select=*&limit=1${query ? `&${query}` : ''}`;
-    const response = await fetch(url, {
-      headers: supabaseHeaders(cfg, { Prefer: 'count=exact' })
-    });
+    const base = cfg.url.replace(/\/$/, '');
+    const url = `${base}/rest/v1/${table}?select=*&limit=1${query ? `&${query}` : ''}`;
+    const response = await fetch(url, { headers: supabaseHeaders(cfg, { Prefer: 'count=exact' }) });
     if (!response.ok) throw new Error(`Falha ao contar ${table}: HTTP ${response.status}`);
     const total = parseContentRangeTotal(response);
     if (Number.isFinite(total)) return total;
@@ -127,9 +118,20 @@
   function splitJobText(value) {
     if (Array.isArray(value)) return value.filter(Boolean).map(String);
     return String(value || '')
-      .split(/\n|\r|\|/) 
+      .split(/\n|\r|\|/)
       .map((item) => item.trim())
       .filter(Boolean);
+  }
+
+  function inferMediaType(row) {
+    const explicit = normalizeLower(row.midia_tipo || row.media_type);
+    if (['imagem', 'image'].includes(explicit)) return 'imagem';
+    if (['video', 'vídeo'].includes(explicit)) return 'video';
+    if (explicit === 'instagram') return 'instagram';
+    if (normalize(row.video_url || row.videoUrl)) return 'video';
+    if (normalize(row.instagram_url || row.instagramUrl)) return 'instagram';
+    if (normalize(row.imagem_url || row.imageUrl)) return 'imagem';
+    return 'nenhum';
   }
 
   function normalizeJobFromSupabase(row) {
@@ -137,6 +139,10 @@
     const cidadeUf = [row.cidade, row.estado_uf].filter(Boolean).join('/');
     const location = normalize(row.localidade || row.location || cidadeUf || 'Consultar região');
     const id = normalize(row.vaga_id || row.slug || row.id || title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    const imageUrl = normalize(row.imagem_url || row.image_url || row.imageUrl);
+    const videoUrl = normalize(row.video_url || row.videoUrl);
+    const instagramUrl = normalize(row.instagram_url || row.instagramUrl);
+    const mediaType = inferMediaType(row);
 
     return {
       id,
@@ -177,9 +183,18 @@
       'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at',
       'imagem_url','video_url','instagram_url','midia_tipo','midia_alt'
     ].join(',');
-    const url = `${cfg.url.replace(/\/$/, '')}/rest/v1/${SITE_VAGAS_TABLE}?select=${encodeURIComponent(select)}&status=eq.ATIVA&order=prioridade.asc&order=updated_at.desc`;
+    const base = cfg.url.replace(/\/$/, '');
+    const query = [
+      `select=${select}`,
+      'status=eq.ATIVA',
+      'order=prioridade.asc,updated_at.desc'
+    ].join('&');
+    const url = `${base}/rest/v1/${SITE_VAGAS_TABLE}?${query}`;
     const response = await fetch(url, { headers: supabaseHeaders(cfg) });
-    if (!response.ok) throw new Error(`Falha ao carregar vagas: HTTP ${response.status}`);
+    if (!response.ok) {
+      const details = await response.text().catch(() => '');
+      throw new Error(`Falha ao carregar vagas: HTTP ${response.status} ${details}`);
+    }
     const rows = await response.json();
     if (!Array.isArray(rows) || !rows.length) return false;
     JOBS = rows.map(normalizeJobFromSupabase).filter((job) => job.id && job.title);
@@ -201,17 +216,14 @@
     }
   }
 
-
   function setupMenu() {
     const toggle = $('.nav-toggle');
     const nav = $('#menu-principal');
     if (!toggle || !nav) return;
-
     toggle.addEventListener('click', () => {
       const isOpen = nav.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', String(isOpen));
     });
-
     $$('a', nav).forEach((link) => {
       link.addEventListener('click', () => {
         nav.classList.remove('is-open');
@@ -268,9 +280,7 @@
   function setupCompanyForm() {
     const form = $('#leadForm');
     if (!form) return;
-
     formatPhoneField(form.elements.whatsapp);
-
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const data = {
@@ -281,63 +291,48 @@
         demanda: normalize(form.elements.demanda?.value),
         mensagem: normalize(form.elements.mensagem?.value)
       };
-
       const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'demanda'];
       const missing = required.filter((field) => !data[field]);
-
       if (missing.length) {
         form.elements[missing[0]]?.focus();
         alert('Por favor, preencha os campos obrigatórios antes de abrir o WhatsApp.');
         return;
       }
-
       openWhatsApp(EMPRESA_WHATSAPP, buildCompanyLeadMessage(data));
     });
   }
 
   function renderJobDetails(job) {
-    const sections = Array.isArray(job.sections) && job.sections.length
-      ? job.sections
-      : [{ title: 'Detalhes da vaga', items: job.details || [] }];
-
-    return sections.map((section) => {
-      const items = (section.items || []).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
-      if (!items) return '';
-      return `<div class="job-more-section"><strong>${escapeHTML(section.title)}</strong><ul>${items}</ul></div>`;
-    }).join('');
+    const items = (job.details || []).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
+    if (!items) return '';
+    return `<details class="job-more"><summary>Ver mais detalhes</summary><div class="job-more-section"><strong>Detalhes da vaga</strong><ul>${items}</ul></div></details>`;
   }
 
   function renderJobMedia(job) {
     const media = job.media || {};
-    const type = String(media.type || '').toLowerCase();
+    const type = normalizeLower(media.type);
     const alt = escapeHTML(media.alt || job.title || 'Vaga RH IMOB');
-
     if (type === 'video' && media.videoUrl) {
       return `<figure class="job-media job-media-video"><video controls preload="metadata" src="${escapeHTML(media.videoUrl)}" aria-label="${alt}"></video></figure>`;
     }
-
     if (type === 'instagram' && media.instagramUrl) {
       return `<a class="job-media job-media-instagram" href="${escapeHTML(media.instagramUrl)}" target="_blank" rel="noopener noreferrer"><span>Ver post da vaga no Instagram</span><strong>@rh_imob</strong></a>`;
     }
-
+    if ((type === 'imagem' || type === 'image') && media.imageUrl) {
+      return `<figure class="job-media job-media-image"><img src="${escapeHTML(media.imageUrl)}" alt="${alt}" loading="lazy" decoding="async" referrerpolicy="no-referrer" /></figure>`;
+    }
     if (media.imageUrl) {
       return `<figure class="job-media job-media-image"><img src="${escapeHTML(media.imageUrl)}" alt="${alt}" loading="lazy" decoding="async" referrerpolicy="no-referrer" /></figure>`;
     }
-
     return '';
   }
 
   function createJobCard(job) {
     const highlights = (job.highlights || []).slice(0, 4).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
-    const details = renderJobDetails(job);
     const schedule = job.schedule ? `<span>🕒 ${escapeHTML(job.schedule)}</span>` : '';
-    const media = renderJobMedia(job);
-    const featured = job.featured ? ' job-featured' : '';
-    const aria = `Detalhes da vaga ${job.title}`;
-
     return `
-      <article class="job-card${featured} reveal in-view" data-category="${escapeHTML(job.category)}">
-        ${media}
+      <article class="job-card reveal in-view" data-category="${escapeHTML(job.category)}">
+        ${renderJobMedia(job)}
         <div class="job-card-head">
           <span class="job-badge">${escapeHTML(job.badge)}</span>
           <h3>${escapeHTML(job.title)}</h3>
@@ -345,33 +340,24 @@
         </div>
         <div class="job-card-body">
           <p>${escapeHTML(job.summary)}</p>
-          <div class="job-meta">
-            <span>💼 ${escapeHTML(job.contract)}</span>
-            <span>💰 ${escapeHTML(job.pay)}</span>
-            ${schedule}
-          </div>
+          <div class="job-meta"><span>💼 ${escapeHTML(job.contract)}</span><span>💰 ${escapeHTML(job.pay)}</span>${schedule}</div>
           <ul class="job-list">${highlights}</ul>
-          ${details ? `<details class="job-more"><summary aria-label="${escapeHTML(aria)}">Ver mais detalhes</summary>${details}</details>` : ''}
+          ${renderJobDetails(job)}
           <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${escapeHTML(job.id)}">Tenho interesse</button>
         </div>
-      </article>
-    `;
+      </article>`;
   }
 
   function renderJobs(filter = 'todas') {
     const grid = $('#jobsGrid');
     if (!grid) return;
-
     const list = filter === 'todas' ? JOBS : JOBS.filter((job) => job.category === filter);
     if (!list.length) {
       grid.innerHTML = '<div class="jobs-note reveal in-view"><strong>Nenhuma vaga ativa no momento.</strong><span>As vagas exibidas aqui são alimentadas pela planilha VAGAS_SITE da RH IMOB.</span></div>';
       return;
     }
     grid.innerHTML = list.map(createJobCard).join('');
-
-    $$('.js-open-job', grid).forEach((button) => {
-      button.addEventListener('click', () => openJobModal(button.dataset.jobId));
-    });
+    $$('.js-open-job', grid).forEach((button) => button.addEventListener('click', () => openJobModal(button.dataset.jobId)));
   }
 
   function setupJobFilters() {
@@ -395,7 +381,6 @@
     const subtitle = $('#modalSubtitle');
     const job = getJobById(jobId);
     if (!modal || !form || !job) return;
-
     form.reset();
     form.elements.jobId.value = job.id;
     title.textContent = `Tenho interesse: ${job.title}`;
@@ -437,24 +422,15 @@
     const modal = $('#jobModal');
     const form = $('#jobForm');
     if (!modal || !form) return;
-
     formatPhoneField(form.elements.whatsapp);
-
-    $$('[data-close-modal]').forEach((el) => {
-      el.addEventListener('click', closeJobModal);
-    });
-
+    $$('[data-close-modal]').forEach((el) => el.addEventListener('click', closeJobModal));
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
-        closeJobModal();
-      }
+      if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeJobModal();
     });
-
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const job = getJobById(form.elements.jobId.value);
       if (!job) return;
-
       const data = {
         nome: normalize(form.elements.nome?.value),
         whatsapp: normalize(form.elements.whatsapp?.value),
@@ -463,7 +439,6 @@
         disponibilidade: normalize(form.elements.disponibilidade?.value),
         mensagem: normalize(form.elements.mensagem?.value)
       };
-
       const required = ['nome', 'whatsapp', 'cidade', 'experiencia', 'disponibilidade'];
       const missing = required.filter((field) => !data[field]);
       if (missing.length) {
@@ -471,7 +446,6 @@
         alert('Preencha os campos obrigatórios para enviar seu interesse.');
         return;
       }
-
       openWhatsApp(VAGAS_WHATSAPP, buildJobMessage(job, data));
     });
   }
@@ -517,23 +491,12 @@
     const form = $('#talentForm');
     const modal = $('#talentModal');
     if (!modal || !form) return;
-
     formatPhoneField(form.elements.whatsapp);
-
-    if (openButton) {
-      openButton.addEventListener('click', openTalentModal);
-    }
-
-    $$('[data-close-talent-modal]').forEach((el) => {
-      el.addEventListener('click', closeTalentModal);
-    });
-
+    if (openButton) openButton.addEventListener('click', openTalentModal);
+    $$('[data-close-talent-modal]').forEach((el) => el.addEventListener('click', closeTalentModal));
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
-        closeTalentModal();
-      }
+      if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeTalentModal();
     });
-
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const data = {
@@ -547,7 +510,6 @@
         interesse: normalize(form.elements.interesse?.value),
         observacoes: normalize(form.elements.observacoes?.value)
       };
-
       const required = ['nome', 'whatsapp', 'regiao', 'funcao', 'experiencia', 'interesse'];
       const missing = required.filter((field) => !data[field]);
       if (missing.length) {
@@ -555,7 +517,6 @@
         alert('Preencha os campos obrigatórios para enviar seu perfil.');
         return;
       }
-
       openWhatsApp(VAGAS_WHATSAPP, buildTalentMessage(data));
     });
   }
