@@ -4,7 +4,7 @@
   const DEFAULT_EMPRESA_MESSAGE = 'Olá, vim pelo site da RH IMOB e gostaria de entender melhor como vocês podem apoiar minha empresa no recrutamento imobiliário.';
   const DEFAULT_VAGA_MESSAGE = 'Olá, Mariana. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
 
-  const JOBS = [
+  const FALLBACK_JOBS = [
     {
       "id": "corretor-terceiros-grupo-kaza-alto-padrao-sp",
       "title": "Corretor(a) de Imóveis – Terceiros Alto Padrão",
@@ -549,6 +549,9 @@
     }
   ];
 
+  let JOBS = FALLBACK_JOBS.slice();
+  const SITE_VAGAS_TABLE = 'site_vagas_publicas';
+
   const $ = (selector, context = document) => context.querySelector(selector);
   const $$ = (selector, context = document) => Array.from(context.querySelectorAll(selector));
   const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
@@ -573,6 +576,164 @@
       input.value = value;
     });
   }
+
+
+
+  function getNtSupabaseConfig() {
+    const cfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || {};
+    if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return null;
+    return cfg;
+  }
+
+  function getCorretoresSupabaseConfig() {
+    const cfg = window.RHIMOB_SUPABASE_CONFIG || {};
+    if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return null;
+    return cfg;
+  }
+
+  function supabaseHeaders(cfg, extra = {}) {
+    return {
+      apikey: cfg.publishableKey,
+      Authorization: `Bearer ${cfg.publishableKey}`,
+      ...extra
+    };
+  }
+
+  function parseContentRangeTotal(response) {
+    const range = response.headers.get('content-range') || response.headers.get('Content-Range') || '';
+    const match = range.match(/\/(\d+)$/);
+    return match ? Number(match[1]) : null;
+  }
+
+  async function countSupabaseRows(cfg, table, query = '') {
+    const url = `${cfg.url.replace(/\/$/, '')}/rest/v1/${table}?select=*&limit=1${query ? `&${query}` : ''}`;
+    const response = await fetch(url, {
+      headers: supabaseHeaders(cfg, { Prefer: 'count=exact' })
+    });
+    if (!response.ok) throw new Error(`Falha ao contar ${table}: HTTP ${response.status}`);
+    const total = parseContentRangeTotal(response);
+    if (Number.isFinite(total)) return total;
+    const rows = await response.json().catch(() => []);
+    return Array.isArray(rows) ? rows.length : 0;
+  }
+
+  function formatInteger(value) {
+    const number = Number(value || 0);
+    return number.toLocaleString('pt-BR');
+  }
+
+  function formatRoundedMil(value) {
+    const number = Number(value || 0);
+    if (!number) return '57 mil+';
+    if (number >= 1000) return `${Math.ceil(number / 1000)} mil+`;
+    return `${formatInteger(number)}+`;
+  }
+
+  function setMetric(name, value) {
+    $$(`[data-rhimob-metric="${name}"]`).forEach((el) => {
+      const format = el.dataset.format || 'integer';
+      el.textContent = format === 'rounded-mil' ? formatRoundedMil(value) : formatInteger(value);
+      el.dataset.loaded = 'true';
+    });
+  }
+
+  async function hydratePublicMetrics() {
+    const corretoresCfg = getCorretoresSupabaseConfig();
+    const ntCfg = getNtSupabaseConfig();
+
+    if (corretoresCfg) {
+      Promise.allSettled([
+        countSupabaseRows(corretoresCfg, corretoresCfg.publicTable || 'leads_publicos'),
+        countSupabaseRows(corretoresCfg, 'lead_filtros_cidade'),
+        countSupabaseRows(corretoresCfg, 'lead_filtros_cidade_ano_cargo')
+      ]).then(([total, cidades, combinacoes]) => {
+        if (total.status === 'fulfilled') setMetric('corretores_total', total.value);
+        if (cidades.status === 'fulfilled') setMetric('corretores_cidades', cidades.value);
+        if (combinacoes.status === 'fulfilled') setMetric('corretores_combinacoes', combinacoes.value);
+      });
+    }
+
+    if (ntCfg) {
+      Promise.allSettled([
+        countSupabaseRows(ntCfg, 'nt_talentos_publicos'),
+        countSupabaseRows(ntCfg, 'nt_filtro_cidade'),
+        countSupabaseRows(ntCfg, 'nt_filtro_cidade_metro')
+      ]).then(([total, cidades, metro]) => {
+        if (total.status === 'fulfilled') setMetric('nt_total_rounded', total.value);
+        if (cidades.status === 'fulfilled') setMetric('nt_cidades', cidades.value);
+        if (metro.status === 'fulfilled') setMetric('nt_metro', metro.value);
+      });
+    }
+  }
+
+  function splitJobText(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).map(String);
+    return String(value || '')
+      .split(/\n|\r|\|/) 
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function normalizeJobFromSupabase(row) {
+    const title = normalize(row.titulo || row.title || row.nome_vaga || 'Vaga RH IMOB');
+    const cidadeUf = [row.cidade, row.estado_uf].filter(Boolean).join('/');
+    const location = normalize(row.localidade || row.location || cidadeUf || 'Consultar região');
+    const id = normalize(row.vaga_id || row.slug || row.id || title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+
+    return {
+      id,
+      title,
+      category: normalize(row.categoria || row.category || 'Vagas'),
+      location,
+      contract: normalize(row.modalidade || row.contract || row.tipo_contrato || 'Consultar condição'),
+      pay: normalize(row.remuneracao || row.pay || 'Condição informada pela Mariana'),
+      schedule: normalize(row.horario || row.schedule || ''),
+      summary: normalize(row.resumo || row.summary || 'Oportunidade cadastrada pela RH IMOB.'),
+      highlights: splitJobText(row.destaques || row.highlights).slice(0, 5),
+      details: splitJobText(row.detalhes || row.details || row.requisitos || row.atividades).slice(0, 8),
+      badge: normalize(row.selo || row.badge || row.categoria || 'Vaga ativa')
+    };
+  }
+
+  function setJobsLoading(isLoading) {
+    const grid = $('#jobsGrid');
+    if (!grid) return;
+    if (isLoading) {
+      grid.innerHTML = '<div class="jobs-note reveal in-view"><strong>Atualizando vagas...</strong><span>Buscando oportunidades ativas cadastradas pela RH IMOB.</span></div>';
+    }
+  }
+
+  async function loadDynamicJobs() {
+    const cfg = getNtSupabaseConfig();
+    if (!cfg || !$('#jobsGrid')) return false;
+
+    const select = [
+      'vaga_id','titulo','categoria','localidade','cidade','estado_uf','modalidade','remuneracao','horario',
+      'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at'
+    ].join(',');
+    const url = `${cfg.url.replace(/\/$/, '')}/rest/v1/${SITE_VAGAS_TABLE}?select=${encodeURIComponent(select)}&status=eq.ATIVA&order=prioridade.asc&order=updated_at.desc`;
+    const response = await fetch(url, { headers: supabaseHeaders(cfg) });
+    if (!response.ok) throw new Error(`Falha ao carregar vagas: HTTP ${response.status}`);
+    const rows = await response.json();
+    if (!Array.isArray(rows) || !rows.length) return false;
+    JOBS = rows.map(normalizeJobFromSupabase).filter((job) => job.id && job.title);
+    return JOBS.length > 0;
+  }
+
+  async function initJobs() {
+    if (!$('#jobsGrid')) return;
+    setJobsLoading(true);
+    try {
+      const loaded = await loadDynamicJobs();
+      renderJobs('todas');
+      if (!loaded) console.warn('RH IMOB: usando vagas fixas de fallback.');
+    } catch (error) {
+      console.warn('RH IMOB: falha ao carregar vagas dinâmicas; usando fallback.', error);
+      JOBS = FALLBACK_JOBS.slice();
+      renderJobs('todas');
+    }
+  }
+
 
   function setupMenu() {
     const toggle = $('.nav-toggle');
@@ -920,6 +1081,7 @@
     setupJobModal();
     setupTalentModal();
     setupFooterYear();
-    renderJobs();
+    hydratePublicMetrics();
+    initJobs();
   });
 })();
