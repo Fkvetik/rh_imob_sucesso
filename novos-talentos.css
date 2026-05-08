@@ -1120,3 +1120,21 @@ input:focus, textarea:focus, select:focus {
     grid-template-columns: 1fr;
   }
 }
+
+
+
+/* RH IMOB NT v16 — metrô visível no card e filtros sem competição */
+.nt-metro-card {
+  margin: 10px 0 8px;
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(75, 20, 140, .10), rgba(255, 123, 61, .12));
+  color: var(--purple-950);
+  font-weight: 950;
+  font-size: 12.5px;
+  border: 1px solid rgba(75, 20, 140, .12);
+}
+
+.nt-card__signals .nt-signal.muted {
+  opacity: .72;
+}

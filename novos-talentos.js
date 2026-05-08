@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  // RH IMOB • Novos Talentos v15
-  // Painel master, relatórios do plano, frases por plano e currículo no detalhe.
+  // RH IMOB • Novos Talentos v16
+  // Metrô até 5 km visível no card e filtros sem competição com painel/admin.
 
   const EMBEDDED_NT_CONFIG = {
     enabled: true,
@@ -37,6 +37,7 @@
     currentPhraseId: null,
     phrasesAdmin: [],
     adminLoaded: false,
+    adminLazyTimer: null,
     filters: {
       cidade: '',
       estado_uf: '',
@@ -265,28 +266,33 @@
     const linha = normalize(row?.linha_metro_mais_proxima);
     const distancia = parseKm(row?.distancia_metro_km);
 
-    if (!estacao) {
+    if (!estacao || distancia === null) {
       return {
-        label: 'Metrô não informado',
+        label: 'Sem metrô até 5 km',
         detail: '',
+        badge: '',
         isNear: false,
         hasMetro: false
       };
     }
 
-    if (distancia !== null && distancia > 5) {
+    if (distancia > 5) {
       return {
-        label: 'Metrô acima de 5 km',
+        label: 'Sem metrô até 5 km',
         detail: `${estacao}${linha ? ` • ${linha}` : ''} • ${formatKm(distancia)}`,
+        badge: '',
         isNear: false,
         hasMetro: true
       };
     }
 
-    const distanciaTxt = distancia !== null ? ` • ${formatKm(distancia)}` : '';
+    const base = `${estacao}${linha ? ` • ${linha}` : ''}`;
+    const km = formatKm(distancia);
+
     return {
-      label: `${estacao}${linha ? ` • ${linha}` : ''}${distanciaTxt}`,
-      detail: distancia !== null ? `Até 5 km do metrô • ${formatKm(distancia)}` : 'Metrô próximo informado',
+      label: `${base} • ${km}`,
+      detail: `Até 5 km do metrô • ${km}`,
+      badge: `🚇 ${base} • ${km}`,
       isNear: true,
       hasMetro: true
     };
@@ -726,11 +732,11 @@
     return Array.from(map.values()).sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'pt-BR'));
   }
 
-  async function loadSelectedOptions(types, preserve = true) {
+  async function loadSelectedOptions(types, preserve = true, opts = {}) {
     collectFilters();
 
     const seq = ++state.filterRequestSeq;
-    status('Atualizando filtros...');
+    if (!opts.silent) status('Atualizando filtros...');
 
     await Promise.all(types.map((tipo) => loadOptionsForType(tipo, preserve)));
 
@@ -775,11 +781,15 @@
 
     collectFilters();
 
-    if (typesToReload.length) {
-      await loadSelectedOptions(typesToReload, true);
-    }
-
+    // Primeiro entrega a resposta principal: os cards.
+    // Os combos dependentes atualizam em segundo plano para não travar a percepção.
     await search(true);
+
+    if (typesToReload.length) {
+      loadSelectedOptions(typesToReload, true, { silent: true }).catch((err) => {
+        console.warn('[NT] atualização de filtros em segundo plano:', err);
+      });
+    }
   }
 
   function scheduleFilterAction(resetChildren = [], typesToReload = []) {
@@ -833,6 +843,8 @@
             <span>🧭 ${esc(displayJoin([macro, micro]) || 'Região em classificação')}</span>
             <span>🚇 ${metro}</span>
           </div>
+
+          ${metroInfo.isNear ? `<div class="nt-metro-card">${esc(displayText(metroInfo.badge))}</div>` : ''}
 
           <div class="nt-card__signals">
             <span class="nt-signal">${esc(canal)}</span>
@@ -1257,6 +1269,23 @@
     }
   }
 
+
+  function queueAdminLoad() {
+    if (!adminAllowed()) return;
+
+    clearTimeout(state.adminLazyTimer);
+    state.adminLazyTimer = setTimeout(() => {
+      if (state.loading || state.loadingFilters) {
+        queueAdminLoad();
+        return;
+      }
+
+      loadAdminDashboard({ silent: true }).catch((err) => {
+        console.warn('[NT] painel master em segundo plano:', err);
+      });
+    }, 1800);
+  }
+
   async function loadAdminDashboard({ silent = false } = {}) {
     if (!adminAllowed()) return;
 
@@ -1406,7 +1435,7 @@
       await search(true);
 
       if (adminAllowed()) {
-        await loadAdminDashboard({ silent: true });
+        queueAdminLoad();
       }
     } catch (err) {
       console.error('[NT] login error:', err);
@@ -1460,7 +1489,9 @@
       updateHeader();
       updateSummary();
 
-      await loadAllOptions(false);
+      // Entrega cards primeiro; filtros carregam em paralelo/segundo plano.
+      search(true).catch((err) => console.warn('[NT] busca inicial:', err));
+      loadAllOptions(false).catch((err) => console.warn('[NT] filtros iniciais:', err));
 
       if (state.session) {
         try {
@@ -1468,7 +1499,7 @@
           await loadFrases();
 
           if (adminAllowed()) {
-            await loadAdminDashboard({ silent: true });
+            queueAdminLoad();
           }
         } catch (err) {
           console.warn('[NT] Sessão sem contexto válido:', err);
@@ -1479,7 +1510,7 @@
         }
       }
 
-      await search(true);
+      // Busca inicial já disparada acima.
     } catch (err) {
       console.error('[NT] restore error:', err);
       const msg = friendlyError(err);

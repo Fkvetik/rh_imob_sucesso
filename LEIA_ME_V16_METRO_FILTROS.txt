@@ -1,0 +1,25 @@
+RH IMOB • Novos Talentos V16
+
+Ajustes feitos:
+
+1. Distância do metrô fora do detalhe
+- Quando o talento está até 5 km do metrô, o card mostra a informação antes de abrir detalhes.
+- Exemplo: 🚇 Vila Mariana • Linha 1-Azul • 1,8 km
+- Acima de 5 km, o card não vende como metrô próximo.
+
+2. Filtros com menos competição
+- Antes, ao mudar um filtro, a página aguardava recarregar vários filtros dependentes antes de mostrar os cards.
+- Agora os cards são consultados primeiro.
+- Os filtros dependentes atualizam em segundo plano.
+- O painel master/admin também não carrega competindo com filtros e cards; ele entra com atraso ou ao clicar em Atualizar painel.
+
+Não precisa rodar SQL para este ajuste.
+
+Subir no GitHub/Vercel:
+- novos-talentos.html
+- novos-talentos.css
+- novos-talentos.js
+- supabase-config-novos-talentos.js
+
+Teste:
+novos-talentos.html?nt=20
