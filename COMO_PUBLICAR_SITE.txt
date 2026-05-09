@@ -1,19 +1,9 @@
-COMO PUBLICAR
+Como publicar
 
-1. Copie estes arquivos para a raiz do repositório rh_imob_sucesso, substituindo os existentes:
-   - script.js
-   - styles.css
-   - vagas.html
-   - index.html
-
-2. No CMD, dentro da pasta do repositório com .git:
+1. Copie/substitua os arquivos deste pacote na raiz do repositório do site.
+2. Rode:
    git add .
-   git commit -m "Corrige compartilhamento individual de vagas"
+   git commit -m "Adiciona anúncio de vagas no site"
    git push
-
-3. Depois que o Vercel publicar, teste:
-   /vagas.html
-   Clique em “Compartilhar vaga”.
-
-4. O link esperado terá este formato:
-   /vagas.html?vaga=corretor-locacao-alto-padrao#vagas
+3. Aguarde o Vercel publicar.
+4. Teste em /vagas.html: botão "Quero anunciar minha vaga" no final da seção de vagas.

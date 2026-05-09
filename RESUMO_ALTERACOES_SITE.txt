@@ -1,14 +1,7 @@
-HOTFIX RH IMOB — Compartilhar vaga
+Resumo das alterações do site
 
-Arquivos alterados:
-- script.js
-- styles.css
-- vagas.html
-- index.html
-
-Correções:
-- Reincluído botão “Compartilhar vaga” em cada card.
-- Link individual por vaga usando /vagas.html?vaga=ID_DA_VAGA#vagas.
-- Ao abrir link compartilhado, a vaga é destacada na página.
-- Mantidas as melhorias já existentes: WhatsApp por responsável, mídia por vaga e leitura dinâmica do Supabase.
-- Atualizado cache busting para v=20260509sharefix.
+- Adicionado bloco "Quero anunciar minha vaga" no final da seção de vagas.
+- Criado modal/formulário para empresas preencherem dados da vaga.
+- O envio abre WhatsApp do Fernando com mensagem estruturada.
+- Mantidos: vagas dinâmicas, mídia por vaga, responsável por vaga e botão Compartilhar vaga.
+- Nenhum SQL ou Apps Script foi incluído neste pacote.

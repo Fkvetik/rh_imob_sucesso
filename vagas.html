@@ -9,21 +9,21 @@
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://rhimob0305.vercel.app/vagas.html" />
 
-  <link rel="icon" href="/favicon.ico?v=20260509sharefix" sizes="any" />
-  <link rel="icon" href="/favicon.svg?v=20260509sharefix" type="image/svg+xml" />
-  <link rel="shortcut icon" href="/favicon.ico?v=20260509sharefix" />
-  <link rel="manifest" href="/site.webmanifest?v=20260509sharefix" />
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260509anuncie" />
+  <link rel="manifest" href="/site.webmanifest?v=20260509anuncie" />
 
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pt_BR" />
   <meta property="og:site_name" content="RH IMOB" />
   <meta property="og:title" content="Vagas no mercado imobiliário | RH IMOB" />
   <meta property="og:description" content="Oportunidades em destaque no mercado imobiliário com candidatura via WhatsApp." />
-  <meta property="og:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260509sharefix" />
+  <meta property="og:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260509anuncie" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260509sharefix" />
+  <meta name="twitter:image" content="https://rhimob0305.vercel.app/assets/og-rhimob.png?v=20260509anuncie" />
 
-  <link rel="stylesheet" href="styles.css?v=20260509sharefix" />
+  <link rel="stylesheet" href="styles.css?v=20260509anuncie" />
 </head>
 <body class="standalone-vagas">
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -31,7 +31,7 @@
   <header class="site-header" id="topo">
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="RH IMOB - início">
-        <img src="/assets/rhimob-mark.svg?v=20260509sharefix" alt="" class="brand-mark" />
+        <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
         <span>
           <strong>RH IMOB</strong>
           <small>Recrutamento imobiliário</small>
@@ -64,6 +64,7 @@
           <div class="vagas-hero-actions">
             <a class="btn btn-primary btn-large" href="#vagas">Ver oportunidades</a>
             <a class="btn btn-secondary btn-large" href="#banco-talentos">Entrar no banco de talentos</a>
+            <a class="btn btn-secondary btn-large" href="#anunciar-vaga">Anunciar minha vaga</a>
           </div>
         </div>
       </div>
@@ -113,6 +114,24 @@
           <strong>Contato das vagas:</strong>
           <span>Cada oportunidade pode ter um responsável próprio. O WhatsApp é definido na aba VAGAS_SITE.</span>
         </div>
+
+        <div class="advertise-job-card reveal" id="anunciar-vaga">
+          <div class="advertise-job-copy">
+            <span class="talent-label">Para imobiliárias e empresas</span>
+            <h3>Quer anunciar sua vaga para profissionais do mercado imobiliário?</h3>
+            <p>Anuncie sua oportunidade na RH IMOB, uma vitrine encontrada por quem busca RH imobiliário no Google e por profissionais que já estão procurando recolocação, mudança de empresa ou entrada no setor.</p>
+            <ul>
+              <li>Receba candidatos direto no WhatsApp do responsável pela vaga</li>
+              <li>Divulgação com texto comercial mais claro e orientado à conversão</li>
+              <li>Possibilidade de vaga com imagem, post do Instagram ou link público</li>
+            </ul>
+          </div>
+          <div class="advertise-job-action">
+            <strong>Precisa contratar?</strong>
+            <span>Preencha os dados da vaga e envie para o Fernando avaliar a divulgação.</span>
+            <button class="btn btn-primary btn-full" type="button" id="openAdvertiseModal">Quero anunciar minha vaga</button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -153,6 +172,71 @@
         </label>
         <button class="btn btn-primary btn-full" type="submit">Enviar interesse pelo WhatsApp</button>
         <p class="form-helper">A mensagem será aberta no WhatsApp do responsável da vaga. Você revisa antes de enviar.</p>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="modal" id="advertiseModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="advertiseModalTitle">
+    <div class="modal-backdrop" data-close-advertise-modal></div>
+    <div class="modal-panel" role="document">
+      <button class="modal-close" type="button" data-close-advertise-modal aria-label="Fechar">×</button>
+      <div class="modal-head">
+        <span class="section-kicker">Anunciar vaga</span>
+        <h2 id="advertiseModalTitle">Quero anunciar uma vaga</h2>
+        <p>Preencha as informações principais. O site abrirá uma mensagem pronta no WhatsApp do Fernando para alinhamento da divulgação.</p>
+      </div>
+      <form id="advertiseForm" class="job-form advertise-form">
+        <label>Seu nome
+          <input type="text" name="nome" autocomplete="name" required placeholder="Nome do responsável" />
+        </label>
+        <label>Empresa
+          <input type="text" name="empresa" required placeholder="Nome da imobiliária ou empresa" />
+        </label>
+        <label>WhatsApp para retorno
+          <input type="tel" name="whatsapp" autocomplete="tel" required placeholder="(11) 99999-9999" />
+        </label>
+        <label>E-mail <span class="optional-label">opcional</span>
+          <input type="email" name="email" autocomplete="email" placeholder="email@empresa.com.br" />
+        </label>
+        <label>Cidade/região da vaga
+          <input type="text" name="cidade" required placeholder="Ex.: Jardins/SP, Osasco/SP, ABC" />
+        </label>
+        <label>Título da vaga
+          <input type="text" name="cargoVaga" required placeholder="Ex.: Corretor de locação, SDR, Gerente de vendas" />
+        </label>
+        <label>Quantidade de vagas
+          <input type="text" name="quantidade" required placeholder="Ex.: 1, 5, 20 profissionais" />
+        </label>
+        <label>Formato de contratação
+          <select name="formatoContratacao">
+            <option value="">Selecione, se souber</option>
+            <option>Autônomo / comissão</option>
+            <option>Ajuda de custo + comissão</option>
+            <option>PJ</option>
+            <option>CLT</option>
+            <option>Estágio / formação</option>
+            <option>A definir</option>
+          </select>
+        </label>
+        <label>Urgência
+          <select name="urgencia" required>
+            <option value="">Selecione</option>
+            <option>Imediata</option>
+            <option>Até 7 dias</option>
+            <option>Até 15 dias</option>
+            <option>Até 30 dias</option>
+            <option>Estou planejando a contratação</option>
+          </select>
+        </label>
+        <label>Perfil desejado
+          <textarea name="perfilDesejado" rows="3" placeholder="Ex.: CRECI ativo, experiência com locação, fácil acesso à região, perfil comercial"></textarea>
+        </label>
+        <label>Informações da vaga
+          <textarea name="detalhes" rows="4" placeholder="Remuneração, horário, benefícios, rotina, diferenciais e link de arte/post se tiver"></textarea>
+        </label>
+        <button class="btn btn-primary btn-full" type="submit">Enviar para o Fernando</button>
+        <p class="form-helper">A mensagem será aberta no WhatsApp do Fernando. Você revisa antes de enviar.</p>
       </form>
     </div>
   </div>
@@ -230,7 +314,7 @@
     <div class="container footer-grid">
       <div>
         <a class="brand footer-brand" href="/" aria-label="RH IMOB - início">
-          <img src="/assets/rhimob-mark.svg?v=20260509sharefix" alt="" class="brand-mark" />
+          <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
           <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
         </a>
         <p>Recrutamento imobiliário com tecnologia, inteligência e operação especializada.</p>
@@ -264,7 +348,7 @@
 
   <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB no WhatsApp" data-type="vaga" data-message="Olá. Vim pelo site da RH IMOB e quero saber mais sobre as vagas abertas.">WhatsApp</a>
 
-  <script src="supabase-config-novos-talentos.js?v=20260509sharefix"></script>
-  <script src="script.js?v=20260509sharefix"></script>
+  <script src="supabase-config-novos-talentos.js?v=20260509anuncie"></script>
+  <script src="script.js?v=20260509anuncie"></script>
 </body>
 </html>

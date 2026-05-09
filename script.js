@@ -652,6 +652,83 @@
     });
   }
 
+
+  function openAdvertiseModal() {
+    const modal = $('#advertiseModal');
+    const form = $('#advertiseForm');
+    if (!modal || !form) return;
+    form.reset();
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    setTimeout(() => form.elements.nome?.focus(), 50);
+  }
+
+  function closeAdvertiseModal() {
+    const modal = $('#advertiseModal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function buildAdvertiseMessage(data) {
+    return [
+      'Olá, Fernando. Vim pelo site da RH IMOB e quero anunciar uma vaga.',
+      '',
+      'Dados para divulgação:',
+      `Responsável: ${data.nome}`,
+      `Empresa: ${data.empresa}`,
+      `WhatsApp: ${data.whatsapp}`,
+      `E-mail: ${data.email || 'Não informado'}`,
+      `Cidade/região da vaga: ${data.cidade}`,
+      `Título da vaga: ${data.cargoVaga}`,
+      `Quantidade: ${data.quantidade}`,
+      `Formato de contratação: ${data.formatoContratacao || 'Não informado'}`,
+      `Urgência: ${data.urgencia}`,
+      '',
+      `Perfil desejado: ${data.perfilDesejado || 'Não informado'}`,
+      `Informações da vaga: ${data.detalhes || 'Não informado'}`,
+      '',
+      'Gostaria de entender como anunciar essa vaga na RH IMOB e receber candidatos pelo WhatsApp.'
+    ].join('\n');
+  }
+
+  function setupAdvertiseModal() {
+    const openButton = $('#openAdvertiseModal');
+    const form = $('#advertiseForm');
+    const modal = $('#advertiseModal');
+    if (!modal || !form) return;
+    formatPhoneField(form.elements.whatsapp);
+    if (openButton) openButton.addEventListener('click', openAdvertiseModal);
+    $$('[data-close-advertise-modal]').forEach((el) => el.addEventListener('click', closeAdvertiseModal));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeAdvertiseModal();
+    });
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = {
+        nome: normalize(form.elements.nome?.value),
+        empresa: normalize(form.elements.empresa?.value),
+        whatsapp: normalize(form.elements.whatsapp?.value),
+        email: normalize(form.elements.email?.value),
+        cidade: normalize(form.elements.cidade?.value),
+        cargoVaga: normalize(form.elements.cargoVaga?.value),
+        quantidade: normalize(form.elements.quantidade?.value),
+        formatoContratacao: normalize(form.elements.formatoContratacao?.value),
+        urgencia: normalize(form.elements.urgencia?.value),
+        perfilDesejado: normalize(form.elements.perfilDesejado?.value),
+        detalhes: normalize(form.elements.detalhes?.value)
+      };
+      const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'cargoVaga', 'quantidade', 'urgencia'];
+      const missing = required.filter((field) => !data[field]);
+      if (missing.length) {
+        form.elements[missing[0]]?.focus();
+        alert('Preencha os campos obrigatórios para enviar a solicitação de anúncio.');
+        return;
+      }
+      openWhatsApp(EMPRESA_WHATSAPP, buildAdvertiseMessage(data));
+    });
+  }
+
   function setupFooterYear() {
     const year = $('#year');
     if (year) year.textContent = new Date().getFullYear();
@@ -665,6 +742,7 @@
     setupJobFilters();
     setupJobModal();
     setupTalentModal();
+    setupAdvertiseModal();
     setupFooterYear();
     hydratePublicMetrics();
     initJobs();
