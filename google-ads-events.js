@@ -4,6 +4,7 @@
   const config = window.RHIMOB_GOOGLE_ADS_CONFIG || {};
   const enabled = config.enabled === true;
   const adsId = String(config.googleAdsId || '').trim();
+  const ga4Id = String(config.ga4MeasurementId || '').trim();
   const conversions = config.conversions || {};
   const debug = config.debug === true;
   const cooldown = new Map();
@@ -16,6 +17,10 @@
     return /^AW-[0-9]+$/.test(String(value || '').trim());
   }
 
+  function validGa4Id(value) {
+    return /^G-[A-Z0-9]+$/.test(String(value || '').trim());
+  }
+
   function validSendTo(value) {
     return /^AW-[0-9]+\/[A-Za-z0-9_-]+$/.test(String(value || '').trim());
   }
@@ -25,30 +30,44 @@
     window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
   }
 
-  function loadGoogleTag() {
+  function injectGtagScript(id, attrName) {
+    if (!id) return;
+    if (document.querySelector(`script[${attrName}="${id}"]`)) return;
+
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+    s.setAttribute(attrName, id);
+    document.head.appendChild(s);
+  }
+
+  function loadGoogleTags() {
     ensureGtag();
 
     if (!enabled) {
-      log('Google Ads desativado em google-ads-config.js. Eventos ficam em modo debug.');
+      log('Rastreamento desativado em google-ads-config.js. Eventos ficam em modo debug.');
       return;
-    }
-
-    if (!validAdsId(adsId)) {
-      console.warn('[RHIMOB ADS] googleAdsId inválido. Use formato AW-XXXXXXXXXX em google-ads-config.js');
-      return;
-    }
-
-    if (!document.querySelector(`script[data-rhimob-google-ads="${adsId}"]`)) {
-      const s = document.createElement('script');
-      s.async = true;
-      s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(adsId)}`;
-      s.dataset.rhimobGoogleAds = adsId;
-      document.head.appendChild(s);
     }
 
     window.gtag('js', new Date());
-    window.gtag('config', adsId);
-    log('Google tag carregada:', adsId);
+
+    if (validAdsId(adsId)) {
+      injectGtagScript(adsId, 'data-rhimob-google-ads');
+      window.gtag('config', adsId);
+      log('Google Ads tag carregada:', adsId);
+    } else {
+      console.warn('[RHIMOB ADS] googleAdsId inválido. Use formato AW-XXXXXXXXXX em google-ads-config.js');
+    }
+
+    if (validGa4Id(ga4Id)) {
+      injectGtagScript(ga4Id, 'data-rhimob-ga4');
+      window.gtag('config', ga4Id, {
+        send_page_view: true
+      });
+      log('GA4 tag carregada:', ga4Id);
+    } else {
+      console.warn('[RHIMOB ADS] ga4MeasurementId ausente ou inválido. Use formato G-XXXXXXXXXX em google-ads-config.js');
+    }
   }
 
   function once(key, ms = 1200) {
@@ -234,7 +253,7 @@
 
   window.RHIMOBTrackAdsEvent = track;
 
-  loadGoogleTag();
+  loadGoogleTags();
   wireClickTracking();
   wireSubmitTracking();
 })();
