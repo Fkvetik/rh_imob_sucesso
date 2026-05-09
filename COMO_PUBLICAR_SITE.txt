@@ -1,15 +1,19 @@
-Como publicar
+COMO PUBLICAR
 
-1. Extraia o ZIP.
-2. Suba o conteúdo da pasta no repositório do site no GitHub/Vercel.
-3. Aguarde o deploy do Vercel.
-4. Abra em aba anônima ou use Ctrl + F5.
-5. Teste:
-   - Página inicial
-   - /vagas.html
-   - Botão Tenho interesse em uma vaga
-   - Imagem/vídeo/Instagram no card, quando houver mídia
-   - Responsável/WhatsApp por vaga
+1. Copie estes arquivos para a raiz do repositório rh_imob_sucesso, substituindo os existentes:
+   - script.js
+   - styles.css
+   - vagas.html
+   - index.html
 
-Observação importante:
-Este pacote contém apenas arquivos do site. As colunas e políticas do Supabase precisam estar aplicadas separadamente para que mídia e responsável por vaga retornem corretamente.
+2. No CMD, dentro da pasta do repositório com .git:
+   git add .
+   git commit -m "Corrige compartilhamento individual de vagas"
+   git push
+
+3. Depois que o Vercel publicar, teste:
+   /vagas.html
+   Clique em “Compartilhar vaga”.
+
+4. O link esperado terá este formato:
+   /vagas.html?vaga=corretor-locacao-alto-padrao#vagas

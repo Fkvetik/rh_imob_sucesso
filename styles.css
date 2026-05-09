@@ -1205,3 +1205,35 @@ textarea { resize: vertical; min-height: 100px; }
   margin-top: 4px;
   color: #2b124d;
 }
+
+
+/* RH IMOB • Compartilhamento de vagas */
+.job-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+}
+.job-actions .btn {
+  margin-top: 0;
+}
+.job-card.is-shared-target {
+  outline: 3px solid rgba(242, 137, 63, 0.72);
+  box-shadow: 0 20px 70px rgba(242, 137, 63, 0.24);
+  transform: translateY(-2px);
+}
+.job-card.is-shared-target .job-card-head::before {
+  content: "Vaga compartilhada";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.22);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}

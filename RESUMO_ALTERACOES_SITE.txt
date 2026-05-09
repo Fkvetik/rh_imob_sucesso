@@ -1,29 +1,14 @@
-RH IMOB • Site publicado atualizado — 2026-05-09
+HOTFIX RH IMOB — Compartilhar vaga
 
-Arquivos do site atualizados:
-- index.html
-- vagas.html
+Arquivos alterados:
 - script.js
 - styles.css
-- supabase-config.js
-- supabase-config-novos-talentos.js
-- novos-talentos.html / novos-talentos.js / novos-talentos.css
-- corretores.html / corretores.js / corretores.css
-- politica.html, 404.html, robots.txt, sitemap.xml, site.webmanifest, vercel.json
-- assets/*
+- vagas.html
+- index.html
 
-Ajustes aplicados:
-1. Site limpo para publicação: removidos do pacote todos os arquivos SQL, Apps Script e documentações antigas que estavam misturados no ZIP do site.
-2. Vagas dinâmicas: script.js agora aceita mídia e responsável por vaga, com fallback técnico quando o responsável ainda não estiver preenchido.
-3. WhatsApp por vaga: a candidatura abre o número do responsável da oportunidade quando responsavel_whatsapp estiver no Supabase.
-4. Métrica da home: total de Novos Talentos agora conta somente nt_talentos_publicos com produto_codigo = NOVOS_TALENTOS e ativo = true.
-5. Cache atualizado: index.html e vagas.html receberam nova versão nos arquivos CSS/JS para forçar atualização no Vercel/navegador.
-6. Vagas: texto da página deixou de vender todas as vagas como se fossem somente da Mariana e passou a indicar responsável por oportunidade.
-7. Mídia social: link de Instagram no card ficou genérico para aceitar RH IMOB ou empresas anunciantes.
-8. Assets faltantes: adicionados assets/og-rhimob.png, assets/icon-192.png e assets/icon-512.png, que eram referenciados pelo HTML/manifest.
-
-Não incluído:
-- Nenhum service_role.
-- Nenhum arquivo Apps Script.
-- Nenhum SQL.
-- Nenhuma pasta operacional da planilha.
+Correções:
+- Reincluído botão “Compartilhar vaga” em cada card.
+- Link individual por vaga usando /vagas.html?vaga=ID_DA_VAGA#vagas.
+- Ao abrir link compartilhado, a vaga é destacada na página.
+- Mantidas as melhorias já existentes: WhatsApp por responsável, mídia por vaga e leitura dinâmica do Supabase.
+- Atualizado cache busting para v=20260509sharefix.

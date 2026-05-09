@@ -250,6 +250,7 @@
       const loaded = await loadDynamicJobs();
       if (!loaded) JOBS = [];
       renderJobs('todas');
+      if (loaded) setTimeout(highlightSharedJobFromUrl, 120);
       if (!loaded) console.warn('RH IMOB: nenhuma vaga ativa retornada pelo Supabase.');
     } catch (error) {
       console.warn('RH IMOB: falha ao carregar vagas dinâmicas.', error);
@@ -344,6 +345,85 @@
     });
   }
 
+
+  function getJobShareUrl(job) {
+    const url = new URL(window.location.href);
+    url.pathname = url.pathname.endsWith('/vagas.html') ? url.pathname : '/vagas.html';
+    url.searchParams.set('vaga', job.id);
+    url.hash = 'vagas';
+    return url.toString();
+  }
+
+  function buildJobShareText(job) {
+    return [
+      `Olha essa vaga que encontrei na RH IMOB:`,
+      '',
+      job.title,
+      job.location ? `Local: ${job.location}` : '',
+      job.pay ? `Condição: ${job.pay}` : '',
+      '',
+      'Ver detalhes:'
+    ].filter(Boolean).join('\n');
+  }
+
+  async function shareJob(jobId, trigger) {
+    const job = getJobById(jobId);
+    if (!job) return;
+
+    const url = getJobShareUrl(job);
+    const title = `Vaga: ${job.title}`;
+    const text = buildJobShareText(job);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+      } else if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        flashShareButton(trigger, 'Link copiado');
+      } else {
+        window.prompt('Copie o link da vaga:', url);
+      }
+    } catch (error) {
+      if (String(error?.name || '').toLowerCase() !== 'aborterror') {
+        console.warn('RH IMOB: falha ao compartilhar vaga.', error);
+        window.prompt('Copie o link da vaga:', url);
+      }
+    }
+  }
+
+  function flashShareButton(button, label) {
+    if (!button) return;
+    const oldText = button.textContent;
+    button.textContent = label;
+    button.disabled = true;
+    setTimeout(() => {
+      button.textContent = oldText;
+      button.disabled = false;
+    }, 1800);
+  }
+
+  function getSharedJobIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return normalize(params.get('vaga'));
+  }
+
+  function highlightSharedJobFromUrl() {
+    const sharedId = getSharedJobIdFromUrl();
+    if (!sharedId) return;
+
+    const job = getJobById(sharedId);
+    if (!job) return;
+
+    $$('.job-filter').forEach((btn) => btn.classList.toggle('is-active', (btn.dataset.filter || 'todas') === 'todas'));
+
+    const cards = $$('.job-card[data-job-id]');
+    const card = cards.find((el) => el.dataset.jobId === sharedId);
+    if (!card) return;
+
+    card.classList.add('is-shared-target');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   function renderJobDetails(job) {
     const items = (job.details || []).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
     if (!items) return '';
@@ -374,7 +454,7 @@
     const schedule = job.schedule ? `<span>🕒 ${escapeHTML(job.schedule)}</span>` : '';
     const responsible = job.responsible?.name ? `<span>👤 ${escapeHTML(job.responsible.name)}${job.responsible.company ? ' • ' + escapeHTML(job.responsible.company) : ''}</span>` : '';
     return `
-      <article class="job-card reveal in-view" data-category="${escapeHTML(job.category)}">
+      <article class="job-card reveal in-view" data-category="${escapeHTML(job.category)}" data-job-id="${escapeHTML(job.id)}">
         ${renderJobMedia(job)}
         <div class="job-card-head">
           <span class="job-badge">${escapeHTML(job.badge)}</span>
@@ -386,7 +466,10 @@
           <div class="job-meta"><span>💼 ${escapeHTML(job.contract)}</span><span>💰 ${escapeHTML(job.pay)}</span>${schedule}${responsible}</div>
           <ul class="job-list">${highlights}</ul>
           ${renderJobDetails(job)}
-          <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${escapeHTML(job.id)}">Tenho interesse</button>
+          <div class="job-actions">
+            <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${escapeHTML(job.id)}">Tenho interesse</button>
+            <button class="btn btn-secondary btn-full js-share-job" type="button" data-job-share-id="${escapeHTML(job.id)}">Compartilhar vaga</button>
+          </div>
         </div>
       </article>`;
   }
@@ -401,6 +484,7 @@
     }
     grid.innerHTML = list.map(createJobCard).join('');
     $$('.js-open-job', grid).forEach((button) => button.addEventListener('click', () => openJobModal(button.dataset.jobId)));
+    $$('.js-share-job', grid).forEach((button) => button.addEventListener('click', () => shareJob(button.dataset.jobShareId, button)));
   }
 
   function setupJobFilters() {
