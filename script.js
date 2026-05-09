@@ -104,7 +104,7 @@
 
     if (ntCfg) {
       Promise.allSettled([
-        countSupabaseRows(ntCfg, 'nt_talentos_publicos'),
+        countSupabaseRows(ntCfg, 'nt_talentos_publicos', 'produto_codigo=eq.NOVOS_TALENTOS&ativo=eq.true'),
         countSupabaseRows(ntCfg, 'nt_filtro_cidade'),
         countSupabaseRows(ntCfg, 'nt_filtro_cidade_metro')
       ]).then(([total, cidades, metro]) => {
@@ -195,29 +195,49 @@
     }
   }
 
-  async function loadDynamicJobs() {
-    const cfg = getNtSupabaseConfig();
-    if (!cfg || !$('#jobsGrid')) return false;
-
-    const select = [
-      'vaga_id','titulo','categoria','localidade','cidade','estado_uf','modalidade','remuneracao','horario',
-      'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at',
-      'imagem_url','video_url','instagram_url','midia_tipo','midia_alt',
-      'responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email'
-    ].join(',');
+  async function fetchDynamicJobsRows(cfg, selectFields) {
     const base = cfg.url.replace(/\/$/, '');
     const query = [
-      `select=${select}`,
+      `select=${selectFields.join(',')}`,
       'status=eq.ATIVA',
       'order=prioridade.asc,updated_at.desc'
     ].join('&');
     const url = `${base}/rest/v1/${SITE_VAGAS_TABLE}?${query}`;
     const response = await fetch(url, { headers: supabaseHeaders(cfg) });
+    const text = await response.text().catch(() => '');
+
     if (!response.ok) {
-      const details = await response.text().catch(() => '');
-      throw new Error(`Falha ao carregar vagas: HTTP ${response.status} ${details}`);
+      throw new Error(`Falha ao carregar vagas: HTTP ${response.status} ${text}`);
     }
-    const rows = await response.json();
+
+    return text ? JSON.parse(text) : [];
+  }
+
+  async function loadDynamicJobs() {
+    const cfg = getNtSupabaseConfig();
+    if (!cfg || !$('#jobsGrid')) return false;
+
+    const baseFields = [
+      'vaga_id','titulo','categoria','localidade','cidade','estado_uf','modalidade','remuneracao','horario',
+      'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at'
+    ];
+    const optionalFields = [
+      'imagem_url','video_url','instagram_url','midia_tipo','midia_alt',
+      'responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email'
+    ];
+
+    let rows = [];
+
+    try {
+      rows = await fetchDynamicJobsRows(cfg, [...baseFields, ...optionalFields]);
+    } catch (error) {
+      const msg = String(error && error.message ? error.message : error);
+      const canRetryWithoutOptionalColumns = msg.includes('PGRST204') || msg.includes('schema cache') || msg.includes('Could not find');
+      if (!canRetryWithoutOptionalColumns) throw error;
+      console.warn('RH IMOB: colunas opcionais de mídia/responsável ainda não estão disponíveis no Supabase. Usando leitura básica de vagas.', error);
+      rows = await fetchDynamicJobsRows(cfg, baseFields);
+    }
+
     if (!Array.isArray(rows) || !rows.length) return false;
     JOBS = rows.map(normalizeJobFromSupabase).filter((job) => job.id && job.title);
     return JOBS.length > 0;
@@ -338,7 +358,7 @@
       return `<figure class="job-media job-media-video"><video controls preload="metadata" src="${escapeHTML(media.videoUrl)}" aria-label="${alt}"></video></figure>`;
     }
     if (type === 'instagram' && media.instagramUrl) {
-      return `<a class="job-media job-media-instagram" href="${escapeHTML(media.instagramUrl)}" target="_blank" rel="noopener noreferrer"><span>Ver post da vaga no Instagram</span><strong>@rh_imob</strong></a>`;
+      return `<a class="job-media job-media-instagram" href="${escapeHTML(media.instagramUrl)}" target="_blank" rel="noopener noreferrer"><span>Ver post da vaga no Instagram</span><strong>Instagram da oportunidade</strong></a>`;
     }
     if ((type === 'imagem' || type === 'image') && media.imageUrl) {
       return `<figure class="job-media job-media-image"><img src="${escapeHTML(media.imageUrl)}" alt="${alt}" loading="lazy" decoding="async" referrerpolicy="no-referrer" /></figure>`;

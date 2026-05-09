@@ -1,0 +1,15 @@
+Como publicar
+
+1. Extraia o ZIP.
+2. Suba o conteúdo da pasta no repositório do site no GitHub/Vercel.
+3. Aguarde o deploy do Vercel.
+4. Abra em aba anônima ou use Ctrl + F5.
+5. Teste:
+   - Página inicial
+   - /vagas.html
+   - Botão Tenho interesse em uma vaga
+   - Imagem/vídeo/Instagram no card, quando houver mídia
+   - Responsável/WhatsApp por vaga
+
+Observação importante:
+Este pacote contém apenas arquivos do site. As colunas e políticas do Supabase precisam estar aplicadas separadamente para que mídia e responsável por vaga retornem corretamente.
