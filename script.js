@@ -1,8 +1,8 @@
 (() => {
   const EMPRESA_WHATSAPP = '5511997213584';
-  const VAGAS_WHATSAPP = '5511953973268';
+  const VAGAS_WHATSAPP = '5511953973268'; // fallback técnico: usado só quando a vaga não tiver responsavel_whatsapp
   const DEFAULT_EMPRESA_MESSAGE = 'Olá, vim pelo site da RH IMOB e gostaria de entender melhor como vocês podem apoiar minha empresa no recrutamento imobiliário.';
-  const DEFAULT_VAGA_MESSAGE = 'Olá, Mariana. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
+  const DEFAULT_VAGA_MESSAGE = 'Olá. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
   const SITE_VAGAS_TABLE = 'site_vagas_publicas';
 
   let JOBS = [];
@@ -123,6 +123,15 @@
       .filter(Boolean);
   }
 
+  function normalizePhone(value) {
+    const digits = String(value || '').replace(/\D+/g, '');
+    if (!digits) return '';
+    if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+    if (digits.length >= 12 && digits.length <= 13) return digits;
+    if (digits.length > 13) return digits.slice(-13);
+    return digits;
+  }
+
   function inferMediaType(row) {
     const explicit = normalizeLower(row.midia_tipo || row.media_type);
     if (['imagem', 'image'].includes(explicit)) return 'imagem';
@@ -143,6 +152,11 @@
     const videoUrl = normalize(row.video_url || row.videoUrl);
     const instagramUrl = normalize(row.instagram_url || row.instagramUrl);
     const mediaType = inferMediaType(row);
+    const responsibleName = normalize(row.responsavel_nome || row.responsavel || row.recrutador_nome || 'Mariana');
+    const responsibleWhatsapp = normalizePhone(row.responsavel_whatsapp || row.whatsapp_responsavel || row.telefone_responsavel || '');
+    const responsibleCompany = normalize(row.responsavel_empresa || row.empresa_anunciante || 'RH IMOB');
+    const responsibleRole = normalize(row.responsavel_cargo || row.cargo_responsavel || 'Recrutamento imobiliário');
+    const responsibleEmail = normalize(row.responsavel_email || row.email_responsavel || '');
 
     return {
       id,
@@ -162,6 +176,13 @@
         videoUrl,
         instagramUrl,
         alt: normalize(row.midia_alt || row.media_alt || title)
+      },
+      responsible: {
+        name: responsibleName,
+        whatsapp: responsibleWhatsapp,
+        company: responsibleCompany,
+        role: responsibleRole,
+        email: responsibleEmail
       }
     };
   }
@@ -181,7 +202,8 @@
     const select = [
       'vaga_id','titulo','categoria','localidade','cidade','estado_uf','modalidade','remuneracao','horario',
       'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at',
-      'imagem_url','video_url','instagram_url','midia_tipo','midia_alt'
+      'imagem_url','video_url','instagram_url','midia_tipo','midia_alt',
+      'responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email'
     ].join(',');
     const base = cfg.url.replace(/\/$/, '');
     const query = [
@@ -330,6 +352,7 @@
   function createJobCard(job) {
     const highlights = (job.highlights || []).slice(0, 4).map((item) => `<li>${escapeHTML(item)}</li>`).join('');
     const schedule = job.schedule ? `<span>🕒 ${escapeHTML(job.schedule)}</span>` : '';
+    const responsible = job.responsible?.name ? `<span>👤 ${escapeHTML(job.responsible.name)}${job.responsible.company ? ' • ' + escapeHTML(job.responsible.company) : ''}</span>` : '';
     return `
       <article class="job-card reveal in-view" data-category="${escapeHTML(job.category)}">
         ${renderJobMedia(job)}
@@ -340,7 +363,7 @@
         </div>
         <div class="job-card-body">
           <p>${escapeHTML(job.summary)}</p>
-          <div class="job-meta"><span>💼 ${escapeHTML(job.contract)}</span><span>💰 ${escapeHTML(job.pay)}</span>${schedule}</div>
+          <div class="job-meta"><span>💼 ${escapeHTML(job.contract)}</span><span>💰 ${escapeHTML(job.pay)}</span>${schedule}${responsible}</div>
           <ul class="job-list">${highlights}</ul>
           ${renderJobDetails(job)}
           <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${escapeHTML(job.id)}">Tenho interesse</button>
@@ -384,7 +407,7 @@
     form.reset();
     form.elements.jobId.value = job.id;
     title.textContent = `Tenho interesse: ${job.title}`;
-    subtitle.textContent = `${job.location} • ${job.pay}`;
+    subtitle.textContent = `${job.location} • ${job.pay}${job.responsible?.name ? ' • Responsável: ' + job.responsible.name : ''}`;
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
     setTimeout(() => form.elements.nome?.focus(), 50);
@@ -398,13 +421,16 @@
   }
 
   function buildJobMessage(job, data) {
+    const resp = job.responsible || {};
+    const saudacao = resp.name ? `Olá, ${resp.name}.` : 'Olá.';
     return [
-      `Olá, Mariana. Vim pelo site da RH IMOB e tenho interesse na vaga: ${job.title}.`,
+      `${saudacao} Vim pelo site da RH IMOB e tenho interesse na vaga: ${job.title}.`,
       '',
       `Vaga: ${job.title}`,
       `Local: ${job.location}`,
       `Modalidade/Condição: ${job.contract}`,
       `Remuneração: ${job.pay}`,
+      `Responsável: ${job.responsible?.name || 'Não informado'}${job.responsible?.company ? ' • ' + job.responsible.company : ''}`,
       '',
       'Meus dados:',
       `Nome: ${data.nome}`,
@@ -446,7 +472,8 @@
         alert('Preencha os campos obrigatórios para enviar seu interesse.');
         return;
       }
-      openWhatsApp(VAGAS_WHATSAPP, buildJobMessage(job, data));
+      const targetWhatsApp = job.responsible?.whatsapp || VAGAS_WHATSAPP;
+      openWhatsApp(targetWhatsApp, buildJobMessage(job, data));
     });
   }
 
