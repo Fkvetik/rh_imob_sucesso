@@ -1,25 +1,11 @@
-COMO SUBIR NO GITHUB PELO CMD
+Como subir no GitHub via CMD
 
-1) Instale o Git, se ainda não tiver.
-2) Clone o repositório em uma pasta limpa:
-   cd /d "%USERPROFILE%\Desktop"
-   git clone https://github.com/Fkvetik/rh_imob_sucesso.git
-   cd rh_imob_sucesso
+1. Extraia este ZIP.
+2. Copie TODO o conteúdo da pasta extraída para a raiz do repositório local do GitHub.
+3. No CMD, dentro da pasta do repositório:
 
-3) Apague os arquivos antigos, mantendo a pasta .git:
-   for /f "delims=" %i in ('dir /b /a') do if /i not "%i"==".git" rmdir /s /q "%i" 2>nul & if /i not "%i"==".git" del /f /q "%i" 2>nul
+git add .
+git commit -m "Ativa eventos Google Ads e adiciona anunciar vaga na home"
+git push
 
-4) Copie TODO o conteúdo deste ZIP para dentro da pasta rh_imob_sucesso.
-   Os arquivos index.html, vagas.html e script.js precisam ficar direto na raiz.
-
-5) Suba:
-   git add .
-   git commit -m "Atualiza site completo com eventos Google Ads"
-   git push
-
-6) Aguarde o Vercel publicar.
-7) Teste em aba anônima:
-   https://rhimob.com.br/
-   https://rhimob.com.br/vagas.html
-
-Depois que os IDs reais do Google Ads estiverem disponíveis, edite google-ads-config.js e suba novamente.
+Depois aguarde o Vercel publicar.

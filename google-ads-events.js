@@ -59,22 +59,55 @@
     return true;
   }
 
+  function normalizeEventParams(name, params = {}) {
+    return {
+      event_category: 'RH IMOB Site',
+      event_label: params.label || name,
+      lead_type: name,
+      page_location: window.location.href,
+      page_title: document.title,
+      ...params
+    };
+  }
+
+  function sendRecommendedLead(name, payload) {
+    if (!enabled || typeof window.gtag !== 'function') return;
+    if (config.sendRecommendedLeadEvent !== true) return;
+
+    const leadEvents = new Set([
+      'whatsapp_empresa',
+      'whatsapp_vagas',
+      'anunciar_vaga',
+      'candidatura_vaga',
+      'banco_talentos'
+    ]);
+
+    if (!leadEvents.has(name)) return;
+
+    window.gtag('event', 'generate_lead', {
+      event_category: 'RH IMOB Lead',
+      event_label: payload.event_label,
+      lead_type: name,
+      value: Number(payload.value || 1),
+      currency: payload.currency || 'BRL',
+      page_location: payload.page_location,
+      page_title: payload.page_title
+    });
+    log('evento recomendado enviado: generate_lead', name);
+  }
+
   function track(name, params = {}) {
     const eventKey = `${name}:${params.vaga_id || params.href || params.form_id || ''}`;
     if (!once(eventKey)) return;
 
     ensureGtag();
-
-    const payload = {
-      event_category: 'RH IMOB Site',
-      event_label: params.label || name,
-      ...params
-    };
+    const payload = normalizeEventParams(name, params);
 
     log('evento:', name, payload);
 
     if (enabled && typeof window.gtag === 'function') {
       window.gtag('event', name, payload);
+      sendRecommendedLead(name, payload);
     }
 
     const sendTo = String(conversions[name] || '').trim();

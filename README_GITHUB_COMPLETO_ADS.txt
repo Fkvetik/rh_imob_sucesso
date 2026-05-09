@@ -1,25 +1,15 @@
-RH IMOB — GitHub completo do site com eventos Google Ads
+RH IMOB • GitHub completo com Google Ads ativo e anúncio de vaga no site principal
 
-Conteúdo deste pacote:
-- Site público completo: index.html, vagas.html, politica.html, 404.html
-- Plataformas: corretores.html/css/js e novos-talentos.html/css/js
-- Configs públicas: supabase-config.js e supabase-config-novos-talentos.js
-- Assets: favicon, marca, ícones e imagem OG
-- Eventos Google Ads: google-ads-config.js e google-ads-events.js
+Alterações principais:
+- google-ads-config.js ativado com AW-3123495121.
+- google-ads-events.js ajustado para disparar eventos customizados e generate_lead.
+- index.html agora também exibe o bloco “Quero anunciar minha vaga”.
+- index.html agora também tem o modal de anúncio de vaga para enviar lead ao WhatsApp do Fernando.
+- Mantidos: vagas dinâmicas, compartilhamento de vaga, mídia por vaga e WhatsApp por responsável.
 
-Recursos já preservados:
-- Vagas dinâmicas pelo Supabase
-- WhatsApp por responsável da vaga
-- Mídia por vaga: imagem, vídeo ou Instagram
-- Botão Compartilhar vaga
-- Bloco Quero anunciar minha vaga
-- Eventos de rastreamento preparados para Google Ads
-
-Atenção:
-O arquivo google-ads-config.js vem com enabled=false e IDs fictícios.
-Depois que você tiver o ID AW e os labels de conversão, edite esse arquivo:
-  enabled: true
-  googleAdsId: 'AW-SEU_ID'
-  conversions: { ... }
-
-Não existe service_role neste pacote. As chaves públicas do Supabase são publishable/anon.
+Depois de publicar:
+1. Abra https://rhimob.com.br em aba anônima.
+2. Clique em “Quero anunciar minha vaga”.
+3. Preencha e envie o formulário uma vez.
+4. Clique também em uma candidatura e no banco de talentos.
+5. Volte ao Google Ads após alguns minutos/horas para verificar eventos.
