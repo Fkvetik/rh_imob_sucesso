@@ -66,7 +66,7 @@
             <a class="btn btn-secondary btn-large" href="#banco-talentos">Entrar no banco de talentos</a>
             <a class="btn btn-light btn-large" href="#anunciar-vaga">Anunciar minha vaga</a>
           </div>
-          <p class="vagas-hero-note">Cada vaga pode ser compartilhada com <strong>arte visual pronta</strong>, link individual e candidatura direta para o WhatsApp do responsável.</p>
+          <p class="vagas-hero-note">Cada vaga pode ser compartilhada com <strong>informações da oportunidade</strong>, link individual e candidatura direta para o WhatsApp do responsável.</p>
         </div>
       </div>
     </section>
@@ -113,7 +113,7 @@
 
         <div class="jobs-note reveal">
           <strong>Contato das vagas:</strong>
-          <span>Cada oportunidade pode ter um responsável próprio. O candidato pode demonstrar interesse, gerar a arte da vaga e compartilhar o link individual.</span>
+          <span>Cada oportunidade pode ter um responsável próprio. O candidato pode demonstrar interesse e compartilhar as informações da vaga com link individual.</span>
         </div>
 
         <div class="advertise-job-card reveal" id="anunciar-vaga">
@@ -218,35 +218,6 @@
       </form>
     </div>
   </div>
-
-
-  <div class="modal" id="shareJobModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="shareJobTitle">
-    <div class="modal-backdrop" data-close-share-modal></div>
-    <div class="modal-panel share-job-modal" role="document">
-      <button class="modal-close" type="button" data-close-share-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Compartilhar vaga</span>
-        <h2 id="shareJobTitle">Arte da vaga pronta para compartilhar</h2>
-        <p>Use a arte gráfica da vaga para abordar candidatos ou copie o link específico para compartilhar com preview do site.</p>
-      </div>
-      <div class="share-job-preview-wrap">
-        <img id="shareJobPreview" class="share-job-preview" alt="Prévia da arte da vaga" />
-      </div>
-      <div class="share-job-meta">
-        <strong id="shareJobMetaTitle">Vaga RH IMOB</strong>
-        <span id="shareJobMetaText">Gerando arte da vaga...</span>
-      </div>
-      <div class="share-job-actions">
-        <button class="btn btn-primary btn-full" type="button" id="shareJobNativeButton">Compartilhar arte</button>
-        <div class="share-job-secondary-actions">
-          <button class="btn btn-secondary btn-full" type="button" id="downloadJobArtButton">Baixar arte</button>
-          <button class="btn btn-secondary btn-full" type="button" id="copyJobLinkButton">Copiar link da vaga</button>
-        </div>
-      </div>
-      <p class="form-helper">Em celular compatível, o botão Compartilhar arte tenta abrir o compartilhamento nativo. Se não abrir, use Baixar arte e envie manualmente no WhatsApp.</p>
-    </div>
-  </div>
-
 
   <div class="modal" id="jobModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-backdrop" data-close-modal></div>

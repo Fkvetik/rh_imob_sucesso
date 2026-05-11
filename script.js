@@ -8,7 +8,6 @@
 
 
   let JOBS = [];
-  let SHARE_JOB_STATE = null;
 
   const $ = (selector, context = document) => context.querySelector(selector);
   const $$ = (selector, context = document) => Array.from(context.querySelectorAll(selector));
@@ -451,217 +450,62 @@
   }
 
   function buildJobShareText(job) {
+    const url = getJobShareUrl(job);
+    const highlights = (job.highlights || []).slice(0, 3).map((item) => `✅ ${item}`);
     return [
-      `Vaga RH IMOB: ${job.title}`,
-      job.location ? `Local: ${job.location}` : '',
-      job.pay ? `Condição: ${job.pay}` : '',
+      'Olá! Vi esta oportunidade no site da RH IMOB e achei que pode fazer sentido para você.',
+      '',
+      `🏢 Vaga: ${job.title}`,
+      job.location ? `📍 Local: ${job.location}` : '',
+      job.contract ? `💼 Modalidade: ${job.contract}` : '',
+      job.pay ? `💰 Condição: ${job.pay}` : '',
+      job.schedule ? `🕒 Rotina: ${job.schedule}` : '',
+      '',
       job.summary ? `Resumo: ${job.summary}` : '',
       '',
-      'Link específico da vaga:'
+      highlights.length ? 'Destaques:' : '',
+      ...highlights,
+      '',
+      'Veja os detalhes e candidate-se por aqui:',
+      url
     ].filter(Boolean).join('\n');
   }
 
-  function wrapSvgText(value, maxChars = 28, maxLines = 3) {
-    const words = normalize(value).split(' ').filter(Boolean);
-    const lines = [];
-    let current = '';
-    words.forEach((word) => {
-      const next = current ? `${current} ${word}` : word;
-      if (next.length <= maxChars || !current) current = next;
-      else {
-        lines.push(current);
-        current = word;
-      }
-    });
-    if (current) lines.push(current);
-    if (lines.length > maxLines) {
-      const sliced = lines.slice(0, maxLines);
-      sliced[maxLines - 1] = `${sliced[maxLines - 1].replace(/[.,;:!?\s-]+$/g, '')}…`;
-      return sliced;
-    }
-    return lines;
-  }
-
-  function renderSvgTextLines(lines, x, y, lineHeight, className, fill = '#ffffff') {
-    if (!lines.length) return '';
-    const tspans = lines.map((line, index) => `<tspan x="${x}" dy="${index === 0 ? 0 : lineHeight}">${escapeHTML(line)}</tspan>`).join('');
-    return `<text x="${x}" y="${y}" class="${className}" fill="${fill}">${tspans}</text>`;
-  }
-
-  function createJobArtSvg(job) {
-    const titleLines = wrapSvgText(job.title, 24, 3);
-    const summaryLines = wrapSvgText(job.summary, 42, 4);
-    const detailLines = [job.location, job.contract, job.pay, job.schedule || `Responsável: ${job.responsible?.name || 'RH IMOB'}`]
-      .filter(Boolean)
-      .map((value) => wrapSvgText(value, 34, 1)[0])
-      .slice(0, 4);
-    const highlights = (job.highlights || []).slice(0, 4).map((item) => wrapSvgText(item, 38, 1)[0]);
-    const directUrl = `rhimob.com.br/vaga/${job.id}`;
-    const detailBlocks = detailLines.map((line, index) => {
-      const row = Math.floor(index / 2);
-      const col = index % 2;
-      const boxX = 88 + (col * 452);
-      const boxY = 468 + (row * 82);
-      return `\n        <rect x="${boxX}" y="${boxY}" rx="24" ry="24" width="392" height="60" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)" />\n        <text x="${boxX + 24}" y="${boxY + 37}" class="metaLabel" fill="#fff">${escapeHTML(line)}</text>`;
-    }).join('');
-    const highlightItems = highlights.map((line, index) => `\n      <circle cx="110" cy="${782 + (index * 56)}" r="7" fill="#ffb66a" />\n      <text x="132" y="${790 + (index * 56)}" class="bulletText" fill="#221339">${escapeHTML(line)}</text>`).join('');
-
-    return `\n<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" role="img" aria-label="Arte da vaga ${escapeHTML(job.title)}">\n  <defs>\n    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">\n      <stop offset="0%" stop-color="#2b124d"/>\n      <stop offset="58%" stop-color="#5f26c9"/>\n      <stop offset="100%" stop-color="#ff8f3d"/>\n    </linearGradient>\n    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">\n      <stop offset="0%" stop-color="#ffffff"/>\n      <stop offset="100%" stop-color="#f7f1ff"/>\n    </linearGradient>\n    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">\n      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#2b124d" flood-opacity="0.18" />\n    </filter>\n    <style>\n      .logoSmall { font: 700 26px Arial, sans-serif; letter-spacing: .18em; }\n      .titleText { font: 800 72px Arial, sans-serif; letter-spacing: -0.04em; }\n      .metaLabel { font: 700 24px Arial, sans-serif; }\n      .sectionKicker { font: 700 28px Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }\n      .bodyText { font: 500 28px Arial, sans-serif; }\n      .bulletText { font: 600 30px Arial, sans-serif; }\n      .footerText { font: 700 26px Arial, sans-serif; }\n      .footerTiny { font: 500 22px Arial, sans-serif; }\n    </style>\n  </defs>\n  <rect width="1080" height="1350" fill="#f4eefc"/>\n  <rect x="40" y="40" width="1000" height="1270" rx="42" fill="url(#bg)"/>\n  <circle cx="900" cy="180" r="150" fill="rgba(255,255,255,0.08)"/>\n  <circle cx="180" cy="1180" r="210" fill="rgba(255,255,255,0.06)"/>\n  <text x="88" y="110" class="logoSmall" fill="#fff">RH IMOB</text>\n  <text x="88" y="148" class="footerTiny" fill="rgba(255,255,255,0.88)">Recrutamento imobiliário</text>\n  <rect x="88" y="190" rx="20" ry="20" width="280" height="54" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.18)" />\n  <text x="112" y="225" class="sectionKicker" fill="#fff">Vaga em destaque</text>\n  ${renderSvgTextLines(titleLines, 88, 318, 78, 'titleText')}\n  ${detailBlocks}\n  <g filter="url(#shadow)">\n    <rect x="72" y="690" width="936" height="500" rx="34" fill="url(#panel)"/>\n  </g>\n  <text x="110" y="746" class="sectionKicker" fill="#5f26c9">Resumo da oportunidade</text>\n  ${renderSvgTextLines(summaryLines, 110, 812, 42, 'bodyText', '#31213d')}\n  ${highlightItems}\n  <rect x="110" y="1080" rx="22" ry="22" width="860" height="86" fill="#efe4ff" />\n  <text x="138" y="1127" class="footerText" fill="#2b124d">Saiba mais no site: ${escapeHTML(directUrl)}</text>\n  <text x="110" y="1232" class="footerText" fill="#fff">Compartilhe esta vaga com quem faz sentido.</text>\n  <text x="110" y="1268" class="footerTiny" fill="rgba(255,255,255,0.88)">Clique em compartilhar ou baixe a arte para enviar no WhatsApp.</text>\n</svg>`;
-  }
-
-  function svgToDataUri(svg) {
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-  }
-
-  async function svgToPngBlob(svg, width = 1080, height = 1350) {
-    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    try {
-      const image = await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = url;
-      });
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext('2d');
-      context.fillStyle = '#f4eefc';
-      context.fillRect(0, 0, width, height);
-      context.drawImage(image, 0, 0, width, height);
-      return await new Promise((resolve, reject) => {
-        canvas.toBlob((pngBlob) => {
-          if (pngBlob) resolve(pngBlob);
-          else reject(new Error('Não foi possível gerar a arte da vaga.'));
-        }, 'image/png', 0.96);
-      });
-    } finally {
-      URL.revokeObjectURL(url);
-    }
-  }
-
-  function setShareModalLoading(isLoading, helperText = '') {
-    const nativeButton = $('#shareJobNativeButton');
-    const downloadButton = $('#downloadJobArtButton');
-    const copyButton = $('#copyJobLinkButton');
-    const metaText = $('#shareJobMetaText');
-    if (nativeButton) nativeButton.disabled = isLoading;
-    if (downloadButton) downloadButton.disabled = isLoading;
-    if (copyButton) copyButton.disabled = isLoading;
-    if (metaText && helperText) metaText.textContent = helperText;
-  }
-
-  async function buildShareJobState(job) {
-    const svg = createJobArtSvg(job);
-    const previewSrc = svgToDataUri(svg);
-    const pngBlob = await svgToPngBlob(svg);
-    const fileName = `vaga-rhimob-${getJobShareKey(job)}.png`;
-    const file = new File([pngBlob], fileName, { type: 'image/png' });
-    return {
-      job,
-      svg,
-      previewSrc,
-      pngBlob,
-      file,
-      fileName,
-      url: getJobShareUrl(job)
-    };
-  }
-
-  async function openShareJobModal(jobId) {
-    const modal = $('#shareJobModal');
-    const preview = $('#shareJobPreview');
-    const metaTitle = $('#shareJobMetaTitle');
-    const metaText = $('#shareJobMetaText');
+  async function shareJob(jobId, button) {
     const job = getJobById(jobId);
-    if (!modal || !preview || !metaTitle || !metaText || !job) return;
-    metaTitle.textContent = `Arte da vaga: ${job.title}`;
-    metaText.textContent = 'Gerando a arte gráfica da vaga...';
-    preview.removeAttribute('src');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-    setShareModalLoading(true, 'Gerando a arte gráfica da vaga...');
+    if (!job) return;
+
+    const text = buildJobShareText(job);
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    flashShareButton(button, 'Abrindo...');
+
     try {
-      SHARE_JOB_STATE = await buildShareJobState(job);
-      preview.src = SHARE_JOB_STATE.previewSrc;
-      metaText.textContent = `Arte pronta: ${job.location} • ${job.pay}`;
-      setShareModalLoading(false);
+      const popup = window.open(whatsappUrl, '_blank', 'noopener');
+      if (popup) return;
     } catch (error) {
-      console.error('RH IMOB: falha ao gerar arte da vaga.', error);
-      metaText.textContent = 'Não foi possível gerar a arte agora. Você ainda pode copiar o link da vaga.';
-      SHARE_JOB_STATE = { job, url: getJobShareUrl(job) };
-      setShareModalLoading(false);
+      console.warn('RH IMOB: não foi possível abrir o compartilhamento direto.', error);
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      flashShareButton(button, 'Mensagem copiada');
+      alert('O WhatsApp não abriu automaticamente. A mensagem completa da vaga foi copiada para você colar e enviar.');
+    } catch (error) {
+      window.prompt('Copie a mensagem completa da vaga:', text);
+      flashShareButton(button, 'Compartilhar vaga');
     }
   }
 
-  function closeShareJobModal() {
-    const modal = $('#shareJobModal');
-    if (!modal) return;
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
-  }
-
-  function triggerFileDownload(blob, fileName) {
-    const link = document.createElement('a');
-    const objectUrl = URL.createObjectURL(blob);
-    link.href = objectUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1200);
-  }
-
-  async function copyCurrentJobLink() {
-    const url = SHARE_JOB_STATE?.url;
-    if (!url) return;
-    try {
-      await navigator.clipboard.writeText(url);
-      const metaText = $('#shareJobMetaText');
-      if (metaText) metaText.textContent = 'Link da vaga copiado. Você pode colar em qualquer conversa.';
-    } catch (error) {
-      window.prompt('Copie o link específico da vaga:', url);
-    }
-  }
-
-  async function shareCurrentJobArt() {
-    const state = SHARE_JOB_STATE;
-    if (!state || !state.job) return;
-    const title = `Vaga RH IMOB: ${state.job.title}`;
-    const text = `${buildJobShareText(state.job)}\n${state.url}`;
-    try {
-      if (state.file && navigator.canShare && navigator.canShare({ files: [state.file] }) && navigator.share) {
-        await navigator.share({ title, text, files: [state.file] });
-        return;
-      }
-      if (navigator.share) {
-        await navigator.share({ title, text, url: state.url });
-        return;
-      }
-    } catch (error) {
-      if (error && error.name === 'AbortError') return;
-    }
-    if (state.pngBlob) triggerFileDownload(state.pngBlob, state.fileName || `vaga-rhimob-${getJobShareKey(state.job)}.png`);
-    await copyCurrentJobLink();
-  }
-
-  function downloadCurrentJobArt() {
-    const state = SHARE_JOB_STATE;
-    if (!state || !state.pngBlob) return;
-    triggerFileDownload(state.pngBlob, state.fileName || `vaga-rhimob-${getJobShareKey(state.job)}.png`);
-  }
-
-  function setupShareJobModal() {
-    const modal = $('#shareJobModal');
-    if (!modal) return;
-    $$('[data-close-share-modal]').forEach((el) => el.addEventListener('click', closeShareJobModal));
-    $('#shareJobNativeButton')?.addEventListener('click', shareCurrentJobArt);
-    $('#downloadJobArtButton')?.addEventListener('click', downloadCurrentJobArt);
-    $('#copyJobLinkButton')?.addEventListener('click', copyCurrentJobLink);
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeShareJobModal();
-    });
+  function flashShareButton(button, label) {
+    if (!button) return;
+    const oldText = button.textContent;
+    button.textContent = label;
+    button.disabled = true;
+    setTimeout(() => {
+      button.textContent = oldText;
+      button.disabled = false;
+    }, 1800);
   }
 
   function getSharedJobIdFromUrl() {
@@ -730,9 +574,8 @@
           ${renderJobDetails(job)}
           <div class="job-actions">
             <button class="btn btn-primary btn-full js-open-job" type="button" data-job-id="${escapeHTML(job.id)}">Tenho interesse</button>
-            <button class="btn btn-secondary btn-full js-share-job" type="button" data-job-share-id="${escapeHTML(job.id)}">Compartilhar arte da vaga</button>
+            <button class="btn btn-secondary btn-full js-share-job" type="button" data-job-share-id="${escapeHTML(job.id)}">Compartilhar vaga</button>
           </div>
-          <div class="job-actions-hint">Interesse abre o WhatsApp do responsável. Compartilhar gera uma arte visual e mantém o link individual da vaga.</div>
         </div>
       </article>`;
   }
@@ -747,7 +590,7 @@
     }
     grid.innerHTML = list.map(createJobCard).join('');
     $$('.js-open-job', grid).forEach((button) => button.addEventListener('click', () => openJobModal(button.dataset.jobId)));
-    $$('.js-share-job', grid).forEach((button) => button.addEventListener('click', () => openShareJobModal(button.dataset.jobShareId)));
+    $$('.js-share-job', grid).forEach((button) => button.addEventListener('click', () => shareJob(button.dataset.jobShareId, button)));
   }
 
   function setupJobFilters() {
@@ -999,7 +842,6 @@
     setupCompanyForm();
     setupJobFilters();
     setupJobModal();
-    setupShareJobModal();
     setupTalentModal();
     setupAdvertiseModal();
     setupFooterYear();
