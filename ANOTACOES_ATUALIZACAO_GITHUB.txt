@@ -1,0 +1,61 @@
+RH IMOB — pacote limpo para atualizar no GitHub
+Data: 2026-05-11
+
+O QUE TEM NESTE ZIP
+- Somente os arquivos necessários do site e das plataformas publicadas.
+- Não incluí os SQLs antigos, READMEs antigos, backups e arquivos de patch para não poluir o GitHub.
+- Mantive a pasta /api porque ela é obrigatória para a rota dinâmica da Vercel.
+- Mantive a pasta /assets porque o site usa os ícones/marca.
+
+PRINCIPAL AJUSTE
+1) A rota /vaga/:slug está configurada no vercel.json.
+2) A função api/vaga-preview.js gera o HTML individual da vaga com meta tags Open Graph:
+   - og:title
+   - og:description
+   - og:image
+   - og:url
+3) O botão Compartilhar vaga usa link bonito:
+   https://www.rhimob.com.br/vaga/slug-da-vaga
+4) Ao abrir o link, a função redireciona para:
+   https://www.rhimob.com.br/vagas.html?vaga=VAGA_ID#vagas
+
+ARQUIVOS MAIS IMPORTANTES ALTERADOS
+- script.js
+- vercel.json
+- api/vaga-preview.js
+
+SUPABASE
+- A tabela public.site_vagas_publicas já deve ter as colunas:
+  - slug
+  - imagem_og
+- Recomendação: usar vaga_id como slug curto.
+  Exemplo:
+  vaga_id: gerente-vendas-osasco
+  slug: gerente-vendas-osasco
+
+VERCEL
+Depois de subir no GitHub, aguarde o deploy da Vercel terminar.
+Teste primeiro:
+https://www.rhimob.com.br/api/vaga-preview?slug=gerente-vendas-osasco
+
+Depois teste:
+https://www.rhimob.com.br/vaga/gerente-vendas-osasco
+
+Se /api/vaga-preview abrir e /vaga/slug der 404, o problema está no vercel.json ou no deploy.
+Se /api/vaga-preview mostrar “Vaga não encontrada”, a função está funcionando e o problema é slug/dado no Supabase.
+
+IMPORTANTE
+- Não coloque service_role no GitHub, no HTML ou no JavaScript público.
+- A função usa chave pública/publishable key, suficiente para ler a tabela pública de vagas.
+- Se quiser, no painel da Vercel você pode configurar estas variáveis, mas não é obrigatório porque já há fallback público:
+  RHIMOB_SUPABASE_URL
+  RHIMOB_SUPABASE_ANON_KEY
+  RHIMOB_SITE_VAGAS_TABLE
+  RHIMOB_DEFAULT_OG_IMAGE
+
+COMO SUBIR
+1) Extraia este ZIP.
+2) Envie os arquivos para a raiz do repositório no GitHub.
+3) Mantenha a pasta api/ na raiz.
+4) Mantenha a pasta assets/ na raiz.
+5) Aguarde o deploy automático da Vercel.

@@ -237,17 +237,28 @@
       'imagem_url','video_url','instagram_url','midia_tipo','midia_alt',
       'responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email'
     ];
+    const previewOptionalFields = [
+      'slug','vaga_slug','imagem_og','og_image','image_url','imageUrl'
+    ];
 
     let rows = [];
 
     try {
-      rows = await fetchDynamicJobsRows(cfg, [...baseFields, ...optionalFields]);
+      rows = await fetchDynamicJobsRows(cfg, [...baseFields, ...optionalFields, ...previewOptionalFields]);
     } catch (error) {
       const msg = String(error && error.message ? error.message : error);
       const canRetryWithoutOptionalColumns = msg.includes('PGRST204') || msg.includes('schema cache') || msg.includes('Could not find');
       if (!canRetryWithoutOptionalColumns) throw error;
-      console.warn('RH IMOB: colunas opcionais de mídia/responsável ainda não estão disponíveis no Supabase. Usando leitura básica de vagas.', error);
-      rows = await fetchDynamicJobsRows(cfg, baseFields);
+      try {
+        console.warn('RH IMOB: colunas opcionais de preview por vaga ainda não estão disponíveis. Tentando carregar vagas com mídia/responsável.', error);
+        rows = await fetchDynamicJobsRows(cfg, [...baseFields, ...optionalFields]);
+      } catch (fallbackError) {
+        const fallbackMsg = String(fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
+        const canRetryBasic = fallbackMsg.includes('PGRST204') || fallbackMsg.includes('schema cache') || fallbackMsg.includes('Could not find');
+        if (!canRetryBasic) throw fallbackError;
+        console.warn('RH IMOB: colunas opcionais de mídia/responsável ainda não estão disponíveis no Supabase. Usando leitura básica de vagas.', fallbackError);
+        rows = await fetchDynamicJobsRows(cfg, baseFields);
+      }
     }
 
     if (!Array.isArray(rows) || !rows.length) return false;
