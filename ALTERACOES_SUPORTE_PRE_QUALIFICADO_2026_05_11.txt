@@ -1,0 +1,42 @@
+RH IMOB • Ajuste de suporte e pré-qualificação antes do WhatsApp
+Data: 2026-05-11
+
+Objetivo
+- Evitar que leads de empresa cheguem no WhatsApp com mensagem vazia ou genérica.
+- Fazer com que cliques de contratação abram formulário de pré-qualificação antes do WhatsApp.
+- Transformar o botão flutuante em caminho de suporte com opções: Preciso contratar ou Vagas.
+
+Arquivos alterados
+1) index.html
+- Adicionado modal de Suporte com duas opções: Preciso contratar e Vagas.
+- Adicionado modal de empresa "Solicite uma apresentação da RH IMOB".
+- Formulário principal de contato ganhou campos de quantidade aproximada e urgência/prazo.
+- Rodapé deixou de ter link direto de WhatsApp para vagas e passou a direcionar para oportunidades.
+- Botão flutuante mudou texto de WhatsApp para Suporte.
+
+2) vagas.html
+- Adicionado o mesmo modal de Suporte.
+- Adicionado o mesmo modal de pré-qualificação para empresas.
+- Botão superior passou a abrir Suporte.
+- Rodapé deixou de ter link direto de WhatsApp para vagas.
+- Botão flutuante mudou para Suporte.
+
+3) script.js
+- Cliques .js-whatsapp de empresa agora abrem o formulário de empresa, não WhatsApp direto.
+- Cliques de suporte/vagas abrem modal com escolha de caminho.
+- Links de "Preciso contratar" (#contratar e /#contratar) abrem o formulário de empresa.
+- Mensagem enviada ao Fernando agora inclui:
+  Nome, Empresa, WhatsApp, Cidade/Estado, Tipo de demanda, Quantidade aproximada, Urgência/prazo, Origem do clique e Mensagem.
+- Mantidos os fluxos existentes de candidatura a vaga, banco de talentos e anunciar vaga.
+
+4) styles.css
+- Adicionado layout visual para o modal de suporte.
+- Botão flutuante passou para visual de suporte, sem parecer WhatsApp direto.
+
+5) google-ads-events.js
+- Ajustado rastreamento para diferenciar abertura de pré-qualificação de empresa, suporte, caminho de vagas e envio do formulário modal.
+
+Teste técnico realizado
+- script.js validado com node --check.
+- google-ads-events.js validado com node --check.
+- Links diretos wa.me removidos de index.html e vagas.html. O WhatsApp abre apenas depois do preenchimento do formulário ou em fluxos específicos de candidatura/vaga.

@@ -296,17 +296,103 @@
     $$('.js-whatsapp').forEach((link) => {
       link.addEventListener('click', (event) => {
         event.preventDefault();
-        const type = link.dataset.type || 'empresa';
-        const number = type === 'vaga' ? VAGAS_WHATSAPP : EMPRESA_WHATSAPP;
-        const message = link.dataset.message || (type === 'vaga' ? DEFAULT_VAGA_MESSAGE : DEFAULT_EMPRESA_MESSAGE);
-        openWhatsApp(number, message);
+        const type = link.dataset.type || 'suporte';
+        if (type === 'empresa') {
+          openCompanyLeadModal(link);
+          return;
+        }
+        openSupportModal(type);
       });
+    });
+  }
+
+  function getTriggerOrigin(trigger) {
+    if (!trigger) return 'Site RH IMOB';
+    return normalize(trigger.dataset?.message) || normalize(trigger.textContent) || normalize(trigger.getAttribute?.('aria-label')) || 'Site RH IMOB';
+  }
+
+  function openSupportModal(context = 'suporte') {
+    const modal = $('#supportModal');
+    if (!modal) {
+      if (context === 'vaga') window.location.href = '/vagas.html#vagas';
+      else openCompanyLeadModal(null);
+      return;
+    }
+    modal.dataset.context = context || 'suporte';
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeSupportModal() {
+    const modal = $('#supportModal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function openCompanyLeadModal(trigger) {
+    const modal = $('#companyLeadModal');
+    const form = $('#companyLeadForm');
+    const origin = getTriggerOrigin(trigger);
+    if (!modal || !form) {
+      const pageForm = $('#leadForm');
+      if (pageForm) {
+        if (pageForm.elements.origem) pageForm.elements.origem.value = origin;
+        pageForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => pageForm.elements.nome?.focus(), 200);
+      }
+      return;
+    }
+    form.reset();
+    if (form.elements.origem) form.elements.origem.value = origin;
+    closeSupportModal();
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    setTimeout(() => form.elements.nome?.focus(), 50);
+  }
+
+  function closeCompanyLeadModal() {
+    const modal = $('#companyLeadModal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function openJobsPath() {
+    closeSupportModal();
+    const jobsSection = $('#vagas');
+    if (jobsSection) {
+      jobsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    window.location.href = '/vagas.html#vagas';
+  }
+
+  function setupSupportModal() {
+    const supportModal = $('#supportModal');
+    if (supportModal) {
+      $$('[data-close-support-modal]').forEach((el) => el.addEventListener('click', closeSupportModal));
+      $$('.js-support-company', supportModal).forEach((el) => el.addEventListener('click', () => openCompanyLeadModal(el)));
+      $$('.js-support-jobs', supportModal).forEach((el) => el.addEventListener('click', openJobsPath));
+    }
+
+    $$('.js-open-company-lead, a[href="#contratar"], a[href="/#contratar"]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        openCompanyLeadModal(link);
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      if (supportModal?.getAttribute('aria-hidden') === 'false') closeSupportModal();
+      if ($('#companyLeadModal')?.getAttribute('aria-hidden') === 'false') closeCompanyLeadModal();
     });
   }
 
   function buildCompanyLeadMessage(data) {
     return [
-      'Olá, vim pelo site da RH IMOB e gostaria de receber uma apresentação.',
+      'Olá, vim pelo site da RH IMOB e gostaria de receber uma apresentação comercial.',
       '',
       'Meus dados:',
       `Nome: ${data.nome}`,
@@ -314,35 +400,46 @@
       `WhatsApp: ${data.whatsapp}`,
       `Cidade/Estado: ${data.cidade}`,
       `Tipo de demanda: ${data.demanda}`,
+      `Quantidade aproximada: ${data.quantidade || 'Não informado'}`,
+      `Urgência/prazo: ${data.urgencia || 'Não informado'}`,
+      `Origem do clique: ${data.origem || 'Site RH IMOB'}`,
       `Mensagem: ${data.mensagem || 'Não informado'}`,
       '',
-      'Gostaria de entender como a RH IMOB pode apoiar nossa empresa no recrutamento imobiliário.'
+      'Gostaria de entender como a RH IMOB pode apoiar nossa empresa no recrutamento imobiliário e receber uma estimativa de prazo e investimento.'
     ].join('\n');
   }
 
   function setupCompanyForm() {
-    const form = $('#leadForm');
-    if (!form) return;
-    formatPhoneField(form.elements.whatsapp);
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const data = {
-        nome: normalize(form.elements.nome?.value),
-        empresa: normalize(form.elements.empresa?.value),
-        whatsapp: normalize(form.elements.whatsapp?.value),
-        cidade: normalize(form.elements.cidade?.value),
-        demanda: normalize(form.elements.demanda?.value),
-        mensagem: normalize(form.elements.mensagem?.value)
-      };
-      const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'demanda'];
-      const missing = required.filter((field) => !data[field]);
-      if (missing.length) {
-        form.elements[missing[0]]?.focus();
-        alert('Por favor, preencha os campos obrigatórios antes de abrir o WhatsApp.');
-        return;
-      }
-      openWhatsApp(EMPRESA_WHATSAPP, buildCompanyLeadMessage(data));
+    const forms = $$('.js-company-lead-form, #leadForm, #companyLeadForm');
+    forms.forEach((form) => {
+      if (!form || form.dataset.companyFormReady === 'true') return;
+      form.dataset.companyFormReady = 'true';
+      formatPhoneField(form.elements.whatsapp);
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const data = {
+          nome: normalize(form.elements.nome?.value),
+          empresa: normalize(form.elements.empresa?.value),
+          whatsapp: normalize(form.elements.whatsapp?.value),
+          cidade: normalize(form.elements.cidade?.value),
+          demanda: normalize(form.elements.demanda?.value),
+          quantidade: normalize(form.elements.quantidade?.value),
+          urgencia: normalize(form.elements.urgencia?.value),
+          origem: normalize(form.elements.origem?.value),
+          mensagem: normalize(form.elements.mensagem?.value)
+        };
+        const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'demanda'];
+        const missing = required.filter((field) => !data[field]);
+        if (missing.length) {
+          form.elements[missing[0]]?.focus();
+          alert('Por favor, preencha os campos obrigatórios antes de abrir o WhatsApp.');
+          return;
+        }
+        openWhatsApp(EMPRESA_WHATSAPP, buildCompanyLeadMessage(data));
+      });
     });
+
+    $$('[data-close-company-lead-modal]').forEach((el) => el.addEventListener('click', closeCompanyLeadModal));
   }
 
 
@@ -738,6 +835,7 @@
     setupMenu();
     setupReveal();
     setupWhatsAppLinks();
+    setupSupportModal();
     setupCompanyForm();
     setupJobFilters();
     setupJobModal();

@@ -1312,3 +1312,50 @@ textarea { resize: vertical; min-height: 100px; }
   letter-spacing: .02em;
   text-transform: uppercase;
 }
+
+/* RH IMOB • suporte com pré-qualificação antes do WhatsApp */
+.support-modal-panel { width: min(620px, 100%); }
+.support-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.support-choice {
+  width: 100%;
+  min-height: 168px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(249,242,255,.92));
+  padding: 20px;
+  cursor: pointer;
+  box-shadow: 0 16px 42px rgba(58,24,112,.08);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.support-choice:hover,
+.support-choice:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(109,45,242,.35);
+  box-shadow: 0 22px 56px rgba(58,24,112,.14);
+  outline: none;
+}
+.support-choice strong {
+  display: block;
+  color: var(--purple-900);
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+.support-choice span {
+  display: block;
+  color: var(--muted);
+  line-height: 1.5;
+  font-weight: 650;
+}
+.company-lead-form textarea { min-height: 112px; }
+.floating-wa { background: var(--purple-700); color: #fff; box-shadow: 0 18px 45px rgba(109,45,242,.28); }
+
+@media (max-width: 680px) {
+  .support-choice-grid { grid-template-columns: 1fr; }
+  .support-choice { min-height: auto; }
+}

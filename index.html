@@ -401,7 +401,8 @@
           </div>
         </div>
 
-        <form class="lead-form reveal" id="leadForm">
+        <form class="lead-form reveal js-company-lead-form" id="leadForm">
+          <input type="hidden" name="origem" value="Formulário principal de contato" />
           <label>Nome
             <input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required />
           </label>
@@ -418,11 +419,30 @@
             <select name="demanda" required>
               <option value="">Selecione</option>
               <option>Corretores e novos talentos</option>
+              <option>Corretores com CRECI ativo</option>
+              <option>Novos talentos para formação</option>
               <option>Liderança comercial</option>
-              <option>Profissionais para crédito imobiliário</option>
               <option>SDR e atendimento</option>
+              <option>Locação / terceiros / alto padrão</option>
+              <option>Crédito imobiliário</option>
               <option>Apoio ao RH interno</option>
               <option>Projeto de alto volume</option>
+              <option>Acesso à plataforma RH IMOB</option>
+              <option>Ainda preciso alinhar o perfil</option>
+            </select>
+          </label>
+          <label>Quantidade aproximada
+            <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" />
+          </label>
+          <label>Urgência/prazo
+            <select name="urgencia">
+              <option value="">Selecione, se souber</option>
+              <option>Imediata</option>
+              <option>Até 15 dias</option>
+              <option>Até 30 dias</option>
+              <option>Até 60 dias</option>
+              <option>Operação contínua</option>
+              <option>Estou avaliando para os próximos meses</option>
             </select>
           </label>
           <label>Mensagem breve
@@ -434,6 +454,89 @@
       </div>
     </section>
   </main>
+
+  <div class="modal" id="supportModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle">
+    <div class="modal-backdrop" data-close-support-modal></div>
+    <div class="modal-panel support-modal-panel" role="document">
+      <button class="modal-close" type="button" data-close-support-modal aria-label="Fechar">×</button>
+      <div class="modal-head">
+        <span class="section-kicker">Atendimento RH IMOB</span>
+        <h2 id="supportModalTitle">Como podemos te ajudar?</h2>
+        <p>Escolha o caminho correto para que sua mensagem chegue com contexto e o atendimento seja mais rápido.</p>
+      </div>
+      <div class="support-choice-grid">
+        <button class="support-choice js-support-company" type="button" data-message="Clique em suporte: preciso contratar profissionais para minha empresa.">
+          <strong>Preciso contratar</strong>
+          <span>Sou imobiliária, incorporadora ou gestor e quero falar sobre contratação, recrutamento ou acesso às soluções da RH IMOB.</span>
+        </button>
+        <button class="support-choice js-support-jobs" type="button">
+          <strong>Vagas</strong>
+          <span>Quero ver oportunidades abertas ou enviar meu perfil para receber propostas no mercado imobiliário.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="companyLeadModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="companyLeadModalTitle">
+    <div class="modal-backdrop" data-close-company-lead-modal></div>
+    <div class="modal-panel" role="document">
+      <button class="modal-close" type="button" data-close-company-lead-modal aria-label="Fechar">×</button>
+      <div class="modal-head">
+        <span class="section-kicker">Preciso contratar</span>
+        <h2 id="companyLeadModalTitle">Solicite uma apresentação da RH IMOB.</h2>
+        <p>Preencha os dados principais para o WhatsApp abrir com uma mensagem completa para o Fernando.</p>
+      </div>
+      <form id="companyLeadForm" class="job-form company-lead-form js-company-lead-form">
+        <input type="hidden" name="origem" value="Site RH IMOB" />
+        <label>Nome
+          <input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required />
+        </label>
+        <label>Empresa
+          <input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" required />
+        </label>
+        <label>WhatsApp
+          <input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required />
+        </label>
+        <label>Cidade/Estado
+          <input type="text" name="cidade" placeholder="Ex.: Curitiba/PR" required />
+        </label>
+        <label>Tipo de demanda
+          <select name="demanda" required>
+            <option value="">Selecione</option>
+            <option>Corretores e novos talentos</option>
+            <option>Corretores com CRECI ativo</option>
+            <option>Novos talentos para formação</option>
+            <option>Liderança comercial</option>
+            <option>SDR e atendimento</option>
+            <option>Locação / terceiros / alto padrão</option>
+            <option>Crédito imobiliário</option>
+            <option>Projeto de alto volume</option>
+            <option>Acesso à plataforma RH IMOB</option>
+            <option>Ainda preciso alinhar o perfil</option>
+          </select>
+        </label>
+        <label>Quantidade aproximada
+          <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" />
+        </label>
+        <label>Urgência/prazo
+          <select name="urgencia">
+            <option value="">Selecione, se souber</option>
+            <option>Imediata</option>
+            <option>Até 15 dias</option>
+            <option>Até 30 dias</option>
+            <option>Até 60 dias</option>
+            <option>Operação contínua</option>
+            <option>Estou avaliando para os próximos meses</option>
+          </select>
+        </label>
+        <label>Mensagem breve
+          <textarea name="mensagem" rows="4" placeholder="Ex.: cidade da operação, perfil desejado, modelo de atuação, volume e prazo esperado"></textarea>
+        </label>
+        <button class="btn btn-primary btn-full" type="submit">Abrir WhatsApp com minha solicitação</button>
+        <p class="form-helper">Você revisa e confirma o envio diretamente no WhatsApp. A mensagem já vai estruturada para acelerar o atendimento.</p>
+      </form>
+    </div>
+  </div>
 
   <div class="modal" id="jobModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-backdrop" data-close-modal></div>
@@ -632,7 +735,7 @@
       <div>
         <h3>Contatos</h3>
         <a class="js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e gostaria de receber mais informações.">Empresas: Fernando</a>
-        <a href="https://wa.me/5511953973268?text=Ol%C3%A1%2C%20Mariana.%20Vim%20pelo%20site%20da%20RH%20IMOB%20e%20quero%20saber%20sobre%20vagas." target="_blank" rel="noopener">Vagas: responsável da oportunidade</a>
+        <a href="/vagas.html#vagas">Vagas: ver oportunidades</a>
         <a href="/vagas.html#banco-talentos">Banco de talentos confidencial</a>
         <a href="/corretores.html">Plataforma Corretores</a>
         <a href="/novos-talentos.html">Plataforma Novos Talentos</a>
@@ -651,7 +754,7 @@
     </div>
   </footer>
 
-  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB no WhatsApp" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e gostaria de entender melhor as soluções de recrutamento imobiliário.">WhatsApp</a>
+  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB no WhatsApp" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e gostaria de entender melhor as soluções de recrutamento imobiliário.">Suporte</a>
 
   <script src="supabase-config.js?v=20260509adslead"></script>
   <script src="supabase-config-novos-talentos.js?v=20260509adslead"></script>

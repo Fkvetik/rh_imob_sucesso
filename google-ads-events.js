@@ -180,12 +180,29 @@
         return;
       }
 
+      const supportCompany = closest(target, '.js-support-company, .js-open-company-lead, a[href="#contratar"], a[href="/#contratar"]');
+      if (supportCompany) {
+        track('abrir_formulario_empresa', {
+          href: getHref(supportCompany),
+          label: 'Abrir pré-qualificação empresa'
+        });
+        return;
+      }
+
+      const supportJobs = closest(target, '.js-support-jobs');
+      if (supportJobs) {
+        track('abrir_caminho_vagas', {
+          label: 'Abrir caminho vagas'
+        });
+        return;
+      }
+
       const waLink = closest(target, '.js-whatsapp, a[href*="wa.me"], a[href*="whatsapp"]');
       if (waLink) {
         const type = waLink.dataset ? (waLink.dataset.type || '') : '';
-        track(type === 'vaga' ? 'whatsapp_vagas' : 'whatsapp_empresa', {
+        track(type === 'empresa' ? 'abrir_formulario_empresa' : 'abrir_suporte', {
           href: getHref(waLink),
-          label: type === 'vaga' ? 'Clique WhatsApp vagas' : 'Clique WhatsApp empresas'
+          label: type === 'empresa' ? 'Abrir pré-qualificação empresa' : 'Abrir suporte RH IMOB'
         });
         return;
       }
@@ -241,10 +258,10 @@
         return;
       }
 
-      if (form.id === 'leadForm') {
+      if (form.id === 'leadForm' || form.id === 'companyLeadForm') {
         track('whatsapp_empresa', {
-          form_id: 'leadForm',
-          label: 'Lead empresa formulário principal',
+          form_id: form.id,
+          label: form.id === 'companyLeadForm' ? 'Lead empresa modal pré-qualificado' : 'Lead empresa formulário principal',
           value: 5
         });
       }
