@@ -3,6 +3,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/vaga/:slug",
+      "destination": "/api/vaga-preview?slug=:slug"
+    },
+    {
       "source": "/favicon.ico",
       "destination": "/favicon.ico"
     }

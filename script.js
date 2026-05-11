@@ -4,6 +4,8 @@
   const DEFAULT_EMPRESA_MESSAGE = 'Olá, vim pelo site da RH IMOB e gostaria de entender melhor como vocês podem apoiar minha empresa no recrutamento imobiliário.';
   const DEFAULT_VAGA_MESSAGE = 'Olá. Vim pelo site da RH IMOB e quero saber mais sobre as vagas.';
   const SITE_VAGAS_TABLE = 'site_vagas_publicas';
+  const SITE_BASE_URL = 'https://www.rhimob.com.br';
+
 
   let JOBS = [];
 
@@ -12,6 +14,12 @@
   const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
   const normalizeLower = (value) => normalize(value).toLowerCase();
   const escapeHTML = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+  const slugify = (value) => String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
   function openWhatsApp(number, message) {
     const text = encodeURIComponent(message || '');
@@ -147,8 +155,10 @@
     const title = normalize(row.titulo || row.title || row.nome_vaga || 'Vaga RH IMOB');
     const cidadeUf = [row.cidade, row.estado_uf].filter(Boolean).join('/');
     const location = normalize(row.localidade || row.location || cidadeUf || 'Consultar região');
-    const id = normalize(row.vaga_id || row.slug || row.id || title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    const id = normalize(row.vaga_id || row.slug || row.id || slugify(title));
+    const shareSlug = slugify(row.slug || row.vaga_slug || id || title);
     const imageUrl = normalize(row.imagem_url || row.image_url || row.imageUrl);
+    const ogImage = normalize(row.imagem_og || row.og_image || row.ogImage || imageUrl);
     const videoUrl = normalize(row.video_url || row.videoUrl);
     const instagramUrl = normalize(row.instagram_url || row.instagramUrl);
     const mediaType = inferMediaType(row);
@@ -160,6 +170,7 @@
 
     return {
       id,
+      shareSlug,
       title,
       category: normalize(row.categoria || row.category || 'Vagas'),
       location,
@@ -173,6 +184,7 @@
       media: {
         type: mediaType,
         imageUrl,
+        ogImage,
         videoUrl,
         instagramUrl,
         alt: normalize(row.midia_alt || row.media_alt || title)
@@ -443,48 +455,51 @@
   }
 
 
+  function getJobShareSlug(job) {
+    return slugify(job?.shareSlug || job?.id || job?.title || 'vaga-rh-imob');
+  }
+
   function getJobShareUrl(job) {
-    const url = new URL(window.location.href);
-    url.pathname = url.pathname.endsWith('/vagas.html') ? url.pathname : '/vagas.html';
-    url.searchParams.set('vaga', job.id);
-    url.hash = 'vagas';
+    const slug = getJobShareSlug(job);
+    const url = new URL(`/vaga/${encodeURIComponent(slug)}`, window.location.origin || SITE_BASE_URL);
     return url.toString();
   }
 
   function buildJobShareText(job) {
     return [
-      `Olha essa vaga que encontrei na RH IMOB:`,
-      '',
-      job.title,
+      `Vaga RH IMOB: ${job.title}`,
       job.location ? `Local: ${job.location}` : '',
       job.pay ? `Condição: ${job.pay}` : '',
+      job.summary ? `Resumo: ${job.summary}` : '',
       '',
-      'Ver detalhes:'
+      'Link específico da vaga:'
     ].filter(Boolean).join('\n');
   }
 
-  async function shareJob(jobId, trigger) {
+  async function shareJob(jobId, button) {
     const job = getJobById(jobId);
     if (!job) return;
 
     const url = getJobShareUrl(job);
-    const title = `Vaga: ${job.title}`;
-    const text = buildJobShareText(job);
+    const title = `Vaga RH IMOB: ${job.title}`;
+    const text = `${buildJobShareText(job)}\n${url}`;
 
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url });
-      } else if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(`${text}\n${url}`);
-        flashShareButton(trigger, 'Link copiado');
-      } else {
-        window.prompt('Copie o link da vaga:', url);
+        flashShareButton(button, 'Compartilhado');
+        return;
       }
     } catch (error) {
-      if (String(error?.name || '').toLowerCase() !== 'aborterror') {
-        console.warn('RH IMOB: falha ao compartilhar vaga.', error);
-        window.prompt('Copie o link da vaga:', url);
-      }
+      if (error && error.name === 'AbortError') return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      flashShareButton(button, 'Link copiado');
+    } catch (error) {
+      window.prompt('Copie o link específico da vaga:', url);
+      flashShareButton(button, 'Copiar link');
     }
   }
 
@@ -608,7 +623,7 @@
     form.reset();
     form.elements.jobId.value = job.id;
     title.textContent = `Tenho interesse: ${job.title}`;
-    subtitle.textContent = `${job.location} • ${job.pay}${job.responsible?.name ? ' • Responsável: ' + job.responsible.name : ''}`;
+    subtitle.textContent = `${job.location} • ${job.pay}. Informe apenas seu nome e disponibilidade; os dados da vaga já vão na mensagem.`;
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
     setTimeout(() => form.elements.nome?.focus(), 50);
@@ -624,32 +639,30 @@
   function buildJobMessage(job, data) {
     const resp = job.responsible || {};
     const saudacao = resp.name ? `Olá, ${resp.name}.` : 'Olá.';
+    const linkVaga = getJobShareUrl(job);
     return [
-      `${saudacao} Vim pelo site da RH IMOB e tenho interesse na vaga: ${job.title}.`,
+      `${saudacao} Vim pelo site da RH IMOB e tenho interesse nesta vaga.`,
       '',
       `Vaga: ${job.title}`,
       `Local: ${job.location}`,
       `Modalidade/Condição: ${job.contract}`,
       `Remuneração: ${job.pay}`,
+      job.schedule ? `Horário/rotina: ${job.schedule}` : '',
       `Responsável: ${job.responsible?.name || 'Não informado'}${job.responsible?.company ? ' • ' + job.responsible.company : ''}`,
+      `Link da vaga: ${linkVaga}`,
       '',
       'Meus dados:',
       `Nome: ${data.nome}`,
-      `WhatsApp: ${data.whatsapp}`,
-      `Cidade/Bairro: ${data.cidade}`,
-      `Experiência: ${data.experiencia}`,
-      `Disponibilidade: ${data.disponibilidade}`,
-      `Mensagem: ${data.mensagem || 'Não informado'}`,
+      `Disponibilidade para início: ${data.inicio}`,
       '',
       'Pode me orientar sobre os próximos passos?'
-    ].join('\n');
+    ].filter(Boolean).join('\n');
   }
 
   function setupJobModal() {
     const modal = $('#jobModal');
     const form = $('#jobForm');
     if (!modal || !form) return;
-    formatPhoneField(form.elements.whatsapp);
     $$('[data-close-modal]').forEach((el) => el.addEventListener('click', closeJobModal));
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeJobModal();
@@ -660,13 +673,9 @@
       if (!job) return;
       const data = {
         nome: normalize(form.elements.nome?.value),
-        whatsapp: normalize(form.elements.whatsapp?.value),
-        cidade: normalize(form.elements.cidade?.value),
-        experiencia: normalize(form.elements.experiencia?.value),
-        disponibilidade: normalize(form.elements.disponibilidade?.value),
-        mensagem: normalize(form.elements.mensagem?.value)
+        inicio: normalize(form.elements.inicio?.value)
       };
-      const required = ['nome', 'whatsapp', 'cidade', 'experiencia', 'disponibilidade'];
+      const required = ['nome', 'inicio'];
       const missing = required.filter((field) => !data[field]);
       if (missing.length) {
         form.elements[missing[0]]?.focus();

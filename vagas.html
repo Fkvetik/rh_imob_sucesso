@@ -223,42 +223,28 @@
     <div class="modal-panel" role="document">
       <button class="modal-close" type="button" data-close-modal aria-label="Fechar">×</button>
       <div class="modal-head">
-        <span class="section-kicker">Candidatura</span>
+        <span class="section-kicker">Interesse na vaga</span>
         <h2 id="modalTitle">Tenho interesse na vaga</h2>
-        <p id="modalSubtitle">Preencha os dados para abrir o WhatsApp do responsável da vaga com a mensagem pronta.</p>
+        <p id="modalSubtitle">Informe apenas seu nome e disponibilidade. O WhatsApp abrirá com os dados da vaga já preenchidos.</p>
       </div>
       <form id="jobForm" class="job-form">
         <input type="hidden" name="jobId" />
         <label>Nome completo
           <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome" />
         </label>
-        <label>WhatsApp
-          <input type="tel" name="whatsapp" autocomplete="tel" required placeholder="(11) 99999-9999" />
-        </label>
-        <label>Cidade/Bairro
-          <input type="text" name="cidade" required placeholder="Ex.: Osasco/SP ou Pirituba/SP" />
-        </label>
-        <label>Experiência
-          <select name="experiencia" required>
+        <label>Disponibilidade para início
+          <select name="inicio" required>
             <option value="">Selecione</option>
-            <option>Tenho experiência na função</option>
-            <option>Tenho experiência no mercado imobiliário</option>
-            <option>Tenho experiência comercial, mas não no imobiliário</option>
-            <option>Não tenho experiência e quero começar</option>
+            <option>Tenho início imediato</option>
+            <option>Posso alinhar a melhor data</option>
+            <option>Estou avaliando a oportunidade</option>
           </select>
         </label>
-        <label>Disponibilidade
-          <input type="text" name="disponibilidade" required placeholder="Ex.: imediata, manhã, tarde, integral" />
-        </label>
-        <label>Mensagem complementar
-          <textarea name="mensagem" rows="3" placeholder="Conte algo importante para o responsável da vaga"></textarea>
-        </label>
         <button class="btn btn-primary btn-full" type="submit">Enviar interesse pelo WhatsApp</button>
-        <p class="form-helper">A mensagem será aberta no WhatsApp do responsável da vaga. Você revisa antes de enviar.</p>
+        <p class="form-helper">A mensagem será aberta no WhatsApp do responsável da vaga com as informações da oportunidade. Você revisa antes de enviar.</p>
       </form>
     </div>
   </div>
-
 
   <div class="modal" id="advertiseModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="advertiseModalTitle">
     <div class="modal-backdrop" data-close-advertise-modal></div>
