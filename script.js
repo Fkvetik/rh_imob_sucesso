@@ -392,7 +392,7 @@
 
   function buildCompanyLeadMessage(data) {
     return [
-      'Olá, vim pelo site da RH IMOB e gostaria de receber uma apresentação comercial.',
+      'Olá, vim pelo site da RH IMOB e quero enviar uma demanda de contratação para análise.',
       '',
       'Meus dados:',
       `Nome: ${data.nome}`,
@@ -405,7 +405,7 @@
       `Origem do clique: ${data.origem || 'Site RH IMOB'}`,
       `Mensagem: ${data.mensagem || 'Não informado'}`,
       '',
-      'Gostaria de entender como a RH IMOB pode apoiar nossa empresa no recrutamento imobiliário e receber uma estimativa de prazo e investimento.'
+      'Gostaria de entender como a RH IMOB pode apoiar nossa empresa no recrutamento imobiliário e receber uma orientação sobre formato de operação, prazo estimado e investimento.'
     ].join('\n');
   }
 
