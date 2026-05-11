@@ -1,7 +1,0 @@
-Resumo das alterações do site
-
-- Adicionado bloco "Quero anunciar minha vaga" no final da seção de vagas.
-- Criado modal/formulário para empresas preencherem dados da vaga.
-- O envio abre WhatsApp do Fernando com mensagem estruturada.
-- Mantidos: vagas dinâmicas, mídia por vaga, responsável por vaga e botão Compartilhar vaga.
-- Nenhum SQL ou Apps Script foi incluído neste pacote.

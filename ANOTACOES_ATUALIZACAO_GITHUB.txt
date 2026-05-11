@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 RH IMOB | Próximo passo - compartilhamento direto e experiência mais limpa
 Data: 2026-05-11
 
@@ -53,3 +54,44 @@ COMO TESTAR
 OBSERVAÇÃO
 A ideia agora está do jeito mais simples para o usuário:
 clicou em Compartilhar vaga, compartilha a vaga com contexto.
+=======
+RH IMOB | Correção final do link individual da vaga e compartilhamento
+Data: 2026-05-11
+
+O QUE FOI CORRIGIDO
+
+1) Link da vaga não deve mais quebrar
+- A rota /vaga/{vaga_id} agora sempre devolve uma página HTML.
+- Se a vaga for encontrada no Supabase, abre a página visual da vaga.
+- Se a vaga não for encontrada ou houver falha temporária no Supabase, ainda assim abre uma página segura com botão para todas as vagas.
+- Isso evita erro seco/404/500 para quem clicar no link recebido.
+
+2) Compartilhamento direto
+- O botão Compartilhar vaga abre o WhatsApp com a mensagem completa da vaga.
+- A mensagem leva título, local, modalidade, condição, rotina, resumo, destaques e link individual.
+
+3) HTML visual
+- O link /vaga/{vaga_id} abre uma página visual com card da vaga.
+- O WhatsApp não renderiza HTML dentro da conversa; ele compartilha texto + link.
+- O HTML aparece quando a pessoa clica no link.
+
+ARQUIVOS ALTERADOS
+- script.js
+- api/vaga-preview.js
+- ANOTACOES_ATUALIZACAO_GITHUB.txt
+
+IMPORTANTE PARA A VERCEL
+Se os arquivos estão dentro da pasta ARQUIVOS_SITE no GitHub, o Root Directory do projeto na Vercel precisa estar como:
+ARQUIVOS_SITE
+
+TESTES
+1) Abrir:
+https://www.rhimob.com.br/vagas.html
+
+2) Clicar em Compartilhar vaga e conferir se abre WhatsApp com a mensagem completa.
+
+3) Testar um link individual:
+https://www.rhimob.com.br/vaga/analista-credito-osasco
+
+4) Mesmo se a vaga não existir, o link não deve mais dar erro seco; ele deve abrir uma página segura.
+>>>>>>> b616192 (Corrige link individual e compartilhamento das vagas)

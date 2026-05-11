@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://rhimob0305.vercel.app/sitemap.xml

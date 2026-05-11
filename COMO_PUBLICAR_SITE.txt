@@ -1,9 +1,0 @@
-Como publicar
-
-1. Copie/substitua os arquivos deste pacote na raiz do repositório do site.
-2. Rode:
-   git add .
-   git commit -m "Adiciona anúncio de vagas no site"
-   git push
-3. Aguarde o Vercel publicar.
-4. Teste em /vagas.html: botão "Quero anunciar minha vaga" no final da seção de vagas.
