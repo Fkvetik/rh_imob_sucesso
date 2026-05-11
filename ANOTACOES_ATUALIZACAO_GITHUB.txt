@@ -1,90 +1,74 @@
-RH IMOB | Atualização do site - Vagas Supabase sem suposição
+RH IMOB | Evolução visual do site de vagas + compartilhamento com arte
 Data: 2026-05-11
 
-O QUE FOI CORRIGIDO
+O QUE FOI EVOLUÍDO NESTA VERSÃO
 
-1) A listagem de vagas do site foi ajustada para usar exatamente a estrutura real da tabela public.site_vagas_publicas enviada:
+1) Hierarquia visual dos CTAs
+- Mantido "Ver oportunidades" como CTA principal.
+- "Entrar no banco de talentos" segue como CTA secundário.
+- "Anunciar minha vaga" ficou com acabamento mais leve para não competir com o CTA principal.
+- Os botões do site ficaram mais consistentes em sombra, foco, hover e acabamento geral.
 
-vaga_id
-titulo
-categoria
-localidade
-cidade
-estado_uf
-modalidade
-remuneracao
-horario
-resumo
-destaques
-detalhes
-requisitos
-atividades
-selo
-prioridade
-status
-imagem_url
-video_url
-instagram_url
-midia_tipo
-midia_alt
-responsavel_nome
-responsavel_whatsapp
-responsavel_empresa
-responsavel_cargo
-responsavel_email
+2) Compartilhamento mais claro para a vaga
+- O botão dos cards agora deixa mais explícito o objetivo:
+  "Compartilhar arte da vaga"
+- O card também explica melhor o que acontece:
+  - Tenho interesse = abre WhatsApp do responsável
+  - Compartilhar = gera arte visual e mantém o link individual da vaga
 
-2) O site não consulta mais colunas que não fazem parte da estrutura enviada, como:
+3) Melhoria visual dos cards das vagas
+- Cards com hover mais elegante
+- Cabeçalho da vaga com presença visual melhor
+- Ações mais bem organizadas
+- Melhor leitura entre resumo, metadados, detalhes e ações
 
-id
-slug
-vaga_slug
-imagem_og
-og_image
-image_url
-imageUrl
+4) Hero da página de vagas mais explicativo
+- Abertura da página agora explica melhor que cada vaga pode ser compartilhada com:
+  - arte visual pronta
+  - link individual
+  - candidatura direta para o WhatsApp do responsável
 
-3) O identificador público da vaga agora é sempre vaga_id.
-
-Exemplo:
-https://www.rhimob.com.br/vaga/gerente-vendas-osasco
-https://www.rhimob.com.br/vaga/sdr-consolacao
-https://www.rhimob.com.br/vaga/corretor_centro_mcmv_ajuda_custo_01
-
-4) A função do Vercel api/vaga-preview.js agora busca a vaga por:
-
-vaga_id = valor da URL
-status = ATIVA
-
-5) A listagem principal do site busca somente:
-
-status = ATIVA
-order = prioridade.asc, updated_at.desc
-
-6) O botão Compartilhar vaga usa /vaga/{vaga_id}.
-
-7) O botão Tenho interesse usa responsavel_whatsapp da vaga. Se a vaga não tiver responsavel_whatsapp, usa o fallback técnico do site.
+5) Modal de compartilhamento mantido e refinado
+- Continua abrindo a arte visual da vaga
+- Continua permitindo:
+  - Compartilhar arte
+  - Baixar arte
+  - Copiar link da vaga
 
 ARQUIVOS ALTERADOS
 
-script.js
-api/vaga-preview.js
-ANOTACOES_ATUALIZACAO_GITHUB.txt
+- vagas.html
+- styles.css
+- script.js
+- ANOTACOES_ATUALIZACAO_GITHUB.txt
 
 COMO SUBIR NO GITHUB
 
 1) Descompacte este ZIP.
 2) Suba os arquivos na raiz do repositório do site.
-3) Confirme que a pasta api está na raiz:
-
-api/vaga-preview.js
-
+3) Confirme se a pasta api continua na raiz:
+   api/vaga-preview.js
 4) Aguarde o deploy da Vercel.
 5) Teste:
+   https://www.rhimob.com.br/vagas.html
+   https://www.rhimob.com.br/vaga/gerente-vendas-osasco
 
-https://www.rhimob.com.br/vagas.html
-https://www.rhimob.com.br/vaga/gerente-vendas-osasco
-https://www.rhimob.com.br/vaga/sdr-consolacao
+TESTES IMPORTANTES
+
+1) Abrir a página de vagas.
+2) Confirmar se as vagas aparecem normalmente.
+3) Validar o visual dos botões e dos cards.
+4) Clicar em "Tenho interesse".
+5) Clicar em "Compartilhar arte da vaga".
+6) Validar se o modal abre com a arte.
+7) Testar:
+   - Compartilhar arte
+   - Baixar arte
+   - Copiar link
 
 OBSERVAÇÃO IMPORTANTE
 
-A rota /vaga/:slug continua existindo, mas o valor depois de /vaga/ agora é o vaga_id real, não uma coluna slug do Supabase.
+O WhatsApp não recebe HTML visual customizado enviado diretamente pelo site.
+Por isso a solução prática implementada continua sendo:
+- gerar uma arte em imagem da vaga
+- manter o link individual para preview do site
