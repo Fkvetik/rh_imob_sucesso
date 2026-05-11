@@ -1,61 +1,90 @@
-RH IMOB — pacote limpo para atualizar no GitHub
+RH IMOB | Atualização do site - Vagas Supabase sem suposição
 Data: 2026-05-11
 
-O QUE TEM NESTE ZIP
-- Somente os arquivos necessários do site e das plataformas publicadas.
-- Não incluí os SQLs antigos, READMEs antigos, backups e arquivos de patch para não poluir o GitHub.
-- Mantive a pasta /api porque ela é obrigatória para a rota dinâmica da Vercel.
-- Mantive a pasta /assets porque o site usa os ícones/marca.
+O QUE FOI CORRIGIDO
 
-PRINCIPAL AJUSTE
-1) A rota /vaga/:slug está configurada no vercel.json.
-2) A função api/vaga-preview.js gera o HTML individual da vaga com meta tags Open Graph:
-   - og:title
-   - og:description
-   - og:image
-   - og:url
-3) O botão Compartilhar vaga usa link bonito:
-   https://www.rhimob.com.br/vaga/slug-da-vaga
-4) Ao abrir o link, a função redireciona para:
-   https://www.rhimob.com.br/vagas.html?vaga=VAGA_ID#vagas
+1) A listagem de vagas do site foi ajustada para usar exatamente a estrutura real da tabela public.site_vagas_publicas enviada:
 
-ARQUIVOS MAIS IMPORTANTES ALTERADOS
-- script.js
-- vercel.json
-- api/vaga-preview.js
+vaga_id
+titulo
+categoria
+localidade
+cidade
+estado_uf
+modalidade
+remuneracao
+horario
+resumo
+destaques
+detalhes
+requisitos
+atividades
+selo
+prioridade
+status
+imagem_url
+video_url
+instagram_url
+midia_tipo
+midia_alt
+responsavel_nome
+responsavel_whatsapp
+responsavel_empresa
+responsavel_cargo
+responsavel_email
 
-SUPABASE
-- A tabela public.site_vagas_publicas já deve ter as colunas:
-  - slug
-  - imagem_og
-- Recomendação: usar vaga_id como slug curto.
-  Exemplo:
-  vaga_id: gerente-vendas-osasco
-  slug: gerente-vendas-osasco
+2) O site não consulta mais colunas que não fazem parte da estrutura enviada, como:
 
-VERCEL
-Depois de subir no GitHub, aguarde o deploy da Vercel terminar.
-Teste primeiro:
-https://www.rhimob.com.br/api/vaga-preview?slug=gerente-vendas-osasco
+id
+slug
+vaga_slug
+imagem_og
+og_image
+image_url
+imageUrl
 
-Depois teste:
+3) O identificador público da vaga agora é sempre vaga_id.
+
+Exemplo:
 https://www.rhimob.com.br/vaga/gerente-vendas-osasco
+https://www.rhimob.com.br/vaga/sdr-consolacao
+https://www.rhimob.com.br/vaga/corretor_centro_mcmv_ajuda_custo_01
 
-Se /api/vaga-preview abrir e /vaga/slug der 404, o problema está no vercel.json ou no deploy.
-Se /api/vaga-preview mostrar “Vaga não encontrada”, a função está funcionando e o problema é slug/dado no Supabase.
+4) A função do Vercel api/vaga-preview.js agora busca a vaga por:
 
-IMPORTANTE
-- Não coloque service_role no GitHub, no HTML ou no JavaScript público.
-- A função usa chave pública/publishable key, suficiente para ler a tabela pública de vagas.
-- Se quiser, no painel da Vercel você pode configurar estas variáveis, mas não é obrigatório porque já há fallback público:
-  RHIMOB_SUPABASE_URL
-  RHIMOB_SUPABASE_ANON_KEY
-  RHIMOB_SITE_VAGAS_TABLE
-  RHIMOB_DEFAULT_OG_IMAGE
+vaga_id = valor da URL
+status = ATIVA
 
-COMO SUBIR
-1) Extraia este ZIP.
-2) Envie os arquivos para a raiz do repositório no GitHub.
-3) Mantenha a pasta api/ na raiz.
-4) Mantenha a pasta assets/ na raiz.
-5) Aguarde o deploy automático da Vercel.
+5) A listagem principal do site busca somente:
+
+status = ATIVA
+order = prioridade.asc, updated_at.desc
+
+6) O botão Compartilhar vaga usa /vaga/{vaga_id}.
+
+7) O botão Tenho interesse usa responsavel_whatsapp da vaga. Se a vaga não tiver responsavel_whatsapp, usa o fallback técnico do site.
+
+ARQUIVOS ALTERADOS
+
+script.js
+api/vaga-preview.js
+ANOTACOES_ATUALIZACAO_GITHUB.txt
+
+COMO SUBIR NO GITHUB
+
+1) Descompacte este ZIP.
+2) Suba os arquivos na raiz do repositório do site.
+3) Confirme que a pasta api está na raiz:
+
+api/vaga-preview.js
+
+4) Aguarde o deploy da Vercel.
+5) Teste:
+
+https://www.rhimob.com.br/vagas.html
+https://www.rhimob.com.br/vaga/gerente-vendas-osasco
+https://www.rhimob.com.br/vaga/sdr-consolacao
+
+OBSERVAÇÃO IMPORTANTE
+
+A rota /vaga/:slug continua existindo, mas o valor depois de /vaga/ agora é o vaga_id real, não uma coluna slug do Supabase.

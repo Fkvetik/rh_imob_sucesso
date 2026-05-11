@@ -152,42 +152,38 @@
   }
 
   function normalizeJobFromSupabase(row) {
-    const title = normalize(row.titulo || row.title || row.nome_vaga || 'Vaga RH IMOB');
+    const title = normalize(row.titulo || 'Vaga RH IMOB');
     const cidadeUf = [row.cidade, row.estado_uf].filter(Boolean).join('/');
-    const location = normalize(row.localidade || row.location || cidadeUf || 'Consultar região');
-    const id = normalize(row.vaga_id || row.slug || row.id || slugify(title));
-    const shareSlug = slugify(row.slug || row.vaga_slug || id || title);
-    const imageUrl = normalize(row.imagem_url || row.image_url || row.imageUrl);
-    const ogImage = normalize(row.imagem_og || row.og_image || row.ogImage || imageUrl);
-    const videoUrl = normalize(row.video_url || row.videoUrl);
-    const instagramUrl = normalize(row.instagram_url || row.instagramUrl);
+    const location = normalize(row.localidade || cidadeUf || 'Consultar região');
+    const id = normalize(row.vaga_id);
+    const imageUrl = normalize(row.imagem_url);
+    const videoUrl = normalize(row.video_url);
+    const instagramUrl = normalize(row.instagram_url);
     const mediaType = inferMediaType(row);
-    const responsibleName = normalize(row.responsavel_nome || row.responsavel || row.recrutador_nome || 'Mariana');
-    const responsibleWhatsapp = normalizePhone(row.responsavel_whatsapp || row.whatsapp_responsavel || row.telefone_responsavel || '');
-    const responsibleCompany = normalize(row.responsavel_empresa || row.empresa_anunciante || 'RH IMOB');
-    const responsibleRole = normalize(row.responsavel_cargo || row.cargo_responsavel || 'Recrutamento imobiliário');
-    const responsibleEmail = normalize(row.responsavel_email || row.email_responsavel || '');
+    const responsibleName = normalize(row.responsavel_nome || 'Mariana');
+    const responsibleWhatsapp = normalizePhone(row.responsavel_whatsapp || '');
+    const responsibleCompany = normalize(row.responsavel_empresa || 'RH IMOB');
+    const responsibleRole = normalize(row.responsavel_cargo || 'Recrutamento imobiliário');
+    const responsibleEmail = normalize(row.responsavel_email || '');
 
     return {
       id,
-      shareSlug,
       title,
-      category: normalize(row.categoria || row.category || 'Vagas'),
+      category: normalize(row.categoria || 'Vagas'),
       location,
-      contract: normalize(row.modalidade || row.contract || row.tipo_contrato || 'Consultar condição'),
-      pay: normalize(row.remuneracao || row.pay || 'Condição informada pela Mariana'),
-      schedule: normalize(row.horario || row.schedule || ''),
-      summary: normalize(row.resumo || row.summary || 'Oportunidade cadastrada pela RH IMOB.'),
-      highlights: splitJobText(row.destaques || row.highlights).slice(0, 5),
-      details: splitJobText(row.detalhes || row.details || row.requisitos || row.atividades).slice(0, 8),
-      badge: normalize(row.selo || row.badge || row.categoria || 'Vaga ativa'),
+      contract: normalize(row.modalidade || 'Consultar condição'),
+      pay: normalize(row.remuneracao || 'Condição informada pela RH IMOB'),
+      schedule: normalize(row.horario || ''),
+      summary: normalize(row.resumo || 'Oportunidade cadastrada pela RH IMOB.'),
+      highlights: splitJobText(row.destaques).slice(0, 5),
+      details: splitJobText(row.detalhes || row.requisitos || row.atividades).slice(0, 8),
+      badge: normalize(row.selo || row.categoria || 'Vaga ativa'),
       media: {
         type: mediaType,
         imageUrl,
-        ogImage,
         videoUrl,
         instagramUrl,
-        alt: normalize(row.midia_alt || row.media_alt || title)
+        alt: normalize(row.midia_alt || title)
       },
       responsible: {
         name: responsibleName,
@@ -207,14 +203,21 @@
     }
   }
 
-  async function fetchDynamicJobsRows(cfg, selectFields) {
+  async function fetchDynamicJobsRows(cfg) {
     const base = cfg.url.replace(/\/$/, '');
-    const query = [
-      `select=${selectFields.join(',')}`,
-      'status=eq.ATIVA',
-      'order=prioridade.asc,updated_at.desc'
-    ].join('&');
-    const url = `${base}/rest/v1/${SITE_VAGAS_TABLE}?${query}`;
+    const selectFields = [
+      'vaga_id','titulo','categoria','localidade','cidade','estado_uf','modalidade','remuneracao','horario',
+      'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at',
+      'imagem_url','video_url','instagram_url','midia_tipo','midia_alt',
+      'responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email'
+    ];
+
+    const params = new URLSearchParams();
+    params.set('select', selectFields.join(','));
+    params.set('status', 'eq.ATIVA');
+    params.set('order', 'prioridade.asc,updated_at.desc');
+
+    const url = `${base}/rest/v1/${SITE_VAGAS_TABLE}?${params.toString()}`;
     const response = await fetch(url, { headers: supabaseHeaders(cfg) });
     const text = await response.text().catch(() => '');
 
@@ -229,37 +232,7 @@
     const cfg = getNtSupabaseConfig();
     if (!cfg || !$('#jobsGrid')) return false;
 
-    const baseFields = [
-      'vaga_id','titulo','categoria','localidade','cidade','estado_uf','modalidade','remuneracao','horario',
-      'resumo','destaques','detalhes','requisitos','atividades','selo','prioridade','status','updated_at'
-    ];
-    const optionalFields = [
-      'imagem_url','video_url','instagram_url','midia_tipo','midia_alt',
-      'responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email'
-    ];
-    const previewOptionalFields = [
-      'slug','vaga_slug','imagem_og','og_image','image_url','imageUrl'
-    ];
-
-    let rows = [];
-
-    try {
-      rows = await fetchDynamicJobsRows(cfg, [...baseFields, ...optionalFields, ...previewOptionalFields]);
-    } catch (error) {
-      const msg = String(error && error.message ? error.message : error);
-      const canRetryWithoutOptionalColumns = msg.includes('PGRST204') || msg.includes('schema cache') || msg.includes('Could not find');
-      if (!canRetryWithoutOptionalColumns) throw error;
-      try {
-        console.warn('RH IMOB: colunas opcionais de preview por vaga ainda não estão disponíveis. Tentando carregar vagas com mídia/responsável.', error);
-        rows = await fetchDynamicJobsRows(cfg, [...baseFields, ...optionalFields]);
-      } catch (fallbackError) {
-        const fallbackMsg = String(fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
-        const canRetryBasic = fallbackMsg.includes('PGRST204') || fallbackMsg.includes('schema cache') || fallbackMsg.includes('Could not find');
-        if (!canRetryBasic) throw fallbackError;
-        console.warn('RH IMOB: colunas opcionais de mídia/responsável ainda não estão disponíveis no Supabase. Usando leitura básica de vagas.', fallbackError);
-        rows = await fetchDynamicJobsRows(cfg, baseFields);
-      }
-    }
+    const rows = await fetchDynamicJobsRows(cfg);
 
     if (!Array.isArray(rows) || !rows.length) return false;
     JOBS = rows.map(normalizeJobFromSupabase).filter((job) => job.id && job.title);
@@ -466,13 +439,13 @@
   }
 
 
-  function getJobShareSlug(job) {
-    return slugify(job?.shareSlug || job?.id || job?.title || 'vaga-rh-imob');
+  function getJobShareKey(job) {
+    return normalize(job?.id || 'vaga-rh-imob');
   }
 
   function getJobShareUrl(job) {
-    const slug = getJobShareSlug(job);
-    const url = new URL(`/vaga/${encodeURIComponent(slug)}`, window.location.origin || SITE_BASE_URL);
+    const key = getJobShareKey(job);
+    const url = new URL(`/vaga/${encodeURIComponent(key)}`, window.location.origin || SITE_BASE_URL);
     return url.toString();
   }
 
