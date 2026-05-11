@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Corretores ativos por cidade | RH IMOB</title>
+  <meta name="description" content="Plataforma RH IMOB para consulta comercial de profissionais ativos por cidade, ano de inscrição e perfil profissional. Contatos completos somente com acesso contratado." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#2b124d" />
+  <link rel="canonical" href="https://rhimob0305.vercel.app/corretores" />
+  <link rel="icon" href="/favicon.ico?v=20260506operacional" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260506operacional" type="image/svg+xml" />
+  <link rel="stylesheet" href="corretores.css?v=20260506operacional" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" href="/">
+        <img src="/assets/rhimob-mark.svg?v=20260506operacional" alt="" />
+        <span><strong>RH IMOB</strong><small>Plataforma Corretores</small></span>
+      </a>
+      <nav>
+        <a href="/">Início</a>
+        <a href="/#vagas">Vagas</a>
+        <a href="/#contato">Contato</a>
+      </nav>
+      <div class="auth-mini" id="authMini" hidden>
+        <span id="authMiniName">Sessão ativa</span>
+        <button class="link-btn" type="button" id="logoutBtn">Sair</button>
+      </div>
+      <button class="btn btn-secondary" id="loginTopBtn" type="button">Entrar</button>
+      <a class="btn btn-primary" id="topWhatsapp" href="#" target="_blank" rel="noopener">Solicitar acesso</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__grid">
+        <div>
+          <span class="kicker">Plataforma RH IMOB</span>
+          <h1>Corretores ativos por cidade, ano de CRECI e sinais de contato.</h1>
+          <p>Conheça uma prévia protegida da inteligência RH IMOB. Com acesso contratado, sua equipe libera contatos completos, controla o saldo do plano e aborda profissionais com mensagens prontas.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#consulta">Consultar profissionais</a>
+            <button class="btn btn-secondary" id="heroLoginBtn" type="button">Entrar com login e senha</button>
+          </div>
+        </div>
+        <aside class="summary">
+          <span>Base sincronizada</span>
+          <strong>52.569+</strong>
+          <small>profissionais mapeados</small>
+          <div class="summary__grid">
+            <div><b id="totalCidades">18</b><em>cidades</em></div>
+            <div><b>CRECI</b><em>ativo</em></div>
+            <div><b>Plano</b><em>saldo por plano</em></div>
+          </div>
+          <p>A prévia protege dados sensíveis. Os contatos completos são liberados somente com login contratado, respeitando o saldo e os usuários do plano.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="search" id="consulta">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">Consulta pública</span>
+          <h2>Encontre profissionais por perfil e região</h2>
+          <p>Use os filtros para visualizar profissionais por cidade, ano de inscrição e perfil de atuação. Os resultados são organizados para facilitar a leitura comercial da base.</p>
+        </div>
+
+        <div class="filters">
+          <label>Cidade<select id="cidadeSelect"><option value="">Todas as cidades</option></select></label>
+          <label>Ano de inscrição<select id="anoSelect" disabled><option value="">Todos os anos</option></select></label>
+          <label>Perfil / cargo<select id="cargoSelect" disabled><option value="">Todos os perfis</option></select></label>
+          <label>Buscar termo<input id="termoInput" type="search" placeholder="corretor, consultor, imobiliário" /></label>
+          <button class="btn btn-primary" id="buscarBtn" type="button">Buscar</button>
+          <button class="btn btn-secondary" id="limparBtn" type="button">Limpar</button>
+        </div>
+
+        <div class="status-row">
+          <div id="resultadoStatus">Carregando filtros...</div>
+          <div id="authStatusText">Prévia protegida. Entre para liberar contatos completos.</div>
+        </div>
+
+        <div class="cards" id="cardsGrid" aria-live="polite"></div>
+        <div class="load-more"><button class="btn btn-secondary" id="maisBtn" type="button" hidden>Carregar mais</button></div>
+      </div>
+    </section>
+
+
+    <section class="admin-section" id="adminPanel" hidden>
+      <div class="container">
+        <div class="admin-head">
+          <div>
+            <span class="kicker">Painel do plano</span>
+            <h2>Operação, consumo e mensagens</h2>
+            <p>Área administrativa do plano: acompanhe operadores, saldo disponível, contatos liberados e mensagens de abordagem da equipe.</p>
+          </div>
+          <button class="btn btn-secondary" id="adminRefreshBtn" type="button">Atualizar relatório</button>
+        </div>
+
+        <div class="admin-alert" id="adminAlert" hidden></div>
+
+        <div class="admin-cards">
+          <article class="admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
+          <article class="admin-card"><small>Usuários ativos</small><strong id="adminUsuariosResumo">-</strong><span id="adminUsuariosStatus">-</span></article>
+          <article class="admin-card"><small>Acessos consumidos</small><strong id="adminLeadsConsumidos">-</strong><span id="adminLeadsDisponiveis">-</span></article>
+          <article class="admin-card"><small>Período do plano</small><strong id="adminPeriodo">-</strong><span id="adminLimite">-</span></article>
+        </div>
+
+        <div class="admin-grid">
+          <article class="admin-box">
+            <div class="admin-box-head"><h3>Operadores do plano</h3><span id="adminUsersCount">0 usuários</span></div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Total</th><th>Ação</th></tr></thead>
+                <tbody id="adminUsersTable"><tr><td colspan="6">Entre como administrador.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="admin-box">
+            <div class="admin-box-head"><h3>Consumo por operador</h3><span>Hoje, 7 dias e total</span></div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead><tr><th>Operador</th><th>Hoje</th><th>7 dias</th><th>Total</th></tr></thead>
+                <tbody id="adminReportTable"><tr><td colspan="4">Sem dados carregados.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <article class="admin-box admin-recent">
+          <div class="admin-box-head"><h3>Últimos contatos liberados</h3><span id="adminRecentCount">0 registros</span></div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Data/hora</th><th>Operador</th><th>Lead</th><th>Cidade</th><th>Perfil</th></tr></thead>
+              <tbody id="adminRecentTable"><tr><td colspan="5">Sem contatos liberados.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="admin-box admin-messages">
+          <div class="admin-box-head">
+            <div>
+              <h3>Mensagens de abordagem</h3>
+              <span id="phrasesNote">Carregando frases...</span>
+            </div>
+            <button class="btn btn-secondary" id="clonePhrasesBtn" type="button">Personalizar frases para este plano</button>
+          </div>
+
+          <div class="phrase-editor">
+            <label>Texto da frase
+              <textarea id="phraseText" rows="4" placeholder="Ex.: Olá, {nome}. Aqui é {Usuário}. Vi seu perfil em {cidade} e gostaria de falar com você."></textarea>
+            </label>
+            <div class="phrase-editor-grid">
+              <label>Status
+                <select id="phraseStatus"><option value="ATIVA">ATIVA</option><option value="INATIVA">INATIVA</option></select>
+              </label>
+              <label>Prioridade
+                <input id="phrasePriority" type="number" min="1" placeholder="1" />
+              </label>
+              <label class="check-label"><input id="phraseFavorite" type="checkbox" /> Favorita</label>
+              <button class="btn btn-secondary" id="newPhraseBtn" type="button">Nova frase</button>
+              <button class="btn btn-primary" id="savePhraseBtn" type="button">Salvar frase</button>
+            </div>
+            <p class="phrase-help">Placeholders permitidos: <strong>{nome}</strong>, <strong>{cidade}</strong> e <strong>{Usuário}</strong>.</p>
+          </div>
+
+          <div class="table-wrap">
+            <table class="admin-table phrase-table">
+              <thead><tr><th>Prior.</th><th>Texto</th><th>Status</th><th>Escopo</th><th>Ação</th></tr></thead>
+              <tbody id="adminPhrasesTable"><tr><td colspan="5">Sem frases carregadas.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container cta__inner">
+        <div>
+          <span class="kicker">Acesso completo</span>
+          <h2>Acesso contratado com relatórios, saldo do plano e mensagens prontas.</h2>
+          <p>Cada contato liberado é registrado no saldo do plano. O administrador acompanha operadores, acessos disponíveis e mensagens de abordagem da equipe.</p>
+        </div>
+        <a class="btn btn-light" id="bottomWhatsapp" href="#" target="_blank" rel="noopener">Falar com Fernando</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-backdrop" data-close-login></div>
+    <div class="modal-panel auth-panel" role="document">
+      <button class="modal-close" type="button" data-close-login aria-label="Fechar">×</button>
+      <span class="kicker">Acesso contratado</span>
+      <h2 id="loginTitle">Entrar na Plataforma Corretores</h2>
+      <p class="modal-text">Use o e-mail e a senha fornecidos pela RH IMOB ou pelo administrador do seu plano. Nenhum contato completo é exibido sem login ativo.</p>
+      <form id="loginForm" class="login-form">
+        <label>E-mail
+          <input type="email" id="loginEmail" autocomplete="email" placeholder="operador@empresa.com.br" required />
+        </label>
+        <label>Senha
+          <div class="password-wrap">
+            <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Digite sua senha" required />
+            <button type="button" id="togglePassword" aria-label="Mostrar senha">👁</button>
+          </div>
+        </label>
+        <button class="btn btn-primary btn-full" type="submit" id="loginSubmitBtn">Entrar</button>
+        <div class="form-message" id="loginMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="leadModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+    <div class="modal-backdrop" data-close-lead></div>
+    <div class="modal-panel lead-detail" role="document">
+      <button class="modal-close" type="button" data-close-lead aria-label="Fechar">×</button>
+      <span class="kicker">Contato liberado</span>
+      <h2 id="leadModalTitle">Contato completo</h2>
+      <p class="modal-text" id="leadModalSubtitle">Contato liberado para o seu plano.</p>
+      <div id="leadDetailContent" class="lead-detail-content"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span>© RH IMOB</span>
+      <a href="/politica.html">Política de privacidade</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20260506operacional"></script>
+  <script src="corretores.js?v=20260506operacional"></script>
+</body>
+</html>
