@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rhimob0305.vercel.app/sitemap.xml
+Sitemap: https://www.rhimob.com.br/sitemap.xml

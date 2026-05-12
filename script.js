@@ -445,7 +445,7 @@
 
   function getJobShareUrl(job) {
     const key = getJobShareKey(job);
-    const url = new URL('/vagas.html', window.location.origin || SITE_BASE_URL);
+    const url = new URL('/vagas.html', SITE_BASE_URL);
     url.searchParams.set('vaga', key);
     url.hash = 'vagas';
     return url.toString();
