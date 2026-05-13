@@ -1516,3 +1516,192 @@ textarea { resize: vertical; min-height: 100px; }
   .job-actions { grid-template-columns: 1fr; }
   .job-actions .btn-primary { grid-column: auto; }
 }
+
+/* RH imobiliário estratégico - orientação para empresas e lideranças */
+.rh-strategy-section {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255,143,61,.13), transparent 24rem),
+    radial-gradient(circle at 88% 18%, rgba(109,45,242,.13), transparent 26rem),
+    linear-gradient(180deg, #fff, #fbf8ff 52%, #fff);
+}
+.rh-strategy-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+  gap: 28px;
+  align-items: stretch;
+  margin-bottom: 22px;
+}
+.rh-strategy-copy,
+.rh-strategy-panel,
+.rh-insight-card,
+.rh-strategy-deep,
+.rh-strategy-cta {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,.86);
+  box-shadow: var(--shadow-soft);
+}
+.rh-strategy-copy {
+  padding: 34px;
+}
+.rh-strategy-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+.rh-strategy-panel {
+  padding: 30px;
+  background:
+    linear-gradient(145deg, rgba(36,16,63,.97), rgba(75,23,139,.94)),
+    radial-gradient(circle at 100% 0%, rgba(255,143,61,.28), transparent 18rem);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.rh-strategy-panel strong {
+  font-size: 22px;
+  line-height: 1.18;
+  letter-spacing: -.04em;
+  margin-bottom: 12px;
+}
+.rh-strategy-panel p {
+  margin: 0;
+  color: rgba(255,255,255,.78);
+}
+.rh-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0;
+}
+.rh-insight-card {
+  padding: 24px;
+  min-height: 236px;
+}
+.rh-insight-card span {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  background: var(--orange-100);
+  color: var(--orange-600);
+  font-weight: 950;
+  margin-bottom: 16px;
+}
+.rh-insight-card h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  line-height: 1.14;
+  letter-spacing: -.03em;
+}
+.rh-insight-card p {
+  margin: 0;
+  color: var(--muted);
+}
+.rh-strategy-deep {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+  gap: 28px;
+  padding: 34px;
+  margin-top: 18px;
+}
+.rh-strategy-deep h3,
+.rh-strategy-cta h3 {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.08;
+  letter-spacing: -.05em;
+}
+.rh-strategy-deep p,
+.rh-strategy-cta p {
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.rh-method-box {
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--purple-50), #fff);
+  border: 1px solid rgba(109,45,242,.14);
+  padding: 24px;
+}
+.rh-method-box strong {
+  display: block;
+  color: var(--purple-900);
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.rh-method-box ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+.rh-method-box li {
+  position: relative;
+  padding-left: 24px;
+  color: var(--muted);
+  font-weight: 750;
+}
+.rh-method-box li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .72em;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-600), var(--orange-500));
+}
+.rh-strategy-cta {
+  margin-top: 18px;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(255,143,61,.18), transparent 20rem),
+    linear-gradient(135deg, #fff, var(--purple-50));
+}
+.rh-strategy-cta span {
+  display: inline-flex;
+  margin-bottom: 10px;
+  color: var(--purple-700);
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: 12px;
+}
+.rh-strategy-cta p { margin-bottom: 0; }
+
+@media (max-width: 980px) {
+  .rh-strategy-intro,
+  .rh-strategy-deep,
+  .rh-strategy-cta {
+    grid-template-columns: 1fr;
+  }
+  .rh-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rh-strategy-cta .btn {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 680px) {
+  .rh-strategy-copy,
+  .rh-strategy-panel,
+  .rh-strategy-deep,
+  .rh-strategy-cta {
+    padding: 24px;
+  }
+  .rh-insight-grid {
+    grid-template-columns: 1fr;
+  }
+  .rh-strategy-cta .btn {
+    width: 100%;
+  }
+}
