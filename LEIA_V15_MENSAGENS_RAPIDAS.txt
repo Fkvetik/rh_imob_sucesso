@@ -1,0 +1,20 @@
+RH IMOB CRM V15 - Mensagens rápidas editáveis e direcionamento para operador
+
+1. Rode COPIAR_SQL_V15_RAPIDAS_DIRECIONAMENTO.cmd
+   Cole no Supabase SQL Editor e execute.
+
+2. Rode COPIAR_10_APPS_SCRIPT_OUTBOX_OPERADOR.cmd
+   Cole no Apps Script da planilha central em um novo arquivo:
+   10_Supabase_Outbox_Operador_V15.gs
+
+3. Rode INICIAR_AQUI.cmd para abrir o CRM local.
+
+O que mudou:
+- Mensagens rápidas agora salvam no Supabase e no navegador.
+- Ao editar, não volta para o padrão antigo.
+- Cada mensagem rápida tem tipo de ação:
+  MENSAGEM_LEAD
+  CONFIRMAR_AGENDAMENTO
+  ENCAMINHAR_OPERADOR
+- Em ENCAMINHAR_OPERADOR, configure nome, telefone, função e texto para a operadora.
+- O envio para operador passa pela crm_outbox e pelo Apps Script, usando a instância da operação.

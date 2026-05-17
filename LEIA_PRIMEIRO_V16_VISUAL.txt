@@ -1,0 +1,31 @@
+RH IMOB CRM V16 - melhoria visual operacional
+
+Esta versão melhora apenas a tela do CRM/HTML Next.js e mantém o fluxo validado:
+- Supabase continua no backend.
+- Envio continua pela crm_outbox e Apps Script/Z-API.
+- Conversa continua vindo de crm_mensagens.
+- Mensagens rápidas continuam editáveis e salvas localmente + Supabase.
+
+Como usar:
+1. Extraia a pasta.
+2. Rode CONFIGURAR_SUPABASE.cmd se ainda não tiver .env.local.
+3. Rode INICIAR_AQUI.cmd.
+4. Abra http://localhost:3000/crm.
+
+Melhorias visuais:
+- Topo mais limpo e com status de conexão.
+- Abas: Atendimento, Agenda do dia e Encaminhar.
+- Lista de leads com grupos de reunião hoje e leads ativos.
+- Conversa com bolhas mais claras, horário e origem.
+- Painel direito mais organizado para dados do lead, status, agendamento e mensagens rápidas.
+- Agenda do dia com visão própria.
+- Encaminhamento para responsável em tela própria com prévia.
+- Melhor legibilidade para baixa visão: contraste maior, botões maiores e menos texto comprimido.
+
+Novo endpoint adicionado:
+app/api/crm/agenda/route.js
+
+Arquivos principais alterados:
+app/crm/page.js
+app/globals.css
+app/api/crm/agenda/route.js

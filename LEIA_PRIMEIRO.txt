@@ -1,0 +1,28 @@
+RH IMOB CRM V11 - pasta completa atual
+
+ERRO localhost recusado:
+Esse erro significa que o servidor Next.js nao esta rodando.
+Para abrir o CRM, voce precisa deixar o CMD INICIAR_AQUI.cmd aberto.
+
+ORDEM:
+1. Clique em CONFIGURAR_SUPABASE.cmd
+2. Clique em INICIAR_AQUI.cmd
+3. Nao feche a janela preta do CMD.
+4. Abra http://localhost:3000/crm
+
+Se der erro:
+1. Clique em REINICIAR_LIMPO.cmd
+2. Aguarde instalar/rodar.
+3. Abra http://localhost:3000/crm
+
+APPS SCRIPT:
+- COPIAR_08_APPS_SCRIPT.cmd copia o script de conversa completa sem duplicidade.
+- COPIAR_09_APPS_SCRIPT.cmd copia o script de lembretes de agenda.
+
+SQL:
+- COPIAR_SQL_DEDUP.cmd copia a limpeza de mensagens duplicadas.
+- COPIAR_SQL_LEMBRETES.cmd copia as tabelas de lembrete.
+
+TOKEN OPERACIONAL:
+No teste local, CRM_LOCAL_BYPASS=SIM permite usar sem token.
+Em producao, use o CRM_PANEL_TOKEN configurado.
