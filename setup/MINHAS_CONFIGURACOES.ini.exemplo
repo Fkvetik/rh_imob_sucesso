@@ -1,0 +1,22 @@
+# ============================================================
+# MINHAS_CONFIGURACOES.ini.exemplo — RH IMOB CRM
+# Copie este arquivo para MINHAS_CONFIGURACOES.ini e preencha.
+# O arquivo .ini NAO vai para o GitHub (esta no .gitignore).
+# ============================================================
+
+VERCEL_TOKEN=vcp_SEU_TOKEN_AQUI
+VERCEL_PROJECT_ID=prj_SEU_PROJECT_ID
+
+CRM_PANEL_TOKEN=SuaSenhaForte
+
+CRM_SUPABASE_URL=https://SEUPROJETO.supabase.co
+CRM_SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...TOKEN_COMPLETO
+SUPABASE_ACCESS_TOKEN=sbp_SEU_TOKEN_AQUI
+
+APPS_SCRIPT_WEBAPP_URL=https://script.google.com/macros/s/XXXXX/exec
+
+ZAPI_CLIENT_TOKEN=SEU_CLIENT_TOKEN
+ZAPI_INSTANCE_NT=SEU_INSTANCE_ID_NT
+ZAPI_TOKEN_NT=SEU_TOKEN_NT
+ZAPI_INSTANCE_CRECI=SEU_INSTANCE_ID_CRECI
+ZAPI_TOKEN_CRECI=SEU_TOKEN_CRECI
