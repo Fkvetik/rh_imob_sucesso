@@ -87,13 +87,14 @@ function rh06_processarMensagem_(operation, body, params) {
   var leadPayload = {
     operation:           operation,
     telefone_norm:       phone,
-    ultima_mensagem_em:  tsIso,
+    telefone_display:    phone,
+    ultima_mensagem:     texto ? texto.slice(0, 300) : '(mídia)',
+    ultima_direcao:      'IN',
     ultima_atividade_em: tsIso,
     updated_at:          new Date().toISOString()
   };
   if (nome) {
-    leadPayload.nome            = nome;
-    leadPayload.primeiro_nome   = ap_primNome(nome);
+    leadPayload.nome = nome;
   }
 
   try {
@@ -107,22 +108,24 @@ function rh06_processarMensagem_(operation, body, params) {
     Logger.log('[rh06] Erro upsert lead: ' + e.message);
   }
 
-  /* ── Salva mensagem em crm_conversas ── */
-  var convPayload = {
+  /* ── Salva mensagem em crm_mensagens (tabela correta) ── */
+  var mediaType = rh06_detectaMedia_(body);
+  var msgPayload = {
     operation:    operation,
     telefone_norm: phone,
-    msg_id:       msgId || null,
-    de:           'LEAD',
-    texto:        texto,
-    media_tipo:   rh06_detectaMedia_(body),
-    media_url:    body.image || body.audio || body.video || body.document || null,
-    enviado_em:   tsIso
+    external_id:  msgId || null,
+    direction:    'IN',
+    message_text: texto,
+    message_type: mediaType ? mediaType.toUpperCase() : 'TEXT',
+    source:       'ZAPI',
+    message_at:   tsIso,
+    operador:     AP_DEFAULT_OPERATOR
   };
   try {
-    crmSupabaseFetch_('/rest/v1/crm_conversas', 'post', convPayload,
+    crmSupabaseFetch_('/rest/v1/crm_mensagens', 'post', msgPayload,
       { Prefer: 'return=minimal' });
   } catch (e) {
-    Logger.log('[rh06] Erro salvar conversa: ' + e.message);
+    Logger.log('[rh06] Erro salvar mensagem: ' + e.message);
   }
 
   /* ── Salva evento ── */
@@ -171,10 +174,10 @@ function rh06_processarStatus_(operation, body) {
 
   try {
     crmSupabaseFetch_(
-      '/rest/v1/crm_conversas?msg_id=eq.' + encodeURIComponent(msgId) +
+      '/rest/v1/crm_mensagens?external_id=eq.' + encodeURIComponent(msgId) +
       '&operation=eq.' + operation,
       'patch',
-      { status_entrega: status, updated_at: new Date().toISOString() },
+      { status_envio: status },
       { Prefer: 'return=minimal' }
     );
   } catch (e) { /* não fatal */ }

@@ -1,10 +1,10 @@
 # ============================================================
-# CONFIGURAR_TUDO.ps1 — RH IMOB CRM Setup Automatico
-# Versao 2 — corrigido parse de senha com $ e angulos ><
+# CONFIGURAR_TUDO.ps1 - RH IMOB CRM Setup Automatico
+# Compativel com Windows PowerShell 5.1
+# SEM caracteres Unicode (sem em-dash, sem setas, sem linhas)
 # ============================================================
 param([string]$ConfigFile)
 
-# ── Helpers de UI ────────────────────────────────────────────
 function Write-Step([int]$n,[string]$msg){
     Write-Host ""
     Write-Host "  [$n] $msg" -ForegroundColor Cyan
@@ -14,7 +14,7 @@ function Write-WARN([string]$msg) { Write-Host "    AVISO  $msg" -ForegroundColo
 function Write-ERRO([string]$msg) { Write-Host "    ERRO   $msg" -ForegroundColor Red    }
 function Write-INFO([string]$msg) { Write-Host "           $msg" -ForegroundColor DarkGray }
 
-# ── Le config.ini (nao interpreta $ nos valores) ─────────────
+# Le config.ini sem interpretar $ nos valores
 function Read-Config([string]$path){
     $cfg = @{}
     if(-not (Test-Path $path)){
@@ -33,19 +33,17 @@ function Read-Config([string]$path){
     return $cfg
 }
 
-# ── Valida campo obrigatorio ──────────────────────────────────
+# Valida campo obrigatorio
 function Test-Campo([hashtable]$cfg,[string]$key,[string]$label){
     $v = $cfg[$key]
     if(-not $v -or $v.StartsWith('<')){ Write-ERRO "$label nao preenchido ($key)"; return $false }
     return $true
 }
 
-# ── Extrai project ID do Vercel (aceita ID ou URL) ───────────
+# Extrai project ID do Vercel (aceita ID ou URL)
 function Get-VercelProjectId([string]$raw,[string]$token){
-    # Ja e um ID no formato prj_xxx
     if($raw -match '^prj_[A-Za-z0-9]+$'){ return $raw }
 
-    # E uma URL — extrai o nome do projeto
     $nome = $raw -replace 'https?://(vercel\.com/[^/]+/)?','' `
                  -replace '\.vercel\.app.*','' `
                  -replace '/.*','' `
@@ -68,44 +66,61 @@ function Get-VercelProjectId([string]$raw,[string]$token){
     }
 }
 
-# ── Faz PATCH/POST em env var do Vercel ──────────────────────
+# Cria ou atualiza env var no Vercel
+# Tipo valido: 'encrypted' (segredos) ou 'plain' (texto simples)
+# PATCH nao inclui 'key' no corpo -- apenas POST inclui
 function Set-VercelEnv([string]$projectId,[string]$token,[string]$key,[string]$value,[string]$type){
     $h = @{ Authorization="Bearer $token"; 'Content-Type'='application/json' }
 
-    # Busca ID existente
-    $envList = Invoke-RestMethod `
-        -Uri "https://api.vercel.com/v10/projects/$projectId/env" `
-        -Headers $h -ErrorAction SilentlyContinue
+    # Busca lista de envs para verificar se ja existe
+    $envList = $null
+    try{
+        $envList = Invoke-RestMethod `
+            -Uri "https://api.vercel.com/v10/projects/$projectId/env" `
+            -Headers $h -ErrorAction Stop
+    }catch{
+        Write-WARN "Nao foi possivel listar envs: $($_.Exception.Message)"
+        return $false
+    }
     $existente = ($envList.envs | Where-Object { $_.key -eq $key } | Select-Object -First 1)
 
-    $bodyObj = @{
-        key    = $key
-        value  = $value
-        type   = $type
-        target = @('production','preview','development')
-    }
-    $body = $bodyObj | ConvertTo-Json -Compress
+    # Tipo: API aceita 'encrypted' ou 'plain' -- 'sensitive' nao e valido na v10
+    $envType = $type
+    if($envType -eq 'sensitive'){ $envType = 'encrypted' }
 
     try{
         if($existente){
+            # PATCH: nao inclui 'key' no corpo
+            $patchBody = @{
+                value  = $value
+                type   = $envType
+                target = @('production','preview','development')
+            } | ConvertTo-Json -Compress
             Invoke-RestMethod `
                 -Uri "https://api.vercel.com/v10/projects/$projectId/env/$($existente.id)" `
-                -Method PATCH -Headers $h -Body $body -ErrorAction Stop | Out-Null
+                -Method PATCH -Headers $h -Body $patchBody -ErrorAction Stop | Out-Null
             Write-OK "Atualizada: $key"
         }else{
+            # POST: inclui 'key' no corpo
+            $postBody = @{
+                key    = $key
+                value  = $value
+                type   = $envType
+                target = @('production','preview','development')
+            } | ConvertTo-Json -Compress
             Invoke-RestMethod `
                 -Uri "https://api.vercel.com/v10/projects/$projectId/env" `
-                -Method POST -Headers $h -Body $body -ErrorAction Stop | Out-Null
+                -Method POST -Headers $h -Body $postBody -ErrorAction Stop | Out-Null
             Write-OK "Criada: $key"
         }
         return $true
     }catch{
-        Write-WARN "$key — $($_.Exception.Message)"
+        Write-WARN "$key - $($_.Exception.Message)"
         return $false
     }
 }
 
-# ── Redeploy ──────────────────────────────────────────────────
+# Aciona redeploy no Vercel
 function Invoke-VercelRedeploy([string]$projectId,[string]$token){
     try{
         $uriDeps = "https://api.vercel.com/v6/deployments?projectId=" + $projectId + [char]38 + "limit=1"
@@ -124,11 +139,11 @@ function Invoke-VercelRedeploy([string]$projectId,[string]$token){
         Write-OK "Redeploy acionado (aguarde ~1 min)"
     }catch{
         Write-WARN "Redeploy: $($_.Exception.Message)"
-        Write-INFO "Faca manualmente: Vercel - Deployments - ... - Redeploy"
+        Write-INFO "Faca manualmente: Vercel - Deployments - Redeploy"
     }
 }
 
-# ── Roda SQL no Supabase via Management API ───────────────────
+# Executa SQL no Supabase via Management API
 function Invoke-SupabaseSQL([string]$ref,[string]$accessToken,[string]$sqlPath){
     if(-not (Test-Path $sqlPath)){ Write-WARN "SQL nao encontrado: $sqlPath"; return }
     $sql = [System.IO.File]::ReadAllText($sqlPath)
@@ -147,7 +162,7 @@ function Invoke-SupabaseSQL([string]$ref,[string]$accessToken,[string]$sqlPath){
     }
 }
 
-# ── Configura webhook Z-API ───────────────────────────────────
+# Configura webhook Z-API
 function Set-ZapiWebhook([string]$inst,[string]$tok,[string]$ct,[string]$url,[string]$nome){
     if(-not $inst -or $inst.StartsWith('<')){ Write-WARN "Instancia $nome nao configurada"; return }
     $body = @{ value = $url } | ConvertTo-Json -Compress
@@ -165,22 +180,22 @@ function Set-ZapiWebhook([string]$inst,[string]$tok,[string]$ct,[string]$url,[st
     }
 }
 
-# ══════════════════════════════════════════════════════════════
+# ============================================================
 # INICIO
-# ══════════════════════════════════════════════════════════════
+# ============================================================
 
 Write-Host ""
 Write-Host "  ================================================" -ForegroundColor Cyan
-Write-Host "   RH IMOB CRM - Configuracao de Producao V2     " -ForegroundColor Cyan
+Write-Host "   RH IMOB CRM - Configuracao de Producao        " -ForegroundColor Cyan
 Write-Host "  ================================================" -ForegroundColor Cyan
 
 $cfg = Read-Config $ConfigFile
 
 # Valida campos minimos
 $ok = $true
-if(-not (Test-Campo $cfg 'VERCEL_TOKEN'              'Token do Vercel'))         { $ok=$false }
-if(-not (Test-Campo $cfg 'VERCEL_PROJECT_ID'         'Project ID/URL do Vercel')){ $ok=$false }
-if(-not (Test-Campo $cfg 'CRM_SUPABASE_SERVICE_ROLE_KEY' 'Service Role Key'))    { $ok=$false }
+if(-not (Test-Campo $cfg 'VERCEL_TOKEN'              'Token do Vercel'))          { $ok=$false }
+if(-not (Test-Campo $cfg 'VERCEL_PROJECT_ID'         'Project ID/URL do Vercel')) { $ok=$false }
+if(-not (Test-Campo $cfg 'CRM_SUPABASE_SERVICE_ROLE_KEY' 'Service Role Key'))     { $ok=$false }
 if(-not $ok){
     Write-Host ""
     Write-Host "  Corrija os campos acima e rode novamente." -ForegroundColor Red
@@ -188,22 +203,22 @@ if(-not $ok){
     exit 1
 }
 
-$VCL_TOKEN   = $cfg['VERCEL_TOKEN']
-$VCL_PROJ_RAW= $cfg['VERCEL_PROJECT_ID']
-$PANEL_TOKEN = $cfg['CRM_PANEL_TOKEN']
-$SB_URL      = $cfg['CRM_SUPABASE_URL']
-$SB_KEY      = $cfg['CRM_SUPABASE_SERVICE_ROLE_KEY']
-$SB_MGMT     = $cfg['SUPABASE_ACCESS_TOKEN']
-$WEBAPP_URL  = $cfg['APPS_SCRIPT_WEBAPP_URL']
-$ZAPI_CT     = $cfg['ZAPI_CLIENT_TOKEN']
-$ZAPI_IN_NT  = $cfg['ZAPI_INSTANCE_NT']
-$ZAPI_TK_NT  = $cfg['ZAPI_TOKEN_NT']
-$ZAPI_IN_CR  = $cfg['ZAPI_INSTANCE_CRECI']
-$ZAPI_TK_CR  = $cfg['ZAPI_TOKEN_CRECI']
+$VCL_TOKEN    = $cfg['VERCEL_TOKEN']
+$VCL_PROJ_RAW = $cfg['VERCEL_PROJECT_ID']
+$PANEL_TOKEN  = $cfg['CRM_PANEL_TOKEN']
+$SB_URL       = $cfg['CRM_SUPABASE_URL']
+$SB_KEY       = $cfg['CRM_SUPABASE_SERVICE_ROLE_KEY']
+$SB_MGMT      = $cfg['SUPABASE_ACCESS_TOKEN']
+$WEBAPP_URL   = $cfg['APPS_SCRIPT_WEBAPP_URL']
+$ZAPI_CT      = $cfg['ZAPI_CLIENT_TOKEN']
+$ZAPI_IN_NT   = $cfg['ZAPI_INSTANCE_NT']
+$ZAPI_TK_NT   = $cfg['ZAPI_TOKEN_NT']
+$ZAPI_IN_CR   = $cfg['ZAPI_INSTANCE_CRECI']
+$ZAPI_TK_CR   = $cfg['ZAPI_TOKEN_CRECI']
 
 $SB_REF = ($SB_URL -replace 'https://','' -replace '\.supabase\.co.*','')
 
-# ── 1. Resolve Project ID ─────────────────────────────────────
+# --- 1. Resolve Project ID ---
 Write-Step 1 "Resolvendo Project ID do Vercel..."
 $PROJECT_ID = Get-VercelProjectId $VCL_PROJ_RAW $VCL_TOKEN
 if(-not $PROJECT_ID){
@@ -213,7 +228,7 @@ if(-not $PROJECT_ID){
 }
 Write-OK "Project ID: $PROJECT_ID"
 
-# Salva o ID correto no ini para proximas execucoes
+# Salva o ID correto no ini
 $iniContent = [System.IO.File]::ReadAllText($ConfigFile)
 if($VCL_PROJ_RAW -ne $PROJECT_ID){
     $iniContent = $iniContent -replace [regex]::Escape("VERCEL_PROJECT_ID=$VCL_PROJ_RAW"), "VERCEL_PROJECT_ID=$PROJECT_ID"
@@ -221,26 +236,31 @@ if($VCL_PROJ_RAW -ne $PROJECT_ID){
     Write-OK "VERCEL_PROJECT_ID corrigido no .ini para: $PROJECT_ID"
 }
 
-# ── 2. Variaveis de ambiente no Vercel ────────────────────────
+# --- 2. Variaveis de ambiente no Vercel ---
 Write-Step 2 "Configurando variaveis de ambiente no Vercel..."
-Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_SUPABASE_URL'              $SB_URL       'encrypted'
-Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_SUPABASE_SERVICE_ROLE_KEY' $SB_KEY       'sensitive'
-Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_PANEL_TOKEN'               $PANEL_TOKEN  'sensitive'
-Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_LOCAL_BYPASS'              'NAO'         'plain'
+Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_SUPABASE_URL'              $SB_URL      'encrypted'
+Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_SUPABASE_SERVICE_ROLE_KEY' $SB_KEY      'encrypted'
+Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_PANEL_TOKEN'               $PANEL_TOKEN 'encrypted'
+Set-VercelEnv $PROJECT_ID $VCL_TOKEN 'CRM_LOCAL_BYPASS'              'NAO'        'plain'
 Invoke-VercelRedeploy $PROJECT_ID $VCL_TOKEN
 
-# ── 3. SQL no Supabase ────────────────────────────────────────
+# --- 3. SQL no Supabase ---
 Write-Step 3 "Executando SQL no Supabase..."
 $sqlPath = Join-Path (Split-Path (Split-Path $PSScriptRoot)) 'sql\10_crm_operacoes_v21.sql'
 if($SB_MGMT -and -not $SB_MGMT.StartsWith('<')){
-    Invoke-SupabaseSQL $SB_REF $SB_MGMT $sqlPath
+    if($SB_MGMT.StartsWith('sbp_')){
+        Invoke-SupabaseSQL $SB_REF $SB_MGMT $sqlPath
+    }else{
+        Write-WARN "SUPABASE_ACCESS_TOKEN deve comecar com sbp_ (gere em supabase.com/dashboard/account/tokens)"
+        Start-Process "https://supabase.com/dashboard/account/tokens"
+    }
 }else{
-    Write-WARN "SUPABASE_ACCESS_TOKEN nao preenchido — abrindo SQL Editor"
+    Write-WARN "SUPABASE_ACCESS_TOKEN nao preenchido - abrindo SQL Editor"
     Start-Process "https://supabase.com/dashboard/project/$SB_REF/sql/new"
     Write-INFO "Cole o arquivo sql/10_crm_operacoes_v21.sql e clique Run"
 }
 
-# ── 4. Webhooks Z-API ─────────────────────────────────────────
+# --- 4. Webhooks Z-API ---
 Write-Step 4 "Configurando webhooks Z-API..."
 if($WEBAPP_URL -and -not $WEBAPP_URL.StartsWith('<')){
     Set-ZapiWebhook $ZAPI_IN_NT $ZAPI_TK_NT $ZAPI_CT "$WEBAPP_URL`?operation=NOVOS_TALENTOS"   'NT'
@@ -250,13 +270,13 @@ if($WEBAPP_URL -and -not $WEBAPP_URL.StartsWith('<')){
     Write-INFO "Apos implantar o Apps Script, cole a URL no .ini e rode novamente"
 }
 
-# ── 5. Abre navegador ─────────────────────────────────────────
+# --- 5. Abre navegador ---
 Write-Step 5 "Abrindo passos manuais no navegador..."
 Start-Process "https://script.google.com"
 Start-Sleep -Seconds 1
 Start-Process "https://vercel.com/dashboard"
 
-# ── Resumo final ──────────────────────────────────────────────
+# --- Resumo final ---
 Write-Host ""
 Write-Host "  ================================================" -ForegroundColor Cyan
 Write-Host "   RESUMO                                        " -ForegroundColor Cyan
@@ -270,7 +290,7 @@ Write-Host "  [ ] Apps Script: substituir os 5 arquivos .gs" -ForegroundColor Wh
 Write-Host "  [ ] Apps Script: Implantar como Web App - copiar URL" -ForegroundColor White
 Write-Host "  [ ] Colar URL em APPS_SCRIPT_WEBAPP_URL no .ini" -ForegroundColor White
 Write-Host "  [ ] Rodar CONFIGURAR_TUDO.cmd novamente (webhook Z-API)" -ForegroundColor White
-Write-Host "  [ ] Abrir o site e digitar o token acima em 'Salvar acesso'" -ForegroundColor White
+Write-Host "  [ ] Abrir o site e digitar o token acima em Salvar acesso" -ForegroundColor White
 Write-Host "  [ ] Apps Script: painel_52_agenda_instalar_gatilho_15min()" -ForegroundColor White
 Write-Host "  [ ] Apps Script: painel_60_instalar_trigger_outbox()" -ForegroundColor White
 Write-Host ""

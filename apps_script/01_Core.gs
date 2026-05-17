@@ -151,6 +151,50 @@ function crmSetScriptProp_(key, value) {
   PropertiesService.getScriptProperties().setProperty(key, String(value));
 }
 
+/* ── HTTP para Supabase ───────────────────────────────────────────── */
+/**
+ * Função base de acesso ao Supabase REST/RPC.
+ * Usada por 06, 09, 10, 11 e qualquer outro arquivo.
+ *
+ * @param {string} path   Ex: '/rest/v1/crm_leads?...'
+ * @param {string} method 'get' | 'post' | 'patch' | 'delete'
+ * @param {*}      body   Objeto JS (será serializado como JSON)
+ * @param {Object} extraHeaders  Cabeçalhos adicionais (ex: { Prefer: '...' })
+ * @returns {*} Resposta parseada (array, objeto ou null)
+ */
+function crmSupabaseFetch_(path, method, body, extraHeaders) {
+  var props = PropertiesService.getScriptProperties();
+  var url   = (props.getProperty('CRM_SUPABASE_URL') || '').replace(/\/$/, '');
+  var key   = props.getProperty('CRM_SUPABASE_SERVICE_ROLE_KEY') || '';
+  if (!url || !key) {
+    throw new Error('Configure CRM_SUPABASE_URL e CRM_SUPABASE_SERVICE_ROLE_KEY nas Propriedades do Script.');
+  }
+  var headers = {
+    apikey:        key,
+    Authorization: 'Bearer ' + key,
+    'Content-Type': 'application/json'
+  };
+  if (extraHeaders) {
+    Object.keys(extraHeaders).forEach(function(k) { headers[k] = extraHeaders[k]; });
+  }
+  var options = {
+    method:            method || 'get',
+    headers:           headers,
+    muteHttpExceptions: true
+  };
+  if (body !== undefined && body !== null) {
+    options.payload = JSON.stringify(body);
+  }
+  var res  = UrlFetchApp.fetch(url + path, options);
+  var code = res.getResponseCode();
+  var txt  = res.getContentText() || '';
+  if (code < 200 || code >= 300) {
+    throw new Error('Supabase HTTP ' + code + ' em ' + path + ' => ' + txt.slice(0, 400));
+  }
+  if (!txt) return null;
+  try { return JSON.parse(txt); } catch (e) { return txt; }
+}
+
 /* ── Mapa de campanha (whitelist de telefones) ───────────────────── */
 /**
  * Retorna true se a operação tiver dados de campanha carregados
