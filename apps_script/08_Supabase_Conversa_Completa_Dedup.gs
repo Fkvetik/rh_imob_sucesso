@@ -11,6 +11,28 @@ var RH08_CFG = {
   OPERATIONS: ['NOVOS_TALENTOS','CORRETORES_CRECI']
 };
 
+/**
+ * Verifica se uma mensagem com esse msgId ja foi processada.
+ * Chamado pelo 06_Orquestrador para evitar processar duplicatas.
+ * Retorna true se ja existe em crm_mensagens, false caso contrario.
+ */
+function rh08_isDuplicado_(operation, msgId) {
+  if (!msgId) return false;
+  try {
+    var rows = crmSupabaseFetch_(
+      '/rest/v1/crm_mensagens?select=id' +
+      '&operation=eq.' + encodeURIComponent(operation) +
+      '&external_id=eq.' + encodeURIComponent(msgId) +
+      '&limit=1',
+      'get'
+    );
+    return Array.isArray(rows) && rows.length > 0;
+  } catch (e) {
+    Logger.log('[rh08_isDuplicado_] ' + e.message);
+    return false; // em caso de erro, processa mesmo assim
+  }
+}
+
 function painel_45_supabase_auditar_conversas(){
   var res = rh08_supabaseRpc_('rpc_crm_debug_resumo', {});
   Logger.log(JSON.stringify(res, null, 2));
