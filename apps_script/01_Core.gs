@@ -22,6 +22,13 @@ var AP_DEFAULT_OPERATOR = 'SITE_SUPABASE';
 var _rh01_opCache = null;   // array de { operation_key, label, label_short, cor }
 var _rh01_opSet   = null;   // Set de keys válidas (para isOperacaoValida_)
 
+/* ── Compatibilidade com versões anteriores ──────────────────────── */
+// Versões antigas referenciam estas variáveis globais; mantemos aqui
+// para que arquivos ainda não atualizados não quebrem o doPost.
+var AP_RUNTIME_CAMPAIGN_CACHE = {};
+var AP_RUNTIME_OP_CACHE       = {};
+var SUPABASE_CACHE            = {};
+
 /**
  * Retorna array de operações ativas vindas do Supabase.
  * Lê uma vez por execução; usa fallback se a tabela não existir ainda.

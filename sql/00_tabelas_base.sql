@@ -217,6 +217,48 @@ $$;
 alter table public.crm_outbox
   add column if not exists updated_at timestamptz not null default now();
 
+-- ================================================================
+-- PATCH: adiciona colunas novas em tabelas que ja existiam
+-- Seguro re-executar (ADD COLUMN IF NOT EXISTS nao da erro)
+-- ================================================================
+
+-- crm_mensagens: colunas adicionadas na v22
+alter table public.crm_mensagens add column if not exists external_id  text;
+alter table public.crm_mensagens add column if not exists dedup_key    text;
+alter table public.crm_mensagens add column if not exists dedup_minuto text;
+alter table public.crm_mensagens add column if not exists raw_payload  jsonb;
+
+-- crm_leads: colunas adicionadas na v22
+alter table public.crm_leads add column if not exists telefone_display    text;
+alter table public.crm_leads add column if not exists ultima_mensagem     text;
+alter table public.crm_leads add column if not exists ultima_direcao      text;
+alter table public.crm_leads add column if not exists ultima_atividade_em timestamptz;
+alter table public.crm_leads add column if not exists humano              boolean not null default false;
+alter table public.crm_leads add column if not exists agenda_status       text;
+alter table public.crm_leads add column if not exists operador            text;
+alter table public.crm_leads add column if not exists bucket              text not null default 'NOVO';
+alter table public.crm_leads add column if not exists fase_funil          text;
+alter table public.crm_leads add column if not exists cidade              text;
+alter table public.crm_leads add column if not exists bairro              text;
+alter table public.crm_leads add column if not exists profissao           text;
+alter table public.crm_leads add column if not exists idade               text;
+alter table public.crm_leads add column if not exists campanha            text;
+
+-- crm_outbox: coluna updated_at
+alter table public.crm_outbox add column if not exists updated_at timestamptz not null default now();
+
+-- Unique index para dedup do modulo 08 (ignora se ja existe)
+create unique index if not exists idx_crm_mensagens_dedup_key
+  on public.crm_mensagens(operation, telefone_norm, dedup_key)
+  where dedup_key is not null;
+
+-- Unique index para external_id de mensagens
+create unique index if not exists idx_crm_mensagens_external_id
+  on public.crm_mensagens(external_id)
+  where external_id is not null;
+
+notify pgrst, 'reload schema';
+
 -- ── Verifica o que foi criado ────────────────────────────────────
 select
   table_name,
