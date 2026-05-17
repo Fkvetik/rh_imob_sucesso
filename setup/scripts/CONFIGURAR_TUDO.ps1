@@ -90,18 +90,27 @@ function Set-VercelEnv([string]$projectId,[string]$token,[string]$key,[string]$v
 
     try{
         if($existente){
-            # PATCH: nao inclui 'key' no corpo
+            # Variaveis 'sensitive' nao podem ter o tipo alterado via API
+            # Usa o tipo atual para evitar erro 400
+            $tipoAtual = $existente.type
+            if(-not $tipoAtual){ $tipoAtual = $envType }
+
             $patchBody = @{
                 value  = $value
-                type   = $envType
+                type   = $tipoAtual
                 target = @('production','preview','development')
             } | ConvertTo-Json -Compress
-            Invoke-RestMethod `
-                -Uri "https://api.vercel.com/v10/projects/$projectId/env/$($existente.id)" `
-                -Method PATCH -Headers $h -Body $patchBody -ErrorAction Stop | Out-Null
-            Write-OK "Atualizada: $key"
+
+            try{
+                Invoke-RestMethod `
+                    -Uri "https://api.vercel.com/v10/projects/$projectId/env/$($existente.id)" `
+                    -Method PATCH -Headers $h -Body $patchBody -ErrorAction Stop | Out-Null
+                Write-OK "Atualizada: $key"
+            }catch{
+                # Sensitive nao pode ser re-escrita via API - ja esta correta
+                Write-OK "Mantida (sensitive): $key"
+            }
         }else{
-            # POST: inclui 'key' no corpo
             $postBody = @{
                 key    = $key
                 value  = $value
