@@ -108,8 +108,9 @@ function Set-VercelEnv([string]$projectId,[string]$token,[string]$key,[string]$v
 # ── Redeploy ──────────────────────────────────────────────────
 function Invoke-VercelRedeploy([string]$projectId,[string]$token){
     try{
+        $uriDeps = "https://api.vercel.com/v6/deployments?projectId=" + $projectId + "&limit=1"
         $deps = Invoke-RestMethod `
-            -Uri "https://api.vercel.com/v6/deployments?projectId=$projectId&limit=1" `
+            -Uri $uriDeps `
             -Headers @{ Authorization="Bearer $token" } -ErrorAction Stop
         $last = $deps.deployments[0]
         if(-not $last){ Write-WARN "Nenhum deploy anterior encontrado."; return }
