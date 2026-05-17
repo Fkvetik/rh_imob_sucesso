@@ -108,7 +108,7 @@ function Set-VercelEnv([string]$projectId,[string]$token,[string]$key,[string]$v
 # ── Redeploy ──────────────────────────────────────────────────
 function Invoke-VercelRedeploy([string]$projectId,[string]$token){
     try{
-        $uriDeps = "https://api.vercel.com/v6/deployments?projectId=" + $projectId + "&limit=1"
+        $uriDeps = "https://api.vercel.com/v6/deployments?projectId=" + $projectId + [char]38 + "limit=1"
         $deps = Invoke-RestMethod `
             -Uri $uriDeps `
             -Headers @{ Authorization="Bearer $token" } -ErrorAction Stop

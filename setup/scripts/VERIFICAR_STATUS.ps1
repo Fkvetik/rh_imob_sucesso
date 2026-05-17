@@ -54,7 +54,7 @@ Write-HEAD "Supabase"
 if($SB_URL -and $SB_KEY){
     try{
         $h = @{ apikey=$SB_KEY; Authorization="Bearer $SB_KEY" }
-        $uriSb = $SB_URL + "/rest/v1/crm_operacoes?select=operation_key,ativo" + "&limit=10"
+        $uriSb = $SB_URL + "/rest/v1/crm_operacoes?select=operation_key,ativo" + [char]38 + "limit=10"
         $r = Invoke-RestMethod `
             -Uri $uriSb `
             -Headers $h -ErrorAction Stop
