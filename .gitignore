@@ -6,3 +6,23 @@ npm-debug.log*
 
 # Credenciais locais — nunca commitar
 setup/MINHAS_CONFIGURACOES.ini
+
+# Scripts de configuração local (manter localmente)
+*.cmd
+*.bat
+*.ps1
+ARQUIVOS_ATUALIZAR/
+LEIA*.txt
+ALTERACOES*.txt
+ANOTACOES*.txt
+higienizar_github_rhimob.ps1
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
