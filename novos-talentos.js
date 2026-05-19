@@ -588,6 +588,119 @@
     return opt;
   }
 
+  function stripAccents(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function optionKey(value) {
+    return stripAccents(value)
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  const UF_SET = new Set([
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
+    'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC',
+    'SP', 'SE', 'TO'
+  ]);
+
+  function cidadePareceValida(cidade, uf) {
+    const c = normalize(cidade);
+    const u = normalize(uf).toUpperCase();
+    if (!c || !u || !UF_SET.has(u)) return false;
+    if (c.length < 2 || c.length > 45) return false;
+    if (/[0-9@;]/.test(c)) return false;
+
+    const key = optionKey(c);
+    const invalidTerms = [
+      'dados pessoais', 'mapeamento', 'processo', 'experiencia', 'ferramenta',
+      'marketing', 'public', 'manutencao', 'executando', 'cliente',
+      'atendimento', 'analista', 'professor', 'estoquista'
+    ];
+
+    return !invalidTerms.some((term) => key.includes(term));
+  }
+
+  function parseCidadeOption(row) {
+    const rawValor = normalize(row?.valor ?? row?.value ?? '');
+    const rawLabel = normalize(row?.label ?? row?.nome ?? row?.cidade ?? rawValor);
+    const total = Number(row?.total ?? row?.qtd ?? row?.quantidade ?? 0) || 0;
+
+    let cidade = normalize(row?.cidade || '');
+    let uf = normalize(row?.estado_uf || row?.uf || '').toUpperCase();
+
+    if ((!cidade || !uf) && rawValor.includes('||')) {
+      const parts = rawValor.split('||');
+      cidade = normalize(parts[0] || cidade);
+      uf = normalize(parts[1] || uf).toUpperCase();
+    }
+
+    if ((!cidade || !uf) && rawLabel.includes('/')) {
+      const parts = rawLabel.split('/');
+      cidade = normalize(parts[0] || cidade);
+      uf = normalize(parts[parts.length - 1] || uf).toUpperCase();
+    }
+
+    cidade = cidade.replace(/\s*[-/]\s*[A-Za-z]{2}\s*$/, '').replace(/\s+/g, ' ').trim();
+
+    if (!cidadePareceValida(cidade, uf)) return null;
+
+    const cidadeDisplay = displayText(cidade);
+    const key = `${optionKey(cidadeDisplay)}||${uf}`;
+
+    return {
+      key,
+      valor: `${cidadeDisplay}||${uf}`,
+      label: `${cidadeDisplay}/${uf}`,
+      total
+    };
+  }
+
+  function dedupeOptionRows(rows, tipo = '') {
+    const map = new Map();
+
+    (rows || []).forEach((row) => {
+      let item;
+
+      if (tipo === 'cidade') {
+        item = parseCidadeOption(row);
+        if (!item) return;
+      } else {
+        const valor = normalize(row?.valor ?? row?.value ?? '');
+        const label = normalize(row?.label ?? row?.nome ?? valor);
+        if (!valor || !label) return;
+
+        item = {
+          key: `${optionKey(valor)}||${optionKey(label)}`,
+          valor,
+          label,
+          total: Number(row?.total ?? row?.qtd ?? row?.quantidade ?? 0) || 0
+        };
+      }
+
+      const current = map.get(item.key);
+      if (!current) {
+        map.set(item.key, item);
+        return;
+      }
+
+      // Mantém a maior contagem quando o mesmo filtro vem duplicado de RPC/cache/fallback.
+      // Somar aqui dobraria números quando o HTML recebe duas fontes para a mesma cidade.
+      current.total = Math.max(Number(current.total || 0), Number(item.total || 0));
+      if (String(item.label || '').length < String(current.label || '').length) current.label = item.label;
+      if (String(item.valor || '').length < String(current.valor || '').length) current.valor = item.valor;
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      const byTotal = Number(b.total || 0) - Number(a.total || 0);
+      if (byTotal) return byTotal;
+      return String(a.label || '').localeCompare(String(b.label || ''), 'pt-BR');
+    });
+  }
+
   function resetSelect(select, placeholder) {
     if (!select) return;
     select.innerHTML = '';
@@ -610,14 +723,12 @@
     };
   }
 
-  function fillRows(select, rows, placeholder, selectedValue = '') {
+  function fillRows(select, rows, placeholder, selectedValue = '', tipo = '') {
     resetSelect(select, placeholder);
 
-    (rows || [])
-      .filter((row) => normalize(row.valor))
-      .forEach((row) => {
-        select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
-      });
+    dedupeOptionRows(rows, tipo).forEach((row) => {
+      select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
+    });
 
     if (selectedValue && [...select.options].some((o) => o.value === selectedValue)) {
       select.value = selectedValue;
@@ -656,7 +767,7 @@
         p_termo: state.filters.termo || null
       });
 
-      fillRows(select, rows, placeholder, previous);
+      fillRows(select, rows, placeholder, previous, tipo);
       return;
     } catch (err) {
       console.warn(`[NT] fallback filtro ${tipo}:`, err);
@@ -664,7 +775,7 @@
 
     // Fallback sem RPC: evita tela quebrada se SQL ainda estiver em cache.
     const fallbackRows = await loadOptionsFallback(tipo);
-    fillRows(select, fallbackRows, placeholder, previous);
+    fillRows(select, fallbackRows, placeholder, previous, tipo);
   }
 
   async function loadOptionsFallback(tipo) {
