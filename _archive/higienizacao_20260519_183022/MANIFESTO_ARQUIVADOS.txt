@@ -1,0 +1,11 @@
+﻿C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\ALTERACOES_NOVOS_TALENTOS_FILTRO_CIDADES.txt -> _archive\higienizacao_20260519_183022\ALTERACOES_NOVOS_TALENTOS_FILTRO_CIDADES.txt
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\ANOTACOES_ATUALIZACAO_GITHUB.txt -> _archive\higienizacao_20260519_183022\ANOTACOES_ATUALIZACAO_GITHUB.txt
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\APLICAR_VISUAL_V16_EM_PASTA_EXISTENTE.cmd -> _archive\higienizacao_20260519_183022\APLICAR_VISUAL_V16_EM_PASTA_EXISTENTE.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\ARQUIVOS_ATUALIZAR -> _archive\higienizacao_20260519_183022\ARQUIVOS_ATUALIZAR
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\ATUALIZAR_COMPARTILHAMENTO_DIRETO_VAGAS.cmd -> _archive\higienizacao_20260519_183022\ATUALIZAR_COMPARTILHAMENTO_DIRETO_VAGAS.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\COPIAR_08_APPS_SCRIPT.cmd -> _archive\higienizacao_20260519_183022\COPIAR_08_APPS_SCRIPT.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\COPIAR_09_APPS_SCRIPT.cmd -> _archive\higienizacao_20260519_183022\COPIAR_09_APPS_SCRIPT.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\COPIAR_10_APPS_SCRIPT_OUTBOX_OPERADOR.cmd -> _archive\higienizacao_20260519_183022\COPIAR_10_APPS_SCRIPT_OUTBOX_OPERADOR.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\COPIAR_SQL_DEDUP.cmd -> _archive\higienizacao_20260519_183022\COPIAR_SQL_DEDUP.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\COPIAR_SQL_LEMBRETES.cmd -> _archive\higienizacao_20260519_183022\COPIAR_SQL_LEMBRETES.cmd
+C:\Users\Fernando\Documents\GitHub\rh_imob_sucesso\COPIAR_SQL_V15_RAPIDAS_DIRECIONAMENTO.cmd -> _archive\higienizacao_20260519_183022\COPIAR_SQL_V15_RAPIDAS_DIRECIONAMENTO.cmd
