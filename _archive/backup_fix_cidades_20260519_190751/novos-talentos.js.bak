@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   'use strict';
 
   // RH IMOB • Novos Talentos v16
@@ -735,48 +735,6 @@
     }
   }
 
-
-  function dedupeCitySelect() {
-    const select = $('#cidadeSelect');
-    if (!select || select.options.length < 2) return;
-
-    const seen = new Set();
-    let hasDup = false;
-    Array.from(select.options).forEach((opt) => {
-      if (!opt.value) return;
-      const k = optionKey(opt.value);
-      if (seen.has(k)) { hasDup = true; } else { seen.add(k); }
-    });
-    if (!hasDup) return;
-
-    const currentValue = select.value;
-    const map = new Map();
-    const order = [];
-    Array.from(select.options).forEach((opt) => {
-      if (!opt.value) return;
-      const k = optionKey(opt.value);
-      if (!map.has(k)) {
-        order.push(k);
-        map.set(k, { value: opt.value, text: opt.textContent });
-      }
-    });
-
-    const placeholder = select.options[0].cloneNode(true);
-    select.innerHTML = '';
-    select.appendChild(placeholder);
-    order.forEach((k) => {
-      const item = map.get(k);
-      const opt = document.createElement('option');
-      opt.value = item.value;
-      opt.textContent = item.text;
-      select.appendChild(opt);
-    });
-
-    if (currentValue && [...select.options].some((o) => o.value === currentValue)) {
-      select.value = currentValue;
-    }
-  }
-
   async function loadOptionsForType(tipo, preserveValue = true) {
     const map = {
       cidade: ['cidadeSelect', 'Todas as cidades'],
@@ -918,7 +876,6 @@
         'cargo',
         'metro'
       ], preserve);
-      dedupeCitySelect();
     } catch (err) {
       console.error('[NT] filtros:', err);
       status(friendlyError(err));
