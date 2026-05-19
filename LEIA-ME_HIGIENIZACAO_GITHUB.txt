@@ -1,0 +1,54 @@
+# RH IMOB - Higienização segura do GitHub via CMD
+
+## Objetivo
+
+Organizar o repositório `Fkvetik/rh_imob_sucesso` sem apagar arquivos diretamente.
+
+O script:
+- cria diagnóstico;
+- cria branch de backup;
+- move arquivos antigos/patches para `_archive`;
+- gera manifesto do que foi movido;
+- faz commit e push quando você confirmar.
+
+## Como usar
+
+1. Baixe este ZIP.
+2. Extraia os arquivos.
+3. Copie `01_HIGIENIZAR_GITHUB_RHIMOB.cmd` e `higienizar_github_rhimob.ps1` para dentro da pasta clonada do repositório `rh_imob_sucesso`.
+4. Dê duplo clique em `01_HIGIENIZAR_GITHUB_RHIMOB.cmd`.
+5. Siga o menu:
+
+- Opção 1: diagnóstico.
+- Opção 2: cria branch de backup.
+- Opção 3: move arquivos antigos para `_archive`.
+- Opção 4: commit + push.
+- Opção 5: sair.
+
+## Ordem recomendada
+
+Execute nesta ordem:
+
+1. Opção 1
+2. Opção 2
+3. Opção 3
+4. Opção 4
+
+## Segurança
+
+O script não apaga arquivos. Ele move para `_archive`.
+
+Ele também faz uma busca simples por termos sensíveis como:
+- service_role
+- SUPABASE_SERVICE_ROLE_KEY
+- ZAPI_TOKEN
+- CLIENT_TOKEN
+- API_KEY
+- SECRET
+- TOKEN
+- credentials
+- credenciais
+
+Se encontrar algo, ele cria `RELATORIO_SEGURANCA_GIT.txt`.
+
+Não envie chaves, tokens ou senhas em conversas. Se encontrar chave real no GitHub, remova do arquivo e troque a chave no serviço original.
