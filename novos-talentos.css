@@ -988,6 +988,61 @@ input:focus, textarea:focus, select:focus {
   font-size: 13px;
 }
 
+.nt-phrase-preview {
+  background: #f0faf6;
+  border: 1px solid rgba(31,185,120,.3);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #0d5c3e;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.nt-phrase-preview::before {
+  content: 'Prévia da mensagem';
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+  color: #0d8755;
+}
+
+.nt-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.nt-trend.up   { color: #0d8755; background: rgba(31,185,120,.14); }
+.nt-trend.down { color: #a42222; background: #fff0f0; }
+.nt-trend.neutral { color: var(--muted); background: rgba(43,18,77,.07); }
+
+.nt-admin-head-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.nt-user-filter select {
+  border: 1px solid rgba(43,18,77,.14);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--purple-950, #2b124d);
+  background: #fff;
+  cursor: pointer;
+}
+
 .nt-nowrap {
   white-space: nowrap;
 }

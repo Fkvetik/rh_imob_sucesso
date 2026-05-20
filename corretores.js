@@ -639,7 +639,77 @@
     el.className = `admin-alert ${type}`.trim();
   }
 
-  function renderAdminUsers(users = []) {
+  function applyTrend(elId, current, previous) {
+    const el = $('#' + elId);
+    if (!el) return;
+    if (!previous || previous === 0) { el.hidden = true; return; }
+    const pct = Math.round(((current - previous) / previous) * 100);
+    el.hidden = false;
+    if (Math.abs(pct) < 3) { el.className = 'trend neutral'; el.textContent = '→ estável'; }
+    else if (pct > 0) { el.className = 'trend up'; el.textContent = `↑ ${pct}%`; }
+    else { el.className = 'trend down'; el.textContent = `↓ ${Math.abs(pct)}%`; }
+  }
+
+  function updatePhrasePreview() {
+    const text = ($('#phraseText')?.value || '').trim();
+    const preview = $('#ntPhrasePreview');
+    if (!preview) return;
+    if (!text) { preview.hidden = true; return; }
+    const nome = state.profile?.nome || 'Ana Silva';
+    const result = text
+      .replace(/\{nome\}/gi, nome)
+      .replace(/\{primeiro_nome\}/gi, nome.split(' ')[0])
+      .replace(/\{Usuário\}/g, state.profile?.nome || 'Paulo')
+      .replace(/\{empresa\}/gi, 'RH IMOB')
+      .replace(/\{cidade\}/gi, 'Campinas');
+    preview.hidden = false;
+    preview.textContent = result;
+  }
+
+  function exportAdminCSV() {
+    const users = state.adminUsers || [];
+    const report = state.adminReport || [];
+    const recent = state.adminRecent || [];
+    if (!users.length && !recent.length) return setAdminAlert('Sem dados para exportar. Atualize o relatório primeiro.', 'warn');
+    const sep = ';';
+    const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    let csv = 'OPERADORES DO PLANO\n';
+    csv += ['Nome', 'E-mail', 'Perfil', 'Status', 'Total'].map(q).join(sep) + '\n';
+    users.forEach((u) => {
+      csv += [u.nome, u.email, u.perfil, u.status, u.consumidos_total || 0].map(q).join(sep) + '\n';
+    });
+    if (report.length) {
+      csv += '\nCONSUMO POR OPERADOR\n';
+      csv += ['Operador', 'Hoje', '7 dias', 'Total'].map(q).join(sep) + '\n';
+      report.forEach((r) => {
+        csv += [r.nome || r.email, r.consumidos_hoje || 0, r.consumidos_7_dias || 0, r.consumidos_total || 0].map(q).join(sep) + '\n';
+      });
+    }
+    if (recent.length) {
+      csv += '\nÚLTIMOS CONTATOS LIBERADOS\n';
+      csv += ['Data/hora', 'Operador', 'Lead', 'Cidade', 'Perfil'].map(q).join(sep) + '\n';
+      recent.forEach((r) => {
+        csv += [formatDateTimeBR(r.data_consumo), r.operador || r.usuario_email || '',
+          r.nome_mascarado || r.lead_key || '', r.cidade || '', r.cargo || ''].map(q).join(sep) + '\n';
+      });
+    }
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio_corretores_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function filterAdminUsers() {
+    const val = ($('#usersFilterStatus')?.value || '').toUpperCase();
+    const filtered = val ? (state.adminUsers || []).filter((u) => String(u.status || '').toUpperCase() === val) : (state.adminUsers || []);
+    renderAdminUsers(filtered, true);
+  }
+
+  function renderAdminUsers(users = [], skipStore = false) {
+    if (!skipStore) state.adminUsers = users;
     const tbody = $('#adminUsersTable');
     if (!tbody) return;
     if (!users.length) {
@@ -730,9 +800,24 @@
       const alertType = conta.aviso_consumo ? statusTypeFromSaldo(conta.leads_disponiveis) : 'success';
       setAdminAlert(alertMsg, alertType);
 
+      state.adminReport = consumo;
+      state.adminRecent = ultimos;
       renderAdminUsers(operadores);
       renderAdminReport(consumo);
       renderAdminRecent(ultimos);
+
+      const consumed = conta.leads_consumidos || 0;
+      const total = consumed + (conta.leads_disponiveis || 0);
+      if (total > 0) {
+        const pct = Math.round((consumed / total) * 100);
+        const el = $('#adminLeadsTrend');
+        if (el) {
+          el.hidden = false;
+          el.className = pct > 80 ? 'trend down' : pct > 50 ? 'trend neutral' : 'trend up';
+          el.textContent = `${pct}% usado`;
+        }
+      }
+
       await loadAdminPhrases({ silent: true });
     } catch (e) {
       console.error(e);
@@ -917,7 +1002,10 @@
 
     $('#maisBtn').addEventListener('click', () => search({ append: true }));
     $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
+    $('#exportCsvBtn')?.addEventListener('click', exportAdminCSV);
     $('#clonePhrasesBtn')?.addEventListener('click', clonePhrases);
+    $('#usersFilterStatus')?.addEventListener('change', filterAdminUsers);
+    $('#phraseText')?.addEventListener('input', updatePhrasePreview);
     $('#savePhraseBtn')?.addEventListener('click', savePhrase);
     $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
   }

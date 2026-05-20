@@ -1327,7 +1327,87 @@
   }
 
 
-  function renderAdminUsers(users = []) {
+  function applyTrend(elId, current, previous) {
+    const el = $('#' + elId);
+    if (!el) return;
+    if (!previous || previous === 0) { el.hidden = true; return; }
+    const pct = Math.round(((current - previous) / previous) * 100);
+    el.hidden = false;
+    if (Math.abs(pct) < 3) { el.className = 'nt-trend neutral'; el.textContent = '→ estável'; }
+    else if (pct > 0) { el.className = 'nt-trend up'; el.textContent = `↑ ${pct}%`; }
+    else { el.className = 'nt-trend down'; el.textContent = `↓ ${Math.abs(pct)}%`; }
+  }
+
+  function updatePhrasePreview() {
+    const text = ($('#phraseText')?.value || '').trim();
+    const preview = $('#ntPhrasePreview');
+    if (!preview) return;
+    if (!text) { preview.hidden = true; return; }
+    const nome = state.context?.primeiro_nome || 'Maria';
+    const result = text
+      .replace(/\{saudacao_completa\}/gi, 'Bom dia')
+      .replace(/\{primeiro_nome\}/gi, nome)
+      .replace(/\{nome\}/gi, nome)
+      .replace(/\{operador\}/gi, state.context?.nome || 'João')
+      .replace(/\{empresa\}/gi, state.context?.nome_conta || 'RH IMOB')
+      .replace(/\{cidade\}/gi, 'São Paulo');
+    preview.hidden = false;
+    preview.textContent = result;
+  }
+
+  function exportAdminCSV() {
+    const users = state.adminUsers || [];
+    const recent = state.adminRecent || [];
+    if (!users.length && !recent.length) return setAdminAlert('Sem dados para exportar. Atualize o painel primeiro.', 'warn');
+    const sep = ';';
+    const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    let csv = 'RELATÓRIO DE OPERADORES\n';
+    csv += ['Nome', 'E-mail', 'Perfil', 'Status', 'Hoje', '7 dias', '15 dias', 'Mês', 'Total'].map(q).join(sep) + '\n';
+    users.forEach((u) => {
+      csv += [u.nome, u.email_login || u.email, u.perfil, u.status,
+        u.consumidos_hoje || 0, u.consumidos_7_dias || 0, u.consumidos_15_dias || 0,
+        u.consumidos_30_dias || 0, u.consumidos_total || 0].map(q).join(sep) + '\n';
+    });
+    if (recent.length) {
+      csv += '\nÚLTIMAS LIBERAÇÕES\n';
+      csv += ['Data/hora', 'Operador', 'Talento', 'Cidade', 'Perfil'].map(q).join(sep) + '\n';
+      recent.forEach((r) => {
+        csv += [formatDateTimeBR(r.created_at || r.data_consumo),
+          r.operador_nome || r.operador || '', r.nome_mascarado || r.primeiro_nome || '',
+          [r.cidade, r.estado_uf].filter(Boolean).join('/'), r.cargo || ''].map(q).join(sep) + '\n';
+      });
+    }
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio_nt_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function filterAdminUsers() {
+    const val = ($('#usersFilterStatus')?.value || '').toUpperCase();
+    const filtered = val ? (state.adminUsers || []).filter((u) => String(u.status || '').toUpperCase() === val) : (state.adminUsers || []);
+    renderAdminUsers(filtered, true);
+  }
+
+  async function clonePhrasesNT() {
+    if (!confirm('Personalizar frases para este plano? As frases padrão serão copiadas para edição deste cliente.')) return;
+    try {
+      setAdminAlert('Clonando frases padrão...', 'info');
+      const res = await rpc('nt_admin_clonar_frases_v15', {});
+      await loadAdminPhrases();
+      await loadFrases();
+      setAdminAlert(`Frases personalizadas. Clonadas: ${res?.clonadas ?? 0}.`, 'success');
+    } catch (err) {
+      console.error('[NT] clonar frases:', err);
+      setAdminAlert('Não foi possível clonar frases. Verifique se nt_admin_clonar_frases_v15 existe no Supabase.', 'error');
+    }
+  }
+
+  function renderAdminUsers(users = [], skipStore = false) {
+    if (!skipStore) state.adminUsers = users;
     const tbody = $('#adminUsersTable');
     if (!tbody) return;
 
@@ -1442,6 +1522,8 @@
           ? 'Este plano possui frases personalizadas.'
           : 'Este plano está usando frases padrão. Ao salvar, a frase fica personalizada para esta conta.';
       }
+      const cloneBtn = $('#clonePhrasesBtn');
+      if (cloneBtn) cloneBtn.hidden = own;
     } catch (err) {
       console.error('[NT] frases admin:', err);
       if (!silent) setAdminAlert('Não foi possível carregar frases do plano.', 'error');
@@ -1490,8 +1572,25 @@
       setText('adminUsersCount', `${formatNumber(operadores.length)} usuário(s)`);
       setText('adminRecentCount', `${formatNumber(ultimos.length)} registro(s) recentes`);
 
+      state.adminRecent = ultimos;
       renderAdminUsers(operadores);
       renderAdminRecent(ultimos);
+
+      const mes = conta.consumidos_30_dias || 0;
+      const quinzena = conta.consumidos_15_dias || 0;
+      applyTrend('adminMesTrend', quinzena, Math.max(0, mes - quinzena));
+      const consumed = conta.consumidos || 0;
+      const total = consumed + (conta.saldo || 0);
+      if (total > 0) {
+        const pct = Math.round((consumed / total) * 100);
+        const el = $('#adminLeadsTrend');
+        if (el) {
+          el.hidden = false;
+          el.className = pct > 80 ? 'nt-trend down' : pct > 50 ? 'nt-trend neutral' : 'nt-trend up';
+          el.textContent = `${pct}% usado`;
+        }
+      }
+
       await loadAdminPhrases({ silent: true });
 
       setAdminAlert('Painel atualizado com sucesso.', 'success');
@@ -1761,6 +1860,10 @@
     });
 
     $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
+    $('#exportCsvBtn')?.addEventListener('click', exportAdminCSV);
+    $('#clonePhrasesBtn')?.addEventListener('click', clonePhrasesNT);
+    $('#usersFilterStatus')?.addEventListener('change', filterAdminUsers);
+    $('#phraseText')?.addEventListener('input', updatePhrasePreview);
     $('#savePhraseBtn')?.addEventListener('click', savePhrase);
     $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
 
