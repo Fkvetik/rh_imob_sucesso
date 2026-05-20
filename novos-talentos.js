@@ -960,6 +960,32 @@
     if (el) el.textContent = message;
   }
 
+  function renderSkeletons(count) {
+    const grid = $('#cardsGrid');
+    if (!grid) return;
+    const n = Math.min(count || PAGE_SIZE, 6);
+    grid.innerHTML = Array.from({ length: n }, () => `
+      <article class="nt-card nt-card--skeleton" aria-hidden="true">
+        <div class="nt-card__top">
+          <div style="flex:1;display:grid;gap:8px">
+            <span class="nt-skeleton" style="height:20px;width:58%"></span>
+            <span class="nt-skeleton" style="height:14px;width:36%"></span>
+          </div>
+          <span class="nt-skeleton" style="height:26px;width:58px;border-radius:999px"></span>
+        </div>
+        <div style="display:grid;gap:8px">
+          <span class="nt-skeleton" style="height:34px"></span>
+          <span class="nt-skeleton" style="height:34px"></span>
+          <span class="nt-skeleton" style="height:34px"></span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span class="nt-skeleton" style="height:26px;width:130px;border-radius:999px"></span>
+          <span class="nt-skeleton" style="height:26px;width:108px;border-radius:999px"></span>
+        </div>
+        <span class="nt-skeleton" style="height:44px;border-radius:999px;margin-top:auto"></span>
+      </article>
+    `).join('');
+  }
   function renderCards(rows, append = false) {
     const grid = $('#cardsGrid');
     if (!grid) return;
@@ -1028,8 +1054,7 @@
     if (reset) {
       state.offset = 0;
       state.total = 0;
-      const grid = $('#cardsGrid');
-      if (grid) grid.innerHTML = '';
+      renderSkeletons();
     }
 
     const btn = $('#buscarBtn');

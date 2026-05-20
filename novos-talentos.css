@@ -1,4 +1,4 @@
-
+﻿
 /* HOTFIX NT v1.1/v1.2: força elementos com hidden a sumirem mesmo quando classes têm display:flex/grid */
 [hidden] {
   display: none !important;
@@ -690,72 +690,6 @@ input:focus, textarea:focus, select:focus {
 /* HOTFIX NT v1.2 */
 .nt-login-warning[hidden], .nt-workspace[hidden], .nt-session[hidden], #openLoginBtn[hidden] { display: none !important; }
 
-/* V5 — filtros completos Novos Talentos */
-.nt-filters--talentos {
-  grid-template-columns: repeat(4, minmax(170px, 1fr));
-}
-.nt-filter-actions {
-  display: flex;
-  align-items: end;
-  gap: 10px;
-}
-.nt-filter-actions .nt-btn {
-  min-width: 110px;
-}
-.nt-card__meta .nt-region-line {
-  background: #fff7ef;
-  color: #5b496f;
-}
-@media (max-width: 1120px) {
-  .nt-filters--talentos {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .nt-filter-actions {
-    grid-column: 1 / -1;
-  }
-}
-@media (max-width: 680px) {
-  .nt-filters--talentos {
-    grid-template-columns: 1fr;
-  }
-  .nt-filter-actions {
-    display: grid;
-  }
-}
-
-
-
-/* RH IMOB NT v6 — filtros completos */
-.nt-filters--talentos {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-.nt-filter-actions {
-  display: flex;
-  gap: 10px;
-  align-items: end;
-}
-.nt-filters--talentos .nt-filter-actions .nt-btn {
-  min-width: 108px;
-}
-@media (max-width: 980px) {
-  .nt-filters--talentos {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .nt-filter-actions {
-    grid-column: 1 / -1;
-  }
-}
-@media (max-width: 680px) {
-  .nt-filters--talentos {
-    grid-template-columns: 1fr;
-  }
-  .nt-filter-actions {
-    display: grid;
-  }
-}
-
-
-
 /* RH IMOB NT v8 — filtros com leitura precisa */
 .nt-filters--talentos {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -786,19 +720,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 
-/* RH IMOB NT v9 — padrão Corretores */
-.nt-filter-actions{display:flex;gap:10px;align-items:end;}
-@media(max-width:680px){.nt-filter-actions{display:grid;}}
-
-
-
-/* RH IMOB NT v10 — estabilidade filtros/detalhes */
-.nt-filter-actions{display:flex;gap:10px;align-items:end;}
-.nt-form-message.success{color:#0d8755;}
 .nt-empty strong{color:var(--purple-900);}
-@media(max-width:680px){.nt-filter-actions{display:grid;}}
-
-
 
 /* RH IMOB NT v12 — metrô e distância */
 .nt-card__meta span:nth-child(3) {
@@ -1137,4 +1059,95 @@ input:focus, textarea:focus, select:focus {
 
 .nt-card__signals .nt-signal.muted {
   opacity: .72;
+}
+
+
+/* === MELHORIAS VISUAIS v17 === */
+
+/* Skeleton loading */
+@keyframes nt-shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position:  800px 0; }
+}
+.nt-skeleton {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #ede5ff 25%, #ddd0f8 50%, #ede5ff 75%);
+  background-size: 800px 100%;
+  animation: nt-shimmer 1.4s ease-in-out infinite;
+}
+.nt-card--skeleton {
+  pointer-events: none;
+  user-select: none;
+}
+.nt-card--skeleton .nt-card__top {
+  align-items: flex-start;
+}
+
+/* Hover elevation nos cards */
+.nt-card {
+  transition: transform .22s cubic-bezier(.2,.8,.3,1), box-shadow .22s cubic-bezier(.2,.8,.3,1);
+}
+.nt-card:hover:not(.nt-card--skeleton) {
+  transform: translateY(-4px);
+  box-shadow: 0 32px 72px rgba(43,18,77,.18);
+}
+
+/* Botão fechar modal — SVG, sem font-size */
+.nt-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--purple-800);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+  transition: background .18s ease, color .18s ease, transform .22s ease, border-color .18s ease;
+}
+.nt-modal__close:hover {
+  background: var(--purple-50);
+  border-color: rgba(109,45,242,.3);
+  color: var(--purple-700);
+  transform: rotate(90deg);
+}
+
+/* Status row — indicador de loading */
+.nt-status-row {
+  font-size: 13px;
+}
+
+/* Empty state melhorado */
+.nt-empty {
+  text-align: center;
+  padding: 48px 30px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* Botão desabilitado */
+.nt-btn:disabled,
+.nt-btn[disabled] {
+  opacity: .6;
+  cursor: wait;
+  pointer-events: none;
+}
+
+/* Transição suave nos inputs/selects */
+input, textarea, select {
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+/* Pill hover no card */
+.nt-card .nt-pill {
+  transition: background .18s ease;
+}
+.nt-card:hover .nt-pill {
+  background: var(--purple-100);
 }
