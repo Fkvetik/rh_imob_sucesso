@@ -422,6 +422,38 @@
     });
   }
 
+  function formatTimeAgo(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '-';
+    const diffMs = Date.now() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffH = Math.floor(diffMin / 60);
+    const diffD = Math.floor(diffH / 24);
+    if (diffMin < 2) return 'agora';
+    if (diffMin < 60) return `há ${diffMin}min`;
+    if (diffH < 24) return `há ${diffH}h`;
+    if (diffD === 1) return 'ontem';
+    if (diffD < 30) return `há ${diffD} dias`;
+    const diffM = Math.floor(diffD / 30);
+    if (diffM < 12) return `há ${diffM} ${diffM === 1 ? 'mês' : 'meses'}`;
+    return 'há mais de 1 ano';
+  }
+
+  function timeAgoClass(dateStr) {
+    if (!dateStr) return 'stale';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return 'stale';
+    const diffD = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (diffD <= 7) return 'fresh';
+    if (diffD <= 30) return 'warn';
+    return 'stale';
+  }
+
+  function recordKey(r) {
+    return `${r.created_at || r.data_consumo || ''}::${r.operador_nome || r.operador || ''}::${r.nome_mascarado || r.talento_key || ''}`;
+  }
+
   function normalizeRpcList(data) {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -1353,6 +1385,8 @@
       .replace(/\{cidade\}/gi, 'São Paulo');
     preview.hidden = false;
     preview.textContent = result;
+    const counter = $('#phraseCharCount');
+    if (counter) counter.textContent = text.length;
   }
 
   function exportAdminCSV() {
@@ -1392,6 +1426,50 @@
     renderAdminUsers(filtered, true);
   }
 
+  function filterRecentTable() {
+    const opFilter = normalize($('#recentFilterOp')?.value || '').toLowerCase();
+    const de = $('#recentFilterDe')?.value;
+    const ate = $('#recentFilterAte')?.value;
+    let rows = state.adminRecent || [];
+    if (opFilter) {
+      rows = rows.filter((r) => {
+        const op = String(r.operador_nome || r.operador || '').toLowerCase();
+        return op.includes(opFilter);
+      });
+    }
+    if (de) {
+      const deDate = new Date(de);
+      rows = rows.filter((r) => new Date(r.created_at || r.data_consumo) >= deDate);
+    }
+    if (ate) {
+      const ateDate = new Date(ate + 'T23:59:59');
+      rows = rows.filter((r) => new Date(r.created_at || r.data_consumo) <= ateDate);
+    }
+    renderAdminRecent(rows);
+    const count = $('#adminRecentCount');
+    if (count) count.textContent = `${rows.length} registro(s) filtrado(s)`;
+  }
+
+  async function marcarConvertido(key) {
+    if (!key || !confirm('Marcar este contato como convertido? A ação ficará registrada.')) return;
+    state.convertidos = state.convertidos || new Set();
+    state.convertidos.add(key);
+    renderAdminRecent(state.adminRecent || []);
+    try {
+      const record = (state.adminRecent || []).find((r) => recordKey(r) === key);
+      if (record) {
+        await rpc('nt_admin_marcar_convertido_v15', {
+          p_operador: record.operador_nome || record.operador || '',
+          p_talento: record.nome_mascarado || record.primeiro_nome || record.talento_key || '',
+          p_data: record.created_at || record.data_consumo || ''
+        });
+        setAdminAlert('Conversão registrada no banco com sucesso.', 'success');
+      }
+    } catch (_) {
+      setAdminAlert('Conversão marcada localmente (sessão atual). Para persistir, crie nt_admin_marcar_convertido_v15 no Supabase.', 'warn');
+    }
+  }
+
   async function clonePhrasesNT() {
     if (!confirm('Personalizar frases para este plano? As frases padrão serão copiadas para edição deste cliente.')) return;
     try {
@@ -1412,7 +1490,7 @@
     if (!tbody) return;
 
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="10">Nenhum usuário cadastrado neste plano.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11">Nenhum usuário cadastrado neste plano.</td></tr>';
       return;
     }
 
@@ -1431,6 +1509,7 @@
         <td><strong>${formatNumber(u.consumidos_15_dias || 0)}</strong></td>
         <td><strong>${formatNumber(u.consumidos_30_dias || 0)}</strong></td>
         <td><strong>${formatNumber(u.consumidos_total || 0)}</strong></td>
+        <td class="nt-access-${timeAgoClass(u.ultimo_acesso || u.last_sign_in_at)}">${esc(formatTimeAgo(u.ultimo_acesso || u.last_sign_in_at))}</td>
         <td><button class="nt-mini-action js-user-status" data-user-id="${esc(u.usuario_id)}" data-next-status="${nextStatus}" ${self ? 'disabled title="Você não pode inativar a si mesmo"' : ''}>${ativo ? 'Inativar' : 'Ativar'}</button></td>
       </tr>`;
     }).join('');
@@ -1446,19 +1525,30 @@
 
     const list = (rows || []).slice(0, 30);
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="5">Sem contatos liberados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6">Sem contatos liberados.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = list.map((r) => `
-      <tr>
+    const convertidos = state.convertidos || new Set();
+    tbody.innerHTML = list.map((r) => {
+      const key = recordKey(r);
+      const jaConvertido = convertidos.has(key);
+      return `<tr>
         <td>${esc(formatDateTimeBR(r.created_at || r.data_consumo))}</td>
         <td>${esc(displayText(r.operador_nome || r.operador || 'Operador'))}</td>
         <td>${esc(displayText(r.nome_mascarado || r.primeiro_nome || r.talento_key || '-'))}</td>
         <td>${esc(displayJoin([r.cidade, r.estado_uf], '/'))}</td>
         <td>${esc(displayText(r.cargo || '-'))}</td>
-      </tr>
-    `).join('');
+        <td class="nt-nowrap">${jaConvertido
+          ? '<span class="nt-badge-converted">✓ Convertido</span>'
+          : `<button class="nt-mini-action js-mark-converted" data-key="${esc(key)}">Marcar</button>`
+        }</td>
+      </tr>`;
+    }).join('');
+
+    $$('.js-mark-converted', tbody).forEach((btn) => {
+      btn.addEventListener('click', () => marcarConvertido(btn.dataset.key));
+    });
   }
 
   function renderPhrases(rows = []) {
@@ -1480,11 +1570,22 @@
         <td><span class="nt-status-chip ${ativa ? 'ativo' : 'inativo'}">${esc(f.status || '-')}</span></td>
         <td>${esc(f.escopo || (f.conta_id ? 'CONTA' : 'GLOBAL'))}</td>
         <td class="nt-nowrap">
+          <button class="nt-mini-action js-copy-phrase" data-text="${esc(f.texto || '')}">Copiar</button>
           <button class="nt-mini-action js-edit-phrase" data-id="${esc(id)}">Editar</button>
           <button class="nt-mini-action js-toggle-phrase" data-id="${esc(id)}" data-status="${ativa ? 'INATIVA' : 'ATIVA'}">${ativa ? 'Inativar' : 'Ativar'}</button>
         </td>
       </tr>`;
     }).join('');
+
+    $$('.js-copy-phrase', tbody).forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.text || '';
+        try { await navigator.clipboard.writeText(text); } catch (_) {}
+        const orig = btn.textContent;
+        btn.textContent = 'Copiado!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      });
+    });
 
     $$('.js-edit-phrase', tbody).forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1592,6 +1693,21 @@
       }
 
       await loadAdminPhrases({ silent: true });
+
+      const saldo = conta.saldo || 0;
+      const totalLimit = saldo + (conta.consumidos || 0);
+      const criticoEl = $('#saldoCritico');
+      if (criticoEl) {
+        if (totalLimit > 0 && saldo / totalLimit < 0.2) {
+          const msg = saldo <= 5
+            ? `Restam apenas ${saldo} contato(s) no plano. Risco de interrupção imediata.`
+            : `${saldo} de ${totalLimit} contatos disponíveis (${Math.round(saldo / totalLimit * 100)}% restante).`;
+          $('#saldoCriticoMsg') && ($('#saldoCriticoMsg').textContent = msg);
+          criticoEl.hidden = false;
+        } else {
+          criticoEl.hidden = true;
+        }
+      }
 
       setAdminAlert('Painel atualizado com sucesso.', 'success');
       state.adminLoaded = true;
@@ -1863,7 +1979,23 @@
     $('#exportCsvBtn')?.addEventListener('click', exportAdminCSV);
     $('#clonePhrasesBtn')?.addEventListener('click', clonePhrasesNT);
     $('#usersFilterStatus')?.addEventListener('change', filterAdminUsers);
-    $('#phraseText')?.addEventListener('input', updatePhrasePreview);
+    $('#phraseText')?.addEventListener('input', () => {
+      updatePhrasePreview();
+      const counter = $('#phraseCharCount');
+      if (counter) counter.textContent = ($('#phraseText')?.value || '').length;
+    });
+    ['recentFilterOp', 'recentFilterDe', 'recentFilterAte'].forEach((id) => {
+      $('#' + id)?.addEventListener('input', filterRecentTable);
+    });
+    $('#recentFilterClear')?.addEventListener('click', () => {
+      ['recentFilterOp', 'recentFilterDe', 'recentFilterAte'].forEach((id) => {
+        const el = $('#' + id);
+        if (el) el.value = '';
+      });
+      renderAdminRecent(state.adminRecent || []);
+      const count = $('#adminRecentCount');
+      if (count) count.textContent = `${(state.adminRecent || []).length} registro(s) recentes`;
+    });
     $('#savePhraseBtn')?.addEventListener('click', savePhrase);
     $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
 

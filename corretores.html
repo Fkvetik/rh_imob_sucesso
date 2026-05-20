@@ -102,6 +102,7 @@
         </div>
 
         <div class="admin-alert" id="adminAlert" hidden></div>
+        <div class="saldo-critico" id="saldoCritico" hidden><strong>Saldo crítico</strong> — <span id="saldoCriticoMsg"></span> <a class="saldo-critico-link" href="https://wa.me/5511978725515" target="_blank" rel="noopener">Renovar plano →</a></div>
 
         <div class="admin-cards">
           <article class="admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
@@ -118,8 +119,8 @@
             </div>
             <div class="table-wrap">
               <table class="admin-table">
-                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Total</th><th>Ação</th></tr></thead>
-                <tbody id="adminUsersTable"><tr><td colspan="6">Entre como administrador.</td></tr></tbody>
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Total</th><th>Último acesso</th><th>Ação</th></tr></thead>
+                <tbody id="adminUsersTable"><tr><td colspan="7">Entre como administrador.</td></tr></tbody>
               </table>
             </div>
           </article>
@@ -137,10 +138,16 @@
 
         <article class="admin-box admin-recent">
           <div class="admin-box-head"><h3>Últimos contatos liberados</h3><span id="adminRecentCount">0 registros</span></div>
+          <div class="recent-filters">
+            <input type="text" id="recentFilterOp" placeholder="Filtrar por operador…" aria-label="Filtrar por operador" />
+            <input type="date" id="recentFilterDe" aria-label="De" title="De" />
+            <input type="date" id="recentFilterAte" aria-label="Até" title="Até" />
+            <button type="button" id="recentFilterClear" class="btn btn-ghost">Limpar</button>
+          </div>
           <div class="table-wrap">
             <table class="admin-table">
-              <thead><tr><th>Data/hora</th><th>Operador</th><th>Lead</th><th>Cidade</th><th>Perfil</th></tr></thead>
-              <tbody id="adminRecentTable"><tr><td colspan="5">Sem contatos liberados.</td></tr></tbody>
+              <thead><tr><th>Data/hora</th><th>Operador</th><th>Lead</th><th>Cidade</th><th>Perfil</th><th>Conversão</th></tr></thead>
+              <tbody id="adminRecentTable"><tr><td colspan="6">Sem contatos liberados.</td></tr></tbody>
             </table>
           </div>
         </article>
@@ -158,6 +165,7 @@
             <label>Texto da frase
               <textarea id="phraseText" rows="4" placeholder="Ex.: Olá, {nome}. Aqui é {Usuário}. Vi seu perfil em {cidade} e gostaria de falar com você."></textarea>
             </label>
+            <div class="char-counter"><span id="phraseCharCount">0</span> caracteres</div>
             <div id="ntPhrasePreview" class="phrase-preview" hidden></div>
             <div class="phrase-editor-grid">
               <label>Status

@@ -54,6 +54,16 @@ body.modal-open{overflow:hidden}.auth-mini{display:inline-flex;align-items:cente
 .trend{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:900;padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:middle}
 .trend.up{color:#0d8755;background:rgba(31,185,120,.14)}.trend.down{color:#a42222;background:#fff0f0}.trend.neutral{color:var(--muted);background:rgba(43,18,77,.07)}
 .user-filter select{border:1px solid rgba(43,18,77,.14);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:800;color:var(--p950);background:#fff;cursor:pointer}
+.saldo-critico{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff4e8;border:1px solid #f4b35a;border-radius:18px;padding:12px 18px;margin-bottom:16px;font-size:14px;font-weight:800;color:#7a3d00}
+.saldo-critico-link{margin-left:auto;color:#7a3d00;font-weight:900;text-decoration:underline;white-space:nowrap}
+td.access-fresh{color:#0d8755;font-weight:800}td.access-warn{color:#91510a;font-weight:800}td.access-stale{color:#999;font-weight:700}
+.recent-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(43,18,77,.08);background:#faf8ff}
+.recent-filters input[type="text"],.recent-filters input[type="date"]{border:1px solid rgba(43,18,77,.14);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;color:var(--p950);background:#fff;min-height:34px}
+.recent-filters input[type="text"]{flex:1 1 160px}
+.btn-ghost{background:transparent;border:1px solid rgba(43,18,77,.15);border-radius:10px;padding:6px 12px;font-size:13px;font-weight:800;color:var(--p950);cursor:pointer}
+.btn-ghost:hover{background:rgba(43,18,77,.05)}
+.badge-converted{display:inline-block;background:rgba(31,185,120,.14);color:#0d8755;font-size:12px;font-weight:900;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.char-counter{font-size:12px;color:var(--muted);font-weight:800;text-align:right;margin-top:-6px}
 .phrase-table{min-width:860px}
 .phrase-table td:nth-child(2){max-width:520px;white-space:normal;line-height:1.35}
 .mini-action{border:1px solid var(--line);background:#fff;color:var(--p700);border-radius:999px;min-height:32px;padding:0 10px;font-size:12px;font-weight:950;cursor:pointer;white-space:nowrap;box-shadow:0 6px 16px rgba(43,18,77,.05)}

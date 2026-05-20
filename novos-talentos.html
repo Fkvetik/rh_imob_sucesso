@@ -153,6 +153,10 @@
         </div>
 
         <div class="nt-admin-alert" id="adminAlert" hidden></div>
+        <div class="nt-saldo-critico" id="saldoCritico" hidden>
+          <strong>Saldo crítico</strong> — <span id="saldoCriticoMsg"></span>
+          <a class="nt-saldo-critico-link" href="https://wa.me/5511978725515" target="_blank" rel="noopener">Renovar plano →</a>
+        </div>
 
         <div class="nt-admin-cards">
           <article class="nt-admin-card"><small>Empresa/plano</small><strong id="adminEmpresa">-</strong><span id="adminPlanoStatus">-</span></article>
@@ -189,10 +193,11 @@
                     <th>15 dias</th>
                     <th>Mês</th>
                     <th>Total</th>
+                    <th>Último acesso</th>
                     <th>Ação</th>
                   </tr>
                 </thead>
-                <tbody id="adminUsersTable"><tr><td colspan="10">Entre como master para gerenciar usuários.</td></tr></tbody>
+                <tbody id="adminUsersTable"><tr><td colspan="11">Entre como master para gerenciar usuários.</td></tr></tbody>
               </table>
             </div>
           </article>
@@ -204,10 +209,16 @@
                 <span id="adminRecentCount">0 registros</span>
               </div>
             </div>
+            <div class="nt-recent-filters">
+              <input type="text" id="recentFilterOp" placeholder="Filtrar por operador…" aria-label="Filtrar por operador" />
+              <input type="date" id="recentFilterDe" aria-label="De" title="De" />
+              <input type="date" id="recentFilterAte" aria-label="Até" title="Até" />
+              <button type="button" id="recentFilterClear" class="nt-btn nt-btn-ghost">Limpar</button>
+            </div>
             <div class="nt-table-wrap">
               <table class="nt-admin-table">
-                <thead><tr><th>Data/hora</th><th>Operador</th><th>Talento</th><th>Cidade</th><th>Perfil</th></tr></thead>
-                <tbody id="adminRecentTable"><tr><td colspan="5">Sem contatos liberados.</td></tr></tbody>
+                <thead><tr><th>Data/hora</th><th>Operador</th><th>Talento</th><th>Cidade</th><th>Perfil</th><th>Conversão</th></tr></thead>
+                <tbody id="adminRecentTable"><tr><td colspan="6">Sem contatos liberados.</td></tr></tbody>
               </table>
             </div>
           </article>
@@ -229,6 +240,7 @@
             <label>Texto da frase
               <textarea id="phraseText" rows="4" placeholder="Ex.: {saudacao_completa}, {primeiro_nome}. Aqui é {operador}. Temos uma oportunidade em {cidade} e queria te apresentar."></textarea>
             </label>
+            <div class="nt-char-counter"><span id="phraseCharCount">0</span> caracteres</div>
             <div id="ntPhrasePreview" class="nt-phrase-preview" hidden></div>
 
             <div class="nt-phrase-editor-grid">
