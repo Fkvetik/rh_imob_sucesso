@@ -1144,7 +1144,7 @@
 
     let query = client
       .from('nt_talentos_publicos')
-      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,pretensao_salarial,tags_publicas,ativo,updated_at', { count: 'exact' })
+      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,tags_publicas,ativo,updated_at', { count: 'exact' })
       .eq('produto_codigo', PRODUCT_CODE)
       .eq('ativo', true);
 
