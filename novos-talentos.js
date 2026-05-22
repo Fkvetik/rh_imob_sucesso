@@ -1037,8 +1037,12 @@
       const metro = displayText(metroInfo.label);
 
       const geo = row.tem_geo ? 'Geolocalizado' : 'Localização aproximada';
-      const canal = row.tem_whatsapp ? 'Canal disponível após login' : (row.tem_email ? 'Contato disponível após login' : 'Contato protegido');
+      const isLogged = !!state.session && !!state.context;
+      const canal = isLogged
+        ? (row.tem_whatsapp ? '📱 WhatsApp disponível' : (row.tem_email ? '✉️ E-mail disponível' : 'Contato protegido'))
+        : (row.tem_whatsapp ? 'Canal disponível após login' : (row.tem_email ? 'Contato disponível após login' : 'Contato protegido'));
       const idade = row.faixa_idade || (row.idade_anos ? `${row.idade_anos} anos` : 'Idade não informada');
+      const salario = isLogged && row.pretensao_salarial ? `<span class="nt-signal nt-signal--salary">💰 ${esc(displayText(row.pretensao_salarial))}</span>` : '';
 
       return `
         <article class="nt-card" data-key="${esc(row.talento_key)}">
@@ -1058,8 +1062,8 @@
           ${metroInfo.isNear ? `<div class="nt-metro-card">${esc(displayText(metroInfo.badge))}</div>` : `<div class="nt-metro-card nt-metro-card--none">🚇 ${esc(metro)}</div>`}
 
           <div class="nt-card__signals">
-            <span class="nt-signal">${esc(canal)}</span>
-            <span class="nt-signal muted">${esc(metroInfo.detail || geo)}</span>
+            <span class="nt-signal ${isLogged && row.tem_whatsapp ? 'nt-signal--available' : ''}">${esc(canal)}</span>
+            ${salario || `<span class="nt-signal muted">${esc(metroInfo.detail || geo)}</span>`}
           </div>
 
           <button class="nt-btn nt-btn-primary js-consumir" type="button" data-key="${esc(row.talento_key)}">Ver detalhes</button>

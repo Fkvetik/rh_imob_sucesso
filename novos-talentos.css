@@ -1212,6 +1212,12 @@ td.nt-access-stale { color: #999; font-weight: 700; }
   font-weight: 900;
 }
 
+.nt-signal--available {
+  color: #1a6640;
+  background: rgba(26,102,64,.10);
+  font-weight: 900;
+}
+
 
 /* === MELHORIAS VISUAIS v17 === */
 
