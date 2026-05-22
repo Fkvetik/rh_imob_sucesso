@@ -1199,6 +1199,19 @@ td.nt-access-stale { color: #999; font-weight: 700; }
   opacity: .72;
 }
 
+.nt-metro-card--none {
+  background: rgba(43,18,77,.05);
+  border-color: rgba(43,18,77,.08);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.nt-signal--salary {
+  color: #1a6640;
+  background: rgba(26,102,64,.10);
+  font-weight: 900;
+}
+
 
 /* === MELHORIAS VISUAIS v17 === */
 

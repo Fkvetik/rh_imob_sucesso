@@ -1053,14 +1053,13 @@
           <div class="nt-card__meta">
             <span>📍 ${esc(displayJoin([row.bairro, row.cidade, row.estado_uf]))}</span>
             <span>🧭 ${esc(displayJoin([macro, micro]) || 'Região em classificação')}</span>
-            <span>🚇 ${metro}</span>
           </div>
 
-          ${metroInfo.isNear ? `<div class="nt-metro-card">${esc(displayText(metroInfo.badge))}</div>` : ''}
+          ${metroInfo.isNear ? `<div class="nt-metro-card">${esc(displayText(metroInfo.badge))}</div>` : `<div class="nt-metro-card nt-metro-card--none">🚇 ${esc(metro)}</div>`}
 
           <div class="nt-card__signals">
             <span class="nt-signal">${esc(canal)}</span>
-            <span class="nt-signal ${metroInfo.isNear ? '' : 'muted'}">${esc(metroInfo.detail || geo)}</span>
+            ${row.pretensao_salarial ? `<span class="nt-signal nt-signal--salary">💰 ${esc(displayText(row.pretensao_salarial))}</span>` : `<span class="nt-signal muted">${esc(geo)}</span>`}
           </div>
 
           <button class="nt-btn nt-btn-primary js-consumir" type="button" data-key="${esc(row.talento_key)}">Ver detalhes</button>
@@ -1145,7 +1144,7 @@
 
     let query = client
       .from('nt_talentos_publicos')
-      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,tags_publicas,ativo,updated_at', { count: 'exact' })
+      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,pretensao_salarial,tags_publicas,ativo,updated_at', { count: 'exact' })
       .eq('produto_codigo', PRODUCT_CODE)
       .eq('ativo', true);
 
