@@ -1059,7 +1059,7 @@
 
           <div class="nt-card__signals">
             <span class="nt-signal">${esc(canal)}</span>
-            ${row.pretensao_salarial ? `<span class="nt-signal nt-signal--salary">💰 ${esc(displayText(row.pretensao_salarial))}</span>` : `<span class="nt-signal muted">${esc(geo)}</span>`}
+            <span class="nt-signal muted">${esc(metroInfo.detail || geo)}</span>
           </div>
 
           <button class="nt-btn nt-btn-primary js-consumir" type="button" data-key="${esc(row.talento_key)}">Ver detalhes</button>
