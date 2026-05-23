@@ -918,10 +918,42 @@
 
       await loadAdminPhrases({ silent: true });
       await loadFunilGestorCOR();
+      await carregarFraseAgendamentoCOR();
     } catch (e) {
       console.error(e);
       setAdminAlert('Não foi possível carregar o painel do plano. Detalhe: ' + e.message, 'error');
     }
+  }
+
+  async function carregarFraseAgendamentoCOR() {
+    const box = $('#fraseAgendamentoBox');
+    const ta = $('#fraseAgendamentoText');
+    if (!box || !ta) return;
+    box.hidden = false;
+    const client = getCorSupabaseClient();
+    if (!client || !state.profile?.conta_id) return;
+    const { data } = await client
+      .from('cor_contas')
+      .select('frase_agendamento')
+      .eq('id', state.profile.conta_id)
+      .maybeSingle();
+    if (data?.frase_agendamento) ta.value = data.frase_agendamento;
+  }
+
+  async function salvarFraseAgendamentoCOR() {
+    const ta = $('#fraseAgendamentoText');
+    if (!ta) return;
+    const frase = ta.value.trim();
+    if (!frase) return setAdminAlert('Digite a frase antes de salvar.', 'warn');
+    const client = getCorSupabaseClient();
+    if (!client || !state.profile?.conta_id) return;
+    const { error } = await client
+      .from('cor_contas')
+      .update({ frase_agendamento: frase })
+      .eq('id', state.profile.conta_id);
+    if (error) return setAdminAlert('Erro ao salvar frase: ' + error.message, 'error');
+    state.profile.frase_agendamento = frase;
+    setAdminAlert('Frase de confirmação salva com sucesso.', 'success');
   }
 
   async function alterarStatusOperador(usuarioId, nextStatus) {
@@ -1396,6 +1428,7 @@
     $('#maisBtn').addEventListener('click', () => search({ append: true }));
     $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
     $('#funilRefreshBtn')?.addEventListener('click', () => loadFunilGestorCOR());
+    $('#saveFraseAgendamentoBtn')?.addEventListener('click', salvarFraseAgendamentoCOR);
     $('#exportCsvBtn')?.addEventListener('click', exportAdminCSV);
     $('#clonePhrasesBtn')?.addEventListener('click', clonePhrases);
     $('#usersFilterStatus')?.addEventListener('change', filterAdminUsers);
