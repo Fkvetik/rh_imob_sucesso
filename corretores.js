@@ -1188,12 +1188,17 @@
     const primeiro = nome.split(' ')[0];
     const hr = new Date().getHours();
     const saudacao = hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite';
+    const agendamento = r.agendado_em
+      ? new Date(r.agendado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '';
+    const empresa = state.profile?.nome_empresa || 'RH IMOB';
     const msg = frase
       .replace(/\{saudacao_completa\}/gi, saudacao)
       .replace(/\{primeiro_nome\}/gi, primeiro)
       .replace(/\{nome\}/gi, nome)
       .replace(/\{operador\}/gi, operador)
-      .replace(/\{empresa\}/gi, 'RH IMOB');
+      .replace(/\{empresa\}/gi, empresa)
+      .replace(/\{agendamento\}/gi, agendamento);
     const tel = String(r.telefone_display || '').replace(/\D/g, '');
     if (!tel || tel.length < 5) return '';
     const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;

@@ -1769,12 +1769,16 @@ const canal = isLogged
     const empresa = state.context?.nome_conta || 'RH IMOB';
     const nome = r.nome_display || 'você';
     const primeiro = nome.split(' ')[0];
+    const agendamento = r.agendado_em
+      ? new Date(r.agendado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '';
     const msg = frase
       .replace(/\{saudacao_completa\}/gi, saudacao())
       .replace(/\{primeiro_nome\}/gi, primeiro)
       .replace(/\{nome\}/gi, nome)
       .replace(/\{operador\}/gi, operador)
-      .replace(/\{empresa\}/gi, empresa);
+      .replace(/\{empresa\}/gi, empresa)
+      .replace(/\{agendamento\}/gi, agendamento);
     const tel = String(r.telefone_display || '').replace(/\D/g, '');
     if (!tel || tel.length < 5) return '';
     const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
