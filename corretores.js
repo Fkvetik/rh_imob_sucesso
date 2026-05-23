@@ -1091,13 +1091,14 @@
     const usuario_id = state.session.user?.id;
     const conta_id = state.profile?.conta_id;
     if (!usuario_id || !conta_id) return;
-    await client.from('cor_abordagens').upsert({
+    const { error } = await client.from('cor_abordagens').upsert({
       lead_key: lead.lead_key,
       usuario_id,
       conta_id,
       status: 'ABORDADO',
       updated_at: new Date().toISOString(),
     }, { onConflict: 'lead_key,usuario_id,conta_id', ignoreDuplicates: true });
+    if (error) console.warn('[COR] registrar abordagem:', error);
     if (state.abordadosVisible) loadAbordadosCOR();
   }
 

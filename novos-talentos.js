@@ -1657,16 +1657,18 @@ const canal = isLogged
 
   async function registrarAbordagemNT(talent) {
     const client = getClient();
-    if (!client || !state.context) return;
-    const { usuario_id, conta_id } = state.context;
+    if (!client || !state.session || !state.context) return;
+    const usuario_id = state.session.user?.id;
+    const conta_id = state.context.conta_id;
     if (!usuario_id || !conta_id) return;
-    await client.from('nt_abordagens').upsert({
+    const { error } = await client.from('nt_abordagens').upsert({
       talento_key: talent.talento_key,
       usuario_id,
       conta_id,
       status: 'ABORDADO',
       updated_at: new Date().toISOString(),
     }, { onConflict: 'talento_key,usuario_id,conta_id', ignoreDuplicates: true });
+    if (error) console.warn('[NT] registrar abordagem:', error);
     if (state.abordadosVisible) loadAbordadosNT();
   }
 
@@ -1681,8 +1683,9 @@ const canal = isLogged
 
   async function loadAbordadosNT() {
     const client = getClient();
-    if (!client || !state.context) return;
-    const { usuario_id } = state.context;
+    if (!client || !state.session) return;
+    const usuario_id = state.session.user?.id;
+    if (!usuario_id) return;
     const statusFiltro = $('#abordadosStatusFiltro')?.value || '';
     let query = client
       .from('nt_abordagens')
