@@ -917,6 +917,7 @@
       }
 
       await loadAdminPhrases({ silent: true });
+      await loadFunilGestorCOR();
     } catch (e) {
       console.error(e);
       setAdminAlert('Não foi possível carregar o painel do plano. Detalhe: ' + e.message, 'error');
@@ -1192,6 +1193,109 @@
 
   // ── FIM ABORDADOS CORRETORES ────────────────────────────────────────────────
 
+  // ── FUNIL GESTOR CORRETORES ─────────────────────────────────────────────────
+
+  const COR_FUNIL_ORDEM = [
+    { key: 'ABORDADO',         label: 'Abordados',        cor: '#6d2df2' },
+    { key: 'TEM_INTERESSE',    label: 'Interesse',         cor: '#1a6640' },
+    { key: 'CHAMAR_NOVAMENTE', label: 'Chamar novamente',  cor: '#7a5500' },
+    { key: 'AGENDADO',         label: 'Agendados',         cor: '#4b178b' },
+    { key: 'REAGENDAR',        label: 'Reagendar',         cor: '#c05000' },
+    { key: 'REUNIAO_OK',       label: 'Reunião OK',        cor: '#0d5530' },
+    { key: 'DECLINOU',         label: 'Declinou',          cor: '#a33333' },
+    { key: 'INICIOU',          label: 'Iniciou',           cor: '#2b124d' },
+  ];
+
+  async function loadFunilGestorCOR() {
+    const box = $('#funilBox');
+    if (!box) return;
+    box.hidden = false;
+    try {
+      const data = await rpc('cor_abordagens_painel_v1', {});
+      const parsed = typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data[0] : data);
+      renderFunilGestorCOR(parsed || {});
+    } catch (err) {
+      console.warn('[COR] funil gestor:', err);
+    }
+  }
+
+  function renderFunilGestorCOR(data) {
+    const funil      = Array.isArray(data.funil)        ? data.funil        : [];
+    const operadores = Array.isArray(data.por_operador) ? data.por_operador : [];
+    const agendamentos = Array.isArray(data.agendamentos) ? data.agendamentos : [];
+    const timeline   = Array.isArray(data.timeline)     ? data.timeline     : [];
+
+    const totalGeral = funil.reduce((s, r) => s + Number(r.total || 0), 0);
+    const funilTotal = $('#funilTotal');
+    if (funilTotal) funilTotal.textContent = `${totalGeral} abordagens registradas`;
+
+    const grid = $('#funilGrid');
+    if (grid) {
+      const map = Object.fromEntries(funil.map((r) => [r.status, Number(r.total || 0)]));
+      const max = Math.max(...COR_FUNIL_ORDEM.map((f) => map[f.key] || 0), 1);
+      grid.innerHTML = COR_FUNIL_ORDEM.map(({ key, label, cor }) => {
+        const val = map[key] || 0;
+        const pct = Math.round((val / max) * 100);
+        return `<div class="nt-funil-item">
+          <div class="nt-funil-bar-wrap">
+            <div class="nt-funil-bar" style="width:${pct}%;background:${cor}"></div>
+          </div>
+          <span class="nt-funil-label">${esc(label)}</span>
+          <strong class="nt-funil-val">${val}</strong>
+        </div>`;
+      }).join('');
+    }
+
+    const tbody = $('#funilOperadoresTable');
+    if (tbody) {
+      tbody.innerHTML = operadores.length
+        ? operadores.map((r) => `<tr>
+            <td>${esc(r.nome || r.email || 'Operador')}</td>
+            <td>${r.abordados || 0}</td>
+            <td>${r.interesse || 0}</td>
+            <td>${r.agendados || 0}</td>
+            <td>${r.reuniao_ok || 0}</td>
+            <td><strong>${r.iniciou || 0}</strong></td>
+            <td>${r.declinou || 0}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="7">Nenhum registro ainda.</td></tr>';
+    }
+
+    const tbodyAg = $('#funilAgendamentosTable');
+    if (tbodyAg) {
+      tbodyAg.innerHTML = agendamentos.length
+        ? agendamentos.map((r) => {
+            const dt = r.agendado_em ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
+            return `<tr>
+              <td>${esc(dt)}</td>
+              <td>${esc(r.operador_nome || '-')}</td>
+              <td>${esc(r.lead_key || '-')}</td>
+              <td>${esc(COR_STATUS_LABELS[r.status] || r.status)}</td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="4">Nenhum agendamento futuro.</td></tr>';
+    }
+
+    const tl = $('#funilTimeline');
+    if (tl && timeline.length) {
+      const maxTl = Math.max(...timeline.map((d) => Number(d.total || 0)), 1);
+      tl.innerHTML = `<div class="nt-timeline-bars">
+        ${timeline.map((d) => {
+          const h = Math.max(Math.round((Number(d.total) / maxTl) * 80), 4);
+          const dia = d.dia ? new Date(d.dia + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : '';
+          return `<div class="nt-tl-col" title="${dia}: ${d.total}">
+            <div class="nt-tl-bar" style="height:${h}px"></div>
+            <span class="nt-tl-label">${dia}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    } else if (tl) {
+      tl.innerHTML = '<p class="nt-abordados-vazio">Nenhuma abordagem nos últimos 30 dias.</p>';
+    }
+  }
+
+  // ── FIM FUNIL GESTOR CORRETORES ─────────────────────────────────────────────
+
   function bind() {
     const cidade = $('#cidadeSelect');
     const ano = $('#anoSelect');
@@ -1241,6 +1345,7 @@
 
     $('#maisBtn').addEventListener('click', () => search({ append: true }));
     $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
+    $('#funilRefreshBtn')?.addEventListener('click', () => loadFunilGestorCOR());
     $('#exportCsvBtn')?.addEventListener('click', exportAdminCSV);
     $('#clonePhrasesBtn')?.addEventListener('click', clonePhrases);
     $('#usersFilterStatus')?.addEventListener('change', filterAdminUsers);

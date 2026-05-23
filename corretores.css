@@ -99,3 +99,19 @@ td.access-fresh{color:#0d8755;font-weight:800}td.access-warn{color:#91510a;font-
 .nt-abordado-acoes{display:flex;flex-wrap:wrap;gap:6px}
 .nt-abordado-acoes .mini-action,.nt-abordado-acoes .nt-mini-action{font-size:11px;padding:4px 10px}
 #abordadosToggleBtn{font-weight:600;color:#4b178b}
+
+
+/* ── FUNIL GESTOR ─────────────────────────────────────────────────────────── */
+.nt-funil-box{margin-bottom:24px}
+.nt-funil-grid{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.nt-funil-item{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px}
+.nt-funil-bar-wrap{grid-column:1;background:rgba(43,18,77,.07);border-radius:8px;height:22px;overflow:hidden}
+.nt-funil-bar{height:100%;border-radius:8px;transition:width .4s ease;min-width:4px}
+.nt-funil-label{font-size:13px;color:#6f6283;white-space:nowrap}
+.nt-funil-val{font-size:15px;font-weight:800;color:#21172d;min-width:36px;text-align:right}
+.nt-timeline{overflow-x:auto;padding-bottom:8px;margin-top:12px}
+.nt-timeline-bars{display:flex;align-items:flex-end;gap:4px;min-width:max-content;height:100px;padding-bottom:20px;border-bottom:1px solid rgba(43,18,77,.12)}
+.nt-tl-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:default}
+.nt-tl-bar{width:20px;background:#6d2df2;border-radius:4px 4px 0 0;opacity:.8;transition:opacity .2s}
+.nt-tl-col:hover .nt-tl-bar{opacity:1}
+.nt-tl-label{font-size:10px;color:#6f6283;writing-mode:vertical-rl;transform:rotate(180deg);height:36px}

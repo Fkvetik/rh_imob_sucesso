@@ -1417,3 +1417,100 @@ input, textarea, select {
   font-weight: 600;
   color: var(--purple-700);
 }
+
+
+/* ── FUNIL GESTOR ─────────────────────────────────────────────────────────── */
+.nt-funil-box { margin-bottom: 24px; }
+
+.nt-funil-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.nt-funil-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.nt-funil-bar-wrap {
+  grid-column: 1;
+  background: rgba(43,18,77,.07);
+  border-radius: 8px;
+  height: 22px;
+  overflow: hidden;
+}
+
+.nt-funil-bar {
+  height: 100%;
+  border-radius: 8px;
+  transition: width .4s ease;
+  min-width: 4px;
+}
+
+.nt-funil-label {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.nt-funil-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Timeline */
+.nt-timeline { overflow-x: auto; padding-bottom: 8px; margin-top: 12px; }
+
+.nt-timeline-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: max-content;
+  height: 100px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nt-tl-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  cursor: default;
+}
+
+.nt-tl-bar {
+  width: 20px;
+  background: var(--purple-600);
+  border-radius: 4px 4px 0 0;
+  opacity: .8;
+  transition: opacity .2s;
+}
+.nt-tl-col:hover .nt-tl-bar { opacity: 1; }
+
+.nt-tl-label {
+  font-size: 10px;
+  color: var(--muted);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  height: 36px;
+}
+
+.nt-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.nt-btn-ghost:hover { border-color: var(--purple-600); color: var(--purple-700); }

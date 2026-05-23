@@ -139,6 +139,46 @@
           <article class="admin-card"><small>Período do plano</small><strong id="adminPeriodo">-</strong><span id="adminLimite">-</span></article>
         </div>
 
+        <!-- Funil de abordagens -->
+        <article class="admin-box nt-funil-box" id="funilBox" hidden>
+          <div class="admin-box-head">
+            <div>
+              <h3>Funil de abordagens</h3>
+              <span id="funilTotal">-</span>
+            </div>
+            <button class="btn btn-secondary" id="funilRefreshBtn" type="button">Atualizar</button>
+          </div>
+          <div class="nt-funil-grid" id="funilGrid"></div>
+
+          <div class="admin-box-head" style="margin-top:28px">
+            <div><h3>Por operador</h3></div>
+          </div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead><tr>
+                <th>Operador</th><th>Abordados</th><th>Interesse</th>
+                <th>Agendados</th><th>Reunião OK</th><th>Iniciou</th><th>Declinou</th>
+              </tr></thead>
+              <tbody id="funilOperadoresTable"><tr><td colspan="7">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="admin-box-head" style="margin-top:28px">
+            <div><h3>Agendamentos futuros</h3></div>
+          </div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Data/hora</th><th>Operador</th><th>Contato</th><th>Status</th></tr></thead>
+              <tbody id="funilAgendamentosTable"><tr><td colspan="4">Nenhum agendamento.</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="admin-box-head" style="margin-top:28px">
+            <div><h3>Abordagens por dia (30 dias)</h3></div>
+          </div>
+          <div class="nt-timeline" id="funilTimeline"></div>
+        </article>
+
         <div class="admin-grid">
           <article class="admin-box">
             <div class="admin-box-head">

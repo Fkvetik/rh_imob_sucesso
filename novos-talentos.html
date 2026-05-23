@@ -193,6 +193,46 @@
           <article class="nt-admin-card"><small>Produção do mês</small><strong id="adminMesResumo">-</strong><span id="adminMesTrend" class="nt-trend neutral" hidden></span><span id="adminQuinzenaResumo">-</span></article>
         </div>
 
+        <!-- Funil de abordagens -->
+        <article class="nt-admin-box nt-funil-box" id="funilBox" hidden>
+          <div class="nt-admin-box-head">
+            <div>
+              <h3>Funil de abordagens</h3>
+              <span id="funilTotal">-</span>
+            </div>
+            <button class="nt-btn nt-btn-ghost" id="funilRefreshBtn" type="button">Atualizar</button>
+          </div>
+          <div class="nt-funil-grid" id="funilGrid"></div>
+
+          <div class="nt-admin-box-head" style="margin-top:28px">
+            <div><h3>Por operador</h3></div>
+          </div>
+          <div class="nt-table-wrap">
+            <table class="nt-admin-table">
+              <thead><tr>
+                <th>Operador</th><th>Abordados</th><th>Interesse</th>
+                <th>Agendados</th><th>Reunião OK</th><th>Iniciou</th><th>Declinou</th>
+              </tr></thead>
+              <tbody id="funilOperadoresTable"><tr><td colspan="7">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="nt-admin-box-head" style="margin-top:28px">
+            <div><h3>Agendamentos futuros</h3></div>
+          </div>
+          <div class="nt-table-wrap">
+            <table class="nt-admin-table">
+              <thead><tr><th>Data/hora</th><th>Operador</th><th>Contato</th><th>Status</th></tr></thead>
+              <tbody id="funilAgendamentosTable"><tr><td colspan="4">Nenhum agendamento.</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="nt-admin-box-head" style="margin-top:28px">
+            <div><h3>Abordagens por dia (30 dias)</h3></div>
+          </div>
+          <div class="nt-timeline" id="funilTimeline"></div>
+        </article>
+
         <div class="nt-admin-grid">
           <article class="nt-admin-box">
             <div class="nt-admin-box-head">

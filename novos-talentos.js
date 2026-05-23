@@ -1761,6 +1761,111 @@ const canal = isLogged
 
   // ── FIM ABORDADOS ───────────────────────────────────────────────────────────
 
+  // ── FUNIL GESTOR ────────────────────────────────────────────────────────────
+
+  const FUNIL_ORDEM = [
+    { key: 'ABORDADO',         label: 'Abordados',        cor: '#6d2df2' },
+    { key: 'TEM_INTERESSE',    label: 'Interesse',         cor: '#1a6640' },
+    { key: 'CHAMAR_NOVAMENTE', label: 'Chamar novamente',  cor: '#7a5500' },
+    { key: 'AGENDADO',         label: 'Agendados',         cor: '#4b178b' },
+    { key: 'REAGENDAR',        label: 'Reagendar',         cor: '#c05000' },
+    { key: 'REUNIAO_OK',       label: 'Reunião OK',        cor: '#0d5530' },
+    { key: 'DECLINOU',         label: 'Declinou',          cor: '#a33333' },
+    { key: 'INICIOU',          label: 'Iniciou',           cor: '#2b124d' },
+  ];
+
+  async function loadFunilGestor() {
+    const box = $('#funilBox');
+    if (!box) return;
+    box.hidden = false;
+    try {
+      const data = await rpcOne('nt_abordagens_painel_v1', {});
+      renderFunilGestor(data || {});
+    } catch (err) {
+      console.warn('[NT] funil gestor:', err);
+    }
+  }
+
+  function renderFunilGestor(data) {
+    const funil    = Array.isArray(data.funil)        ? data.funil        : [];
+    const operadores = Array.isArray(data.por_operador) ? data.por_operador : [];
+    const agendamentos = Array.isArray(data.agendamentos) ? data.agendamentos : [];
+    const timeline = Array.isArray(data.timeline)     ? data.timeline     : [];
+
+    const totalGeral = funil.reduce((s, r) => s + Number(r.total || 0), 0);
+    setText('funilTotal', `${formatNumber(totalGeral)} abordagens registradas`);
+
+    // Funil visual
+    const grid = $('#funilGrid');
+    if (grid) {
+      const map = Object.fromEntries(funil.map((r) => [r.status, Number(r.total || 0)]));
+      const max = Math.max(...FUNIL_ORDEM.map((f) => map[f.key] || 0), 1);
+      grid.innerHTML = FUNIL_ORDEM.map(({ key, label, cor }) => {
+        const val = map[key] || 0;
+        const pct = Math.round((val / max) * 100);
+        return `<div class="nt-funil-item">
+          <div class="nt-funil-bar-wrap">
+            <div class="nt-funil-bar" style="width:${pct}%;background:${cor}"></div>
+          </div>
+          <span class="nt-funil-label">${esc(label)}</span>
+          <strong class="nt-funil-val">${formatNumber(val)}</strong>
+        </div>`;
+      }).join('');
+    }
+
+    // Por operador
+    const tbody = $('#funilOperadoresTable');
+    if (tbody) {
+      tbody.innerHTML = operadores.length
+        ? operadores.map((r) => `<tr>
+            <td>${esc(r.nome || r.email_login || 'Operador')}</td>
+            <td>${formatNumber(r.abordados || 0)}</td>
+            <td>${formatNumber(r.interesse || 0)}</td>
+            <td>${formatNumber(r.agendados || 0)}</td>
+            <td>${formatNumber(r.reuniao_ok || 0)}</td>
+            <td><strong>${formatNumber(r.iniciou || 0)}</strong></td>
+            <td>${formatNumber(r.declinou || 0)}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="7">Nenhum registro ainda.</td></tr>';
+    }
+
+    // Agendamentos futuros
+    const tbodyAg = $('#funilAgendamentosTable');
+    if (tbodyAg) {
+      tbodyAg.innerHTML = agendamentos.length
+        ? agendamentos.map((r) => {
+            const dt = r.agendado_em ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
+            return `<tr>
+              <td>${esc(dt)}</td>
+              <td>${esc(r.operador_nome || '-')}</td>
+              <td>${esc(r.talento_key || '-')}</td>
+              <td>${esc(NT_STATUS_LABELS[r.status] || r.status)}</td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="4">Nenhum agendamento futuro.</td></tr>';
+    }
+
+    // Timeline
+    const tl = $('#funilTimeline');
+    if (tl && timeline.length) {
+      const maxTl = Math.max(...timeline.map((d) => Number(d.total || 0)), 1);
+      tl.innerHTML = `<div class="nt-timeline-bars">
+        ${timeline.map((d) => {
+          const h = Math.max(Math.round((Number(d.total) / maxTl) * 80), 4);
+          const dia = d.dia ? new Date(d.dia + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : '';
+          return `<div class="nt-tl-col" title="${dia}: ${d.total}">
+            <div class="nt-tl-bar" style="height:${h}px"></div>
+            <span class="nt-tl-label">${dia}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    } else if (tl) {
+      tl.innerHTML = '<p class="nt-abordados-vazio">Nenhuma abordagem nos últimos 30 dias.</p>';
+    }
+  }
+
+  // ── FIM FUNIL GESTOR ────────────────────────────────────────────────────────
+
   function queueAdminLoad() {
     if (!adminAllowed()) return;
 
@@ -1822,6 +1927,7 @@ const canal = isLogged
       }
 
       await loadAdminPhrases({ silent: true });
+      await loadFunilGestor();
 
       const saldo = conta.saldo || 0;
       const totalLimit = saldo + (conta.consumidos || 0);
@@ -2106,6 +2212,7 @@ const canal = isLogged
     });
 
     $('#adminRefreshBtn')?.addEventListener('click', () => loadAdminDashboard());
+    $('#funilRefreshBtn')?.addEventListener('click', () => loadFunilGestor());
     $('#exportCsvBtn')?.addEventListener('click', exportAdminCSV);
     $('#clonePhrasesBtn')?.addEventListener('click', clonePhrasesNT);
     $('#usersFilterStatus')?.addEventListener('change', filterAdminUsers);
