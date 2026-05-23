@@ -1886,8 +1886,6 @@
       updateHeader();
       updateSummary();
 
-      // Entrega cards primeiro; filtros carregam em paralelo/segundo plano.
-      search(true).catch((err) => console.warn('[NT] busca inicial:', err));
       loadAllOptions(false).catch((err) => console.warn('[NT] filtros iniciais:', err));
 
       if (state.session) {
@@ -1900,12 +1898,14 @@
           }
         } catch (err) {
           console.warn('[NT] Sessão sem contexto válido:', err);
-          // Mantém a sessão logada para o consumo via RPC tentar corrigir vínculo por e-mail.
           state.context = null;
           updateHeader();
           updateSummary();
         }
       }
+
+      // Busca cards após contexto carregado para isLogged ser correto no render.
+      search(true).catch((err) => console.warn('[NT] busca inicial:', err));
 
       // Busca inicial já disparada acima.
     } catch (err) {
