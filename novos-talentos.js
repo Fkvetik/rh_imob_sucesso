@@ -1672,7 +1672,7 @@ const canal = isLogged
     const conta_id = state.context.conta_id;
     if (!usuario_id || !conta_id) return;
     const tel = talent.whatsapp || talent.telefone_principal || '';
-    const nome_display = talent.nome_mascarado || talent.primeiro_nome || '';
+    const nome_display = talent.nome_completo || talent.nome_mascarado || talent.primeiro_nome || '';
     const historico = [{ status: 'ABORDADO', em: new Date().toISOString() }];
     const { error } = await client.from('nt_abordagens').upsert({
       talento_key: talent.talento_key,
@@ -1680,7 +1680,7 @@ const canal = isLogged
       conta_id,
       status: 'ABORDADO',
       nome_display,
-      telefone_display: ultimosDigitos(tel),
+      telefone_display: String(tel).replace(/\D/g, ''),
       historico,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'talento_key,usuario_id,conta_id', ignoreDuplicates: true });
@@ -1730,7 +1730,8 @@ const canal = isLogged
       `<span class="nt-hist-item"><span class="nt-hist-dot" style="background:${statusColor(h.status)}"></span>${esc(NT_STATUS_LABELS[h.status] || h.status)} <em>${formatDateTimeBR(h.em)}</em></span>`
     ).join('');
     const nome = r.nome_display || r.talento_key;
-    const tel = r.telefone_display ? ` · ${esc(r.telefone_display)}` : '';
+    const telNum = String(r.telefone_display || '').replace(/\D/g, '');
+    const tel = telNum ? ` · ${esc(telNum)}` : '';
     const isMaster = adminAllowed();
     const waBtn = isMaster && r.agendado_em && r.status === 'AGENDADO'
       ? buildWaConfirmacao(r)

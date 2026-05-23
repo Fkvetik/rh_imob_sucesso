@@ -1103,8 +1103,8 @@
       usuario_id,
       conta_id,
       status: 'ABORDADO',
-      nome_display: lead.nome_completo || lead.lead_key,
-      telefone_display: ultimosDigitosCOR(tel),
+      nome_display: lead.nome_completo || lead.nome_mascarado || lead.lead_key,
+      telefone_display: String(tel).replace(/\D/g, ''),
       historico,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'lead_key,usuario_id,conta_id', ignoreDuplicates: true });
@@ -1187,7 +1187,8 @@
         `<span class="nt-hist-item"><span class="nt-hist-dot" style="background:${corStatusColor(h.status)}"></span>${esc(COR_STATUS_LABELS[h.status] || h.status)} <em>${h.em ? new Date(h.em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''}</em></span>`
       ).join('');
       const nome = r.nome_display || r.lead_key;
-      const tel = r.telefone_display ? ` · ${esc(r.telefone_display)}` : '';
+      const telNum = String(r.telefone_display || '').replace(/\D/g, '');
+      const tel = telNum ? ` · ${esc(telNum)}` : '';
       const waBtn = isMaster && r.agendado_em && r.status === 'AGENDADO' ? buildWaConfirmacaoCOR(r) : '';
       const botoesStatus = COR_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
         `<button class="mini-action js-cor-status" data-id="${esc(r.id)}" data-status="${esc(s)}" data-historico='${JSON.stringify(historico)}'>${esc(COR_STATUS_LABELS[s])}</button>`
