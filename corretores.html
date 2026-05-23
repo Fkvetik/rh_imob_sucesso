@@ -26,6 +26,7 @@
       </nav>
       <div class="auth-mini" id="authMini" hidden>
         <span id="authMiniName">Sessão ativa</span>
+        <button class="link-btn" type="button" id="abordadosToggleBtn" hidden>Meus Abordados</button>
         <button class="link-btn" type="button" id="logoutBtn">Sair</button>
       </div>
       <button class="btn btn-secondary" id="loginTopBtn" type="button">Entrar</button>
@@ -86,6 +87,33 @@
       </div>
     </section>
 
+
+    <section class="nt-abordados-section" id="abordadosPanel" hidden>
+      <div class="container">
+        <div class="admin-head">
+          <div>
+            <span class="kicker">Operação</span>
+            <h2>Meus Abordados</h2>
+            <p>Contatos que você liberou. Atualize o status conforme o andamento da abordagem.</p>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <select id="abordadosStatusFiltro" aria-label="Filtrar por status">
+              <option value="">Todos os status</option>
+              <option value="ABORDADO">Abordado</option>
+              <option value="TEM_INTERESSE">Tem interesse</option>
+              <option value="CHAMAR_NOVAMENTE">Chamar novamente</option>
+              <option value="AGENDADO">Agendado</option>
+              <option value="REAGENDAR">Reagendar</option>
+              <option value="REUNIAO_OK">Reunião OK</option>
+              <option value="DECLINOU">Declinou</option>
+              <option value="INICIOU">Iniciou</option>
+            </select>
+            <span id="abordadosCount" class="nt-muted-label">0 registro(s)</span>
+          </div>
+        </div>
+        <div id="abordadosLista" class="nt-abordados-lista"></div>
+      </div>
+    </section>
 
     <section class="admin-section" id="adminPanel" hidden>
       <div class="container">

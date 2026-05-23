@@ -38,6 +38,7 @@
     phrasesAdmin: [],
     adminLoaded: false,
     adminLazyTimer: null,
+    abordadosVisible: false,
     filters: {
       cidade: '',
       estado_uf: '',
@@ -465,15 +466,16 @@
 
   function updateAdminVisibility() {
     const panel = $('#adminPanel');
-    if (!panel) return;
-
-    const show = adminAllowed();
-    panel.hidden = !show;
-
-    if (!show) {
-      state.adminLoaded = false;
-      setAdminAlert('', 'info');
+    if (panel) {
+      const show = adminAllowed();
+      panel.hidden = !show;
+      if (!show) { state.adminLoaded = false; setAdminAlert('', 'info'); }
     }
+
+    const logged = !!state.session && !!state.context;
+    const abordadosBtn = $('#abordadosToggleBtn');
+    if (abordadosBtn) abordadosBtn.hidden = !logged;
+    if (!logged) showAbordados(false);
   }
 
 
@@ -1225,6 +1227,7 @@ const canal = isLogged
 
       renderTalentModal(talent);
       openTalentModal();
+      registrarAbordagemNT(talent).catch(() => {});
     } catch (err) {
       alert(friendlyError(err));
     } finally {
@@ -1635,6 +1638,129 @@ const canal = isLogged
   }
 
 
+  // ── ABORDADOS ──────────────────────────────────────────────────────────────
+
+  const NT_STATUS_LABELS = {
+    ABORDADO:         'Abordado',
+    TEM_INTERESSE:    'Tem interesse',
+    CHAMAR_NOVAMENTE: 'Chamar novamente',
+    AGENDADO:         'Agendado',
+    REAGENDAR:        'Reagendar',
+    REUNIAO_OK:       'Reunião OK',
+    DECLINOU:         'Declinou',
+    INICIOU:          'Iniciou',
+  };
+
+  const NT_STATUS_ORDER = Object.keys(NT_STATUS_LABELS);
+
+  const NT_STATUS_COM_DATA = new Set(['AGENDADO', 'REAGENDAR']);
+
+  async function registrarAbordagemNT(talent) {
+    const client = getClient();
+    if (!client || !state.context) return;
+    const { usuario_id, conta_id } = state.context;
+    if (!usuario_id || !conta_id) return;
+    await client.from('nt_abordagens').upsert({
+      talento_key: talent.talento_key,
+      usuario_id,
+      conta_id,
+      status: 'ABORDADO',
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'talento_key,usuario_id,conta_id', ignoreDuplicates: true });
+    if (state.abordadosVisible) loadAbordadosNT();
+  }
+
+  async function atualizarStatusAbordagemNT(id, novoStatus, agendadoEm) {
+    const client = getClient();
+    if (!client) return;
+    const patch = { status: novoStatus, updated_at: new Date().toISOString() };
+    if (agendadoEm) patch.agendado_em = agendadoEm;
+    const { error } = await client.from('nt_abordagens').update(patch).eq('id', id);
+    if (error) throw error;
+  }
+
+  async function loadAbordadosNT() {
+    const client = getClient();
+    if (!client || !state.context) return;
+    const { usuario_id } = state.context;
+    const statusFiltro = $('#abordadosStatusFiltro')?.value || '';
+    let query = client
+      .from('nt_abordagens')
+      .select('id,talento_key,status,agendado_em,notas,created_at,updated_at')
+      .eq('usuario_id', usuario_id)
+      .order('updated_at', { ascending: false })
+      .limit(100);
+    if (statusFiltro) query = query.eq('status', statusFiltro);
+    const { data, error } = await query;
+    if (error) { console.warn('[NT] abordados:', error); return; }
+    renderAbordadosNT(data || []);
+  }
+
+  function renderAbordadosNT(rows) {
+    const container = $('#abordadosLista');
+    if (!container) return;
+    const count = $('#abordadosCount');
+    if (count) count.textContent = `${rows.length} registro(s)`;
+    if (!rows.length) {
+      container.innerHTML = '<p class="nt-abordados-vazio">Nenhum abordado encontrado.</p>';
+      return;
+    }
+    container.innerHTML = rows.map((r) => {
+      const label = NT_STATUS_LABELS[r.status] || r.status;
+      const temData = NT_STATUS_COM_DATA.has(r.status);
+      const agendadoStr = r.agendado_em ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+      const botoesStatus = NT_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
+        `<button class="nt-mini-action js-nt-status" data-id="${esc(r.id)}" data-status="${esc(s)}">${esc(NT_STATUS_LABELS[s])}</button>`
+      ).join('');
+      return `<div class="nt-abordado-card" data-id="${esc(r.id)}">
+        <div class="nt-abordado-top">
+          <span class="nt-abordado-key">${esc(r.talento_key)}</span>
+          <span class="nt-abordado-status nt-abordado-status--${r.status.toLowerCase().replace(/_/g,'-')}">${esc(label)}</span>
+        </div>
+        <div class="nt-abordado-meta">
+          <small>Abordado: ${formatDateTimeBR(r.created_at)}</small>
+          ${agendadoStr ? `<small>Agendado: ${agendadoStr}</small>` : ''}
+        </div>
+        ${temData ? `<div class="nt-abordado-agenda">
+          <input type="datetime-local" class="js-nt-agenda-dt" data-id="${esc(r.id)}" value="${r.agendado_em ? r.agendado_em.slice(0,16) : ''}" />
+          <button class="nt-mini-action js-nt-salvar-agenda" data-id="${esc(r.id)}">Salvar data</button>
+        </div>` : ''}
+        <div class="nt-abordado-acoes">${botoesStatus}</div>
+      </div>`;
+    }).join('');
+
+    container.querySelectorAll('.js-nt-status').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const { id, status } = btn.dataset;
+        try {
+          await atualizarStatusAbordagemNT(id, status, null);
+          await loadAbordadosNT();
+        } catch (err) { alert('Erro ao atualizar status.'); }
+      });
+    });
+
+    container.querySelectorAll('.js-nt-salvar-agenda').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const { id } = btn.dataset;
+        const dt = container.querySelector(`.js-nt-agenda-dt[data-id="${id}"]`)?.value;
+        if (!dt) { alert('Selecione uma data e hora.'); return; }
+        try {
+          await atualizarStatusAbordagemNT(id, null, new Date(dt).toISOString());
+          await loadAbordadosNT();
+        } catch (err) { alert('Erro ao salvar data.'); }
+      });
+    });
+  }
+
+  function showAbordados(show) {
+    const section = $('#abordadosPanel');
+    if (section) section.hidden = !show;
+    state.abordadosVisible = show;
+    if (show) loadAbordadosNT();
+  }
+
+  // ── FIM ABORDADOS ───────────────────────────────────────────────────────────
+
   function queueAdminLoad() {
     if (!adminAllowed()) return;
 
@@ -1860,6 +1986,7 @@ const canal = isLogged
     state.adminLoaded = false;
     state.currentPhraseId = null;
     state.phrasesAdmin = [];
+    state.abordadosVisible = false;
 
     updateHeader();
     updateSummary();
@@ -2003,6 +2130,11 @@ const canal = isLogged
     $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
 
     $('#copiarMensagemBtn')?.addEventListener('click', copyMessage);
+
+    $('#abordadosToggleBtn')?.addEventListener('click', () => {
+      showAbordados(!state.abordadosVisible);
+    });
+    $('#abordadosStatusFiltro')?.addEventListener('change', loadAbordadosNT);
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {

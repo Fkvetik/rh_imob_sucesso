@@ -18,7 +18,8 @@
     session: null,
     profile: null,
     frases: DEFAULT_FRASES.slice(),
-    currentPhraseId: null
+    currentPhraseId: null,
+    abordadosVisible: false,
   };
 
   let sb = null;
@@ -261,6 +262,9 @@
         : 'Prévia protegida. Entre para liberar contatos completos.';
     }
     if (adminPanel) adminPanel.hidden = !(logged && isAdminProfile());
+    const abordadosBtn = $('#abordadosToggleBtn');
+    if (abordadosBtn) abordadosBtn.hidden = !logged;
+    if (!logged) showAbordadosCOR(false);
   }
 
   async function refreshLoggedState(session) {
@@ -561,6 +565,7 @@
       if (!lead?.lead_key) throw new Error('Contato não retornado pela plataforma.');
       renderLeadDetail(lead, result?.plano || null, result?.ja_consumido_antes);
       openLeadModal();
+      registrarAbordagemCOR(lead).catch(() => {});
       const plano = result?.plano || {};
       if (plano.aviso) setAdminAlert(plano.aviso, statusTypeFromSaldo(plano.leads_restantes));
       status(`Contato liberado. Usados: ${plano.leads_consumidos ?? '-'} • Disponíveis: ${plano.leads_restantes ?? '-'}`);
@@ -1057,6 +1062,136 @@
     if ($('#phraseFavorite')) $('#phraseFavorite').checked = false;
   }
 
+  // ── ABORDADOS CORRETORES ────────────────────────────────────────────────────
+
+  const COR_STATUS_LABELS = {
+    ABORDADO:         'Abordado',
+    TEM_INTERESSE:    'Tem interesse',
+    CHAMAR_NOVAMENTE: 'Chamar novamente',
+    AGENDADO:         'Agendado',
+    REAGENDAR:        'Reagendar',
+    REUNIAO_OK:       'Reunião OK',
+    DECLINOU:         'Declinou',
+    INICIOU:          'Iniciou',
+  };
+
+  const COR_STATUS_ORDER = Object.keys(COR_STATUS_LABELS);
+  const COR_STATUS_COM_DATA = new Set(['AGENDADO', 'REAGENDAR']);
+
+  function getCorSupabaseClient() {
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error('Cliente Supabase não disponível.');
+    return sb;
+  }
+
+  async function registrarAbordagemCOR(lead) {
+    if (!state.session || !state.profile) return;
+    const client = getCorSupabaseClient();
+    const usuario_id = state.session.user?.id;
+    const conta_id = state.profile?.conta_id;
+    if (!usuario_id || !conta_id) return;
+    await client.from('cor_abordagens').upsert({
+      lead_key: lead.lead_key,
+      usuario_id,
+      conta_id,
+      status: 'ABORDADO',
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'lead_key,usuario_id,conta_id', ignoreDuplicates: true });
+    if (state.abordadosVisible) loadAbordadosCOR();
+  }
+
+  async function atualizarStatusAbordagemCOR(id, novoStatus, agendadoEm) {
+    const client = getCorSupabaseClient();
+    const patch = { updated_at: new Date().toISOString() };
+    if (novoStatus) patch.status = novoStatus;
+    if (agendadoEm) patch.agendado_em = agendadoEm;
+    const { error } = await client.from('cor_abordagens').update(patch).eq('id', id);
+    if (error) throw error;
+  }
+
+  async function loadAbordadosCOR() {
+    const client = getCorSupabaseClient();
+    const usuario_id = state.session?.user?.id;
+    if (!usuario_id) return;
+    const statusFiltro = $('#abordadosStatusFiltro')?.value || '';
+    let query = client
+      .from('cor_abordagens')
+      .select('id,lead_key,status,agendado_em,notas,created_at,updated_at')
+      .eq('usuario_id', usuario_id)
+      .order('updated_at', { ascending: false })
+      .limit(100);
+    if (statusFiltro) query = query.eq('status', statusFiltro);
+    const { data, error } = await query;
+    if (error) { console.warn('[COR] abordados:', error); return; }
+    renderAbordadosCOR(data || []);
+  }
+
+  function renderAbordadosCOR(rows) {
+    const container = $('#abordadosLista');
+    if (!container) return;
+    const count = $('#abordadosCount');
+    if (count) count.textContent = `${rows.length} registro(s)`;
+    if (!rows.length) {
+      container.innerHTML = '<p class="nt-abordados-vazio">Nenhum abordado encontrado.</p>';
+      return;
+    }
+    container.innerHTML = rows.map((r) => {
+      const label = COR_STATUS_LABELS[r.status] || r.status;
+      const temData = COR_STATUS_COM_DATA.has(r.status);
+      const agendadoStr = r.agendado_em ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+      const botoesStatus = COR_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
+        `<button class="mini-action js-cor-status" data-id="${esc(r.id)}" data-status="${esc(s)}">${esc(COR_STATUS_LABELS[s])}</button>`
+      ).join('');
+      const dt = r.agendado_em ? r.agendado_em.slice(0, 16) : '';
+      return `<div class="nt-abordado-card" data-id="${esc(r.id)}">
+        <div class="nt-abordado-top">
+          <span class="nt-abordado-key">${esc(r.lead_key)}</span>
+          <span class="nt-abordado-status nt-abordado-status--${r.status.toLowerCase().replace(/_/g,'-')}">${esc(label)}</span>
+        </div>
+        <div class="nt-abordado-meta">
+          <small>Abordado: ${formatDateTimeBR(r.created_at)}</small>
+          ${agendadoStr ? `<small>Agendado: ${agendadoStr}</small>` : ''}
+        </div>
+        ${temData ? `<div class="nt-abordado-agenda">
+          <input type="datetime-local" class="js-cor-agenda-dt" data-id="${esc(r.id)}" value="${dt}" />
+          <button class="mini-action js-cor-salvar-agenda" data-id="${esc(r.id)}">Salvar data</button>
+        </div>` : ''}
+        <div class="nt-abordado-acoes">${botoesStatus}</div>
+      </div>`;
+    }).join('');
+
+    container.querySelectorAll('.js-cor-status').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const { id, status } = btn.dataset;
+        try {
+          await atualizarStatusAbordagemCOR(id, status, null);
+          await loadAbordadosCOR();
+        } catch (err) { alert('Erro ao atualizar status.'); }
+      });
+    });
+
+    container.querySelectorAll('.js-cor-salvar-agenda').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const { id } = btn.dataset;
+        const dt = container.querySelector(`.js-cor-agenda-dt[data-id="${id}"]`)?.value;
+        if (!dt) { alert('Selecione uma data e hora.'); return; }
+        try {
+          await atualizarStatusAbordagemCOR(id, null, new Date(dt).toISOString());
+          await loadAbordadosCOR();
+        } catch (err) { alert('Erro ao salvar data.'); }
+      });
+    });
+  }
+
+  function showAbordadosCOR(show) {
+    const section = $('#abordadosPanel');
+    if (section) section.hidden = !show;
+    state.abordadosVisible = show;
+    if (show) loadAbordadosCOR();
+  }
+
+  // ── FIM ABORDADOS CORRETORES ────────────────────────────────────────────────
+
   function bind() {
     const cidade = $('#cidadeSelect');
     const ano = $('#anoSelect');
@@ -1128,6 +1263,11 @@
     });
     $('#savePhraseBtn')?.addEventListener('click', savePhrase);
     $('#newPhraseBtn')?.addEventListener('click', clearPhraseForm);
+
+    $('#abordadosToggleBtn')?.addEventListener('click', () => {
+      showAbordadosCOR(!state.abordadosVisible);
+    });
+    $('#abordadosStatusFiltro')?.addEventListener('change', loadAbordadosCOR);
   }
 
   async function init() {

@@ -1308,3 +1308,112 @@ input, textarea, select {
 .nt-card:hover .nt-pill {
   background: var(--purple-100);
 }
+
+/* ── MEUS ABORDADOS ─────────────────────────────────────────────────────────── */
+.nt-abordados-section {
+  padding: 48px 0 64px;
+  background: #fbf7ff;
+  border-top: 1px solid rgba(43,18,77,.08);
+}
+
+.nt-muted-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.nt-abordados-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.nt-abordados-vazio {
+  color: var(--muted);
+  font-size: 14px;
+  padding: 32px 0;
+  grid-column: 1/-1;
+}
+
+.nt-abordado-card {
+  background: #fff;
+  border: 1px solid rgba(43,18,77,.10);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(43,18,77,.06);
+}
+
+.nt-abordado-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nt-abordado-key {
+  font-size: 12px;
+  color: var(--muted);
+  word-break: break-all;
+  flex: 1;
+}
+
+.nt-abordado-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  background: rgba(43,18,77,.08);
+  color: var(--purple-800);
+}
+.nt-abordado-status--tem-interesse   { background: rgba(26,102,64,.12); color: #1a6640; }
+.nt-abordado-status--agendado        { background: rgba(109,45,242,.12); color: var(--purple-700); }
+.nt-abordado-status--reagendar       { background: rgba(255,122,26,.12); color: #c05000; }
+.nt-abordado-status--reuniao-ok      { background: rgba(26,102,64,.20); color: #0d5530; }
+.nt-abordado-status--declinou        { background: rgba(217,77,77,.10); color: #a33; }
+.nt-abordado-status--iniciou         { background: rgba(109,45,242,.20); color: var(--purple-700); font-weight: 900; }
+.nt-abordado-status--chamar-novamente{ background: rgba(255,200,0,.15); color: #7a5500; }
+
+.nt-abordado-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nt-abordado-meta small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.nt-abordado-agenda {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.nt-abordado-agenda input[type="datetime-local"] {
+  font-size: 13px;
+  border: 1px solid rgba(43,18,77,.18);
+  border-radius: 8px;
+  padding: 5px 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.nt-abordado-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.nt-abordado-acoes .nt-mini-action {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+/* Botão "Meus Abordados" no header */
+#abordadosToggleBtn {
+  font-weight: 600;
+  color: var(--purple-700);
+}
