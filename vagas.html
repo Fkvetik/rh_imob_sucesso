@@ -98,15 +98,20 @@
         </div>
 
         <div class="job-toolbar reveal">
-          <button class="job-filter is-active" type="button" data-filter="todas">Todas</button>
-          <button class="job-filter" type="button" data-filter="Locação">Locação</button>
-          <button class="job-filter" type="button" data-filter="Vendas terceiros">Terceiros</button>
-          <button class="job-filter" type="button" data-filter="Vistoria">Vistoria</button>
-          <button class="job-filter" type="button" data-filter="Gestão imobiliária">Gestão imobiliária</button>
-          <button class="job-filter" type="button" data-filter="Gerência comercial">Gerência</button>
-          <button class="job-filter" type="button" data-filter="SDR e atendimento">SDR/Telemarketing</button>
-          <button class="job-filter" type="button" data-filter="Novos talentos">Novos talentos</button>
-          <button class="job-filter" type="button" data-filter="Crédito imobiliário">Crédito</button>
+          <div class="job-search-wrap">
+            <input class="job-search" id="jobSearch" type="search" placeholder="Buscar vaga, cidade, cargo…" aria-label="Buscar vagas" autocomplete="off" />
+          </div>
+          <div class="job-filters">
+            <button class="job-filter is-active" type="button" data-filter="todas">Todas</button>
+            <button class="job-filter" type="button" data-filter="Locação">Locação</button>
+            <button class="job-filter" type="button" data-filter="Vendas terceiros">Terceiros</button>
+            <button class="job-filter" type="button" data-filter="Vistoria">Vistoria</button>
+            <button class="job-filter" type="button" data-filter="Gestão imobiliária">Gestão imobiliária</button>
+            <button class="job-filter" type="button" data-filter="Gerência comercial">Gerência</button>
+            <button class="job-filter" type="button" data-filter="SDR e atendimento">SDR/Telemarketing</button>
+            <button class="job-filter" type="button" data-filter="Novos talentos">Novos talentos</button>
+            <button class="job-filter" type="button" data-filter="Crédito imobiliário">Crédito</button>
+          </div>
         </div>
 
         <div class="jobs-grid" id="jobsGrid" aria-live="polite" data-dynamic-jobs="true"></div>
@@ -231,7 +236,13 @@
       <form id="jobForm" class="job-form">
         <input type="hidden" name="jobId" />
         <label>Nome completo
-          <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome" />
+          <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome completo" />
+        </label>
+        <label>WhatsApp
+          <input type="tel" name="whatsapp" autocomplete="tel" required placeholder="(11) 99999-9999" />
+        </label>
+        <label>Cidade onde mora
+          <input type="text" name="cidade" autocomplete="address-level2" required placeholder="Ex.: São Paulo, Osasco, ABC" />
         </label>
         <label>Disponibilidade para início
           <select name="inicio" required>
@@ -242,7 +253,7 @@
           </select>
         </label>
         <button class="btn btn-primary btn-full" type="submit">Enviar interesse pelo WhatsApp</button>
-        <p class="form-helper">A mensagem será aberta no WhatsApp do responsável da vaga com as informações da oportunidade. Você revisa antes de enviar.</p>
+        <p class="form-helper">Seus dados chegam junto com as informações da vaga. Você revisa a mensagem antes de enviar pelo WhatsApp.</p>
       </form>
     </div>
   </div>

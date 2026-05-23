@@ -609,9 +609,35 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
 }
 .job-toolbar {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+.job-search-wrap {
+  width: 100%;
+}
+.job-search {
+  width: 100%;
+  max-width: 480px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 20px;
+  font-size: 15px;
+  color: var(--purple-900);
+  background: var(--white);
+  box-shadow: 0 4px 12px rgba(43,18,77,.06);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.job-search:focus {
+  border-color: var(--purple-600);
+  box-shadow: 0 0 0 3px rgba(109,45,242,.12);
+}
+.job-filters {
+  display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 26px;
 }
 .job-filter {
   border: 1px solid var(--line);

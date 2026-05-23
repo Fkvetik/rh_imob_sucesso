@@ -166,6 +166,8 @@
     const responsibleRole = normalize(row.responsavel_cargo || 'Recrutamento imobiliário');
     const responsibleEmail = normalize(row.responsavel_email || '');
 
+    const isNew = row.updated_at && (Date.now() - new Date(row.updated_at).getTime()) < 7 * 24 * 60 * 60 * 1000;
+    const badgeText = normalize(row.selo) || (isNew ? '🆕 Nova' : normalize(row.categoria || 'Vaga ativa'));
     return {
       id,
       title,
@@ -177,7 +179,8 @@
       summary: normalize(row.resumo || 'Oportunidade cadastrada pela RH IMOB.'),
       highlights: splitJobText(row.destaques).slice(0, 5),
       details: splitJobText(row.detalhes || row.requisitos || row.atividades).slice(0, 8),
-      badge: normalize(row.selo || row.categoria || 'Vaga ativa'),
+      badge: badgeText,
+      isNew,
       media: {
         type: mediaType,
         imageUrl,
@@ -582,12 +585,26 @@
       </article>`;
   }
 
-  function renderJobs(filter = 'todas') {
+  let _activeFilter = 'todas';
+  let _activeSearch = '';
+
+  function renderJobs(filter, search) {
+    if (filter !== undefined) _activeFilter = filter;
+    if (search !== undefined) _activeSearch = search;
     const grid = $('#jobsGrid');
     if (!grid) return;
-    const list = filter === 'todas' ? JOBS : JOBS.filter((job) => job.category === filter);
+    const q = normalizeLower(_activeSearch);
+    let list = _activeFilter === 'todas' ? JOBS : JOBS.filter((job) => job.category === _activeFilter);
+    if (q) {
+      list = list.filter((job) =>
+        normalizeLower(job.title).includes(q) ||
+        normalizeLower(job.location).includes(q) ||
+        normalizeLower(job.summary).includes(q) ||
+        normalizeLower(job.category).includes(q)
+      );
+    }
     if (!list.length) {
-      grid.innerHTML = '<div class="jobs-note reveal in-view"><strong>Nenhuma vaga ativa no momento.</strong><span>As vagas exibidas aqui são alimentadas pela planilha VAGAS_SITE da RH IMOB.</span></div>';
+      grid.innerHTML = '<div class="jobs-note reveal in-view"><strong>Nenhuma vaga encontrada.</strong><span>Tente outro termo ou selecione uma categoria diferente.</span></div>';
       return;
     }
     grid.innerHTML = list.map(createJobCard).join('');
@@ -603,6 +620,10 @@
         renderJobs(button.dataset.filter || 'todas');
       });
     });
+    const searchInput = $('#jobSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => renderJobs(undefined, searchInput.value));
+    }
   }
 
   function getJobById(id) {
@@ -649,35 +670,67 @@
       '',
       'Meus dados:',
       `Nome: ${data.nome}`,
+      `WhatsApp: ${data.whatsapp}`,
+      `Cidade: ${data.cidade}`,
       `Disponibilidade para início: ${data.inicio}`,
       '',
       'Pode me orientar sobre os próximos passos?'
     ].filter(Boolean).join('\n');
   }
 
+  async function salvarCandidatura(job, data) {
+    const cfg = getNtSupabaseConfig();
+    if (!cfg) return;
+    try {
+      const base = cfg.url.replace(/\/$/, '');
+      const url = `${base}/rest/v1/site_candidaturas`;
+      await fetch(url, {
+        method: 'POST',
+        headers: supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+        body: JSON.stringify({
+          vaga_id: job.id,
+          vaga_titulo: job.title,
+          vaga_local: job.location,
+          nome: data.nome,
+          whatsapp: data.whatsapp,
+          cidade: data.cidade,
+          disponibilidade: data.inicio,
+          responsavel_whatsapp: job.responsible?.whatsapp || null,
+          responsavel_nome: job.responsible?.name || null,
+        })
+      });
+    } catch (e) {
+      console.warn('[RH IMOB] candidatura não gravada:', e);
+    }
+  }
+
   function setupJobModal() {
     const modal = $('#jobModal');
     const form = $('#jobForm');
     if (!modal || !form) return;
+    formatPhoneField(form.elements.whatsapp);
     $$('[data-close-modal]').forEach((el) => el.addEventListener('click', closeJobModal));
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeJobModal();
     });
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const job = getJobById(form.elements.jobId.value);
       if (!job) return;
       const data = {
         nome: normalize(form.elements.nome?.value),
+        whatsapp: normalize(form.elements.whatsapp?.value),
+        cidade: normalize(form.elements.cidade?.value),
         inicio: normalize(form.elements.inicio?.value)
       };
-      const required = ['nome', 'inicio'];
+      const required = ['nome', 'whatsapp', 'cidade', 'inicio'];
       const missing = required.filter((field) => !data[field]);
       if (missing.length) {
         form.elements[missing[0]]?.focus();
         alert('Preencha os campos obrigatórios para enviar seu interesse.');
         return;
       }
+      salvarCandidatura(job, data);
       const targetWhatsApp = job.responsible?.whatsapp || VAGAS_WHATSAPP;
       openWhatsApp(targetWhatsApp, buildJobMessage(job, data));
     });
