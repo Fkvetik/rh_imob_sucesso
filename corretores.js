@@ -1085,27 +1085,41 @@
     return sb;
   }
 
+  function ultimosDigitosCOR(tel, n = 5) {
+    const d = String(tel || '').replace(/\D/g, '');
+    return d.length >= n ? `*${d.slice(-n)}` : (d || '');
+  }
+
   async function registrarAbordagemCOR(lead) {
     if (!state.session || !state.profile) return;
     const client = getCorSupabaseClient();
     const usuario_id = state.session.user?.id;
     const conta_id = state.profile?.conta_id;
     if (!usuario_id || !conta_id) return;
+    const tel = lead.telefone_txt || lead.telefone_base || '';
+    const historico = [{ status: 'ABORDADO', em: new Date().toISOString() }];
     const { error } = await client.from('cor_abordagens').upsert({
       lead_key: lead.lead_key,
       usuario_id,
       conta_id,
       status: 'ABORDADO',
+      nome_display: lead.nome_completo || lead.lead_key,
+      telefone_display: ultimosDigitosCOR(tel),
+      historico,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'lead_key,usuario_id,conta_id', ignoreDuplicates: true });
     if (error) console.warn('[COR] registrar abordagem:', error);
     if (state.abordadosVisible) loadAbordadosCOR();
   }
 
-  async function atualizarStatusAbordagemCOR(id, novoStatus, agendadoEm) {
+  async function atualizarStatusAbordagemCOR(id, novoStatus, agendadoEm, historicoAtual) {
     const client = getCorSupabaseClient();
     const patch = { updated_at: new Date().toISOString() };
-    if (novoStatus) patch.status = novoStatus;
+    if (novoStatus) {
+      patch.status = novoStatus;
+      const arr = Array.isArray(historicoAtual) ? historicoAtual : [];
+      patch.historico = [...arr, { status: novoStatus, em: new Date().toISOString() }];
+    }
     if (agendadoEm) patch.agendado_em = agendadoEm;
     const { error } = await client.from('cor_abordagens').update(patch).eq('id', id);
     if (error) throw error;
@@ -1118,7 +1132,7 @@
     const statusFiltro = $('#abordadosStatusFiltro')?.value || '';
     let query = client
       .from('cor_abordagens')
-      .select('id,lead_key,status,agendado_em,notas,created_at,updated_at')
+      .select('id,lead_key,nome_display,telefone_display,status,agendado_em,historico,created_at,updated_at')
       .eq('usuario_id', usuario_id)
       .order('updated_at', { ascending: false })
       .limit(100);
@@ -1126,6 +1140,32 @@
     const { data, error } = await query;
     if (error) { console.warn('[COR] abordados:', error); return; }
     renderAbordadosCOR(data || []);
+  }
+
+  function corStatusColor(s) {
+    const map = { ABORDADO:'#6d2df2', TEM_INTERESSE:'#1a6640', CHAMAR_NOVAMENTE:'#7a5500',
+      AGENDADO:'#4b178b', REAGENDAR:'#c05000', REUNIAO_OK:'#0d5530', DECLINOU:'#a33', INICIOU:'#2b124d' };
+    return map[s] || '#999';
+  }
+
+  function buildWaConfirmacaoCOR(r) {
+    const frase = state.profile?.frase_agendamento ||
+      '{saudacao_completa}, {primeiro_nome}! Tudo bem? Meu nome é {operador}, represento a {empresa}. Estou entrando em contato para confirmar nosso agendamento.';
+    const operador = state.profile?.nome || 'RH IMOB';
+    const nome = r.nome_display || 'você';
+    const primeiro = nome.split(' ')[0];
+    const hr = new Date().getHours();
+    const saudacao = hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite';
+    const msg = frase
+      .replace(/\{saudacao_completa\}/gi, saudacao)
+      .replace(/\{primeiro_nome\}/gi, primeiro)
+      .replace(/\{nome\}/gi, nome)
+      .replace(/\{operador\}/gi, operador)
+      .replace(/\{empresa\}/gi, 'RH IMOB');
+    const tel = String(r.telefone_display || '').replace(/\D/g, '');
+    if (!tel || tel.length < 5) return '';
+    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
+    return `<a class="btn btn-primary nt-wa-confirm" href="${esc(url)}" target="_blank" rel="noopener">📱 Confirmar agendamento via WhatsApp</a>`;
   }
 
   function renderAbordadosCOR(rows) {
@@ -1137,27 +1177,33 @@
       container.innerHTML = '<p class="nt-abordados-vazio">Nenhum abordado encontrado.</p>';
       return;
     }
+    const isMaster = isAdminProfile();
     container.innerHTML = rows.map((r) => {
       const label = COR_STATUS_LABELS[r.status] || r.status;
       const temData = COR_STATUS_COM_DATA.has(r.status);
       const agendadoStr = r.agendado_em ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-      const botoesStatus = COR_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
-        `<button class="mini-action js-cor-status" data-id="${esc(r.id)}" data-status="${esc(s)}">${esc(COR_STATUS_LABELS[s])}</button>`
+      const historico = Array.isArray(r.historico) ? r.historico : [];
+      const historicoHtml = historico.map((h) =>
+        `<span class="nt-hist-item"><span class="nt-hist-dot" style="background:${corStatusColor(h.status)}"></span>${esc(COR_STATUS_LABELS[h.status] || h.status)} <em>${h.em ? new Date(h.em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''}</em></span>`
       ).join('');
-      const dt = r.agendado_em ? r.agendado_em.slice(0, 16) : '';
+      const nome = r.nome_display || r.lead_key;
+      const tel = r.telefone_display ? ` · ${esc(r.telefone_display)}` : '';
+      const waBtn = isMaster && r.agendado_em && r.status === 'AGENDADO' ? buildWaConfirmacaoCOR(r) : '';
+      const botoesStatus = COR_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
+        `<button class="mini-action js-cor-status" data-id="${esc(r.id)}" data-status="${esc(s)}" data-historico='${JSON.stringify(historico)}'>${esc(COR_STATUS_LABELS[s])}</button>`
+      ).join('');
       return `<div class="nt-abordado-card" data-id="${esc(r.id)}">
         <div class="nt-abordado-top">
-          <span class="nt-abordado-key">${esc(r.lead_key)}</span>
+          <span class="nt-abordado-nome">${esc(nome)}${tel}</span>
           <span class="nt-abordado-status nt-abordado-status--${r.status.toLowerCase().replace(/_/g,'-')}">${esc(label)}</span>
         </div>
-        <div class="nt-abordado-meta">
-          <small>Abordado: ${formatDateTimeBR(r.created_at)}</small>
-          ${agendadoStr ? `<small>Agendado: ${agendadoStr}</small>` : ''}
-        </div>
+        ${historicoHtml ? `<div class="nt-historico">${historicoHtml}</div>` : ''}
+        ${agendadoStr ? `<div class="nt-abordado-agendado-info">📅 Agendado: <strong>${agendadoStr}</strong></div>` : ''}
         ${temData ? `<div class="nt-abordado-agenda">
-          <input type="datetime-local" class="js-cor-agenda-dt" data-id="${esc(r.id)}" value="${dt}" />
+          <input type="datetime-local" class="js-cor-agenda-dt" data-id="${esc(r.id)}" value="${r.agendado_em ? r.agendado_em.slice(0,16) : ''}" />
           <button class="mini-action js-cor-salvar-agenda" data-id="${esc(r.id)}">Salvar data</button>
         </div>` : ''}
+        ${waBtn}
         <div class="nt-abordado-acoes">${botoesStatus}</div>
       </div>`;
     }).join('');
@@ -1165,8 +1211,10 @@
     container.querySelectorAll('.js-cor-status').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const { id, status } = btn.dataset;
+        let historico = [];
+        try { historico = JSON.parse(btn.dataset.historico || '[]'); } catch (_) {}
         try {
-          await atualizarStatusAbordagemCOR(id, status, null);
+          await atualizarStatusAbordagemCOR(id, status, null, historico);
           await loadAbordadosCOR();
         } catch (err) { alert('Erro ao atualizar status.'); }
       });
@@ -1178,7 +1226,7 @@
         const dt = container.querySelector(`.js-cor-agenda-dt[data-id="${id}"]`)?.value;
         if (!dt) { alert('Selecione uma data e hora.'); return; }
         try {
-          await atualizarStatusAbordagemCOR(id, null, new Date(dt).toISOString());
+          await atualizarStatusAbordagemCOR(id, null, new Date(dt).toISOString(), []);
           await loadAbordadosCOR();
         } catch (err) { alert('Erro ao salvar data.'); }
       });

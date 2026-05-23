@@ -115,3 +115,13 @@ td.access-fresh{color:#0d8755;font-weight:800}td.access-warn{color:#91510a;font-
 .nt-tl-bar{width:20px;background:#6d2df2;border-radius:4px 4px 0 0;opacity:.8;transition:opacity .2s}
 .nt-tl-col:hover .nt-tl-bar{opacity:1}
 .nt-tl-label{font-size:10px;color:#6f6283;writing-mode:vertical-rl;transform:rotate(180deg);height:36px}
+
+
+/* ── ABORDADOS v2 ───────────────────────────────────────────────────────────── */
+.nt-abordado-nome{font-size:14px;font-weight:700;color:#21172d;flex:1}
+.nt-historico{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.nt-hist-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6f6283}
+.nt-hist-item em{font-style:normal;opacity:.7}
+.nt-hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nt-abordado-agendado-info{font-size:13px;color:#4b178b;font-weight:600;padding:6px 10px;background:rgba(109,45,242,.07);border-radius:8px}
+.nt-wa-confirm{display:block;text-align:center;font-size:13px;margin-top:4px;text-decoration:none}

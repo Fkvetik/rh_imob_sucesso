@@ -533,7 +533,7 @@
 
     const { data: conta, error: contaError } = await client
       .from('nt_contas')
-      .select('conta_id,produto_codigo,nome_conta,plano_tipo,status,limite_total,limite_por_usuario,usuarios_contratados')
+      .select('conta_id,produto_codigo,nome_conta,plano_tipo,status,limite_total,limite_por_usuario,usuarios_contratados,frase_agendamento')
       .eq('conta_id', userLink.conta_id)
       .eq('produto_codigo', PRODUCT_CODE)
       .eq('status', 'ATIVA')
@@ -1655,27 +1655,47 @@ const canal = isLogged
 
   const NT_STATUS_COM_DATA = new Set(['AGENDADO', 'REAGENDAR']);
 
+  function ultimosDigitos(tel, n = 5) {
+    const d = String(tel || '').replace(/\D/g, '');
+    return d.length >= n ? `*${d.slice(-n)}` : (d || '');
+  }
+
+  function registrarHistorico(historicoAtual, novoStatus) {
+    const arr = Array.isArray(historicoAtual) ? historicoAtual : [];
+    return [...arr, { status: novoStatus, em: new Date().toISOString() }];
+  }
+
   async function registrarAbordagemNT(talent) {
     const client = getClient();
     if (!client || !state.session || !state.context) return;
     const usuario_id = state.session.user?.id;
     const conta_id = state.context.conta_id;
     if (!usuario_id || !conta_id) return;
+    const tel = talent.whatsapp || talent.telefone_principal || '';
+    const nome_display = talent.nome_mascarado || talent.primeiro_nome || '';
+    const historico = [{ status: 'ABORDADO', em: new Date().toISOString() }];
     const { error } = await client.from('nt_abordagens').upsert({
       talento_key: talent.talento_key,
       usuario_id,
       conta_id,
       status: 'ABORDADO',
+      nome_display,
+      telefone_display: ultimosDigitos(tel),
+      historico,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'talento_key,usuario_id,conta_id', ignoreDuplicates: true });
     if (error) console.warn('[NT] registrar abordagem:', error);
     if (state.abordadosVisible) loadAbordadosNT();
   }
 
-  async function atualizarStatusAbordagemNT(id, novoStatus, agendadoEm) {
+  async function atualizarStatusAbordagemNT(id, novoStatus, agendadoEm, historicoAtual) {
     const client = getClient();
     if (!client) return;
-    const patch = { status: novoStatus, updated_at: new Date().toISOString() };
+    const patch = { updated_at: new Date().toISOString() };
+    if (novoStatus) {
+      patch.status = novoStatus;
+      patch.historico = registrarHistorico(historicoAtual, novoStatus);
+    }
     if (agendadoEm) patch.agendado_em = agendadoEm;
     const { error } = await client.from('nt_abordagens').update(patch).eq('id', id);
     if (error) throw error;
@@ -1689,7 +1709,7 @@ const canal = isLogged
     const statusFiltro = $('#abordadosStatusFiltro')?.value || '';
     let query = client
       .from('nt_abordagens')
-      .select('id,talento_key,status,agendado_em,notas,created_at,updated_at')
+      .select('id,talento_key,nome_display,telefone_display,status,agendado_em,historico,created_at,updated_at')
       .eq('usuario_id', usuario_id)
       .order('updated_at', { ascending: false })
       .limit(100);
@@ -1697,6 +1717,67 @@ const canal = isLogged
     const { data, error } = await query;
     if (error) { console.warn('[NT] abordados:', error); return; }
     renderAbordadosNT(data || []);
+  }
+
+  function renderAbordadoCardNT(r) {
+    const label = NT_STATUS_LABELS[r.status] || r.status;
+    const temData = NT_STATUS_COM_DATA.has(r.status);
+    const agendadoStr = r.agendado_em
+      ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+      : '';
+    const historico = Array.isArray(r.historico) ? r.historico : [];
+    const historicoHtml = historico.map((h) =>
+      `<span class="nt-hist-item"><span class="nt-hist-dot" style="background:${statusColor(h.status)}"></span>${esc(NT_STATUS_LABELS[h.status] || h.status)} <em>${formatDateTimeBR(h.em)}</em></span>`
+    ).join('');
+    const nome = r.nome_display || r.talento_key;
+    const tel = r.telefone_display ? ` · ${esc(r.telefone_display)}` : '';
+    const isMaster = adminAllowed();
+    const waBtn = isMaster && r.agendado_em && r.status === 'AGENDADO'
+      ? buildWaConfirmacao(r)
+      : '';
+    const botoesStatus = NT_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
+      `<button class="nt-mini-action js-nt-status" data-id="${esc(r.id)}" data-status="${esc(s)}" data-historico='${JSON.stringify(historico)}'>${esc(NT_STATUS_LABELS[s])}</button>`
+    ).join('');
+
+    return `<div class="nt-abordado-card" data-id="${esc(r.id)}">
+      <div class="nt-abordado-top">
+        <span class="nt-abordado-nome">${esc(displayText(nome))}${tel}</span>
+        <span class="nt-abordado-status nt-abordado-status--${r.status.toLowerCase().replace(/_/g,'-')}">${esc(label)}</span>
+      </div>
+      ${historicoHtml ? `<div class="nt-historico">${historicoHtml}</div>` : ''}
+      ${agendadoStr ? `<div class="nt-abordado-agendado-info">📅 Agendado: <strong>${agendadoStr}</strong></div>` : ''}
+      ${temData ? `<div class="nt-abordado-agenda">
+        <input type="datetime-local" class="js-nt-agenda-dt" data-id="${esc(r.id)}" value="${r.agendado_em ? r.agendado_em.slice(0,16) : ''}" />
+        <button class="nt-mini-action js-nt-salvar-agenda" data-id="${esc(r.id)}">Salvar data</button>
+      </div>` : ''}
+      ${waBtn}
+      <div class="nt-abordado-acoes">${botoesStatus}</div>
+    </div>`;
+  }
+
+  function statusColor(s) {
+    const map = { ABORDADO:'#6d2df2', TEM_INTERESSE:'#1a6640', CHAMAR_NOVAMENTE:'#7a5500',
+      AGENDADO:'#4b178b', REAGENDAR:'#c05000', REUNIAO_OK:'#0d5530', DECLINOU:'#a33', INICIOU:'#2b124d' };
+    return map[s] || '#999';
+  }
+
+  function buildWaConfirmacao(r) {
+    const frase = state.context?.frase_agendamento ||
+      '{saudacao_completa}, {primeiro_nome}! Tudo bem? Meu nome é {operador}, represento a {empresa}. Estou entrando em contato para confirmar nosso agendamento. Até logo!';
+    const operador = state.context?.nome || 'RH IMOB';
+    const empresa = state.context?.nome_conta || 'RH IMOB';
+    const nome = r.nome_display || 'você';
+    const primeiro = nome.split(' ')[0];
+    const msg = frase
+      .replace(/\{saudacao_completa\}/gi, saudacao())
+      .replace(/\{primeiro_nome\}/gi, primeiro)
+      .replace(/\{nome\}/gi, nome)
+      .replace(/\{operador\}/gi, operador)
+      .replace(/\{empresa\}/gi, empresa);
+    const tel = String(r.telefone_display || '').replace(/\D/g, '');
+    if (!tel || tel.length < 5) return '';
+    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
+    return `<a class="nt-btn nt-btn-primary nt-wa-confirm" href="${esc(url)}" target="_blank" rel="noopener">📱 Confirmar agendamento via WhatsApp</a>`;
   }
 
   function renderAbordadosNT(rows) {
@@ -1708,35 +1789,15 @@ const canal = isLogged
       container.innerHTML = '<p class="nt-abordados-vazio">Nenhum abordado encontrado.</p>';
       return;
     }
-    container.innerHTML = rows.map((r) => {
-      const label = NT_STATUS_LABELS[r.status] || r.status;
-      const temData = NT_STATUS_COM_DATA.has(r.status);
-      const agendadoStr = r.agendado_em ? new Date(r.agendado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-      const botoesStatus = NT_STATUS_ORDER.filter((s) => s !== r.status).map((s) =>
-        `<button class="nt-mini-action js-nt-status" data-id="${esc(r.id)}" data-status="${esc(s)}">${esc(NT_STATUS_LABELS[s])}</button>`
-      ).join('');
-      return `<div class="nt-abordado-card" data-id="${esc(r.id)}">
-        <div class="nt-abordado-top">
-          <span class="nt-abordado-key">${esc(r.talento_key)}</span>
-          <span class="nt-abordado-status nt-abordado-status--${r.status.toLowerCase().replace(/_/g,'-')}">${esc(label)}</span>
-        </div>
-        <div class="nt-abordado-meta">
-          <small>Abordado: ${formatDateTimeBR(r.created_at)}</small>
-          ${agendadoStr ? `<small>Agendado: ${agendadoStr}</small>` : ''}
-        </div>
-        ${temData ? `<div class="nt-abordado-agenda">
-          <input type="datetime-local" class="js-nt-agenda-dt" data-id="${esc(r.id)}" value="${r.agendado_em ? r.agendado_em.slice(0,16) : ''}" />
-          <button class="nt-mini-action js-nt-salvar-agenda" data-id="${esc(r.id)}">Salvar data</button>
-        </div>` : ''}
-        <div class="nt-abordado-acoes">${botoesStatus}</div>
-      </div>`;
-    }).join('');
+    container.innerHTML = rows.map(renderAbordadoCardNT).join('');
 
     container.querySelectorAll('.js-nt-status').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const { id, status } = btn.dataset;
+        let historico = [];
+        try { historico = JSON.parse(btn.dataset.historico || '[]'); } catch (_) {}
         try {
-          await atualizarStatusAbordagemNT(id, status, null);
+          await atualizarStatusAbordagemNT(id, status, null, historico);
           await loadAbordadosNT();
         } catch (err) { alert('Erro ao atualizar status.'); }
       });
@@ -1748,7 +1809,7 @@ const canal = isLogged
         const dt = container.querySelector(`.js-nt-agenda-dt[data-id="${id}"]`)?.value;
         if (!dt) { alert('Selecione uma data e hora.'); return; }
         try {
-          await atualizarStatusAbordagemNT(id, null, new Date(dt).toISOString());
+          await atualizarStatusAbordagemNT(id, null, new Date(dt).toISOString(), []);
           await loadAbordadosNT();
         } catch (err) { alert('Erro ao salvar data.'); }
       });
@@ -1760,6 +1821,26 @@ const canal = isLogged
     if (section) section.hidden = !show;
     state.abordadosVisible = show;
     if (show) loadAbordadosNT();
+  }
+
+  function carregarFraseAgendamento() {
+    const el = $('#fraseAgendamentoText');
+    if (el && state.context?.frase_agendamento) el.value = state.context.frase_agendamento;
+  }
+
+  async function salvarFraseAgendamento() {
+    const client = getClient();
+    if (!client || !state.context) return;
+    const frase = $('#fraseAgendamentoText')?.value?.trim();
+    if (!frase) return;
+    const { error } = await client
+      .from('nt_contas')
+      .update({ frase_agendamento: frase })
+      .eq('conta_id', state.context.conta_id)
+      .eq('produto_codigo', PRODUCT_CODE);
+    if (error) { setAdminAlert('Erro ao salvar frase.', 'error'); return; }
+    state.context.frase_agendamento = frase;
+    setAdminAlert('Frase de agendamento salva.', 'success');
   }
 
   // ── FIM ABORDADOS ───────────────────────────────────────────────────────────
@@ -1931,6 +2012,7 @@ const canal = isLogged
 
       await loadAdminPhrases({ silent: true });
       await loadFunilGestor();
+      carregarFraseAgendamento();
 
       const saldo = conta.saldo || 0;
       const totalLimit = saldo + (conta.consumidos || 0);
@@ -2245,6 +2327,7 @@ const canal = isLogged
       showAbordados(!state.abordadosVisible);
     });
     $('#abordadosStatusFiltro')?.addEventListener('change', loadAbordadosNT);
+    $('#saveFraseAgendamentoBtn')?.addEventListener('click', salvarFraseAgendamento);
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {

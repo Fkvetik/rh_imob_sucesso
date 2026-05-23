@@ -334,6 +334,20 @@
             </table>
           </div>
         </article>
+
+        <article class="nt-admin-box nt-admin-messages" style="margin-top:24px">
+          <div class="nt-admin-box-head">
+            <div>
+              <h3>Frase de confirmação de agendamento</h3>
+              <span>Usada pelo master ao clicar "Confirmar agendamento via WhatsApp".</span>
+            </div>
+            <button class="nt-btn nt-btn-primary" id="saveFraseAgendamentoBtn" type="button">Salvar</button>
+          </div>
+          <div class="nt-phrase-editor">
+            <textarea id="fraseAgendamentoText" rows="4" placeholder="{saudacao_completa}, {primeiro_nome}! Tudo bem? Meu nome é {operador}, represento a {empresa}. Estou entrando em contato para confirmar nosso agendamento."></textarea>
+            <p class="nt-phrase-help">Placeholders: <strong>{saudacao_completa}</strong>, <strong>{primeiro_nome}</strong>, <strong>{operador}</strong>, <strong>{empresa}</strong>.</p>
+          </div>
+        </article>
       </div>
     </section>
   </main>
