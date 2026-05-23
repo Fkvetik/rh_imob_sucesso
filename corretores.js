@@ -933,7 +933,7 @@
     const client = getCorSupabaseClient();
     if (!client || !state.profile?.conta_id) return;
     const { data } = await client
-      .from('cor_contas')
+      .from('contas')
       .select('frase_agendamento')
       .eq('id', state.profile.conta_id)
       .maybeSingle();
@@ -948,7 +948,7 @@
     const client = getCorSupabaseClient();
     if (!client || !state.profile?.conta_id) return;
     const { error } = await client
-      .from('cor_contas')
+      .from('contas')
       .update({ frase_agendamento: frase })
       .eq('id', state.profile.conta_id);
     if (error) return setAdminAlert('Erro ao salvar frase: ' + error.message, 'error');
