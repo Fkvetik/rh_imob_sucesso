@@ -1038,8 +1038,7 @@
 
       const geo = row.tem_geo ? 'Geolocalizado' : 'Localização aproximada';
       const isLogged = !!state.session && !!state.context;
-      if (isLogged) console.log('[NT-DEBUG] pretensao_salarial:', row.talento_key, row.pretensao_salarial);
-      const canal = isLogged
+const canal = isLogged
         ? (row.tem_whatsapp ? '📱 WhatsApp disponível' : (row.tem_email ? '✉️ E-mail disponível' : 'Contato protegido'))
         : (row.tem_whatsapp ? 'Canal disponível após login' : (row.tem_email ? 'Contato disponível após login' : 'Contato protegido'));
       const idade = row.faixa_idade || (row.idade_anos ? `${row.idade_anos} anos` : 'Idade não informada');
