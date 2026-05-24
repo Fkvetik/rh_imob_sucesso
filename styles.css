@@ -386,6 +386,74 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
   box-shadow: 0 0 0 4px rgba(31,185,120,.2);
 }
 
+/* ── Contratar insights ──────────────────────────── */
+.contratar-insights { display: flex; flex-direction: column; gap: 14px; margin: 28px 0 32px; }
+.contratar-insight {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--off); border: 1px solid var(--line);
+  border-radius: 16px; padding: 16px 18px;
+  font-size: 15px; color: var(--muted); line-height: 1.5;
+}
+.contratar-insight span { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.contratar-insight strong { color: var(--ink); }
+
+/* ── Soluções compactas ───────────────────────────── */
+.solutions-compact { margin-top: 52px; padding-top: 40px; border-top: 1px solid var(--line); }
+.solutions-compact-label {
+  font-size: 12px; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
+}
+.solutions-compact-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.solutions-compact-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--off); border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px 16px;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+}
+.solutions-compact-item span { font-size: 18px; }
+
+/* ── Plataformas dual grid ────────────────────────── */
+.platforms-dual-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px;
+}
+.platform-dual-card {
+  border: 1px solid var(--line); border-radius: var(--radius-xl);
+  padding: 36px 32px; background: #fff;
+  box-shadow: var(--shadow-soft);
+  display: flex; flex-direction: column; gap: 20px;
+}
+.platform-dual-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+}
+.platform-dual-head h3 {
+  font-size: 22px; font-weight: 900; color: var(--purple-900);
+  letter-spacing: -.03em; line-height: 1.2; margin-top: 8px;
+}
+.platform-dual-desc { font-size: 15px; color: var(--muted); line-height: 1.6; flex: 1; }
+.platform-dual-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; }
+.platform-dual-actions .btn { font-size: 14px; padding: 12px 22px; }
+
+/* ── Vagas teaser ─────────────────────────────────── */
+.vagas-teaser-section { background: linear-gradient(135deg, var(--purple-950), var(--purple-900)); }
+.vagas-teaser-card {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 48px; align-items: center;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--radius-xl); padding: 52px 56px;
+}
+.vagas-teaser-copy .talent-label { color: var(--orange-500); }
+.vagas-teaser-copy h2 { color: #fff; font-size: clamp(26px, 3vw, 36px); margin: 12px 0 14px; }
+.vagas-teaser-copy p { color: rgba(255,255,255,.65); font-size: 16px; line-height: 1.6; margin-bottom: 18px; }
+.vagas-teaser-copy ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.vagas-teaser-copy ul li { color: rgba(255,255,255,.70); font-size: 15px; font-weight: 600; }
+.vagas-teaser-copy ul li::before { content: '✓ '; color: var(--green); font-weight: 900; }
+.vagas-teaser-actions { display: flex; flex-direction: column; gap: 12px; min-width: 220px; }
+.vagas-teaser-actions .btn-primary { background: #fff; color: var(--purple-900); }
+.vagas-teaser-actions .btn-secondary { border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.85); }
+.vagas-teaser-actions .btn-secondary:hover { border-color: rgba(255,255,255,.5); }
+
 /* ── Audience split ───────────────────────────────── */
 .audience-split { margin-top: 32px; }
 .audience-label {
@@ -443,11 +511,7 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
 .hero-badges-mobile { display: none; }
 
 @media (max-width: 860px) {
-  /* Esconde badges sobrepostos na foto no mobile */
-  .hero-badge--tl,
-  .hero-badge--br { display: none; }
-
-  /* Mostra badges abaixo da foto */
+  .hero-badge--tl, .hero-badge--br { display: none; }
   .hero-badges-mobile {
     display: flex; gap: 12px; margin-top: 14px;
     justify-content: center; flex-wrap: wrap;
@@ -456,19 +520,15 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
     display: flex; align-items: center; gap: 10px;
     background: #fff; border: 1px solid var(--line);
     border-radius: 14px; padding: 10px 16px;
-    box-shadow: var(--shadow-soft);
-    font-size: 13px;
+    box-shadow: var(--shadow-soft); font-size: 13px;
   }
-  .hero-badge-mobile strong {
-    font-size: 15px; font-weight: 900;
-    color: var(--purple-900); letter-spacing: -.02em;
-  }
-  .hero-badge-mobile small {
-    font-size: 11px; font-weight: 700;
-    color: var(--muted); text-transform: uppercase;
-    letter-spacing: .04em;
-  }
+  .hero-badge-mobile strong { font-size: 15px; font-weight: 900; color: var(--purple-900); letter-spacing: -.02em; }
+  .hero-badge-mobile small { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
   .audience-cards { grid-template-columns: 1fr; }
+  .solutions-compact-grid { grid-template-columns: 1fr 1fr; }
+  .platforms-dual-grid { grid-template-columns: 1fr; }
+  .vagas-teaser-card { grid-template-columns: 1fr; gap: 28px; padding: 36px 28px; }
+  .vagas-teaser-actions { flex-direction: row; flex-wrap: wrap; }
 }
 
 .gateway-panel,
