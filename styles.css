@@ -450,9 +450,22 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
 .vagas-teaser-copy ul li { color: rgba(255,255,255,.70); font-size: 15px; font-weight: 600; }
 .vagas-teaser-copy ul li::before { content: '✓ '; color: var(--green); font-weight: 900; }
 .vagas-teaser-actions { display: flex; flex-direction: column; gap: 12px; min-width: 220px; }
-.vagas-teaser-actions .btn-primary { background: #fff; color: var(--purple-900); }
-.vagas-teaser-actions .btn-secondary { border-color: rgba(255,255,255,.25); color: rgba(255,255,255,.85); }
-.vagas-teaser-actions .btn-secondary:hover { border-color: rgba(255,255,255,.5); }
+.vagas-teaser-actions .btn-primary {
+  background: #fff;
+  color: var(--purple-900);
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.vagas-teaser-actions .btn-primary:hover { background: var(--orange-100); }
+.vagas-teaser-actions .btn-secondary {
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.55);
+  color: #fff;
+  font-weight: 800;
+}
+.vagas-teaser-actions .btn-secondary:hover {
+  background: rgba(255,255,255,.20);
+  border-color: #fff;
+}
 
 /* ── Audience split ───────────────────────────────── */
 .audience-split { margin-top: 32px; }
