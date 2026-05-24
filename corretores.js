@@ -769,9 +769,9 @@
       const record = (state.adminRecent || []).find((r) => recordKey(r) === key);
       if (record) {
         await rpc('rhi_marcar_lead_convertido', {
-          p_operador: record.operador || record.usuario_email || '',
-          p_lead: record.nome_mascarado || record.lead_key || '',
-          p_data: record.data_consumo || ''
+          lead_key:  record.lead_key || '',
+          conta_id:  record.conta_id  || null,
+          user_id:   record.auth_user_id || record.user_id || null
         });
         setAdminAlert('Conversão registrada no banco com sucesso.', 'success');
       }
