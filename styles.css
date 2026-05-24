@@ -1031,12 +1031,18 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
 .testimonial-avatar {
   width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
   border: 2px solid rgba(255,255,255,.30);
-  object-fit: cover;
-}
-.testimonial-avatar--fallback {
-  background: linear-gradient(135deg, var(--orange-600), var(--orange-500));
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 900; color: var(--white); letter-spacing: -.02em;
+  font-size: 15px; font-weight: 900; letter-spacing: -.02em;
+}
+.testimonial-avatar--photo {
+  background: linear-gradient(135deg, var(--orange-600), var(--orange-500)),
+              url('/assets/leandro-gki-v2.jpg?v=20260523c') center top / cover no-repeat;
+  background-blend-mode: normal;
+  color: transparent;
+  background-size: cover;
+  background-position: center top;
+  background-image: url('/assets/leandro-gki-v2.jpg?v=20260523c');
+  background-color: var(--orange-600);
 }
 
 .cta-band {
