@@ -1029,20 +1029,27 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
 .testimonial-author { display: flex; align-items: center; gap: 14px; margin-top: 20px; }
 .testimonial-author strong { display: block; color: var(--white); }
 .testimonial-avatar {
-  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
   border: 2px solid rgba(255,255,255,.30);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 900; letter-spacing: -.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--orange-600), var(--orange-500));
 }
 .testimonial-avatar--photo {
-  background: linear-gradient(135deg, var(--orange-600), var(--orange-500)),
-              url('/assets/leandro-gki-v2.jpg?v=20260523c') center top / cover no-repeat;
-  background-blend-mode: normal;
-  color: transparent;
+  background-color: var(--orange-600);
+  background-image: url('/assets/leandro-gki-v2.jpg?v=20260523c');
   background-size: cover;
   background-position: center top;
-  background-image: url('/assets/leandro-gki-v2.jpg?v=20260523c');
-  background-color: var(--orange-600);
+  color: transparent;
 }
 
 .cta-band {
