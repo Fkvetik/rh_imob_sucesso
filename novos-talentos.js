@@ -1465,14 +1465,15 @@ const canal = isLogged
       const record = (state.adminRecent || []).find((r) => recordKey(r) === key);
       if (record) {
         await rpc('nt_admin_marcar_convertido_v15', {
-          p_operador: record.operador_nome || record.operador || '',
-          p_talento: record.nome_mascarado || record.primeiro_nome || record.talento_key || '',
-          p_data: record.created_at || record.data_consumo || ''
+          lead_key: record.talento_key || '',
+          conta_id: record.conta_id  || null,
+          user_id:  record.auth_user_id || record.usuario_id || null
         });
         setAdminAlert('Conversão registrada no banco com sucesso.', 'success');
+        await loadAdminDashboard({ silent: true });
       }
     } catch (_) {
-      setAdminAlert('Conversão marcada localmente (sessão atual). Para persistir, crie nt_admin_marcar_convertido_v15 no Supabase.', 'warn');
+      setAdminAlert('Erro ao registrar conversão. Tente novamente.', 'warn');
     }
   }
 
@@ -1538,7 +1539,7 @@ const canal = isLogged
     const convertidos = state.convertidos || new Set();
     tbody.innerHTML = list.map((r) => {
       const key = recordKey(r);
-      const jaConvertido = convertidos.has(key);
+      const jaConvertido = r.convertido === true || String(r.status || '').toUpperCase() === 'CONVERTIDO' || convertidos.has(key);
       return `<tr>
         <td>${esc(formatDateTimeBR(r.created_at || r.data_consumo))}</td>
         <td>${esc(displayText(r.operador_nome || r.operador || 'Operador'))}</td>
