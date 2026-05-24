@@ -774,9 +774,10 @@
           user_id:   record.auth_user_id || record.user_id || null
         });
         setAdminAlert('Conversão registrada no banco com sucesso.', 'success');
+        await loadAdminDashboard({ silent: true });
       }
     } catch (_) {
-      setAdminAlert('Conversão marcada localmente (sessão atual). Para persistir, crie rhi_marcar_lead_convertido no Supabase.', 'warn');
+      setAdminAlert('Erro ao registrar conversão. Tente novamente.', 'warn');
     }
   }
 
@@ -836,7 +837,7 @@
     const convertidos = state.convertidos || new Set();
     tbody.innerHTML = list.map((r) => {
       const key = recordKey(r);
-      const jaConvertido = convertidos.has(key);
+      const jaConvertido = String(r.status || '').toUpperCase() === 'CONVERTIDO' || convertidos.has(key);
       return `<tr>
         <td>${esc(formatDateTimeBR(r.data_consumo))}</td>
         <td>${esc(r.operador || r.usuario_email || 'Operador')}</td>
