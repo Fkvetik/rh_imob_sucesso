@@ -808,6 +808,78 @@
   }
 
 
+  function setupPerfilModal() {
+    const modal = $('#perfilModal');
+    const form = $('#perfilForm');
+    if (!modal || !form) return;
+
+    formatPhoneField(form.elements.whatsapp);
+
+    $$('.js-open-perfil').forEach((card) => {
+      card.addEventListener('click', () => {
+        const perfil = card.dataset.perfil || '';
+        const kicker = card.dataset.kicker || 'Cadastro de perfil';
+        form.reset();
+        form.elements.perfil.value = perfil;
+        $('#perfilModalKicker').textContent = kicker;
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        setTimeout(() => form.elements.nome?.focus(), 50);
+      });
+    });
+
+    $$('[data-close-perfil-modal]').forEach((el) =>
+      el.addEventListener('click', () => {
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+      })
+    );
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        perfil: form.elements.perfil.value,
+        nome: normalize(form.elements.nome?.value),
+        whatsapp: normalize(form.elements.whatsapp?.value),
+        regiao: normalize(form.elements.regiao?.value),
+        mensagem: normalize(form.elements.mensagem?.value),
+      };
+      const required = ['nome', 'whatsapp', 'regiao'];
+      const missing = required.filter((f) => !data[f]);
+      if (missing.length) {
+        form.elements[missing[0]]?.focus();
+        alert('Preencha os campos obrigatórios para enviar seu perfil.');
+        return;
+      }
+
+      try {
+        await salvarCandidatura(
+          { id: 'perfil', titulo: data.perfil, local: data.regiao, responsavel_whatsapp: VAGAS_WHATSAPP, responsavel_nome: 'Mariana' },
+          { nome: data.nome, whatsapp: data.whatsapp, cidade: data.regiao, disponibilidade: data.mensagem || '' }
+        );
+      } catch (_) {}
+
+      const msg = [
+        `Olá, Mariana! Vim pelo site da RH IMOB e quero me candidatar.`,
+        ``,
+        `Perfil: ${data.perfil}`,
+        `Nome: ${data.nome}`,
+        `WhatsApp: ${data.whatsapp}`,
+        `Região: ${data.regiao}`,
+        data.mensagem ? `Sobre mim: ${data.mensagem}` : null,
+      ].filter(Boolean).join('\n');
+
+      openWhatsApp(VAGAS_WHATSAPP, msg);
+    });
+  }
+
   function openAdvertiseModal() {
     const modal = $('#advertiseModal');
     const form = $('#advertiseForm');
@@ -898,6 +970,7 @@
     setupJobFilters();
     setupJobModal();
     setupTalentModal();
+    setupPerfilModal();
     setupAdvertiseModal();
     setupFooterYear();
     hydratePublicMetrics();

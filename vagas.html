@@ -71,6 +71,59 @@
       </div>
     </section>
 
+    <section class="section-pad perfil-section" id="perfil">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Qual é o seu momento?</span>
+          <h2>Encontre o caminho certo para o seu perfil.</h2>
+          <p>Clique no card que representa sua situação atual. Preenchimento rápido — você receberá contato da RH IMOB alinhado ao seu perfil.</p>
+        </div>
+        <div class="perfil-grid">
+
+          <button class="perfil-card reveal js-open-perfil" type="button"
+            data-perfil="Corretor experiente buscando nova imobiliária"
+            data-kicker="Tenho experiência"
+            data-icon="🏆">
+            <span class="perfil-card-icon">🏆</span>
+            <strong class="perfil-card-title">Corretor experiente</strong>
+            <p class="perfil-card-desc">Tenho CRECI e experiência no mercado imobiliário. Estou buscando uma nova imobiliária com melhores condições, mais leads ou produto melhor.</p>
+            <span class="perfil-card-cta btn btn-cta">Quero uma proposta</span>
+          </button>
+
+          <button class="perfil-card reveal js-open-perfil" type="button"
+            data-perfil="Novo talento — quero entrar no mercado imobiliário"
+            data-kicker="Quero começar"
+            data-icon="🚀">
+            <span class="perfil-card-icon">🚀</span>
+            <strong class="perfil-card-title">Quero entrar no mercado</strong>
+            <p class="perfil-card-desc">Ainda não atuo no setor imobiliário mas tenho perfil comercial. Quero aprender, tirar o CRECI e construir uma carreira sólida.</p>
+            <span class="perfil-card-cta btn btn-cta">Quero começar agora</span>
+          </button>
+
+          <button class="perfil-card reveal js-open-perfil" type="button"
+            data-perfil="Profissional em transição de área para o mercado imobiliário"
+            data-kicker="Estou em transição"
+            data-icon="🔄">
+            <span class="perfil-card-icon">🔄</span>
+            <strong class="perfil-card-title">Em transição de área</strong>
+            <p class="perfil-card-desc">Atuo em outra área — financeiro, varejo, seguros, telemarketing — e quero migrar para o mercado imobiliário aproveitando minha experiência comercial.</p>
+            <span class="perfil-card-cta btn btn-cta">Me candidatar</span>
+          </button>
+
+          <button class="perfil-card reveal js-open-perfil" type="button"
+            data-perfil="Gestor ou gerente comercial buscando novo desafio"
+            data-kicker="Sou liderança"
+            data-icon="👔">
+            <span class="perfil-card-icon">👔</span>
+            <strong class="perfil-card-title">Gestor / Gerente comercial</strong>
+            <p class="perfil-card-desc">Tenho experiência em liderança de equipes comerciais no mercado imobiliário. Busco um novo desafio com mais escala, produto ou remuneração.</p>
+            <span class="perfil-card-cta btn btn-cta">Enviar meu perfil</span>
+          </button>
+
+        </div>
+      </div>
+    </section>
+
     <section class="section-pad vagas-section" id="vagas">
       <div class="container">
         <div class="talent-bank-card reveal" id="banco-talentos">
@@ -141,6 +194,35 @@
       </div>
     </section>
   </main>
+  <div class="modal" id="perfilModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="perfilModalTitle">
+    <div class="modal-backdrop" data-close-perfil-modal></div>
+    <div class="modal-panel" role="document">
+      <button class="modal-close" type="button" data-close-perfil-modal aria-label="Fechar">×</button>
+      <div class="modal-head">
+        <span class="section-kicker" id="perfilModalKicker">Cadastro de perfil</span>
+        <h2 id="perfilModalTitle">Envie seu perfil para a RH IMOB</h2>
+        <p>Preencha rapidamente. A Mariana da RH IMOB entrará em contato com oportunidades alinhadas ao seu perfil.</p>
+      </div>
+      <form id="perfilForm" class="job-form">
+        <input type="hidden" name="perfil" id="perfilHidden" />
+        <label>Nome completo
+          <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome completo" />
+        </label>
+        <label>WhatsApp
+          <input type="tel" name="whatsapp" autocomplete="tel" required placeholder="(11) 99999-9999" />
+        </label>
+        <label>Cidade / região onde mora
+          <input type="text" name="regiao" autocomplete="address-level2" required placeholder="Ex.: São Paulo, Osasco, ABC, Guarulhos" />
+        </label>
+        <label>Conte brevemente sua situação <span class="optional-label">opcional</span>
+          <textarea name="mensagem" rows="3" placeholder="Ex.: 3 anos no mercado, atuo com locação, busco produto de lançamento com melhor comissão"></textarea>
+        </label>
+        <button class="btn btn-cta btn-full" type="submit">Enviar meu perfil pelo WhatsApp</button>
+        <p class="form-helper">Você revisa a mensagem antes de enviar. Seus dados chegam organizados para a Mariana responder com contexto.</p>
+      </form>
+    </div>
+  </div>
+
   <div class="modal" id="supportModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle">
     <div class="modal-backdrop" data-close-support-modal></div>
     <div class="modal-panel support-modal-panel" role="document">

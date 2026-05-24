@@ -617,6 +617,52 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
   font-size: 12px;
   font-weight: 800;
 }
+/* ── Seção de perfis ──────────────────────────────── */
+.perfil-section { background: var(--gray-50, #f8f7fc); }
+.perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+.perfil-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: clamp(24px, 4vw, 36px);
+  border-radius: var(--radius-xl);
+  background: var(--white);
+  border: 2px solid transparent;
+  box-shadow: 0 4px 24px rgba(109,45,242,.08);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.perfil-card:hover {
+  border-color: var(--orange-500);
+  box-shadow: 0 8px 40px rgba(255,122,26,.18);
+  transform: translateY(-3px);
+}
+.perfil-card-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+.perfil-card-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--purple-900);
+  letter-spacing: -.02em;
+}
+.perfil-card-desc {
+  font-size: 14px;
+  color: var(--gray-600, #555);
+  line-height: 1.55;
+  flex: 1;
+  margin: 0;
+}
+.perfil-card .btn { margin-top: 4px; font-size: 14px; padding: 10px 20px; pointer-events: none; }
+
 .job-toolbar {
   display: flex;
   flex-direction: column;
