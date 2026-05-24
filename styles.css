@@ -1000,55 +1000,83 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
   background: var(--purple-950);
   color: var(--white);
 }
-.testimonial-card {
+.testimonial-header { margin-bottom: 40px; }
+.testimonial-header h2 { color: var(--white); margin-top: 8px; }
+.testimonial-grid {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
-  padding: clamp(26px, 5vw, 56px);
+  align-items: start;
+}
+.testimonial-card {
+  padding: clamp(22px, 4vw, 40px);
   border-radius: var(--radius-xl);
   background: linear-gradient(135deg, rgba(109,45,242,.25), rgba(255,143,61,.10));
   border: 1px solid rgba(255,255,255,.14);
   box-shadow: var(--shadow);
 }
-.quote-mark {
-  font-size: 98px;
-  line-height: .8;
-  color: var(--orange-500);
-  font-weight: 950;
+.testimonial-card--video { padding: 0; overflow: hidden; }
+.testimonial-card--video .testimonial-card-body { padding: clamp(18px, 3vw, 32px); }
+.testimonial-video-thumb {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4/3;
 }
-.testimonial-card h2, .testimonial-card h3 { color: var(--white); }
-.testimonial-card .section-kicker { color: #ffd0aa; }
-.testimonial-card blockquote {
-  margin: 0 0 20px;
-  font-size: clamp(24px, 3vw, 38px);
-  line-height: 1.16;
-  letter-spacing: -.04em;
-  font-weight: 900;
+.testimonial-video-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform .35s ease;
 }
-.testimonial-full, .testimonial-author span { color: rgba(255,255,255,.76); }
-.testimonial-author { display: flex; align-items: center; gap: 14px; margin-top: 20px; }
-.testimonial-author strong { display: block; color: var(--white); }
-.testimonial-avatar {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  border: 2px solid rgba(255,255,255,.30);
+.testimonial-video-thumb:hover img { transform: scale(1.04); }
+.play-badge {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: -.02em;
+  font-size: 52px;
   color: var(--white);
-  background: linear-gradient(135deg, var(--orange-600), var(--orange-500));
+  background: rgba(0,0,0,.36);
+  transition: background .25s;
+}
+.testimonial-video-thumb:hover .play-badge { background: rgba(109,45,242,.55); }
+.quote-mark {
+  font-size: 72px;
+  line-height: .8;
+  color: var(--orange-500);
+  font-weight: 950;
+  margin-bottom: 8px;
+}
+.testimonial-card blockquote {
+  margin: 0 0 16px;
+  font-size: clamp(18px, 2.2vw, 26px);
+  line-height: 1.2;
+  letter-spacing: -.03em;
+  font-weight: 900;
+  color: var(--white);
+}
+.testimonial-full, .testimonial-author span { color: rgba(255,255,255,.76); font-size: 14px; }
+.testimonial-full { margin: 0 0 16px; }
+.testimonial-author { display: flex; align-items: center; gap: 14px; margin-top: 20px; }
+.testimonial-author strong { display: block; color: var(--white); font-size: 15px; }
+.testimonial-avatar {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.30);
+  background: linear-gradient(135deg, var(--orange-600), var(--orange-500)) center/cover no-repeat;
   overflow: hidden;
 }
 .testimonial-avatar--photo {
-  background: url('/assets/leandro-gki-v2.jpg?v=20260523d') center top / cover no-repeat var(--orange-600);
-  color: transparent;
-  font-size: 0;
+  background-color: var(--orange-600);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 
 .cta-band {
