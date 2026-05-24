@@ -231,7 +231,7 @@ button, input, textarea, select { font: inherit; }
   position: relative;
 }
 .gateway-brand-lockup {
-  display: inline-flex;
+  display: none; /* logo já aparece no header fixo */
   align-items: center;
   gap: 14px;
   margin-bottom: 22px;
@@ -384,6 +384,91 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
   border-radius: 50%;
   background: #1fb978;
   box-shadow: 0 0 0 4px rgba(31,185,120,.2);
+}
+
+/* ── Audience split ───────────────────────────────── */
+.audience-split { margin-top: 32px; }
+.audience-label {
+  font-size: 12px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+}
+.audience-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.audience-card {
+  display: flex; flex-direction: column;
+  padding: 24px 22px; border-radius: 24px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  cursor: pointer;
+}
+.audience-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: rgba(109,45,242,.28);
+}
+.audience-card--empresa { background: linear-gradient(145deg, #fff, #f9f2ff); }
+.audience-card--corretor { background: linear-gradient(145deg, #fff, #fff2e8); }
+.audience-card-icon { font-size: 28px; margin-bottom: 10px; }
+.audience-card strong {
+  display: block; font-size: 17px; font-weight: 900;
+  color: var(--purple-900); letter-spacing: -.02em;
+  margin-bottom: 6px;
+}
+.audience-card span {
+  font-size: 14px; font-weight: 600;
+  color: var(--muted); line-height: 1.45; flex: 1;
+}
+.audience-card-cta {
+  margin-top: 16px; font-size: 13px; font-weight: 800;
+  color: var(--orange-600); letter-spacing: .01em;
+}
+.audience-card--corretor .audience-card-cta { color: var(--purple-700); }
+
+/* Links secundários */
+.gateway-secondary-links {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 22px; flex-wrap: wrap;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+}
+.gateway-secondary-links a { color: var(--purple-700); }
+.gateway-secondary-links a:hover { color: var(--orange-600); }
+.gateway-secondary-links span { opacity: .4; }
+
+/* ── Badges mobile (abaixo da foto) ──────────────── */
+.hero-badges-mobile { display: none; }
+
+@media (max-width: 860px) {
+  /* Esconde badges sobrepostos na foto no mobile */
+  .hero-badge--tl,
+  .hero-badge--br { display: none; }
+
+  /* Mostra badges abaixo da foto */
+  .hero-badges-mobile {
+    display: flex; gap: 12px; margin-top: 14px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .hero-badge-mobile {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 14px; padding: 10px 16px;
+    box-shadow: var(--shadow-soft);
+    font-size: 13px;
+  }
+  .hero-badge-mobile strong {
+    font-size: 15px; font-weight: 900;
+    color: var(--purple-900); letter-spacing: -.02em;
+  }
+  .hero-badge-mobile small {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .audience-cards { grid-template-columns: 1fr; }
 }
 
 .gateway-panel,
