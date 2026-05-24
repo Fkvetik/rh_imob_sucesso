@@ -1043,13 +1043,12 @@ h3 { color: var(--purple-900); letter-spacing: -.03em; }
   letter-spacing: -.02em;
   color: var(--white);
   background: linear-gradient(135deg, var(--orange-600), var(--orange-500));
+  overflow: hidden;
 }
 .testimonial-avatar--photo {
-  background-color: var(--orange-600);
-  background-image: url('/assets/leandro-gki-v2.jpg?v=20260523c');
-  background-size: cover;
-  background-position: center top;
+  background: url('/assets/leandro-gki-v2.jpg?v=20260523d') center top / cover no-repeat var(--orange-600);
   color: transparent;
+  font-size: 0;
 }
 
 .cta-band {
