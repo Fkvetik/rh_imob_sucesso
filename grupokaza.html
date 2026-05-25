@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Grupo Kaza — Catálogo de Empreendimentos 2026</title>
+<meta property="og:title" content="Grupo Kaza — Portfólio Exclusivo para Corretores 2026">
+<meta property="og:description" content="30+ empreendimentos de alto padrão em São Paulo. Ticket médio ~R$2M · Comissão 0,30% do VGV · 100% digital · sem plantão.">
+<meta property="og:image" content="https://kazacatalog2026.vercel.app/page-01.png">
+<meta property="og:image:width" content="1080">
+<meta property="og:image:height" content="1080">
+<meta property="og:url" content="https://kazacatalog2026.vercel.app">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grupo Kaza — Portfólio para Corretores 2026">
+<meta name="twitter:description" content="30+ empreendimentos · Ticket médio ~R$2M · Comissão 0,30% VGV · São Paulo">
+<meta name="twitter:image" content="https://kazacatalog2026.vercel.app/page-01.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #BD3D44;
+    --navy: #192F5D;
+    --gold: #EAB83D;
+    --green: #4ECB5B;
+    --dark: #0D0D0D;
+    --dark2: #161616;
+    --dark3: #1E1E1E;
+    --gray: #2A2A2A;
+    --text: #E8E8E8;
+    --muted: #888;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    color: var(--text);
+  }
+
+  /* ==================== PAGE WRAPPER ==================== */
+  .page {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    background: var(--dark);
+    page-break-after: always;
+    margin: 0 auto 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ==================== PAGE 1 — CAPA ==================== */
+  .page-cover {
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover-bg-pattern {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 800px 600px at 50% 110%, rgba(189,61,68,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(25,47,93,0.8) 0%, transparent 70%),
+      linear-gradient(160deg, #0a1628 0%, #192F5D 40%, #0a0a0a 100%);
+  }
+
+  /* City skyline SVG */
+  .cover-skyline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.12;
+  }
+
+  .cover-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 0 80px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 20px;
+    border-radius: 2px;
+    margin-bottom: 36px;
+  }
+
+  .cover-logo-area {
+    margin-bottom: 40px;
+  }
+
+  .cover-logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .cover-logo-text span {
+    color: var(--gold);
+  }
+
+  .cover-subtitle {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .cover-divider {
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--red));
+    margin: 40px auto;
+    border-radius: 2px;
+  }
+
+  .cover-headline {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.15;
+    margin-bottom: 18px;
+    letter-spacing: -1px;
+  }
+
+  .cover-desc {
+    font-size: 17px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 48px;
+  }
+
+  .cover-stats {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+
+  .cover-stat {
+    text-align: center;
+  }
+
+  .cover-stat-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .cover-stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 5px;
+  }
+
+  .cover-commission {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(234,184,61,0.12);
+    border: 1px solid rgba(234,184,61,0.3);
+    border-radius: 8px;
+    padding: 14px 32px;
+  }
+
+  .cover-commission-icon {
+    font-size: 22px;
+  }
+
+  .cover-commission-text {
+    text-align: left;
+  }
+
+  .cover-commission-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .cover-commission-value {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+  }
+
+  /* ===== DIFFERENTIALS STRIP ===== */
+  .cover-diffs {
+    display: flex;
+    gap: 0;
+    justify-content: center;
+    margin: 20px 0 18px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .diff-item {
+    flex: 1;
+    padding: 10px 14px;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .diff-item:last-child { border-right: none; }
+
+  .diff-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  .diff-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+  }
+
+  /* ===== CTA BLOCKS ===== */
+  .cover-ctas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0 0;
+  }
+
+  .cta-block {
+    border-radius: 8px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-block-a {
+    background: rgba(189,61,68,0.1);
+    border: 1px solid rgba(189,61,68,0.3);
+  }
+
+  .cta-block-b {
+    background: rgba(25,47,93,0.4);
+    border: 1px solid rgba(25,47,93,0.8);
+  }
+
+  .cta-tag {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .cta-block-a .cta-tag { color: var(--red); }
+  .cta-block-b .cta-tag { color: #7799cc; }
+
+  .cta-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+
+  .cta-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.5;
+  }
+
+  .cta-wpp {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  /* ===== FOOTER ===== */
+  .cover-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 14px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.5);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    gap: 16px;
+  }
+
+  .cover-footer-site {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+  }
+
+  .cover-footer-address {
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+    flex: 1;
+  }
+
+  .cover-footer-rhimob {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+
+  .cover-footer-rhimob-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: right;
+    line-height: 1.3;
+  }
+
+  .cover-footer-rhimob-label span {
+    display: block;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+  }
+
+  .cover-footer-year {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 2px;
+  }
+
+  /* ==================== CONTENT PAGES ==================== */
+  .page-header {
+    height: 88px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    padding: 0 48px;
+    border-bottom: 2px solid var(--red);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--gold);
+  }
+
+  .header-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .header-logo span {
+    color: var(--gold);
+  }
+
+  .header-region {
+    flex: 1;
+    text-align: center;
+  }
+
+  .header-region-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .header-region-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+
+  .header-page-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 44px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.08);
+    line-height: 1;
+  }
+
+  /* ==================== CARDS GRID ==================== */
+  .cards-area {
+    flex: 1;
+    padding: 24px 28px 12px;
+    display: grid;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .grid-2col { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+  .grid-3col { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+  .grid-2x3  { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+  .grid-4col { grid-template-columns: repeat(4, 1fr); }
+
+  /* ==================== CARD ==================== */
+  .card {
+    background: linear-gradient(160deg, #1a1a1a 0%, #111 100%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), transparent);
+    opacity: 0.6;
+  }
+
+  /* Building silhouette SVG bg */
+  .card-building {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    opacity: 0.04;
+    width: 80px;
+  }
+
+  .card-top {
+    padding: 16px 18px 12px;
+    flex: 1;
+  }
+
+  .card-status {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+
+  .status-lancamento { background: rgba(189,61,68,0.2); color: var(--red); border: 1px solid rgba(189,61,68,0.3); }
+  .status-em-obras   { background: rgba(234,184,61,0.2); color: var(--gold); border: 1px solid rgba(234,184,61,0.3); }
+  .status-pronto     { background: rgba(78,203,91,0.2); color: var(--green); border: 1px solid rgba(78,203,91,0.3); }
+  .status-breve      { background: rgba(25,47,93,0.4); color: #7799cc; border: 1px solid rgba(25,47,93,0.6); }
+
+  .card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 7px;
+  }
+
+  .card-title-sm {
+    font-size: 15px;
+  }
+
+  .card-bairro {
+    font-size: 12px;
+    color: #EAB83D;
+    font-weight: 600;
+    margin-bottom: 7px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.62);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .spec-tag {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3px;
+    padding: 2px 7px;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.65);
+  }
+
+  .card-footer {
+    padding: 10px 18px;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-address {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  .card-commission {
+    font-size: 11px;
+    color: #EAB83D;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .card-link {
+    display: block;
+    font-size: 10px;
+    color: rgba(255,255,255,0.38);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ==================== PAGE SUMMARY BAR ==================== */
+  .page-summary {
+    height: 58px;
+    background: rgba(0,0,0,0.6);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 32px;
+    flex-shrink: 0;
+  }
+
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .summary-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .summary-text strong {
+    color: rgba(255,255,255,0.75);
+    font-weight: 600;
+  }
+
+  .summary-spacer { flex: 1; }
+
+  .summary-url {
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.5px;
+  }
+
+  /* ==================== WPP SUTIL ==================== */
+  .summary-wpp {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    opacity: 0.55;
+    transition: opacity 0.2s;
+  }
+  .summary-wpp:hover { opacity: 1; }
+
+  .summary-wpp-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4ECB5B;
+    flex-shrink: 0;
+    box-shadow: 0 0 5px rgba(78,203,91,0.7);
+  }
+
+  .summary-wpp-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #4ECB5B;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  /* ── FLOATING WPP BUTTON (web only) ── */
+  .wpp-float {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #111;
+    border: 1px solid rgba(78,203,91,0.3);
+    border-radius: 50px;
+    padding: 10px 20px 10px 14px;
+    text-decoration: none;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(78,203,91,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .wpp-float:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(78,203,91,0.25);
+  }
+  .wpp-float-icon {
+    width: 34px; height: 34px;
+    background: #4ECB5B;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .wpp-float-text { line-height: 1.2; }
+  .wpp-float-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+  }
+  .wpp-float-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4ECB5B;
+    display: block;
+  }
+
+  /* ==================== PRINT ==================== */
+  @media print {
+    body { background: white; }
+    .page { margin: 0; page-break-after: always; }
+    .wpp-float { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== PAGE 1 — CAPA ===================== -->
+<div class="page page-cover">
+  <div class="cover-bg-pattern"></div>
+
+  <!-- Skyline SVG -->
+  <svg class="cover-skyline" viewBox="0 0 1080 320" fill="white">
+    <!-- SP Skyline silhouette -->
+    <rect x="0" y="280" width="1080" height="40"/>
+    <rect x="20" y="200" width="40" height="80"/>
+    <rect x="30" y="170" width="20" height="30"/>
+    <rect x="70" y="220" width="60" height="60"/>
+    <rect x="85" y="200" width="30" height="20"/>
+    <rect x="140" y="180" width="50" height="100"/>
+    <rect x="155" y="155" width="20" height="25"/>
+    <rect x="200" y="210" width="45" height="70"/>
+    <rect x="255" y="160" width="70" height="120"/>
+    <rect x="270" y="130" width="40" height="30"/>
+    <rect x="335" y="190" width="55" height="90"/>
+    <rect x="400" y="140" width="80" height="140"/>
+    <rect x="415" y="110" width="50" height="30"/>
+    <rect x="427" y="90" width="26" height="20"/>
+    <rect x="490" y="170" width="60" height="110"/>
+    <rect x="560" y="150" width="90" height="130"/>
+    <rect x="575" y="120" width="60" height="30"/>
+    <rect x="590" y="100" width="30" height="20"/>
+    <rect x="660" y="190" width="50" height="90"/>
+    <rect x="720" y="160" width="75" height="120"/>
+    <rect x="735" y="135" width="45" height="25"/>
+    <rect x="805" y="200" width="55" height="80"/>
+    <rect x="870" y="175" width="65" height="105"/>
+    <rect x="885" y="150" width="35" height="25"/>
+    <rect x="945" y="210" width="50" height="70"/>
+    <rect x="1005" y="190" width="75" height="90"/>
+    <rect x="1020" y="165" width="45" height="25"/>
+  </svg>
+
+  <div class="cover-content">
+    <div class="cover-badge">📋 Catálogo de Corretores · São Paulo · 2026</div>
+
+    <div class="cover-logo-area">
+      <div class="cover-logo-text">GRUPO <span>KAZA</span></div>
+      <div class="cover-subtitle">Morar bem começa aqui</div>
+    </div>
+
+    <div class="cover-divider"></div>
+
+    <div class="cover-headline">Faça Parte do<br>Grupo Kaza</div>
+    <div class="cover-desc">
+      Os melhores lançamentos de alto padrão de São Paulo —
+      sem plantão em stand, atendimento 100% online, sede nos Jardins.
+    </div>
+
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="cover-stat-num">30+</div>
+        <div class="cover-stat-label">Empreendimentos</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">8</div>
+        <div class="cover-stat-label">Bairros nobres</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">~R$2M</div>
+        <div class="cover-stat-label">Ticket médio</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">0,30%</div>
+        <div class="cover-stat-label">Comissão / VGV</div>
+      </div>
+    </div>
+
+    <!-- STRIP DE DIFERENCIAIS -->
+    <div class="cover-diffs">
+      <div class="diff-item">
+        <span class="diff-icon">🚫</span>
+        <span class="diff-label">Sem plantão</span>
+      </div>
+      <div class="diff-item">
+        <span class="diff-icon">📅</span>
+        <span class="diff-label">Seg a Sex</span>
+      </div>
+      <div class="diff-item">
+        <span class="diff-icon">💻</span>
+        <span class="diff-label">100% online</span>
+      </div>
+      <div class="diff-item">
+        <span class="diff-icon">🏆</span>
+        <span class="diff-label">Alto padrão</span>
+      </div>
+      <div class="diff-item">
+        <span class="diff-icon">📍</span>
+        <span class="diff-label">Jardins · SP</span>
+      </div>
+    </div>
+
+    <!-- DOIS CTAs DE RECRUTAMENTO -->
+    <div class="cover-ctas">
+      <div class="cta-block cta-block-a">
+        <span class="cta-tag">Corretor de Lançamentos</span>
+        <div class="cta-title">Venda os maiores lançamentos de SP sem fazer plantão em obra ou stand.</div>
+        <div class="cta-desc">Portfólio de alto padrão, atendimento 100% online. Sede nos Jardins, rotina de segunda a sexta.</div>
+        <a class="cta-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+tenho+interesse+em+trabalhar+com+lan%C3%A7amentos+no+Grupo+Kaza" target="_blank">
+          ● Quero fazer parte do time →
+        </a>
+      </div>
+      <div class="cta-block cta-block-b">
+        <span class="cta-tag">Especialista em Imóveis Usados</span>
+        <div class="cta-title">Aluguel, venda e gestão de alto padrão. O Grupo Kaza tem o lugar certo pra você.</div>
+        <div class="cta-desc">Se você trabalha com imóveis usados e quer crescer em um time estruturado, venha para o Grupo Kaza.</div>
+        <a class="cta-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+trabalho+com+im%C3%B3veis+usados+e+quero+conhecer+o+Grupo+Kaza" target="_blank">
+          ● Quero conhecer a oportunidade →
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cover-footer">
+    <div class="cover-footer-site">grupokaza.com.br · (11) 3896-3939</div>
+    <div class="cover-footer-address">📍 Av. Brasil, 1640 — Jardins, São Paulo · CRECI: 025027-J</div>
+    <a class="cover-footer-rhimob" href="https://www.instagram.com/rh_imob/" target="_blank">
+      <div class="cover-footer-rhimob-label">
+        Parceria profissional
+        <span>@rh_imob</span>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.35">
+        <rect x="2" y="2" width="20" height="20" rx="5" stroke="white" stroke-width="1.5"/>
+        <circle cx="12" cy="12" r="4" stroke="white" stroke-width="1.5"/>
+        <circle cx="17.5" cy="6.5" r="1" fill="white"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<!-- ===================== PAGE 2 — PINHEIROS + VILA MADALENA ===================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-logo">GRUPO <span>KAZA</span></div>
+    <div class="header-region">
+      <span class="header-region-label">Região</span>
+      <span class="header-region-name">Pinheiros · Vila Madalena</span>
+    </div>
+    <div class="header-page-num">02</div>
+  </div>
+
+  <div class="cards-area grid-3col">
+
+    <!-- Pluri Pinheiros -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Pluri Pinheiros<br>NR - Toca 55</div>
+        <div class="card-bairro">📍 Pinheiros</div>
+        <div class="card-desc">Studios inteligentes no coração de Pinheiros. Conceito novo residencial com infraestrutura completa.</div>
+        <div class="card-specs">
+          <span class="spec-tag">1 Dorm</span>
+          <span class="spec-tag">26m²</span>
+          <span class="spec-tag">Studio</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Pinheiros, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- View Pinheiros -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">View Pinheiros<br>by Passarelli</div>
+        <div class="card-bairro">📍 Pinheiros</div>
+        <div class="card-desc">Projeto assinado pela construtora Passarelli. Localização privilegiada em Pinheiros.</div>
+        <div class="card-specs">
+          <span class="spec-tag">2 Dorms</span>
+          <span class="spec-tag">25m²</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Pinheiros, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Capote 210 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Capote 210</div>
+        <div class="card-bairro">📍 Pinheiros</div>
+        <div class="card-desc">Apartamentos de alto padrão com ampla metragem. 1 a 3 dormitórios com acabamento premium.</div>
+        <div class="card-specs">
+          <span class="spec-tag">1-3 Dorms</span>
+          <span class="spec-tag">54-146m²</span>
+          <span class="spec-tag">1 Vaga</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Pinheiros, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Pop Grafite -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Pop Grafite</div>
+        <div class="card-bairro">📍 Pinheiros</div>
+        <div class="card-desc">Conceito urbano e moderno. Studio compacto em localização estratégica de Pinheiros.</div>
+        <div class="card-specs">
+          <span class="spec-tag">1 Dorm</span>
+          <span class="spec-tag">28m²</span>
+          <span class="spec-tag">Studio</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Pinheiros, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Essencia Brasileira -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Essencia Brasileira</div>
+        <div class="card-bairro">📍 Pinheiros</div>
+        <div class="card-desc">Residencial de alto padrão com identidade brasileira. 4 dormitórios com suítes.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">85m²</span>
+          <span class="spec-tag">5 Vagas</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Pinheiros, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Harmonia 1040 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Harmonia 1040</div>
+        <div class="card-bairro">📍 Vila Madalena</div>
+        <div class="card-desc">Empreendimento residencial na Vila Madalena. 4 dormitórios em endereço valorizado.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">Vila Madalena</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Harmonia 1040, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-summary">
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--red)"></div>
+      <div class="summary-text"><strong>6</strong> empreendimentos nesta região</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--gold)"></div>
+      <div class="summary-text">Pinheiros + Vila Madalena · Zona Oeste SP</div>
+    </div>
+    <div class="summary-spacer"></div>
+    <a class="summary-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+quero+agendar+um+bate-papo+sobre+o+Grupo+Kaza" target="_blank">
+      <div class="summary-wpp-dot"></div>
+      <span class="summary-wpp-text">Agendar bate-papo →</span>
+    </a>
+  </div>
+</div>
+
+<!-- ===================== PAGE 3 — PERDIZES + JARDIM EUROPA ===================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-logo">GRUPO <span>KAZA</span></div>
+    <div class="header-region">
+      <span class="header-region-label">Região</span>
+      <span class="header-region-name">Perdizes · Jardim Europa · Vila Clementino</span>
+    </div>
+    <div class="header-page-num">03</div>
+  </div>
+
+  <div class="cards-area grid-2col">
+
+    <!-- Damata -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Damata</div>
+        <div class="card-bairro">📍 Jardim Europa · Jardim América</div>
+        <div class="card-desc">Projeto do renomado arquiteto Isay Weinfeld. Torre residencial angulada para ampliar vistas do Jardim Europa. Praça Damata com vegetação e lojas.</div>
+        <div class="card-specs">
+          <span class="spec-tag">1 Dorm</span>
+          <span class="spec-tag">27-58m²</span>
+          <span class="spec-tag">0-1 Vagas</span>
+          <span class="spec-tag">Isay Weinfeld</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardim Europa, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Excellence Perdizes -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Excellence Perdizes</div>
+        <div class="card-bairro">📍 Perdizes</div>
+        <div class="card-desc">Residencial de excelência em Perdizes. 3 dormitórios com padrão premium e localização nobre.</div>
+        <div class="card-specs">
+          <span class="spec-tag">3 Dorms</span>
+          <span class="spec-tag">96m²</span>
+          <span class="spec-tag">Perdizes</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Perdizes, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- ROYA -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">ROYA</div>
+        <div class="card-bairro">📍 Perdizes</div>
+        <div class="card-desc">Conceito contemporâneo em Perdizes. 4 dormitórios em empreendimento de alto padrão.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">Perdizes</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Perdizes, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Upper West Perdizes -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Upper West Perdizes</div>
+        <div class="card-bairro">📍 Perdizes</div>
+        <div class="card-desc">Endereço nobre em Perdizes. Conceito Upper West — 4 dormitórios com arquitetura contemporânea.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">63m²</span>
+          <span class="spec-tag">Perdizes</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Perdizes, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Haute Ibirapuera -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title card-title-sm">Condomínio Haute Ibirapuera</div>
+        <div class="card-bairro">📍 Vila Clementino · Ibirapuera</div>
+        <div class="card-desc">Sofisticação próxima ao Parque Ibirapuera. 4 dormitórios em condomínio de alto padrão.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">136m²</span>
+          <span class="spec-tag">2-3 Vagas</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Vila Clementino, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Trinity Vila Clementino -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Trinity Vila Clementino</div>
+        <div class="card-bairro">📍 Vila Clementino</div>
+        <div class="card-desc">Residencial contemporâneo em Vila Clementino. Localização privilegiada próxima ao metrô.</div>
+        <div class="card-specs">
+          <span class="spec-tag">Vila Clementino</span>
+          <span class="spec-tag">Alto Padrão</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Vila Clementino, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-summary">
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--red)"></div>
+      <div class="summary-text"><strong>6</strong> empreendimentos nesta região</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--gold)"></div>
+      <div class="summary-text">Perdizes · Jardim Europa · Vila Clementino · Zona Oeste/Sul SP</div>
+    </div>
+    <div class="summary-spacer"></div>
+    <a class="summary-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+quero+agendar+um+bate-papo+sobre+o+Grupo+Kaza" target="_blank">
+      <div class="summary-wpp-dot"></div>
+      <span class="summary-wpp-text">Agendar bate-papo →</span>
+    </a>
+  </div>
+</div>
+
+<!-- ===================== PAGE 4 — JARDINS + MOEMA ===================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-logo">GRUPO <span>KAZA</span></div>
+    <div class="header-region">
+      <span class="header-region-label">Região</span>
+      <span class="header-region-name">Jardins · Jardim América · Moema</span>
+    </div>
+    <div class="header-page-num">04</div>
+  </div>
+
+  <div class="cards-area grid-3col">
+
+    <!-- THE FALLS HAUS -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">THE FALLS HAUS</div>
+        <div class="card-bairro">📍 Jardins</div>
+        <div class="card-desc">Empreendimento de grife nos Jardins. Design arrojado em um dos bairros mais valorizados de SP.</div>
+        <div class="card-specs">
+          <span class="spec-tag">Jardins</span>
+          <span class="spec-tag">Alto Padrão</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardins, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Netcorp Tower -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Netcorp Tower</div>
+        <div class="card-bairro">📍 Jardins</div>
+        <div class="card-desc">Torre residencial nos Jardins. Studios compactos com conceito moderno de moradia urbana.</div>
+        <div class="card-specs">
+          <span class="spec-tag">Studio</span>
+          <span class="spec-tag">27-30m²</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardins, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Quaddra Lorena -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Quaddra Lorena</div>
+        <div class="card-bairro">📍 Jardins · Lorena</div>
+        <div class="card-desc">Conceito quadra residencial na Lorena, Jardins. Espaços otimizados com localização premium.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Vagas</span>
+          <span class="spec-tag">Lorena</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Lorena, Jardins SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Duo Lifestyle -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Duo Lifestyle</div>
+        <div class="card-bairro">📍 Jardins</div>
+        <div class="card-desc">Dois mundos em um endereço. Lifestyle urbano nos Jardins com studio inteligente.</div>
+        <div class="card-specs">
+          <span class="spec-tag">1 Dorm</span>
+          <span class="spec-tag">27m²</span>
+          <span class="spec-tag">1 Vaga</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardins, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Etmo Jardins -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Etmo Jardins</div>
+        <div class="card-bairro">📍 Jardins</div>
+        <div class="card-desc">Superluxo nos Jardins. Plantas generosas de 120 a 480m² com até 4 dormitórios e 3 vagas.</div>
+        <div class="card-specs">
+          <span class="spec-tag">2-4 Dorms</span>
+          <span class="spec-tag">120-480m²</span>
+          <span class="spec-tag">1-3 Vagas</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardins, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Cyrela Moema By YOO -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Cyrela Moema<br>By YOO</div>
+        <div class="card-bairro">📍 Moema</div>
+        <div class="card-desc">Cyrela com curadoria da grife internacional YOO. 4 dormitórios em Moema com 252m² de requinte.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">252m²</span>
+          <span class="spec-tag">3-4 Vagas</span>
+          <span class="spec-tag">Cyrela × YOO</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Moema, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-summary">
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--red)"></div>
+      <div class="summary-text"><strong>6</strong> empreendimentos nesta região</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--gold)"></div>
+      <div class="summary-text">Jardins · Jardim América · Moema · Zona Sul SP</div>
+    </div>
+    <div class="summary-spacer"></div>
+    <a class="summary-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+quero+agendar+um+bate-papo+sobre+o+Grupo+Kaza" target="_blank">
+      <div class="summary-wpp-dot"></div>
+      <span class="summary-wpp-text">Agendar bate-papo →</span>
+    </a>
+  </div>
+</div>
+
+<!-- ===================== PAGE 5 — JARDIM AMERICA + OUTROS SP ===================== -->
+<div class="page">
+  <div class="page-header">
+    <div class="header-logo">GRUPO <span>KAZA</span></div>
+    <div class="header-region">
+      <span class="header-region-label">Região</span>
+      <span class="header-region-name">Jardim América · Alto Padrão SP · Outros</span>
+    </div>
+    <div class="header-page-num">05</div>
+  </div>
+
+  <div class="cards-area" style="grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2,1fr); display:grid; gap:12px;">
+
+    <!-- Palazzo Grimaldi -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Palazzo Grimaldi</div>
+        <div class="card-bairro">📍 Jardim América</div>
+        <div class="card-desc">Cobertura duplex de 526m² com 4 dormitórios e 6 vagas. O mais sofisticado do portfólio Kaza.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">291-526m²</span>
+          <span class="spec-tag">4-6 Vagas</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardim América, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Harmonia da Vila -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Harmonia da Vila</div>
+        <div class="card-bairro">📍 Jardim América</div>
+        <div class="card-desc">Harmonia entre arquitetura e natureza. Apartamentos de 32 a 48m² em Jardim América.</div>
+        <div class="card-specs">
+          <span class="spec-tag">Studio</span>
+          <span class="spec-tag">32-48m²</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardim América, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Even Joaquim -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Even Joaquim</div>
+        <div class="card-bairro">📍 Jardim América</div>
+        <div class="card-desc">Even Construtora em Jardim América. 4 dormitórios, 168m² e 2 vagas em condomínio diferenciado.</div>
+        <div class="card-specs">
+          <span class="spec-tag">4 Dorms</span>
+          <span class="spec-tag">168m²</span>
+          <span class="spec-tag">2 Vagas</span>
+          <span class="spec-tag">Even</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardim América, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Floresta -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Floresta</div>
+        <div class="card-bairro">📍 São Paulo</div>
+        <div class="card-desc">Residencial com amplo paisagismo. 3 dormitórios com 200m² de espaço generoso.</div>
+        <div class="card-specs">
+          <span class="spec-tag">3 Dorms</span>
+          <span class="spec-tag">200m²</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">São Paulo, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Onze22 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Onze22</div>
+        <div class="card-bairro">📍 Jardim América</div>
+        <div class="card-desc">Endereço 1122 em Jardim América. 3 dormitórios em empreendimento de grife.</div>
+        <div class="card-specs">
+          <span class="spec-tag">3 Dorms</span>
+          <span class="spec-tag">Jardim América</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">Jardim América, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+    <!-- Uri -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-status status-lancamento">Lançamento</span>
+        <div class="card-title">Uri</div>
+        <div class="card-bairro">📍 São Paulo</div>
+        <div class="card-desc">Projeto moderno de 78m². 2 dormitórios com design contemporâneo em bairro valorizado de SP.</div>
+        <div class="card-specs">
+          <span class="spec-tag">2 Dorms</span>
+          <span class="spec-tag">78m²</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-address">São Paulo, SP</span>
+        <span class="card-commission">Comis. 0,30% VGV</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Mini-grid for remaining -->
+  <div style="padding: 0 28px 8px; display: grid; grid-template-columns: repeat(6,1fr); gap: 10px;">
+
+    <div class="card" style="min-height:0;">
+      <div style="padding:10px 12px;">
+        <span class="card-status status-lancamento" style="font-size:8px;padding:2px 5px;">Lançamento</span>
+        <div class="card-title" style="font-size:11px;margin-top:4px;">Essencia Brasileira</div>
+        <div class="card-bairro" style="font-size:9px;">Pinheiros</div>
+        <div class="card-specs"><span class="spec-tag" style="font-size:8px;">4D · 85m²</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="min-height:0;">
+      <div style="padding:10px 12px;">
+        <span class="card-status status-lancamento" style="font-size:8px;padding:2px 5px;">Lançamento</span>
+        <div class="card-title" style="font-size:11px;margin-top:4px;">Agami Park</div>
+        <div class="card-bairro" style="font-size:9px;">São Paulo</div>
+        <div class="card-specs"><span class="spec-tag" style="font-size:8px;">Park Res.</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="min-height:0;">
+      <div style="padding:10px 12px;">
+        <span class="card-status status-lancamento" style="font-size:8px;padding:2px 5px;">Lançamento</span>
+        <div class="card-title" style="font-size:11px;margin-top:4px;">Arkadio</div>
+        <div class="card-bairro" style="font-size:9px;">São Paulo</div>
+        <div class="card-specs"><span class="spec-tag" style="font-size:8px;">Alto Padrão</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="min-height:0;">
+      <div style="padding:10px 12px;">
+        <span class="card-status status-lancamento" style="font-size:8px;padding:2px 5px;">Lançamento</span>
+        <div class="card-title" style="font-size:11px;margin-top:4px;">Ayya Jardins</div>
+        <div class="card-bairro" style="font-size:9px;">Jardins</div>
+        <div class="card-specs"><span class="spec-tag" style="font-size:8px;">Jardins</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="min-height:0;">
+      <div style="padding:10px 12px;">
+        <span class="card-status status-lancamento" style="font-size:8px;padding:2px 5px;">Lançamento</span>
+        <div class="card-title" style="font-size:11px;margin-top:4px;">Composite Moema</div>
+        <div class="card-bairro" style="font-size:9px;">Moema</div>
+        <div class="card-specs"><span class="spec-tag" style="font-size:8px;">Conx SP</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="min-height:0;">
+      <div style="padding:10px 12px;">
+        <span class="card-status status-lancamento" style="font-size:8px;padding:2px 5px;">Lançamento</span>
+        <div class="card-title" style="font-size:11px;margin-top:4px;">Etmo Jardins</div>
+        <div class="card-bairro" style="font-size:9px;">Jardins</div>
+        <div class="card-specs"><span class="spec-tag" style="font-size:8px;">2-4D · 480m²</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-summary">
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--red)"></div>
+      <div class="summary-text"><strong>30+</strong> empreendimentos de alto padrão em São Paulo</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--green)"></div>
+      <div class="summary-text">Ticket médio <strong>~R$ 2M</strong> · comissão <strong>0,30% × VGV</strong> · ~R$ 6.000/unidade</div>
+    </div>
+    <div class="summary-spacer"></div>
+    <a class="summary-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+quero+agendar+um+bate-papo+sobre+o+Grupo+Kaza" target="_blank">
+      <div class="summary-wpp-dot"></div>
+      <span class="summary-wpp-text">Agendar bate-papo →</span>
+    </a>
+  </div>
+</div>
+
+<!-- ==================== PÁGINA 6 — NOSSA SEDE ==================== -->
+<div class="page" style="background:#06101C;position:relative;overflow:hidden;">
+
+  <!-- BG PHOTO -->
+  <div style="position:absolute;inset:0;background-image:url('kaza-office-thumb.jpg');background-size:cover;background-position:center 30%;filter:brightness(0.5) saturate(0.85);"></div>
+
+  <!-- OVERLAYS -->
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,14,24,0.1) 0%,rgba(6,14,24,0) 30%,rgba(6,14,24,0) 45%,rgba(6,14,24,0.8) 75%,rgba(6,14,24,0.97) 100%);"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(6,14,24,0.65) 0%,rgba(6,14,24,0) 55%);"></div>
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;"></div>
+
+  <!-- TOP BAR -->
+  <div class="page-header" style="position:relative;z-index:2;background:rgba(6,14,24,0.75);border-bottom:1px solid rgba(255,255,255,0.06);">
+    <div style="display:flex;align-items:center;gap:14px;flex:1;">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:white;letter-spacing:-0.3px;">GRUPO <span style="color:var(--gold)">KAZA</span></div>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,0.12);"></div>
+      <div style="background:rgba(234,184,61,0.12);border:1px solid rgba(234,184,61,0.3);color:#EAB83D;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:5px 12px;border-radius:3px;">Nossa sede · Jardins, SP</div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);">📍 Av. Brasil, 1640 — Jardins, São Paulo</div>
+  </div>
+
+  <!-- INSTAGRAM BADGE -->
+  <div style="position:absolute;top:88px;right:52px;z-index:5;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:8px 14px 8px 10px;backdrop-filter:blur(6px);">
+    <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="white" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.65);font-weight:500;line-height:1.3;">
+      <div style="color:white;font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;">@rh_imob</div>
+      Parceria RHImob
+    </div>
+  </div>
+
+  <!-- PLAY ICON (center-right) -->
+  <a href="https://www.instagram.com/p/DMbN_wPNAnL/" target="_blank" style="position:absolute;top:50%;right:200px;transform:translateY(-60%);z-index:3;text-align:center;text-decoration:none;display:block;">
+    <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);box-shadow:0 0 40px rgba(0,0,0,0.4);margin:0 auto;transition:background 0.2s;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="white" style="margin-left:5px;"><path d="M8 5v14l11-7L8 5z"/></svg>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;">Ver vídeo</div>
+  </a>
+
+  <!-- BOTTOM CONTENT -->
+  <div style="position:absolute;bottom:84px;left:52px;right:52px;z-index:3;">
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#EAB83D;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+      <span style="display:block;width:28px;height:2px;background:#EAB83D;border-radius:2px;flex-shrink:0;"></span>
+      Nossa sede · Espaço de trabalho
+    </div>
+
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:60px;font-weight:800;line-height:1.0;letter-spacing:-2.5px;color:white;margin-bottom:18px;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+      Uma sede.<br><span style="color:#EAB83D">Zero plantão</span> de obras.
+    </div>
+
+    <div style="font-size:17px;color:rgba(255,255,255,0.52);line-height:1.6;max-width:600px;margin-bottom:30px;">
+      Nosso time trabalha aqui, nos <strong style="color:rgba(255,255,255,0.82)">Jardins</strong> — de segunda a sexta.<br>
+      O cliente é atendido <strong style="color:rgba(255,255,255,0.82)">100% online</strong>.<br>
+      Nenhum empreendimento exige sua presença no <em style="color:rgba(255,255,255,0.6)">stand</em>.
+    </div>
+
+    <!-- STATS -->
+    <div style="display:flex;gap:0;border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.4);backdrop-filter:blur(12px);width:fit-content;">
+      <div style="padding:16px 30px;border-right:1px solid rgba(255,255,255,0.07);text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:white;line-height:1;letter-spacing:-1px;margin-bottom:4px;">30<span style="font-size:14px;font-weight:500;color:rgba(255,255,255,0.45);">+</span></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px;">lançamentos ativos</div>
+      </div>
+      <div style="padding:16px 30px;border-right:1px solid rgba(255,255,255,0.07);text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:white;line-height:1;letter-spacing:-1px;margin-bottom:4px;">100<span style="font-size:14px;font-weight:500;color:rgba(255,255,255,0.45);">%</span></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px;">atendimento digital</div>
+      </div>
+      <div style="padding:16px 30px;border-right:1px solid rgba(255,255,255,0.07);text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:white;line-height:1;letter-spacing:-1px;margin-bottom:4px;">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px;">plantões em stand</div>
+      </div>
+      <div style="padding:16px 30px;text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:800;color:white;line-height:1;margin-bottom:4px;">Seg → Sex</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px;">rotina nos Jardins</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="page-summary" style="position:absolute;bottom:0;left:0;right:0;z-index:4;">
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--gold)"></div>
+      <div class="summary-text">📍 <strong>Av. Brasil, 1640</strong> — Jardins, São Paulo · CRECI 025027-J</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-dot" style="background:var(--green)"></div>
+      <div class="summary-text">Cliente atendido <strong>100% online</strong> — sem plantão em stand ou obra</div>
+    </div>
+    <div class="summary-spacer"></div>
+    <a class="summary-wpp" href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+quero+ouvir+a+proposta+do+Grupo+Kaza" target="_blank">
+      <div class="summary-wpp-dot"></div>
+      <span class="summary-wpp-text">Quero a proposta →</span>
+    </a>
+  </div>
+
+</div>
+
+<!-- BOTÃO FLUTUANTE WHATSAPP (web only) -->
+<a class="wpp-float"
+   href="https://wa.me/5511978725515?text=Ol%C3%A1%2C+quero+ouvir+a+proposta+do+Grupo+Kaza"
+   target="_blank">
+  <div class="wpp-float-icon">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.552 4.123 1.524 5.862L.058 23.552a.5.5 0 0 0 .61.61l5.69-1.466A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.967 0-3.81-.535-5.387-1.467l-.385-.232-3.997 1.03 1.03-3.997-.232-.385A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+    </svg>
+  </div>
+  <div class="wpp-float-text">
+    <span class="wpp-float-label">Quero ouvir a proposta</span>
+    <span class="wpp-float-num">(11) 97872-5515</span>
+  </div>
+</a>
+
+</body>
+</html>
