@@ -2038,3 +2038,200 @@ textarea { resize: vertical; min-height: 100px; }
     width: 100%;
   }
 }
+
+/* ============================================================
+   HERO DIRECT CTA (conversão direta)
+   ============================================================ */
+.hero-direct-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 32px;
+}
+.btn-xl {
+  font-size: 1.13rem;
+  padding: 20px 38px;
+  border-radius: 18px;
+  letter-spacing: -.01em;
+  box-shadow: 0 8px 32px rgba(255,122,26,.35);
+}
+.hero-price-hint {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .01em;
+  margin: 0;
+}
+
+/* ============================================================
+   SOCIAL PROOF STRIP
+   ============================================================ */
+.social-proof-strip {
+  background: var(--purple-900);
+  padding: 56px 0;
+}
+.social-proof-strip .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 48px;
+  align-items: center;
+}
+.proof-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.proof-stars {
+  color: var(--orange-500);
+  font-size: 1rem;
+  letter-spacing: 2px;
+}
+.proof-quote blockquote {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.92);
+  line-height: 1.55;
+  font-style: italic;
+  max-width: 600px;
+}
+.proof-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.proof-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--orange-600);
+  flex-shrink: 0;
+}
+.proof-author strong {
+  display: block;
+  color: var(--white);
+  font-size: .88rem;
+}
+.proof-author span {
+  color: rgba(255,255,255,.5);
+  font-size: .8rem;
+}
+.proof-numbers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 32px;
+  flex-shrink: 0;
+}
+.proof-numbers > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.proof-numbers strong {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--orange-500);
+  line-height: 1;
+}
+.proof-numbers span {
+  font-size: .78rem;
+  color: rgba(255,255,255,.5);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* ============================================================
+   PRICE ANCHOR BOX
+   ============================================================ */
+.price-anchor-box {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+  margin: 28px 0 8px;
+}
+.price-anchor-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 20px;
+}
+.price-anchor-item strong {
+  font-size: .88rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.price-anchor-item span {
+  font-size: .82rem;
+  color: var(--orange-600);
+  font-weight: 700;
+}
+.price-anchor-divider {
+  width: 1px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+.price-anchor-note {
+  font-size: .78rem;
+  color: var(--muted-2);
+  font-weight: 600;
+  margin: 0 0 20px;
+}
+
+/* ============================================================
+   MOBILE STICKY CTA BAR
+   ============================================================ */
+.mobile-sticky-cta {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  padding: 12px 16px 20px;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -8px 32px rgba(43,18,77,.12);
+}
+@media (max-width: 860px) {
+  .mobile-sticky-cta { display: block; }
+  /* Empurra o floating-wa para cima da barra sticky */
+  .floating-wa { bottom: 84px; }
+  /* Espaço extra no rodapé para a barra não cobrir conteúdo */
+  .site-footer { padding-bottom: 80px; }
+}
+
+/* ============================================================
+   SOCIAL PROOF STRIP — RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px) {
+  .social-proof-strip .container {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .proof-numbers {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+}
+@media (max-width: 560px) {
+  .proof-numbers {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .price-anchor-box {
+    flex-direction: column;
+  }
+  .price-anchor-divider {
+    width: 100%;
+    height: 1px;
+  }
+}
