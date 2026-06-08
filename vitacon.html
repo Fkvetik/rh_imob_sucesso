@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Vitacon — Catálogo de Lançamentos 2026</title>
+
+<!-- Open Graph / WhatsApp Preview -->
+<meta property="og:type"        content="website">
+<meta property="og:title"       content="Vitacon — Catálogo de Lançamentos 2026">
+<meta property="og:description" content="12 empreendimentos ativos em São Paulo · Jardins · Pinheiros · Perdizes · Vila Mariana. Portfólio exclusivo para corretores credenciados.">
+<meta property="og:image"       content="https://www.rhimob.com.br/assets/vitacon-pro-01-capa.png">
+<meta property="og:image:width"  content="1080">
+<meta property="og:image:height" content="1080">
+<meta property="og:url"         content="https://www.rhimob.com.br/vitacon">
+<meta property="og:site_name"   content="Vitacon · RH IMOB">
+<meta name="twitter:card"       content="summary_large_image">
+<meta name="twitter:image"      content="https://www.rhimob.com.br/assets/vitacon-pro-01-capa.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --blue:#2800FF;
+  --blue2:#1A00D4;
+  --black:#000;
+  --white:#fff;
+  --off:#F7F7F7;
+  --gray1:#E8E8E8;
+  --gray2:#AFAFAF;
+  --gray3:#6B6B6B;
+  --text:#111;
+}
+html,body{background:#fff;font-family:'Inter',sans-serif;width:1080px;margin:0 auto;}
+
+/* ═══════════════════ PAGE BASE ═══════════════════ */
+.pg{
+  width:1080px;height:1080px;
+  position:relative;overflow:hidden;
+  page-break-after:always;
+  background:#fff;
+}
+
+/* ═══════════════════ COVER ═══════════════════ */
+.cover{background:#000;}
+
+.cover-grid{
+  position:absolute;inset:0;
+  display:grid;grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+}
+.cover-cell{
+  position:relative;overflow:hidden;
+  border:1px solid #1a1a1a;
+}
+.cover-cell-img{
+  width:100%;height:100%;
+  background:linear-gradient(135deg,#0d0d0d 0%,#1a1a1a 100%);
+  display:flex;align-items:center;justify-content:center;
+}
+.cover-cell-1{background:linear-gradient(145deg,#0a0015 0%,#1200FF 100%);}
+.cover-cell-2{background:linear-gradient(145deg,#0a0a0a 0%,#1a1a1a 100%);}
+.cover-cell-3{background:linear-gradient(145deg,#0a0a0a 0%,#0d0d0d 100%);}
+.cover-cell-4{background:linear-gradient(145deg,#05003a 0%,#2800FF 100%);}
+
+.cover-cell-label{
+  position:absolute;bottom:24px;left:24px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:11px;font-weight:600;letter-spacing:3px;
+  color:rgba(255,255,255,0.4);text-transform:uppercase;
+}
+
+/* center overlay */
+.cover-center{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:480px;
+  background:#000;
+  border:2px solid #2800FF;
+  padding:52px 48px 48px;
+  text-align:center;
+  z-index:10;
+}
+.cover-center::before{
+  content:'';
+  position:absolute;inset:-1px;
+  background:linear-gradient(135deg,#2800FF,transparent,#2800FF);
+  z-index:-1;
+  opacity:0.3;
+}
+
+.cover-logo{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:42px;font-weight:700;
+  color:#fff;letter-spacing:-1px;
+  margin-bottom:8px;
+}
+.cover-logo span{color:#2800FF;}
+
+.cover-year{
+  font-size:11px;font-weight:500;
+  letter-spacing:5px;color:rgba(255,255,255,0.5);
+  text-transform:uppercase;margin-bottom:28px;
+}
+
+.cover-line{
+  width:40px;height:2px;background:#2800FF;
+  margin:0 auto 28px;
+}
+
+.cover-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:22px;font-weight:600;
+  color:#fff;line-height:1.35;margin-bottom:12px;
+}
+.cover-sub{
+  font-size:12px;color:rgba(255,255,255,0.45);
+  line-height:1.6;font-weight:400;
+}
+
+.cover-bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+  background:rgba(0,0,0,0.8);
+  border-top:1px solid #222;
+  z-index:20;
+}
+.cover-bottom-tag{
+  font-size:10px;letter-spacing:3px;
+  color:rgba(255,255,255,0.3);font-weight:500;
+  text-transform:uppercase;
+}
+.cover-bottom-badge{
+  display:flex;align-items:center;gap:8px;
+  background:#2800FF;
+  padding:6px 16px;border-radius:2px;
+}
+.cover-bottom-badge span{
+  font-size:10px;letter-spacing:2px;
+  color:#fff;font-weight:700;text-transform:uppercase;
+}
+
+/* ═══════════════════ REGION PAGES ═══════════════════ */
+.pg-region{display:flex;flex-direction:column;}
+
+/* Header strip */
+.rh{
+  flex-shrink:0;
+  height:108px;
+  background:#000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 56px;
+  border-bottom:3px solid #2800FF;
+}
+.rh-left{display:flex;flex-direction:column;gap:4px;}
+.rh-eyebrow{
+  font-size:10px;letter-spacing:4px;
+  font-weight:600;color:#2800FF;
+  text-transform:uppercase;
+}
+.rh-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:48px;font-weight:700;
+  color:#fff;letter-spacing:-1.5px;line-height:1;
+}
+.rh-right{
+  display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+}
+.rh-count{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:52px;font-weight:300;
+  color:rgba(255,255,255,0.15);letter-spacing:-2px;line-height:1;
+}
+.rh-label{
+  font-size:9px;letter-spacing:3px;
+  font-weight:500;color:rgba(255,255,255,0.3);
+  text-transform:uppercase;
+}
+
+/* Body grid */
+.rb{
+  flex:1;
+  display:grid;
+  padding:28px 40px 120px;
+  gap:20px;
+  background:#000;
+  align-content:start;
+}
+.rb-2col{grid-template-columns:1fr 1fr;}
+.rb-3col{grid-template-columns:1fr 1fr 1fr;}
+.rb-1col{grid-template-columns:1fr;}
+
+/* ═══════════════════ CARD ═══════════════════ */
+.card{
+  border:1.5px solid #E8E8E8;
+  border-radius:6px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  background:#fff;
+  text-decoration:none;
+  color:inherit;
+  transition:none;
+  position:relative;
+}
+.card:hover{border-color:#2800FF;}
+
+/* Card accent top bar */
+.card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:3px;
+  background:#2800FF;
+  opacity:0;
+}
+.card-launch::before{opacity:1;}
+.card-soon::before{opacity:1;background:#7C3AED;}
+.card-future::before{opacity:1;background:#6B7280;}
+
+/* Card image area */
+.card-img{
+  width:100%;
+  flex-shrink:0;
+  background:linear-gradient(160deg,#05000F 0%,#0D0830 60%,#1400AA 100%);
+  display:flex;align-items:flex-end;justify-content:flex-start;
+  position:relative;
+  overflow:hidden;
+}
+/* diagonal line pattern */
+.card-img::before{
+  content:'';
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='120' viewBox='0 0 320 120'%3E%3Crect x='5' y='55' width='26' height='65' fill='white' opacity='0.13'/%3E%3Crect x='34' y='28' width='40' height='92' fill='white' opacity='0.09'/%3E%3Crect x='50' y='12' width='9' height='19' fill='white' opacity='0.09'/%3E%3Crect x='78' y='64' width='22' height='56' fill='white' opacity='0.07'/%3E%3Crect x='104' y='32' width='46' height='88' fill='white' opacity='0.12'/%3E%3Crect x='122' y='16' width='8' height='19' fill='white' opacity='0.12'/%3E%3Crect x='154' y='52' width='28' height='68' fill='white' opacity='0.08'/%3E%3Crect x='186' y='38' width='38' height='82' fill='white' opacity='0.10'/%3E%3Crect x='228' y='58' width='30' height='62' fill='white' opacity='0.07'/%3E%3Crect x='262' y='44' width='44' height='76' fill='white' opacity='0.09'/%3E%3C/svg%3E");
+  background-size:cover;
+  background-position:bottom center;
+  background-repeat:no-repeat;
+  z-index:0;
+}
+/* glow orb */
+.card-img::after{
+  content:'';
+  position:absolute;
+  bottom:-20%;right:-10%;
+  width:60%;height:60%;
+  background:radial-gradient(circle, rgba(40,0,255,0.3) 0%, transparent 70%);
+  z-index:0;
+}
+.card-img-inner{
+  position:relative;z-index:2;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:flex-end;
+  padding:10px 14px;
+  gap:0;
+}
+/* building silhouette SVG backdrop */
+.card-bldg{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  z-index:1;
+  opacity:0.18;
+}
+.card-img-icon{display:none;}
+.card-img-addr{
+  font-size:9px;letter-spacing:2px;
+  color:rgba(255,255,255,0.5);
+  text-transform:uppercase;font-weight:600;
+  z-index:2;position:relative;
+  background:rgba(0,0,0,0.35);
+  padding:3px 8px;border-radius:2px;
+  backdrop-filter:blur(2px);
+}
+
+/* Card body */
+.card-body{
+  flex:1;padding:18px 20px 14px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.card-status{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 13px;border-radius:2px;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;width:fit-content;
+}
+.status-launch{background:#EEF0FF;color:#2800FF;}
+.status-soon{background:#F5F3FF;color:#7C3AED;}
+.status-future{background:#F3F4F6;color:#6B7280;}
+.status-last{background:#FFF7ED;color:#C2410C;}
+.status-obra{background:#FEF3C7;color:#B45309;}
+
+.card-name{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;color:#000;letter-spacing:-0.3px;
+  line-height:1.1;
+}
+.card-region{
+  font-size:11px;font-weight:500;
+  color:var(--gray2);letter-spacing:0.3px;
+  text-transform:uppercase;
+}
+.card-desc{
+  font-size:11.5px;color:#555;
+  line-height:1.5;font-weight:400;flex:1;
+}
+.card-tags{
+  display:flex;flex-wrap:wrap;gap:4px;
+  margin-top:4px;
+}
+.tag{
+  padding:3px 10px;border-radius:2px;
+  font-size:10px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;
+  background:#F0F0F0;color:#555;
+}
+.tag-blue{background:#EEF0FF;color:#2800FF;}
+
+/* Card footer */
+.card-foot{
+  padding:10px 20px 12px;
+  border-top:1px solid #F0F0F0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-url{
+  font-size:9px;color:#AFAFAF;
+  font-weight:500;letter-spacing:0.2px;
+  overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;max-width:200px;
+}
+.card-cta{
+  display:flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:700;letter-spacing:1.5px;
+  color:#2800FF;text-transform:uppercase;
+}
+.card-cta svg{flex-shrink:0;}
+
+/* Large card (1-col) */
+.card-lg .card-img{height:220px;}
+.card-lg .card-body{padding:22px 24px 16px;}
+.card-lg .card-name{font-size:26px;}
+.card-lg .card-region{font-size:12px;}
+.card-lg .card-desc{font-size:13px;}
+
+/* Medium card (2-col) */
+.card-md .card-img{height:160px;}
+.card-md .card-name{font-size:22px;}
+.card-md .card-region{font-size:13px;}
+.card-md .card-desc{font-size:12px;}
+
+/* Small card (3-col) */
+.card-sm .card-img{height:200px;}
+.card-sm .card-body{padding:16px 18px 12px;gap:8px;}
+.card-sm .card-name{font-size:19px;}
+.card-sm .card-region{font-size:13px;}
+.card-sm .card-desc{font-size:11.5px;}
+.card-sm .card-foot{padding:10px 18px 12px;}
+
+/* Medium card (2-col) sem stretch */
+.card-md .card-img{height:190px;}
+
+/* ═══════════════════ FOOTER STRIP ═══════════════════ */
+.page-foot{
+  position:absolute;bottom:0;left:0;right:0;
+  height:48px;background:#000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 56px;
+  border-top:1px solid #222;
+}
+.pf-logo{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:13px;font-weight:700;
+  color:#fff;letter-spacing:-0.3px;
+}
+.pf-logo span{color:#2800FF;}
+.pf-url{
+  font-size:10px;color:rgba(255,255,255,0.35);
+  letter-spacing:1px;font-weight:400;
+}
+.pf-pg{
+  font-size:10px;color:rgba(255,255,255,0.25);
+  font-weight:500;letter-spacing:1px;
+}
+.pf-wa{
+  display:flex;align-items:center;gap:6px;
+  text-decoration:none;
+  font-size:11px;color:rgba(255,255,255,0.55);
+  letter-spacing:0.5px;font-weight:700;
+  transition:none;
+}
+.pf-wa svg{opacity:0.7;}
+
+/* ═══════════════════ PRINT ═══════════════════ */
+@media print{
+  .pg{page-break-after:always;page-break-inside:avoid;}
+  a{color:inherit;}
+  .video-embed{display:none;}
+  .video-thumb{display:block!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 1 — COVER
+════════════════════════════════════════════════════════ -->
+<div class="pg cover">
+  <!-- background grid cells -->
+  <div class="cover-grid">
+    <div class="cover-cell cover-cell-1"></div>
+    <div class="cover-cell cover-cell-2">
+      <div class="cover-cell-label">Jardins · Pinheiros</div>
+    </div>
+    <div class="cover-cell cover-cell-3">
+      <div class="cover-cell-label">Perdizes · Vila Mariana</div>
+    </div>
+    <div class="cover-cell cover-cell-4"></div>
+  </div>
+
+  <!-- center card -->
+  <div class="cover-center">
+    <div class="cover-logo">VITA<span>CON</span></div>
+    <div class="cover-year">LANÇAMENTOS · 2026</div>
+    <div class="cover-line"></div>
+    <div class="cover-title">Portfólio Exclusivo<br>São Paulo</div>
+    <div class="cover-sub">
+      12 empreendimentos ativos · 4 regiões premium<br>
+      Do Futuro ao Pronto Pra Morar
+    </div>
+    <a href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Vi%20o%20cat%C3%A1logo%20Vitacon%202026%20e%20quero%20ouvir%20a%20proposta%20para%20corretores."
+       target="_blank"
+       style="display:inline-flex;align-items:center;gap:10px;margin-top:28px;
+              background:#25D366;color:#fff;text-decoration:none;
+              padding:12px 24px;border-radius:3px;
+              font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      Quero ouvir a proposta
+    </a>
+  </div>
+
+  <!-- bottom bar -->
+  <div class="cover-bottom">
+    <span class="cover-bottom-tag">vitacon.com.br/empreendimentos</span>
+    <div class="cover-bottom-badge"><span>Corretores Credenciados</span></div>
+    <span class="cover-bottom-tag">São Paulo · 2026</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 2 — JARDINS
+════════════════════════════════════════════════════════ -->
+<div class="pg pg-region">
+  <div class="rh">
+    <div class="rh-left">
+      <span class="rh-eyebrow">Região Premium</span>
+      <span class="rh-title">Jardins</span>
+    </div>
+    <div class="rh-right">
+      <span class="rh-count">02</span>
+      <span class="rh-label">Página</span>
+    </div>
+  </div>
+
+  <div class="rb rb-3col" style="padding-bottom:60px;">
+
+    <!-- Card 1: Vitacon Jardins -->
+    <a class="card card-sm card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-jardins/" target="_blank">
+      <div class="card-img">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Próximo à Rua Oscar Freire</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon<br>Jardins</div>
+        <div class="card-region">Jardins · São Paulo</div>
+        <div class="card-desc">Localização privilegiada no coração dos Jardins. Conceito Vitacon de morar compacto e bem localizado.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">NR</span>
+          <span class="tag tag-blue">HIS-2</span>
+          <span class="tag">HMP</span>
+          <span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/vitacon-jardins</span>
+        <span class="card-cta">
+          Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </span>
+      </div>
+    </a>
+
+    <!-- Card 2: Vitacon Alameda Franca -->
+    <a class="card card-sm card-soon" href="https://vitacon.com.br/empreendimentos/vitacon-alameda-franca/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#0a0014 0%,#2d0060 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon" style="border-color:rgba(124,58,237,0.5);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Alameda Franca · Jardins</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-soon">◑ Breve Lançamento</span>
+        <div class="card-name">Vitacon<br>Alameda Franca</div>
+        <div class="card-region">Jardins · São Paulo</div>
+        <div class="card-desc">Endereço nobre na Alameda Franca. Morar no melhor da cidade com o DNA Vitacon de inovação.</div>
+        <div class="card-tags">
+          <span class="tag">NR</span>
+          <span class="tag">HIS-2</span>
+          <span class="tag">HMP</span>
+          <span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/alameda-franca</span>
+        <span class="card-cta" style="color:#7C3AED;">
+          Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </span>
+      </div>
+    </a>
+
+    <!-- Card 3: H Bela Cintra -->
+    <a class="card card-sm card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-housi-bela-cintra/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#000814 0%,#001a40 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="card-img-addr">Bela Cintra · Jardins</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">H Bela Cintra<br><span style="font-weight:400;font-size:12px;">by Vitacon</span></div>
+        <div class="card-region">Jardins · São Paulo</div>
+        <div class="card-desc">Produto Housi com conceito de moradia inteligente. Ao lado da Estação Oscar Freire do Metrô.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">HMP</span>
+          <span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/housi-bela-cintra</span>
+        <span class="card-cta">
+          Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- region highlight bar -->
+  <div style="position:absolute;bottom:48px;left:40px;right:40px;height:60px;background:#F7F7F7;border-radius:4px;display:flex;align-items:center;padding:0 24px;gap:32px;border:1px solid #E8E8E8;">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Bairro</span>
+      <span style="font-size:13px;font-weight:700;color:#000;">Jardins</span>
+    </div>
+    <div style="width:1px;height:28px;background:#E8E8E8;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Lançamentos Ativos</span>
+      <span style="font-size:13px;font-weight:700;color:#2800FF;">3 produtos</span>
+    </div>
+    <div style="width:1px;height:28px;background:#E8E8E8;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Perfil</span>
+      <span style="font-size:13px;font-weight:700;color:#000;">Estúdio · 1 dorm compacto</span>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Próximo ao</span>
+      <span style="font-size:12px;font-weight:600;color:#000;">Metrô Oscar Freire · Av. Paulista</span>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="pf-logo">VITA<span>CON</span></span>
+    <a class="pf-wa" href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20lan%C3%A7amentos%20Vitacon%202026." target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      (11) 97872-5515
+    </a>
+    <span class="pf-url">vitacon.com.br/empreendimentos</span>
+    <span class="pf-pg">02 / 06</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 3 — PINHEIROS
+════════════════════════════════════════════════════════ -->
+<div class="pg pg-region">
+  <div class="rh">
+    <div class="rh-left">
+      <span class="rh-eyebrow">Região Premium</span>
+      <span class="rh-title">Pinheiros</span>
+    </div>
+    <div class="rh-right">
+      <span class="rh-count">03</span>
+      <span class="rh-label">Página</span>
+    </div>
+  </div>
+
+  <div class="rb rb-2col" style="grid-template-rows:1fr 1fr;padding-bottom:60px;row-gap:18px;">
+
+    <!-- Card 1: João Moura -->
+    <a class="card card-md card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-joao-moura/" target="_blank">
+      <div class="card-img">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Rua João Moura · Pinheiros</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon João Moura</div>
+        <div class="card-region">Pinheiros · São Paulo</div>
+        <div class="card-desc">Vida urbana de alto nível em Pinheiros. Próximo à Faria Lima e aos melhores restaurantes da cidade.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">NR</span><span class="tag tag-blue">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/vitacon-joao-moura</span>
+        <span class="card-cta">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Card 2: Mourato Coelho -->
+    <a class="card card-md card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-mourato-coelho/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#001020 0%,#002040 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Mourato Coelho · Pinheiros</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon Mourato Coelho</div>
+        <div class="card-region">Pinheiros · São Paulo</div>
+        <div class="card-desc">Na Rua Mourato Coelho, epicentro cultural de Pinheiros. A dois passos do metrô e da agitação da cidade.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">NR</span><span class="tag tag-blue">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/mourato-coelho</span>
+        <span class="card-cta">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Card 3: Vitacon Pinheiros -->
+    <a class="card card-md card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-pinheiros/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#080020 0%,#1800CC 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Pinheiros · São Paulo</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon Pinheiros</div>
+        <div class="card-region">Pinheiros · São Paulo</div>
+        <div class="card-desc">O produto Vitacon no coração de Pinheiros. Acesso direto às principais linhas de metrô da capital.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">NR</span><span class="tag tag-blue">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/vitacon-pinheiros</span>
+        <span class="card-cta">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Card 4: Alto de Pinheiros -->
+    <a class="card card-md card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-alto-de-pinheiros/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#001010 0%,#003030 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 17l5-5 4 4 5-6 4 3"/></svg>
+          </div>
+          <div class="card-img-addr">Alto de Pinheiros · São Paulo</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon Alto de Pinheiros</div>
+        <div class="card-region">Alto de Pinheiros · São Paulo</div>
+        <div class="card-desc">Região residencial nobre com perfil familiar. Tranquilidade de Alto de Pinheiros com conforto Vitacon.</div>
+        <div class="card-tags">
+          <span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/alto-de-pinheiros</span>
+        <span class="card-cta">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+  </div>
+
+  <div style="position:absolute;bottom:48px;left:40px;right:40px;height:60px;background:#F7F7F7;border-radius:4px;display:flex;align-items:center;padding:0 24px;gap:32px;border:1px solid #E8E8E8;">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Bairro</span>
+      <span style="font-size:13px;font-weight:700;color:#000;">Pinheiros</span>
+    </div>
+    <div style="width:1px;height:28px;background:#E8E8E8;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Lançamentos Ativos</span>
+      <span style="font-size:13px;font-weight:700;color:#2800FF;">4 produtos</span>
+    </div>
+    <div style="width:1px;height:28px;background:#E8E8E8;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Destaque</span>
+      <span style="font-size:13px;font-weight:700;color:#000;">Maior concentração de lançamentos</span>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Transporte</span>
+      <span style="font-size:12px;font-weight:600;color:#000;">Metrô Faria Lima · Clínicas</span>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="pf-logo">VITA<span>CON</span></span>
+    <a class="pf-wa" href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20lan%C3%A7amentos%20Vitacon%202026." target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      (11) 97872-5515
+    </a>
+    <span class="pf-url">vitacon.com.br/empreendimentos</span>
+    <span class="pf-pg">03 / 06</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 4 — PERDIZES
+════════════════════════════════════════════════════════ -->
+<div class="pg pg-region">
+  <div class="rh">
+    <div class="rh-left">
+      <span class="rh-eyebrow">Região Premium</span>
+      <span class="rh-title">Perdizes</span>
+    </div>
+    <div class="rh-right">
+      <span class="rh-count">04</span>
+      <span class="rh-label">Página</span>
+    </div>
+  </div>
+
+  <div class="rb rb-3col" style="padding-bottom:60px;">
+
+    <!-- Card 1: Venâncio Aires 38 -->
+    <a class="card card-sm card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-venancio-aires-38/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#0a0010 0%,#1800AA 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Rua Venâncio Aires, 38</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon<br>Venâncio Aires 38</div>
+        <div class="card-region">Perdizes · São Paulo</div>
+        <div class="card-desc">Endereço exclusivo em Perdizes, próximo ao Allianz Parque. Unidades disponíveis.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">NR</span><span class="tag tag-blue">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/venancio-aires-38</span>
+        <span class="card-cta">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Card 2: João Ramalho -->
+    <a class="card card-sm card-soon" href="https://vitacon.com.br/empreendimentos/vitacon-joao-ramalho/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#0a0014 0%,#2d0060 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon" style="border-color:rgba(124,58,237,0.5);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="card-img-addr">João Ramalho · Perdizes</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-soon">◑ Breve Lançamento</span>
+        <div class="card-name">Vitacon<br>João Ramalho</div>
+        <div class="card-region">Perdizes · São Paulo</div>
+        <div class="card-desc">Próximo à maior arena da América Latina. O futuro Vitacon em Perdizes já está em pré-venda.</div>
+        <div class="card-tags">
+          <span class="tag">NR</span><span class="tag">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/joao-ramalho</span>
+        <span class="card-cta" style="color:#7C3AED;">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Card 3: Vitacon Perdizes -->
+    <a class="card card-sm" href="https://vitacon.com.br/empreendimentos/vitacon-perdizes/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#0f0f0f 0%,#2a2a2a 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon" style="border-color:rgba(255,255,255,0.2);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Próximo ao Allianz Parque</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-last">◐ Últimas Unidades</span>
+        <div class="card-name">Vitacon<br>Perdizes</div>
+        <div class="card-region">Perdizes · São Paulo</div>
+        <div class="card-desc">Ao lado do Allianz Parque. Últimas unidades disponíveis — oportunidade de encerramento.</div>
+        <div class="card-tags">
+          <span class="tag">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/vitacon-perdizes</span>
+        <span class="card-cta" style="color:#C2410C;">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+  </div>
+
+  <div style="position:absolute;bottom:48px;left:40px;right:40px;height:60px;background:#F7F7F7;border-radius:4px;display:flex;align-items:center;padding:0 24px;gap:32px;border:1px solid #E8E8E8;">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Bairro</span>
+      <span style="font-size:13px;font-weight:700;color:#000;">Perdizes</span>
+    </div>
+    <div style="width:1px;height:28px;background:#E8E8E8;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Status</span>
+      <span style="font-size:13px;font-weight:700;color:#2800FF;">2 lançamentos + 1 últimas unidades</span>
+    </div>
+    <div style="width:1px;height:28px;background:#E8E8E8;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Destaque</span>
+      <span style="font-size:13px;font-weight:700;color:#000;">Próximo Allianz Parque</span>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end;">
+      <span style="font-size:9px;letter-spacing:2px;color:#AFAFAF;font-weight:600;text-transform:uppercase;">Acesso</span>
+      <span style="font-size:12px;font-weight:600;color:#000;">Metrô Perdizes · Pompéia</span>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="pf-logo">VITA<span>CON</span></span>
+    <a class="pf-wa" href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20lan%C3%A7amentos%20Vitacon%202026." target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      (11) 97872-5515
+    </a>
+    <span class="pf-url">vitacon.com.br/empreendimentos</span>
+    <span class="pf-pg">04 / 06</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 5 — VILA MARIANA + RESUMO
+════════════════════════════════════════════════════════ -->
+<div class="pg pg-region">
+  <div class="rh">
+    <div class="rh-left">
+      <span class="rh-eyebrow">Região Premium + Destaques</span>
+      <span class="rh-title">Vila Mariana +</span>
+    </div>
+    <div class="rh-right">
+      <span class="rh-count">05</span>
+      <span class="rh-label">Página</span>
+    </div>
+  </div>
+
+  <div class="rb rb-2col" style="padding-bottom:60px;gap:18px;">
+
+    <!-- Card 1: Domingos de Morais -->
+    <a class="card card-md card-launch" href="https://vitacon.com.br/empreendimentos/vitacon-domingos-de-morais/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#080020 0%,#1400EE 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="card-img-addr">Rua Domingos de Morais</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-launch">● Lançamento</span>
+        <div class="card-name">Vitacon Domingos de Morais</div>
+        <div class="card-region">Vila Mariana · São Paulo</div>
+        <div class="card-desc">Vila Mariana na sua melhor versão. Unidades disponíveis com o padrão Vitacon de qualidade e localização.</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">NR</span><span class="tag tag-blue">HIS-2</span><span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/domingos-de-morais</span>
+        <span class="card-cta">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Card 2: Vila Nova Conceição -->
+    <a class="card card-md card-future" href="https://vitacon.com.br/empreendimentos/vitacon-vila-nova-conceicao/" target="_blank">
+      <div class="card-img" style="background:linear-gradient(145deg,#0a0a0a 0%,#1a1a1a 100%)">
+        <div class="card-img-inner">
+          <div class="card-img-icon" style="border-color:rgba(255,255,255,0.15);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div class="card-img-addr">Vila Nova Conceição</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <span class="card-status status-future">○ Futuro Lançamento</span>
+        <div class="card-name">Vitacon Vila Nova Conceição</div>
+        <div class="card-region">Vila Nova Conceição · São Paulo</div>
+        <div class="card-desc">O próximo grande lançamento Vitacon em uma das regiões mais valorizadas de São Paulo. Em breve.</div>
+        <div class="card-tags">
+          <span class="tag">HMP</span><span class="tag">R2V</span>
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="card-url">vitacon.com.br/…/vila-nova-conceicao</span>
+        <span class="card-cta" style="color:#6B7280;">Ver <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+
+  </div>
+
+  <!-- Summary bar — ancorado ao fundo igual às outras páginas -->
+  <div style="position:absolute;bottom:48px;left:40px;right:40px;height:72px;background:#000;border-radius:4px;display:flex;align-items:center;padding:0 24px;gap:0;border:1px solid #222;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:2px;border-right:1px solid #333;padding-right:24px;margin-right:24px;">
+      <span style="font-size:9px;letter-spacing:3px;color:#666;font-weight:600;text-transform:uppercase;">Total Portfólio 2026</span>
+      <span style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;letter-spacing:-1px;line-height:1.1;">12 Lançamentos Ativos</span>
+      <span style="font-size:10px;color:#444;font-weight:400;">Jardins · Pinheiros · Perdizes · Vila Mariana · e mais</span>
+    </div>
+    <div style="display:flex;gap:20px;align-items:center;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#2800FF;">3</span>
+        <span style="font-size:8px;letter-spacing:1.5px;color:#555;font-weight:600;text-transform:uppercase;">Lançamento</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#7C3AED;">2</span>
+        <span style="font-size:8px;letter-spacing:1.5px;color:#555;font-weight:600;text-transform:uppercase;">Breve</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#B45309;">4</span>
+        <span style="font-size:8px;letter-spacing:1.5px;color:#555;font-weight:600;text-transform:uppercase;">Em Obras</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#15803D;">3+</span>
+        <span style="font-size:8px;letter-spacing:1.5px;color:#555;font-weight:600;text-transform:uppercase;">Pronto</span>
+      </div>
+      <div style="width:1px;height:36px;background:#333;margin:0 8px;"></div>
+      <a href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20agendar%20um%20bate-papo%20sobre%20os%20lan%C3%A7amentos%20Vitacon%202026."
+         target="_blank"
+         style="display:flex;flex-direction:column;gap:4px;text-decoration:none;">
+        <span style="font-size:8px;letter-spacing:2px;color:#555;font-weight:600;text-transform:uppercase;">Agende um bate-papo</span>
+        <span style="display:flex;align-items:center;gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+          <span style="font-size:12px;font-weight:700;color:#25D366;">(11) 97872-5515</span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="pf-logo">VITA<span>CON</span></span>
+    <a class="pf-wa" href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20os%20lan%C3%A7amentos%20Vitacon%202026." target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      (11) 97872-5515
+    </a>
+    <span class="pf-url">vitacon.com.br/empreendimentos</span>
+    <span class="pf-pg">05 / 06</span>
+  </div>
+</div>
+
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 6 — POR QUE TRABALHAR NA VITACON?
+════════════════════════════════════════════════════════ -->
+<div class="pg" style="background:#000;display:flex;flex-direction:column;">
+
+  <!-- Header -->
+  <div class="rh" style="border-bottom:3px solid #2800FF;">
+    <div class="rh-left">
+      <span class="rh-eyebrow">Sua próxima carreira</span>
+      <span class="rh-title" style="font-size:40px;letter-spacing:-1px;">Por que trabalhar<br>na Vitacon?</span>
+    </div>
+    <div class="rh-right">
+      <span class="rh-count">06</span>
+      <span class="rh-label">Página</span>
+    </div>
+  </div>
+
+  <!-- Conteúdo principal: itens + Housi + CTA numa coluna que preenche o espaço -->
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:20px 48px 20px;">
+
+    <!-- Diferenciais grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+
+      <!-- Item 1 -->
+      <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 24px 20px 0;border-bottom:1px solid #1a1a1a;border-right:1px solid #1a1a1a;">
+        <div style="flex-shrink:0;width:44px;height:44px;background:#2800FF;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:5px;">90% Investidores Imobiliários</div>
+          <div style="font-size:12px;color:#888;line-height:1.55;">Carteira composta majoritariamente por investidores — perfil com maior ticket e decisão de compra mais ágil.</div>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 0 20px 24px;border-bottom:1px solid #1a1a1a;">
+        <div style="flex-shrink:0;width:44px;height:44px;background:#2800FF;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:5px;">Base em Faria Lima e Frei Caneca</div>
+          <div style="font-size:12px;color:#888;line-height:1.55;">Atendimento estratégico nos dois principais eixos de negócios imobiliários de São Paulo.</div>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 24px 20px 0;border-bottom:1px solid #1a1a1a;border-right:1px solid #1a1a1a;">
+        <div style="flex-shrink:0;width:44px;height:44px;background:#2800FF;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 011.09 1.18 2 2 0 013.07 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:5px;">Leads Qualificados Diariamente</div>
+          <div style="font-size:12px;color:#888;line-height:1.55;">Distribuição ativa de leads todos os dias — você não precisa prospectar do zero, só converter.</div>
+        </div>
+      </div>
+
+      <!-- Item 4 — Lais IA -->
+      <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 0 20px 24px;border-bottom:1px solid #1a1a1a;">
+        <div style="flex-shrink:0;width:44px;height:44px;background:linear-gradient(135deg,#2800FF,#7C3AED);border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h.01M12 8h.01M17 8h.01"/></svg>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;">Lais IA — Inteligência Artificial</span>
+            <span style="font-size:9px;font-weight:700;letter-spacing:2px;color:#7C3AED;background:rgba(124,58,237,0.15);padding:2px 7px;border-radius:2px;text-transform:uppercase;">Exclusivo</span>
+          </div>
+          <div style="font-size:12px;color:#888;line-height:1.55;">IA própria que pré-qualifica leads e direciona ao corretor os clientes com maior potencial de compra e investimento.</div>
+        </div>
+      </div>
+
+      <!-- Item 5 -->
+      <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 24px 20px 0;border-right:1px solid #1a1a1a;">
+        <div style="flex-shrink:0;width:44px;height:44px;background:#111;border:1px solid #2800FF;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2800FF" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:5px;">16 Anos · 150+ Projetos Entregues</div>
+          <div style="font-size:12px;color:#888;line-height:1.55;">Empresa sólida com mais de uma década e meia de mercado e histórico comprovado de entrega.</div>
+        </div>
+      </div>
+
+      <!-- Item 6 -->
+      <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 0 20px 24px;">
+        <div style="flex-shrink:0;width:44px;height:44px;background:#111;border:1px solid #333;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:5px;">4ª no Reclame Aqui · 49 Construtoras</div>
+          <div style="font-size:12px;color:#888;line-height:1.55;">Empresa reconhecida pela reputação — seu cliente compra com segurança e você vende com credibilidade.</div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+
+    <!-- Housi + Regiões bar -->
+    <div style="padding:14px 22px;background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;display:flex;align-items:center;gap:24px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:6px;height:6px;background:#2800FF;border-radius:50%;flex-shrink:0;"></div>
+        <span style="font-size:12px;color:#aaa;font-weight:500;">Ecossistema <strong style="color:#fff;">Housi Smart Living</strong> — inovação em moradia compartilhada</span>
+      </div>
+      <div style="width:1px;height:20px;background:#333;"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:6px;height:6px;background:#2800FF;border-radius:50%;flex-shrink:0;"></div>
+        <span style="font-size:12px;color:#aaa;font-weight:500;">Projetos em <strong style="color:#fff;">Jardins · Perdizes · Pinheiros · Vila Mariana</strong></span>
+      </div>
+    </div>
+
+    <!-- CTA final -->
+    <div style="padding:28px 36px;background:linear-gradient(135deg,#05003a 0%,#0d0030 50%,#1400AA 100%);border-radius:6px;border:1px solid rgba(40,0,255,0.4);display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;">Pronto para dar o próximo passo?</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);font-weight:400;">Fale agora com nossa equipe e dê o próximo passo</div>
+    </div>
+    <a href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20agendar%20minha%20entrevista%20online%20para%20trabalhar%20na%20Vitacon."
+       target="_blank"
+       style="display:inline-flex;align-items:center;gap:12px;flex-shrink:0;
+              background:#25D366;color:#fff;text-decoration:none;
+              padding:16px 32px;border-radius:4px;
+              font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+              white-space:nowrap;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      Agendar minha entrevista online
+    </a>
+    </div><!-- /CTA -->
+
+  </div><!-- /flex wrapper -->
+
+  <div class="page-foot">
+    <span class="pf-logo">VITA<span>CON</span></span>
+    <a class="pf-wa" href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20agendar%20minha%20entrevista%20online%20para%20trabalhar%20na%20Vitacon." target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      (11) 97872-5515
+    </a>
+    <span class="pf-url">vitacon.com.br/empreendimentos</span>
+    <span class="pf-pg">06 / 07</span>
+  </div>
+</div>
+
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 7 — CONHEÇA NOSSA SEDE
+════════════════════════════════════════════════════════ -->
+<div class="pg" style="background:#000;display:flex;flex-direction:column;">
+
+  <!-- Header -->
+  <div class="rh" style="border-bottom:3px solid #2800FF;height:88px;">
+    <div class="rh-left">
+      <span class="rh-eyebrow">Estrutura e ambiente</span>
+      <span class="rh-title" style="font-size:42px;">Conheça Nossa Sede</span>
+    </div>
+    <div class="rh-right">
+      <span class="rh-count">07</span>
+      <span class="rh-label">Página</span>
+    </div>
+  </div>
+
+  <!-- Video area -->
+  <div style="flex:1;display:flex;flex-direction:column;padding:24px 40px 16px;gap:16px;">
+
+    <!-- YouTube embed (web) -->
+    <div class="video-embed" style="position:relative;width:100%;padding-top:56.25%;border-radius:6px;overflow:hidden;border:1px solid #1a1a1a;">
+      <iframe
+        src="https://www.youtube.com/embed/cHK4MDm4w5Q?autoplay=0&rel=0&modestbranding=1&color=white"
+        title="Novo Escritório Vitacon"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        style="position:absolute;top:0;left:0;width:100%;height:100%;">
+      </iframe>
+    </div>
+
+    <!-- Thumbnail (PDF/print apenas) -->
+    <div class="video-thumb" style="display:none;position:relative;width:100%;border-radius:6px;overflow:hidden;border:1px solid #1a1a1a;">
+      <img src="https://img.youtube.com/vi/cHK4MDm4w5Q/maxresdefault.jpg"
+           style="width:100%;display:block;" alt="Novo Escritório Vitacon" />
+      <!-- Play overlay -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+        <div style="width:72px;height:72px;background:#2800FF;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+      </div>
+      <!-- YouTube link badge -->
+      <div style="position:absolute;bottom:14px;right:14px;background:rgba(0,0,0,0.75);padding:6px 14px;border-radius:3px;display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;">ASSISTIR NO YOUTUBE</span>
+      </div>
+    </div>
+
+    <!-- Info bar abaixo do vídeo -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;">
+      <div style="display:flex;gap:32px;align-items:center;">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-size:9px;letter-spacing:2px;color:#555;font-weight:600;text-transform:uppercase;">Bases operacionais</span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;">Faria Lima · Frei Caneca</span>
+        </div>
+        <div style="width:1px;height:28px;background:#222;"></div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-size:9px;letter-spacing:2px;color:#555;font-weight:600;text-transform:uppercase;">Estrutura</span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;">100% digital · sem plantão físico</span>
+        </div>
+        <div style="width:1px;height:28px;background:#222;"></div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-size:9px;letter-spacing:2px;color:#555;font-weight:600;text-transform:uppercase;">Mercado</span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;">16 anos · 150+ projetos entregues</span>
+        </div>
+      </div>
+      <a href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20agendar%20minha%20entrevista%20online%20para%20trabalhar%20na%20Vitacon."
+         target="_blank"
+         style="display:inline-flex;align-items:center;gap:10px;flex-shrink:0;
+                background:#25D366;color:#fff;text-decoration:none;
+                padding:12px 24px;border-radius:3px;
+                font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+        Quero fazer parte
+      </a>
+    </div>
+
+  </div>
+
+  <div class="page-foot">
+    <span class="pf-logo">VITA<span>CON</span></span>
+    <a class="pf-wa" href="https://wa.me/5511978725515?text=Ol%C3%A1!%20Quero%20agendar%20minha%20entrevista%20online%20para%20trabalhar%20na%20Vitacon." target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882l6.233-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.371l-.36-.214-3.7.97.988-3.608-.235-.371A9.818 9.818 0 1112 21.818z"/></svg>
+      (11) 97872-5515
+    </a>
+    <span class="pf-url">vitacon.com.br/empreendimentos</span>
+    <span class="pf-pg">07 / 07</span>
+  </div>
+</div>
+
+</body>
+</html>
