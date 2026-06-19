@@ -1734,6 +1734,17 @@
 
       await rpc('rhi_importar_leads_csv', { p_leads: payload });
 
+      // Envia para planilha mãe (fire-and-forget, não bloqueia o fluxo)
+      fetch('https://script.google.com/macros/s/AKfycbz8NXSn99DFCV0gQHsfEwyINHocfw5Pahr0ehtZWYG_W-yAuI0dLALIf2GVup5Kmb05/exec', {
+        method: 'POST',
+        body: JSON.stringify({
+          secret:   'rhimob_planilha_mae_2026',
+          conta_id: contaId,
+          usuario:  state.profile?.nome || state.session?.user?.email || '',
+          rows:     payload
+        })
+      }).catch(() => {});
+
       csvAlert(`✓ ${payload.length} profissional(is) importado(s) com sucesso.`, 'success');
       clearCsvImport(true);
       await cacheImportedLeads();
