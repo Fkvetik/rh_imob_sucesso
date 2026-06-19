@@ -536,11 +536,28 @@
 
   function buildMessage(template, lead) {
     const operador = state.profile?.nome || firstName(state.session?.user?.email);
-    return String(template || '')
-      .replace(/\{nome\}/gi, firstName(lead.nome_completo || lead.nome_mascarado))
-      .replace(/\{cidade\}/gi, lead.cidade || '')
-      .replace(/\{Usuário\}/g, operador)
-      .replace(/\{usuario\}/gi, operador);
+    const nome     = firstName(lead.nome_completo || lead.nome_mascarado) || '';
+    const cidade   = normalize(lead.cidade || '');
+    const telefone = onlyDigits(lead.telefone_txt || lead.telefone_base || '');
+
+    let msg = String(template || '')
+      .replace(/\{nome\}/gi,     nome)
+      .replace(/\{Usuário\}/g,   operador)
+      .replace(/\{usuario\}/gi,  operador)
+      .replace(/\{telefone\}/gi, telefone);
+
+    // Substitui {cidade} e limpa preposições soltas quando vazio
+    if (cidade) {
+      msg = msg.replace(/\{cidade\}/gi, cidade);
+    } else {
+      // Remove "em {cidade}", "de {cidade}", "na cidade de {cidade}" e variantes
+      msg = msg.replace(/\s*(em|de|na cidade de|na)\s*\{cidade\}/gi, '');
+      msg = msg.replace(/\{cidade\}/gi, '');
+    }
+
+    // Limpa espaços duplos e vírgulas soltas
+    msg = msg.replace(/\s{2,}/g, ' ').replace(/,\s*,/g, ',').replace(/\.\s*\./g, '.').trim();
+    return msg;
   }
 
   function whatsappLeadUrl(lead, message) {
