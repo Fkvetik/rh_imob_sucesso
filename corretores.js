@@ -1330,7 +1330,10 @@
     const section = $('#abordadosPanel');
     if (section) section.hidden = !show;
     state.abordadosVisible = show;
-    if (show) loadAbordadosCOR();
+    if (show) {
+      loadAbordadosCOR();
+      section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   // ── FIM ABORDADOS CORRETORES ────────────────────────────────────────────────
@@ -1515,11 +1518,7 @@
     $('#abordadosToggleBtn')?.addEventListener('click', () => {
       showAbordadosCOR(!state.abordadosVisible);
     });
-    $('#meusContatosToggleBtn')?.addEventListener('click', () => openMeusContatosModal());
-    $('#meusContatosModalClose')?.addEventListener('click', () => closeMeusContatosModal());
-    $('#meusContatosModal')?.addEventListener('click', e => {
-      if (e.target === $('#meusContatosModal')) closeMeusContatosModal();
-    });
+    $('#meusContatosToggleBtn')?.addEventListener('click', () => showMeusContatos(!state.meusContatosVisible));
     $('#abordadosStatusFiltro')?.addEventListener('change', loadAbordadosCOR);
 
     // ── Importar CSV ──────────────────────────────────────────────
@@ -1813,22 +1812,14 @@
     });
   }
 
-  function openMeusContatosModal() {
-    const modal = $('#meusContatosModal');
-    if (modal) modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-    loadMeusContatos();
-  }
-
-  function closeMeusContatosModal() {
-    const modal = $('#meusContatosModal');
-    if (modal) modal.style.display = 'none';
-    document.body.style.overflow = '';
-    clearCsvImport();
-  }
-
   function showMeusContatos(show) {
-    if (!show) closeMeusContatosModal();
+    const section = $('#meusContatosPanel');
+    if (section) section.hidden = !show;
+    state.meusContatosVisible = show;
+    if (show) {
+      loadMeusContatos();
+      section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   async function loadMeusContatos() {

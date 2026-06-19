@@ -129,63 +129,56 @@
       </div>
     </section>
 
-    <!-- Modal Meus Contatos -->
-    <div id="meusContatosModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(10,0,30,.55);overflow-y:auto;padding:24px 12px" aria-modal="true" role="dialog">
-      <div style="background:#fff;border-radius:16px;max-width:700px;margin:0 auto;padding:28px 28px 24px;position:relative">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px">
+    <section class="nt-abordados-section" id="meusContatosPanel" hidden>
+      <div class="container">
+        <div class="admin-head">
           <div>
-            <h3 style="margin:0 0 4px;font-size:1.15rem;color:var(--ink,#1a0533)">Meus Contatos</h3>
-            <span style="font-size:.85rem;color:var(--muted,#6b5e7e)">Importe e visualize seus próprios contatos. Não afeta a base pública.</span>
+            <span class="kicker">Minha base</span>
+            <h2>Meus Contatos</h2>
+            <p>Importe e visualize seus próprios contatos. Não afeta a base pública do CRECI.</p>
           </div>
-          <button id="meusContatosModalClose" type="button" aria-label="Fechar" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted,#6b5e7e);line-height:1;padding:0">×</button>
+          <button class="btn btn-secondary" id="downloadCsvTemplateBtn" type="button">Baixar modelo CSV</button>
         </div>
 
-        <!-- Upload -->
-        <div style="border:1px solid #e8e2f4;border-radius:10px;padding:18px;margin-bottom:18px">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-            <strong style="font-size:.95rem;color:var(--ink,#1a0533)">Importar via CSV</strong>
-            <button class="btn btn-secondary" id="downloadCsvTemplateBtn" type="button" style="font-size:.82rem;padding:6px 14px">Baixar modelo</button>
-          </div>
-          <label style="display:flex;flex-direction:column;gap:6px;font-size:.88rem;font-weight:600;color:var(--ink,#1a0533)">
+        <article class="admin-box" style="margin-bottom:24px">
+          <div class="admin-box-head"><div><h3>Importar via CSV</h3></div></div>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:.9rem;font-weight:600;color:var(--ink,#1a0533);margin:8px 0">
             Selecione o arquivo CSV
-            <input type="file" id="importCsvInput" accept=".csv,text/csv" style="font-size:.85rem;padding:4px 0" />
+            <input type="file" id="importCsvInput" accept=".csv,text/csv" style="font-size:.88rem;padding:4px 0" />
           </label>
-          <div id="importCsvPreview" hidden style="margin:12px 0 0">
-            <p id="importCsvPreviewMsg" style="font-size:.83rem;color:var(--muted,#6b5e7e);margin:0 0 8px"></p>
-            <div style="max-height:180px;overflow-y:auto">
+          <div id="importCsvPreview" hidden style="margin:12px 0">
+            <p id="importCsvPreviewMsg" style="font-size:.85rem;color:var(--muted,#6b5e7e);margin:0 0 8px"></p>
+            <div class="table-wrap" style="max-height:200px;overflow-y:auto">
               <table class="admin-table" id="importCsvTable">
                 <thead><tr id="importCsvThead"></tr></thead>
                 <tbody id="importCsvTbody"></tbody>
               </table>
             </div>
           </div>
-          <div id="importCsvAlert" hidden style="margin:10px 0 0;padding:10px 14px;border-radius:8px;font-size:.85rem"></div>
-          <div style="display:flex;gap:10px;margin-top:14px">
-            <button class="btn btn-primary" id="importCsvSendBtn" type="button" disabled style="font-size:.88rem">Importar</button>
-            <button class="btn btn-ghost" id="importCsvClearBtn" type="button" style="font-size:.88rem">Limpar</button>
+          <div id="importCsvAlert" hidden style="margin:10px 0;padding:10px 14px;border-radius:8px;font-size:.88rem"></div>
+          <div style="display:flex;gap:12px;margin-top:14px">
+            <button class="btn btn-primary" id="importCsvSendBtn" type="button" disabled>Importar</button>
+            <button class="btn btn-ghost" id="importCsvClearBtn" type="button">Limpar</button>
           </div>
-          <p style="font-size:.77rem;color:var(--muted-2,#9e90b0);margin:10px 0 0">
+          <p style="font-size:.8rem;color:var(--muted-2,#9e90b0);margin-top:10px">
             Obrigatórias: <strong>nome</strong>, <strong>telefone</strong>. Opcionais: cidade, cargo, ano_inscricao, creci, instagram, email, tags.
           </p>
-        </div>
+        </article>
 
-        <!-- Lista -->
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <strong style="font-size:.95rem;color:var(--ink,#1a0533)">Contatos importados</strong>
-            <span id="meusContatosCount" style="font-size:.82rem;color:var(--muted,#6b5e7e)">0 registro(s)</span>
+        <article class="admin-box">
+          <div class="admin-box-head">
+            <h3>Contatos importados</h3>
+            <span id="meusContatosCount" class="nt-muted-label">0 registro(s)</span>
           </div>
-          <div style="max-height:260px;overflow-y:auto">
+          <div class="table-wrap">
             <table class="admin-table">
-              <thead><tr>
-                <th>Nome</th><th>Telefone</th><th>Cidade</th><th>Cargo</th><th>CRECI</th><th>Tags</th>
-              </tr></thead>
+              <thead><tr><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Cargo</th><th>CRECI</th><th>Tags</th></tr></thead>
               <tbody id="meusContatosTbody"></tbody>
             </table>
           </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
 
     <section class="admin-section" id="adminPanel" hidden>
       <div class="container">
