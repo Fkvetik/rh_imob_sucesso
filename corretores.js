@@ -1487,13 +1487,28 @@
   const CSV_COLS_OPTIONAL = ['cidade', 'cargo', 'ano_inscricao', 'creci', 'instagram', 'email', 'tags'];
   const CSV_COLS_ALL = [...CSV_COLS_REQUIRED, ...CSV_COLS_OPTIONAL];
 
+  // Aliases: mapeia nomes de colunas de exportações externas (Google Contacts, etc.)
+  const CSV_ALIASES = {
+    nome:          ['nome', 'name', 'full name', 'nome completo', 'given name', 'first name'],
+    telefone:      ['telefone', 'celular', 'phone', 'tel', 'phone 1 - value', 'phone 2 - value', 'fone'],
+    cargo:         ['cargo', 'função', 'title', 'organization 1 - title', 'organization title', 'occupation', 'cargo/função'],
+    cidade:        ['cidade', 'city', 'municipio', 'município'],
+    creci:         ['creci', 'registro', 'organization name'],
+    instagram:     ['instagram', 'social', 'perfil'],
+    email:         ['email', 'e-mail', 'e-mail 1 - value', 'email 1 - value', 'email address'],
+    ano_inscricao: ['ano_inscricao', 'ano inscricao', 'ano'],
+    tags:          ['tags', 'etiquetas', 'labels', 'label'],
+  };
+
   function downloadCsvTemplate() {
-    const header = CSV_COLS_ALL.join(',');
+    const cols = CSV_COLS_ALL;
+    // sep=, garante que Excel BR abra com vírgula como delimitador
+    const header = 'sep=,\r\n' + cols.join(',');
     const example = [
       'João da Silva', '11999990000', 'São Paulo', 'Corretor de Imóveis',
       '2018', 'CRECI-SP 123456', '@joaosilva', 'joao@email.com', 'alto padrão'
     ].map(v => `"${v}"`).join(',');
-    const blob = new Blob(['﻿' + header + '\n' + example + '\n'], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['﻿' + header + '\r\n' + example + '\r\n'], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'modelo_importacao_rhimob.csv';
@@ -1501,29 +1516,93 @@
     URL.revokeObjectURL(a.href);
   }
 
+  function csvNormKey(s) {
+    return String(s || '').toLowerCase().trim()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ');
+  }
+
+  function csvFirstValue(v) {
+    // Google Contacts separa múltiplos valores com " ::: "
+    return String(v || '').split(':::')[0].replace(/^["'\s]+|["'\s]+$/g, '').trim();
+  }
+
+  function splitCsvLine(line, delim) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === delim && !inQ) { result.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+    result.push(cur);
+    return result;
+  }
+
   function parseCsv(text) {
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
+    let lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+    // Ignora linha sep= que o Excel adiciona/consome
+    if (lines[0].trim().toLowerCase().startsWith('sep=')) lines = lines.slice(1);
+
+    lines = lines.filter(l => l.trim());
     if (lines.length < 2) return { error: 'Arquivo vazio ou sem dados.' };
 
-    const header = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '_'));
+    // Detecta delimitador: vírgula ou ponto-e-vírgula
+    const delim = (lines[0].split(';').length > lines[0].split(',').length) ? ';' : ',';
 
-    const missing = CSV_COLS_REQUIRED.filter(c => !header.includes(c));
-    if (missing.length) return { error: `Coluna(s) obrigatória(s) ausente(s): ${missing.join(', ')}` };
+    const rawHeader = splitCsvLine(lines[0], delim).map(h => csvNormKey(h));
+
+    // Monta mapa: índice da coluna raw → campo interno
+    const colMap = {}; // campo interno → índice
+    const needNome = { first: -1, last: -1 }; // para combinar First Name + Last Name
+    rawHeader.forEach((h, i) => {
+      for (const [field, aliases] of Object.entries(CSV_ALIASES)) {
+        if (colMap[field] !== undefined) continue;
+        if (aliases.includes(h)) { colMap[field] = i; break; }
+      }
+      if (h === 'first name' || h === 'given name') needNome.first = i;
+      if (h === 'last name'  || h === 'family name') needNome.last  = i;
+    });
+
+    // Se não achou coluna nome mas tem first+last, usa combinação
+    if (colMap.nome === undefined && (needNome.first >= 0 || needNome.last >= 0)) {
+      colMap._firstName = needNome.first;
+      colMap._lastName  = needNome.last;
+    }
+
+    const missing = CSV_COLS_REQUIRED.filter(c => colMap[c] === undefined && !(c === 'nome' && (colMap._firstName >= 0 || colMap._lastName >= 0)));
+    if (missing.length) return { error: `Coluna(s) obrigatória(s) não encontrada(s): ${missing.join(', ')}. Verifique o cabeçalho do arquivo.` };
 
     const rows = [];
     for (let i = 1; i < lines.length; i++) {
-      const cells = lines[i].match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
-      const obj = {};
-      header.forEach((col, idx) => {
-        obj[col] = (cells[idx] || '').replace(/^["']|["']$/g, '').trim();
+      const cells = splitCsvLine(lines[i], delim);
+      const get = idx => (idx >= 0 ? csvFirstValue(cells[idx]) : '');
+
+      let nome = get(colMap.nome);
+      if (!nome) {
+        const fn = get(colMap._firstName);
+        const ln = get(colMap._lastName);
+        nome = [fn, ln].filter(Boolean).join(' ');
+      }
+      const telefone = get(colMap.telefone);
+      if (!nome && !telefone) continue;
+
+      rows.push({
+        nome,
+        telefone,
+        cidade:        get(colMap.cidade),
+        cargo:         get(colMap.cargo),
+        ano_inscricao: get(colMap.ano_inscricao),
+        creci:         get(colMap.creci),
+        instagram:     get(colMap.instagram),
+        email:         get(colMap.email),
+        tags:          get(colMap.tags),
       });
-      if (!obj.nome && !obj.telefone) continue;
-      rows.push(obj);
     }
 
     if (!rows.length) return { error: 'Nenhuma linha válida encontrada no arquivo.' };
-    return { header, rows };
+    return { header: CSV_COLS_ALL, rows };
   }
 
   function csvAlert(msg, type) {
