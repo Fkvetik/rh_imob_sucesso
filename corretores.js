@@ -1596,10 +1596,7 @@
         };
       });
 
-      const { error } = await getCorSupabaseClient()
-        .rpc('rhi_importar_leads_csv', { p_leads: payload });
-
-      if (error) throw new Error(error.message);
+      await rpc('rhi_importar_leads_csv', { p_leads: payload });
 
       csvAlert(`✓ ${payload.length} profissional(is) importado(s) com sucesso.`, 'success');
       clearCsvImport(true);
