@@ -264,7 +264,12 @@
     if (adminPanel) adminPanel.hidden = !(logged && isAdminProfile());
     const abordadosBtn = $('#abordadosToggleBtn');
     if (abordadosBtn) abordadosBtn.hidden = !logged;
-    if (!logged) showAbordadosCOR(false);
+    const meusContatosBtn = $('#meusContatosToggleBtn');
+    if (meusContatosBtn) meusContatosBtn.hidden = !logged;
+    if (!logged) {
+      showAbordadosCOR(false);
+      showMeusContatos(false);
+    }
   }
 
   async function refreshLoggedState(session) {
@@ -1462,6 +1467,9 @@
     $('#abordadosToggleBtn')?.addEventListener('click', () => {
       showAbordadosCOR(!state.abordadosVisible);
     });
+    $('#meusContatosToggleBtn')?.addEventListener('click', () => {
+      showMeusContatos(!state.meusContatosVisible);
+    });
     $('#abordadosStatusFiltro')?.addEventListener('change', loadAbordadosCOR);
 
     // ── Importar CSV ──────────────────────────────────────────────
@@ -1618,9 +1626,46 @@
   }
 
   function showImportCsvBox() {
-    const perfil = String(state.profile?.perfil || '').toUpperCase();
-    const box = $('#importCsvBox');
-    if (box) box.hidden = perfil !== 'MASTER';
+    // já controlado pela visibilidade do meusContatosPanel
+  }
+
+  function showMeusContatos(show) {
+    const section = $('#meusContatosPanel');
+    if (section) section.hidden = !show;
+    state.meusContatosVisible = show;
+    if (show) loadMeusContatos();
+  }
+
+  async function loadMeusContatos() {
+    const tbody = $('#meusContatosTbody');
+    const count = $('#meusContatosCount');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted,#6b5e7e)">Carregando…</td></tr>';
+    try {
+      const client = getCorSupabaseClient();
+      const { data, error } = await client
+        .from('leads_importados')
+        .select('nome,telefone_base,cidade,cargo,creci,tags_publicas')
+        .order('criado_em', { ascending: false })
+        .limit(200);
+      if (error) throw new Error(error.message);
+      const rows = data || [];
+      if (count) count.textContent = `${rows.length} registro(s)`;
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted,#6b5e7e)">Nenhum contato importado ainda.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `<tr>
+        <td>${esc(r.nome || '')}</td>
+        <td>${esc(r.telefone_base || '')}</td>
+        <td>${esc(r.cidade || '')}</td>
+        <td>${esc(r.cargo || '')}</td>
+        <td>${esc(r.creci || '')}</td>
+        <td>${esc(r.tags_publicas || '')}</td>
+      </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="color:#b91c1c">Erro ao carregar: ${esc(e.message)}</td></tr>`;
+    }
   }
 
   async function init() {

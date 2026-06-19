@@ -40,6 +40,7 @@
       <div class="auth-mini" id="authMini" hidden>
         <span id="authMiniName">Sessão ativa</span>
         <button class="link-btn" type="button" id="abordadosToggleBtn" hidden>Meus Abordados</button>
+        <button class="link-btn" type="button" id="meusContatosToggleBtn" hidden>Meus Contatos</button>
         <button class="link-btn" type="button" id="logoutBtn">Sair</button>
       </div>
       <button class="btn btn-secondary" id="loginTopBtn" type="button">Entrar</button>
@@ -125,6 +126,66 @@
           </div>
         </div>
         <div id="abordadosLista" class="nt-abordados-lista"></div>
+      </div>
+    </section>
+
+    <section class="nt-abordados-section" id="meusContatosPanel" hidden>
+      <div class="container">
+        <div class="admin-head">
+          <div>
+            <span class="kicker">Minha base</span>
+            <h2>Meus Contatos</h2>
+            <p>Profissionais que você importou via CSV. Visíveis apenas para o seu plano.</p>
+          </div>
+          <button class="btn btn-secondary" id="downloadCsvTemplateBtn" type="button">Baixar modelo CSV</button>
+        </div>
+
+        <article class="admin-box" style="margin-bottom:24px" id="importCsvBox">
+          <div class="admin-box-head">
+            <div>
+              <h3>Importar via CSV</h3>
+              <span>Adicione seus próprios contatos. Não afeta a base pública do CRECI.</span>
+            </div>
+          </div>
+          <div style="margin:16px 0 8px">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:.9rem;font-weight:600;color:var(--ink,#1a0533)">
+              Selecione o arquivo CSV
+              <input type="file" id="importCsvInput" accept=".csv,text/csv" style="font-size:.88rem;padding:6px 0" />
+            </label>
+          </div>
+          <div id="importCsvPreview" hidden style="margin:12px 0">
+            <p id="importCsvPreviewMsg" style="font-size:.88rem;color:var(--muted,#6b5e7e);margin:0 0 10px"></p>
+            <div class="table-wrap" style="max-height:220px;overflow-y:auto">
+              <table class="admin-table" id="importCsvTable">
+                <thead><tr id="importCsvThead"></tr></thead>
+                <tbody id="importCsvTbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="importCsvAlert" hidden style="margin:10px 0;padding:10px 14px;border-radius:8px;font-size:.88rem"></div>
+          <div style="display:flex;gap:12px;margin-top:14px">
+            <button class="btn btn-primary" id="importCsvSendBtn" type="button" disabled>Importar para a plataforma</button>
+            <button class="btn btn-ghost" id="importCsvClearBtn" type="button">Limpar</button>
+          </div>
+          <p style="font-size:.8rem;color:var(--muted-2,#9e90b0);margin-top:12px">
+            Colunas obrigatórias: <strong>nome</strong>, <strong>telefone</strong>. Opcionais: cidade, cargo, ano_inscricao, creci, instagram, email, tags.
+          </p>
+        </article>
+
+        <article class="admin-box">
+          <div class="admin-box-head">
+            <h3>Contatos importados</h3>
+            <span id="meusContatosCount" class="nt-muted-label">0 registro(s)</span>
+          </div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead><tr>
+                <th>Nome</th><th>Telefone</th><th>Cidade</th><th>Cargo</th><th>CRECI</th><th>Tags</th>
+              </tr></thead>
+              <tbody id="meusContatosTbody"></tbody>
+            </table>
+          </div>
+        </article>
       </div>
     </section>
 
