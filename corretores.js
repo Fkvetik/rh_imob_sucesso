@@ -293,6 +293,7 @@
     await loadFrases();
     updateAuthUI();
     if (isAdminProfile()) setTimeout(() => loadAdminDashboard({ silent: true }), 250);
+    cacheImportedLeads().catch(() => {});
     return true;
   }
 
@@ -424,14 +425,23 @@
   function card(r) {
     const perfil = perfilTexto(r);
     const logged = !!state.session && !!state.profile;
+    const importado = !!r._importado;
     const ctx = `${r.cidade || 'cidade'} / ${r.ano_inscricao || 'ano'} / ${perfil}`;
-    const action = logged
-      ? `<button class="btn btn-primary js-open-lead" type="button" data-lead-key="${esc(r.lead_key)}">Abrir contato completo</button>`
-      : `<button class="btn btn-primary js-login-lead" type="button">Entrar para liberar contato</button>`;
+    const action = importado
+      ? `<button class="btn btn-primary js-open-lead" type="button" data-lead-key="${esc(r.lead_key)}">Abrir contato</button>`
+      : logged
+        ? `<button class="btn btn-primary js-open-lead" type="button" data-lead-key="${esc(r.lead_key)}">Abrir contato completo</button>`
+        : `<button class="btn btn-primary js-login-lead" type="button">Entrar para liberar contato</button>`;
+
+    const badgeLabel = importado ? 'Meu contato' : (logged ? 'Acesso autenticado' : 'Prévia protegida');
+    const badgeStyle = importado ? 'style="background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7"' : '';
+    const note = importado
+      ? 'Contato da sua base própria — não consome crédito do plano.'
+      : (logged ? 'Ao abrir, o contato será registrado somente neste plano.' : 'Contato completo e mensagem pronta são liberados somente com login contratado.');
 
     return `<article class="lead-card" data-lead-key="${esc(r.lead_key)}">
       <div class="lead-head">
-        <span class="badge">${logged ? 'Acesso autenticado' : 'Prévia protegida'}</span>
+        <span class="badge" ${badgeStyle}>${badgeLabel}</span>
         <h3>${esc(r.nome_mascarado || 'Profissional selecionado')}</h3>
         <div>${esc(r.cidade || 'Cidade não informada')}</div>
       </div>
@@ -445,9 +455,9 @@
           <span class="channel ${r.tem_canal_telefone ? 'ok' : ''}">${r.tem_canal_telefone ? 'WhatsApp validado' : 'Telefone não exibido'}</span>
           <span class="channel ${r.tem_canal_instagram ? 'ok' : ''}">${r.tem_canal_instagram ? 'Instagram encontrado' : 'Instagram não exibido'}</span>
         </div>
-        <p class="note">${logged ? 'Ao abrir, o contato será registrado somente neste plano.' : 'Contato completo e mensagem pronta são liberados somente com login contratado.'}</p>
+        <p class="note">${note}</p>
         ${action}
-        ${!logged ? `<a class="link-access" href="${wa(ctx)}" target="_blank" rel="noopener">Solicitar acesso comercial</a>` : ''}
+        ${!logged && !importado ? `<a class="link-access" href="${wa(ctx)}" target="_blank" rel="noopener">Solicitar acesso comercial</a>` : ''}
       </div>
     </article>`;
   }
@@ -491,9 +501,18 @@
         }
       }
 
-      if (!append && !rows.length) {
+      // Prepend importados apenas na primeira página e se logado
+      if (!append && state.session && state.profile) {
+        const importados = importedLeadsFiltrados();
+        if (importados.length) {
+          grid.insertAdjacentHTML('beforeend', importados.map(card).join(''));
+          bindLeadButtons(grid);
+        }
+      }
+
+      if (!append && !rows.length && !(importedLeadsFiltrados().length)) {
         grid.innerHTML = '<div class="empty">Nenhum resultado encontrado. Tente outra cidade, ano ou perfil.</div>';
-      } else {
+      } else if (rows.length) {
         grid.insertAdjacentHTML('beforeend', rows.map(card).join(''));
         bindLeadButtons(grid);
       }
@@ -562,6 +581,18 @@
 
   async function abrirLead(leadKey) {
     if (!state.session || !state.profile) return openLoginModal();
+
+    // Leads importados: usa cache local, não consome crédito
+    if (String(leadKey).startsWith('imp_')) {
+      const lead = (state.importedLeads || []).find(r => r.lead_key === leadKey);
+      if (!lead) { alert('Contato não encontrado na sua base importada.'); return; }
+      renderLeadDetail(lead, null, false);
+      openLeadModal();
+      registrarAbordagemCOR(lead).catch(() => {});
+      status('Contato da sua base própria — sem consumo de crédito.');
+      return;
+    }
+
     try {
       status('Liberando contato completo...');
       const payload = await rpc('abrir_lead', { p_lead_key: leadKey });
@@ -1689,6 +1720,8 @@
 
       csvAlert(`✓ ${payload.length} profissional(is) importado(s) com sucesso.`, 'success');
       clearCsvImport(true);
+      await cacheImportedLeads();
+      search();
     } catch (err) {
       csvAlert('Erro ao importar: ' + err.message, 'error');
       if (sendBtn) sendBtn.disabled = false;
@@ -1707,7 +1740,60 @@
   }
 
   function showImportCsvBox() {
-    // já controlado pela visibilidade do meusContatosPanel
+    // controlado pela visibilidade do modal
+  }
+
+  // ── LEADS IMPORTADOS NO ECOSSISTEMA ────────────────────────────────────────
+
+  async function cacheImportedLeads() {
+    state.importedLeads = [];
+    if (!state.session || !state.profile) return;
+    try {
+      const client = getCorSupabaseClient();
+      const { data } = await client
+        .from('leads_importados')
+        .select('lead_key,nome,telefone_base,cidade,cargo,ano_inscricao,creci,instagram,email,tags_publicas,tem_canal_telefone')
+        .order('criado_em', { ascending: false })
+        .limit(1000);
+      state.importedLeads = (data || []).map(r => ({
+        lead_key:           r.lead_key,
+        nome_mascarado:     r.nome || 'Contato importado',
+        nome_completo:      r.nome || '',
+        creci_mascarado:    r.creci || '—',
+        creci:              r.creci || '',
+        ano_inscricao:      r.ano_inscricao || '',
+        cargo:              r.cargo || 'Contato importado',
+        cidade:             r.cidade || '',
+        tem_canal_telefone: !!r.telefone_base,
+        tem_canal_instagram:!!(r.instagram),
+        tags_publicas:      r.tags_publicas || '',
+        telefone_txt:       r.telefone_base || '',
+        telefone_base:      r.telefone_base || '',
+        instagram_url:      r.instagram ? `https://instagram.com/${r.instagram.replace(/^@/, '')}` : '',
+        instagram_username: r.instagram || '',
+        email:              r.email || '',
+        _importado:         true,
+      }));
+    } catch (e) {
+      console.warn('[importados] cache:', e.message);
+    }
+  }
+
+  function importedLeadsFiltrados() {
+    const leads = state.importedLeads || [];
+    if (!leads.length) return [];
+    const city  = state.city?.toLowerCase();
+    const year  = state.year;
+    const cargo = state.cargo?.toLowerCase();
+    const term  = state.term?.toLowerCase();
+    return leads.filter(r => {
+      if (city  && !String(r.cidade || '').toLowerCase().includes(city))  return false;
+      if (year  && String(r.ano_inscricao || '') !== String(year))         return false;
+      if (cargo && !String(r.cargo  || '').toLowerCase().includes(cargo)) return false;
+      if (term  && ![r.nome_completo, r.cidade, r.cargo, r.tags_publicas, r.creci]
+            .join(' ').toLowerCase().includes(term)) return false;
+      return true;
+    });
   }
 
   function openMeusContatosModal() {
