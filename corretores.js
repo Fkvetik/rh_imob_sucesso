@@ -920,6 +920,7 @@
       await loadAdminPhrases({ silent: true });
       await loadFunilGestorCOR();
       await carregarFraseAgendamentoCOR();
+      showImportCsvBox();
     } catch (e) {
       console.error(e);
       setAdminAlert('Não foi possível carregar o painel do plano. Detalhe: ' + e.message, 'error');
@@ -1462,6 +1463,167 @@
       showAbordadosCOR(!state.abordadosVisible);
     });
     $('#abordadosStatusFiltro')?.addEventListener('change', loadAbordadosCOR);
+
+    // ── Importar CSV ──────────────────────────────────────────────
+    $('#downloadCsvTemplateBtn')?.addEventListener('click', downloadCsvTemplate);
+    $('#importCsvInput')?.addEventListener('change', onCsvFileSelected);
+    $('#importCsvSendBtn')?.addEventListener('click', sendImportedCsv);
+    $('#importCsvClearBtn')?.addEventListener('click', clearCsvImport);
+  }
+
+  // ── CSV IMPORT ──────────────────────────────────────────────────────────────
+
+  const CSV_COLS_REQUIRED = ['nome', 'telefone'];
+  const CSV_COLS_OPTIONAL = ['cidade', 'cargo', 'ano_inscricao', 'creci', 'instagram', 'email', 'tags'];
+  const CSV_COLS_ALL = [...CSV_COLS_REQUIRED, ...CSV_COLS_OPTIONAL];
+
+  function downloadCsvTemplate() {
+    const header = CSV_COLS_ALL.join(',');
+    const example = [
+      'João da Silva', '11999990000', 'São Paulo', 'Corretor de Imóveis',
+      '2018', 'CRECI-SP 123456', '@joaosilva', 'joao@email.com', 'alto padrão'
+    ].map(v => `"${v}"`).join(',');
+    const blob = new Blob(['﻿' + header + '\n' + example + '\n'], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'modelo_importacao_rhimob.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function parseCsv(text) {
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
+    if (lines.length < 2) return { error: 'Arquivo vazio ou sem dados.' };
+
+    const header = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '_'));
+
+    const missing = CSV_COLS_REQUIRED.filter(c => !header.includes(c));
+    if (missing.length) return { error: `Coluna(s) obrigatória(s) ausente(s): ${missing.join(', ')}` };
+
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cells = lines[i].match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
+      const obj = {};
+      header.forEach((col, idx) => {
+        obj[col] = (cells[idx] || '').replace(/^["']|["']$/g, '').trim();
+      });
+      if (!obj.nome && !obj.telefone) continue;
+      rows.push(obj);
+    }
+
+    if (!rows.length) return { error: 'Nenhuma linha válida encontrada no arquivo.' };
+    return { header, rows };
+  }
+
+  function csvAlert(msg, type) {
+    const el = $('#importCsvAlert');
+    if (!el) return;
+    el.hidden = !msg;
+    el.textContent = msg || '';
+    el.style.background = type === 'error' ? '#fdeaea' : type === 'success' ? '#eafaf1' : '#f0ecff';
+    el.style.color = type === 'error' ? '#b91c1c' : type === 'success' ? '#15803d' : '#4b1d96';
+    el.style.border = `1px solid ${type === 'error' ? '#fca5a5' : type === 'success' ? '#86efac' : '#c4b5fd'}`;
+  }
+
+  function onCsvFileSelected(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const result = parseCsv(ev.target.result);
+      const preview = $('#importCsvPreview');
+      const sendBtn = $('#importCsvSendBtn');
+
+      if (result.error) {
+        csvAlert(result.error, 'error');
+        if (preview) preview.hidden = true;
+        if (sendBtn) sendBtn.disabled = true;
+        state._csvRows = null;
+        return;
+      }
+
+      state._csvRows = result.rows;
+      csvAlert('', '');
+
+      // Preview tabela
+      const thead = $('#importCsvThead');
+      const tbody = $('#importCsvTbody');
+      if (thead) thead.innerHTML = result.header.map(h => `<th>${esc(h)}</th>`).join('');
+      if (tbody) {
+        tbody.innerHTML = result.rows.slice(0, 5).map(row =>
+          `<tr>${result.header.map(h => `<td>${esc(row[h] || '')}</td>`).join('')}</tr>`
+        ).join('');
+      }
+
+      const msg = $('#importCsvPreviewMsg');
+      if (msg) msg.textContent = `${result.rows.length} linha(s) encontrada(s). Pré-visualização das primeiras 5:`;
+      if (preview) preview.hidden = false;
+      if (sendBtn) sendBtn.disabled = false;
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  async function sendImportedCsv() {
+    const rows = state._csvRows;
+    if (!rows?.length) return;
+
+    const sendBtn = $('#importCsvSendBtn');
+    if (sendBtn) sendBtn.disabled = true;
+    csvAlert('Importando…', 'info');
+
+    try {
+      const contaId = state.profile?.conta_id;
+      if (!contaId) throw new Error('Conta não identificada. Faça login novamente.');
+
+      const payload = rows.map(r => {
+        const tel = onlyDigits(r.telefone || '');
+        const key = `imp_${contaId.slice(0, 8)}_${tel || Math.random().toString(36).slice(2)}`;
+        return {
+          lead_key:          key,
+          conta_id_importado: contaId,
+          nome:              normalize(r.nome || ''),
+          telefone_base:     tel,
+          cidade:            normalize(r.cidade || ''),
+          cargo:             normalize(r.cargo || ''),
+          ano_inscricao:     r.ano_inscricao ? Number(r.ano_inscricao) || null : null,
+          creci:             normalize(r.creci || ''),
+          instagram:         normalize(r.instagram || ''),
+          email:             normalize(r.email || '').toLowerCase(),
+          tags_publicas:     normalize(r.tags || ''),
+          tem_canal_telefone: !!tel,
+          origem:            'csv_import'
+        };
+      });
+
+      const { error } = await getCorSupabaseClient()
+        .rpc('rhi_importar_leads_csv', { p_leads: payload });
+
+      if (error) throw new Error(error.message);
+
+      csvAlert(`✓ ${payload.length} profissional(is) importado(s) com sucesso.`, 'success');
+      clearCsvImport(true);
+    } catch (err) {
+      csvAlert('Erro ao importar: ' + err.message, 'error');
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  function clearCsvImport(keepAlert = false) {
+    const input = $('#importCsvInput');
+    if (input) input.value = '';
+    const preview = $('#importCsvPreview');
+    if (preview) preview.hidden = true;
+    const sendBtn = $('#importCsvSendBtn');
+    if (sendBtn) sendBtn.disabled = true;
+    state._csvRows = null;
+    if (!keepAlert) csvAlert('', '');
+  }
+
+  function showImportCsvBox() {
+    const perfil = String(state.profile?.perfil || '').toUpperCase();
+    const box = $('#importCsvBox');
+    if (box) box.hidden = perfil !== 'MASTER';
   }
 
   async function init() {
