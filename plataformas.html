@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plataformas RH IMOB | Acesso a Corretores e Novos Talentos</title>
+  <meta name="description" content="Conheça as duas plataformas da RH IMOB: acesso ao banco de corretores com CRECI ativo e ao banco de novos talentos para formação imobiliária. Filtros por cidade, cargo e perfil." />
+  <meta name="theme-color" content="#2b124d" />
+  <link rel="canonical" href="https://www.rhimob.com.br/plataformas" />
+
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260509anuncie" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=20260509anuncie" />
+  <link rel="manifest" href="/site.webmanifest?v=20260509anuncie" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="RH IMOB" />
+  <meta property="og:title" content="Plataformas RH IMOB — Acesso a Corretores e Novos Talentos" />
+  <meta property="og:description" content="Dois bancos de dados especializados: corretores com CRECI ativo e novos talentos prontos para formação. Filtros por cidade, cargo e perfil comercial." />
+  <meta property="og:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="stylesheet" href="styles.css?v=20260626plataformas" />
+
+  <style>
+    /* ── Plataforma cards ──────────────────────────── */
+    .plat-hero { background: var(--purple-950); padding: 80px 0 64px; }
+    .plat-hero h1 { color: #fff; font-size: clamp(28px, 5vw, 44px); max-width: 700px; margin: 0 auto 16px; text-align: center; }
+    .plat-hero p { color: rgba(255,255,255,.7); max-width: 560px; margin: 0 auto; text-align: center; font-size: 17px; line-height: 1.6; }
+    .plat-hero .section-kicker { justify-content: center; margin-bottom: 16px; color: var(--orange-400); }
+
+    .plat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 60px; }
+    @media (max-width: 768px) { .plat-grid { grid-template-columns: 1fr; } }
+
+    .plat-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .plat-card-head {
+      padding: 36px 36px 28px;
+      border-bottom: 1px solid var(--line);
+    }
+    .plat-card-icon { font-size: 40px; margin-bottom: 16px; display: block; }
+    .plat-card h2 { font-size: 22px; font-weight: 900; color: var(--purple-950); margin-bottom: 8px; }
+    .plat-card .plat-subtitle { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    .plat-card-stats {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .plat-stat {
+      flex: 1;
+      text-align: center;
+      padding: 20px 16px;
+      border-right: 1px solid var(--line);
+    }
+    .plat-stat:last-child { border-right: none; }
+    .plat-stat strong { display: block; font-size: 22px; font-weight: 900; color: var(--purple-900); letter-spacing: -.03em; }
+    .plat-stat span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+    .plat-card-features { padding: 28px 36px 0; flex: 1; }
+    .plat-card-features ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .plat-card-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--body); line-height: 1.5; }
+    .plat-card-features li::before { content: '✓'; color: var(--purple-600); font-weight: 900; flex-shrink: 0; }
+
+    .plat-card-cta { padding: 28px 36px 36px; }
+    .plat-note { font-size: 12px; color: var(--muted); margin-top: 10px; text-align: center; }
+
+    /* ── Comparativo ────────────────────────────────── */
+    .compare-section { background: #faf9ff; }
+    .compare-table { width: 100%; border-collapse: collapse; margin-top: 36px; font-size: 14px; }
+    .compare-table th { text-align: left; padding: 12px 16px; background: var(--purple-950); color: #fff; font-size: 13px; }
+    .compare-table th:first-child { border-radius: 12px 0 0 0; }
+    .compare-table th:last-child { border-radius: 0 12px 0 0; }
+    .compare-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--body); vertical-align: top; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:nth-child(even) td { background: #f5f3ff; }
+    .compare-table .check { color: #16a34a; font-weight: 700; }
+    .compare-table .dash { color: var(--muted); }
+    @media (max-width: 640px) { .compare-table { font-size: 12px; } .compare-table td, .compare-table th { padding: 10px 10px; } }
+
+    /* ── Full service CTA ───────────────────────────── */
+    .full-service-cta {
+      background: var(--purple-900);
+      border-radius: 24px;
+      padding: 52px 48px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center;
+      margin-top: 64px;
+    }
+    @media (max-width: 640px) {
+      .full-service-cta { grid-template-columns: 1fr; gap: 24px; padding: 36px 28px; }
+    }
+    .full-service-cta h2 { color: #fff; font-size: clamp(20px, 3vw, 28px); margin-bottom: 8px; }
+    .full-service-cta p { color: rgba(255,255,255,.7); font-size: 15px; line-height: 1.6; margin: 0; }
+    .full-service-cta .btn { white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header" id="topo">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="RH IMOB — início">
+        <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
+        <span>
+          <strong>RH IMOB</strong>
+          <small>Recrutamento imobiliário</small>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-plataformas">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="main-nav" id="menu-plataformas" aria-label="Menu principal">
+        <a href="/">Contratar</a>
+        <a href="/plataformas" aria-current="page">Plataformas</a>
+        <a href="/vagas">Vagas</a>
+        <a href="/carreira">Carreira</a>
+      </nav>
+
+      <a class="btn btn-cta btn-header" href="/#proposta">Quero uma proposta</a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+
+    <!-- HERO -->
+    <section class="plat-hero">
+      <div class="container">
+        <span class="section-kicker reveal">Plataformas de acesso · RH IMOB</span>
+        <h1 class="reveal">Dois bancos de profissionais imobiliários à disposição da sua operação.</h1>
+        <p class="reveal">Acesso direto ao banco mapeado de corretores com CRECI ativo e ao banco de novos talentos para formação — filtros por cidade, cargo e perfil, com abordagem estruturada da equipe RH IMOB.</p>
+      </div>
+    </section>
+
+    <!-- CARDS DAS PLATAFORMAS -->
+    <section class="section-pad" id="plataformas">
+      <div class="container">
+        <div class="plat-grid">
+
+          <!-- PLATAFORMA CORRETORES -->
+          <div class="plat-card reveal">
+            <div class="plat-card-head">
+              <span class="plat-card-icon">🏠</span>
+              <h2>Plataforma Corretores</h2>
+              <p class="plat-subtitle">Acesso ao banco de corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. Abordagem estruturada via WhatsApp feita pela equipe RH IMOB.</p>
+            </div>
+            <div class="plat-card-stats">
+              <div class="plat-stat"><strong>52 mil+</strong><span>Corretores mapeados</span></div>
+              <div class="plat-stat"><strong>360</strong><span>Cidades disponíveis</span></div>
+              <div class="plat-stat"><strong>7 dias</strong><span>Setup completo</span></div>
+            </div>
+            <div class="plat-card-features">
+              <ul>
+                <li>Corretores com CRECI ativo filtrados por cidade e região</li>
+                <li>Segmentação por tipo de mercado: vendas, locação, alto padrão</li>
+                <li>Filtragem por tempo de atuação e histórico de performance</li>
+                <li>Abordagem via WhatsApp conduzida pela equipe RH IMOB</li>
+                <li>Funil organizado: abordados → triados → confirmados → entregues</li>
+                <li>Entrega em reunião online — candidatos já alinhados com a proposta</li>
+                <li>Relatório semanal de andamento do funil</li>
+              </ul>
+            </div>
+            <div class="plat-card-cta">
+              <a class="btn btn-cta btn-full" href="/corretores.html">Acessar Plataforma Corretores →</a>
+              <p class="plat-note">Acesso liberado via WhatsApp após diagnóstico inicial</p>
+            </div>
+          </div>
+
+          <!-- PLATAFORMA NOVOS TALENTOS -->
+          <div class="plat-card reveal">
+            <div class="plat-card-head">
+              <span class="plat-card-icon">🌱</span>
+              <h2>Plataforma Novos Talentos</h2>
+              <p class="plat-subtitle">Banco de candidatos em início de carreira interessados em atuar no mercado imobiliário. Perfis pré-selecionados com interesse declarado em formação e desenvolvimento profissional.</p>
+            </div>
+            <div class="plat-card-stats">
+              <div class="plat-stat"><strong>8 mil+</strong><span>Novos talentos</span></div>
+              <div class="plat-stat"><strong>180+</strong><span>Cidades</span></div>
+              <div class="plat-stat"><strong>Pré-</strong><span>Selecionados</span></div>
+            </div>
+            <div class="plat-card-features">
+              <ul>
+                <li>Candidatos com interesse declarado em atuar no imobiliário</li>
+                <li>Filtragem por cidade, disponibilidade de horário e formato</li>
+                <li>Perfis abertos à formação e ao modelo autônomo/comissionado</li>
+                <li>Abordagem conduzida pela equipe RH IMOB com briefing da vaga</li>
+                <li>Ideal para imobiliárias com programa de formação interna</li>
+                <li>Ótimo para equipes que querem escalar com perfil moldável</li>
+                <li>Relatório de andamento com funil de abordagens e confirmações</li>
+              </ul>
+            </div>
+            <div class="plat-card-cta">
+              <a class="btn btn-cta btn-full" href="/novos-talentos.html">Acessar Plataforma Novos Talentos →</a>
+              <p class="plat-note">Acesso liberado via WhatsApp após diagnóstico inicial</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARATIVO -->
+    <section class="section-pad compare-section" id="comparativo">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Comparativo</span>
+          <h2>Qual plataforma é certa para a sua demanda?</h2>
+          <p>As plataformas não são concorrentes — muitas operações usam as duas dependendo da posição e do momento de expansão.</p>
+        </div>
+        <div style="overflow-x:auto;margin-top:36px;">
+          <table class="compare-table reveal">
+            <thead>
+              <tr>
+                <th>Critério</th>
+                <th>Plataforma Corretores</th>
+                <th>Plataforma Novos Talentos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Perfil do profissional</strong></td>
+                <td>Corretor com CRECI ativo, já atuante no mercado</td>
+                <td>Candidato em início de carreira, sem CRECI ou recém-habilitado</td>
+              </tr>
+              <tr>
+                <td><strong>Tempo até a primeira entrevista</strong></td>
+                <td>2 a 4 semanas</td>
+                <td>2 a 3 semanas</td>
+              </tr>
+              <tr>
+                <td><strong>Volume disponível</strong></td>
+                <td>52 mil+ em 360 cidades</td>
+                <td>8 mil+ em 180+ cidades</td>
+              </tr>
+              <tr>
+                <td><strong>Exige treinamento interno</strong></td>
+                <td class="dash">Geralmente não</td>
+                <td class="check">Sim — fundamental para conversão</td>
+              </tr>
+              <tr>
+                <td><strong>Custo de contratação</strong></td>
+                <td>Tende a ser maior (profissional experiente)</td>
+                <td>Tende a ser menor (formação e crescimento)</td>
+              </tr>
+              <tr>
+                <td><strong>Ideal para</strong></td>
+                <td>Equipes que precisam de resultado imediato em vendas</td>
+                <td>Imobiliárias com programa de formação e cultura de desenvolvimento</td>
+              </tr>
+              <tr>
+                <td><strong>Podem ser combinadas?</strong></td>
+                <td colspan="2" style="text-align:center;color:#16a34a;font-weight:700;">✓ Sim — várias operações usam as duas simultaneamente</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- FULL SERVICE CTA -->
+        <div class="full-service-cta reveal">
+          <div>
+            <h2>Quer que a RH IMOB gerencie todo o processo?</h2>
+            <p>Além do acesso às plataformas, a RH IMOB oferece operação completa: diagnóstico, abordagem, triagem, funil e entrega em reunião — com assistente dedicada e relatório semanal. Setup em 7 dias.</p>
+          </div>
+          <a class="btn btn-cta" href="/#proposta">Solicitar proposta completa →</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FAQ PLATAFORMAS -->
+    <section class="section-pad" id="duvidas" style="background:#fff;">
+      <div class="container" style="max-width:700px;">
+        <div class="section-head reveal" style="text-align:left;">
+          <span class="section-kicker">Dúvidas sobre as plataformas</span>
+          <h2>Perguntas frequentes</h2>
+        </div>
+        <div style="margin-top:36px;display:flex;flex-direction:column;gap:20px;">
+          <div class="reveal" style="border-bottom:1px solid var(--line);padding-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:800;color:var(--purple-950);margin-bottom:8px;">Posso acessar o banco diretamente, sem a equipe RH IMOB fazer a abordagem?</h3>
+            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">Sim, existe opção de acesso ao banco para que sua equipe faça a abordagem. Mas a grande maioria das operações opta pelo modelo gerenciado — onde a RH IMOB conduz a abordagem, triagem e entrega em reunião — porque isso libera o gestor da operação de recrutamento.</p>
+          </div>
+          <div class="reveal" style="border-bottom:1px solid var(--line);padding-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:800;color:var(--purple-950);margin-bottom:8px;">Os dados dos profissionais estão atualizados?</h3>
+            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">O banco é atualizado de forma contínua com novas inscrições de corretores via plataforma e campanhas de captação. Corretores inativos são removidos periodicamente. Ainda assim, parte da triagem da equipe RH IMOB serve exatamente para validar interesse e disponibilidade antes da entrega.</p>
+          </div>
+          <div class="reveal" style="border-bottom:1px solid var(--line);padding-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:800;color:var(--purple-950);margin-bottom:8px;">Funciona fora de São Paulo?</h3>
+            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">Sim. A Plataforma Corretores cobre 360 cidades e a Plataforma Novos Talentos cobre mais de 180 cidades. Todo o processo é remoto — diagnóstico, abordagem e entrega em reunião online.</p>
+          </div>
+          <div class="reveal">
+            <h3 style="font-size:16px;font-weight:800;color:var(--purple-950);margin-bottom:8px;">Qual o próximo passo para acessar?</h3>
+            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">Clique no botão da plataforma desejada acima ou <a href="/#proposta" style="color:var(--purple-700);font-weight:700;">solicite uma proposta completa</a> na página inicial. A Mariana entra em contato para entender sua demanda e indicar o melhor caminho.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="/" aria-label="RH IMOB - início">
+          <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
+          <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
+        </a>
+        <p>Recrutamento imobiliário com tecnologia, inteligência e operação especializada.</p>
+      </div>
+      <div>
+        <h3>Navegação</h3>
+        <a href="/">Contratar profissionais</a>
+        <a href="/plataformas">Plataformas</a>
+        <a href="/vagas">Vagas abertas</a>
+        <a href="/carreira">Carreira no imobiliário</a>
+        <a href="/#proposta">Solicitar proposta</a>
+      </div>
+      <div>
+        <h3>Plataformas</h3>
+        <a href="/corretores.html">Plataforma Corretores</a>
+        <a href="/novos-talentos.html">Plataforma Novos Talentos</a>
+        <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram: @rh_imob</a>
+        <a href="https://br.linkedin.com/in/marianarhimob" target="_blank" rel="noopener">LinkedIn: Mariana Souza</a>
+      </div>
+      <div>
+        <h3>Contatos</h3>
+        <a class="js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana. Vim pela página de Plataformas da RH IMOB e gostaria de entender melhor o acesso.">Falar com a Mariana</a>
+        <a href="/politica.html">Política de privacidade</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="year"></span> RH IMOB. Todos os direitos reservados.</span>
+      <a href="#topo">Voltar ao topo ↑</a>
+    </div>
+  </footer>
+
+  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB" data-type="empresa" data-message="Olá, Mariana. Vim pela página de Plataformas da RH IMOB e quero saber como funciona o acesso.">Falar com a Mariana</a>
+
+  <script src="script.js?v=20260626plataformas"></script>
+</body>
+</html>

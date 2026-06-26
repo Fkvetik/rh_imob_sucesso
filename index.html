@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RH IMOB | Recrutamento imobiliário, vagas e banco de talentos</title>
-  <meta name="description" content="RH IMOB conecta empresas do mercado imobiliário a corretores, líderes, profissionais de crédito, SDRs, novos talentos e profissionais ativos abertos a propostas confidenciais." />
+  <title>RH IMOB | Recrutamento Imobiliário — Contrate Corretores e Talentos</title>
+  <meta name="description" content="Contrate corretores, lideranças e novos talentos para sua imobiliária ou incorporadora. Assistente dedicada, banco de 52 mil profissionais, entrega em reunião online. Setup em 7 dias." />
   <meta name="theme-color" content="#2b124d" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://www.rhimob.com.br/" />
@@ -18,20 +18,109 @@
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pt_BR" />
   <meta property="og:site_name" content="RH IMOB" />
-  <meta property="og:title" content="RH IMOB | Recrutamento imobiliário e vagas" />
-  <meta property="og:description" content="Precisa contratar, ver vagas ou entrar no banco confidencial de talentos imobiliários? A RH IMOB organiza esse caminho." />
+  <meta property="og:title" content="RH IMOB | Recrutamento Imobiliário para Imobiliárias e Incorporadoras" />
+  <meta property="og:description" content="Contrate corretores, lideranças e talentos com assistente dedicada e banco de 52 mil profissionais. Entrega em reunião online. Setup em 7 dias." />
   <meta property="og:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
 
-  <link rel="stylesheet" href="styles.css?v=20260513rhestrategico" />
+  <link rel="stylesheet" href="styles.css?v=20260626homepage" />
+
+  <style>
+    /* ── FAQ ─────────────────────────────────────── */
+    .faq-section { background: var(--purple-950); }
+    .faq-section .section-kicker { color: var(--orange-400); }
+    .faq-section h2 { color: #fff; }
+    .faq-list { display: flex; flex-direction: column; gap: 0; margin-top: 40px; }
+    .faq-item { border-bottom: 1px solid rgba(255,255,255,.1); }
+    .faq-q {
+      all: unset;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 22px 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      gap: 16px;
+    }
+    .faq-q:hover { color: var(--orange-400); }
+    .faq-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      color: rgba(255,255,255,.6);
+      transition: transform .25s ease, border-color .25s ease;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); border-color: var(--orange-400); color: var(--orange-400); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .faq-item.open .faq-a { max-height: 300px; }
+    .faq-a p { color: rgba(255,255,255,.7); font-size: 15px; line-height: 1.7; padding-bottom: 22px; margin: 0; }
+    .faq-a strong { color: rgba(255,255,255,.9); }
+
+    /* ── Qualificação ────────────────────────────── */
+    .qual-section { background: #faf9ff; }
+    .qual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 36px; }
+    .qual-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 28px 24px; }
+    .qual-card-icon { font-size: 28px; margin-bottom: 14px; }
+    .qual-card h3 { font-size: 16px; font-weight: 800; color: var(--purple-950); margin-bottom: 8px; }
+    .qual-card p { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+    .qual-anti { margin-top: 28px; background: #fff8f0; border: 1px solid #fde8ca; border-radius: 12px; padding: 18px 22px; font-size: 14px; color: #7a4b1a; line-height: 1.6; }
+    .qual-anti strong { color: #5a3410; }
+
+    /* ── Números na hero ─────────────────────────── */
+    .hero-numbers { display: flex; gap: 28px; margin-top: 24px; flex-wrap: wrap; }
+    .hero-number strong { display: block; font-size: 22px; font-weight: 950; color: var(--purple-900); letter-spacing: -.03em; }
+    .hero-number span { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ── Anti-objeções ───────────────────────────── */
+    .objecao-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 40px; }
+    .objecao-card { border-left: 3px solid var(--purple-400); padding: 18px 20px; background: #faf9ff; border-radius: 0 12px 12px 0; }
+    .objecao-card strong { display: block; font-size: 15px; color: var(--purple-950); margin-bottom: 6px; }
+    .objecao-card p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    /* ── Formulário âncora ───────────────────────── */
+    .proposta-section { background: #faf9ff; }
+    .proposta-section .section-kicker { color: var(--orange-600); }
+    .proposta-form-wrap { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 40px; max-width: 680px; margin: 0 auto; }
+    @media (max-width: 600px) { .proposta-form-wrap { padding: 24px 20px; } }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "RH IMOB",
+    "url": "https://www.rhimob.com.br",
+    "description": "Recrutamento especializado para imobiliárias e incorporadoras. Corretores, lideranças e novos talentos com assistente dedicada e entrega em reunião.",
+    "sameAs": [
+      "https://www.instagram.com/rh_imob/",
+      "https://br.linkedin.com/in/marianarhimob"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+55-11-95397-3268",
+      "contactType": "sales",
+      "availableLanguage": "Portuguese"
+    }
+  }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
   <header class="site-header" id="topo">
     <div class="container header-inner">
-      <a class="brand" href="#inicio" aria-label="RH IMOB - início">
+      <a class="brand" href="/" aria-label="RH IMOB — início">
         <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
         <span>
           <strong>RH IMOB</strong>
@@ -44,15 +133,14 @@
       </button>
 
       <nav class="main-nav" id="menu-principal" aria-label="Menu principal">
-        <a href="/contratar">Contratar</a>
-        <a href="#plataformas">Plataformas</a>
         <a href="#como-funciona">Como funciona</a>
+        <a href="/plataformas">Plataformas</a>
+        <a href="#faq">Perguntas</a>
         <a href="/vagas">Vagas</a>
         <a href="/carreira">Carreira</a>
-        <a href="#contato">Contato</a>
       </nav>
 
-      <a class="btn btn-cta btn-header js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero entender como vocês podem ajudar minha empresa a contratar profissionais do mercado imobiliário.">Sou empresa — quero contratar</a>
+      <a class="btn btn-cta btn-header js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana. Vim pelo site da RH IMOB e quero entender como vocês podem ajudar minha empresa a contratar profissionais imobiliários.">Sou empresa — quero contratar</a>
     </div>
   </header>
 
@@ -62,22 +150,28 @@
     <section class="gateway section-pad" id="inicio">
       <div class="container gateway-grid">
         <div class="gateway-copy reveal">
-          <div class="eyebrow"><span></span> Recrutamento imobiliário · São Paulo</div>
-          <h1>Contrate os profissionais certos — com banco de dados, assistente dedicada e entrega em reunião.</h1>
-          <p class="hero-subtitle">Cada operação tem uma especialista em RH imobiliário conduzindo o processo — da construção da vaga à apresentação dos candidatos em reunião online.</p>
+          <div class="eyebrow"><span></span> Recrutamento imobiliário · São Paulo e interior</div>
+          <h1>Cansado de perder tempo triando candidatos que somem antes da entrevista?</h1>
+          <p class="hero-subtitle">A RH IMOB busca, filtra e apresenta corretores, lideranças e novos talentos em reunião online — com assistente dedicada, banco de 52 mil profissionais e processo organizado do diagnóstico à entrega.</p>
 
           <div class="hero-direct-cta">
-            <a class="btn btn-cta btn-xl js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero contratar profissionais para minha operação imobiliária. Qual o próximo passo?">
-              Quero contratar corretores →
+            <a class="btn btn-cta btn-xl" href="#proposta">
+              Quero uma proposta →
             </a>
-            <p class="hero-price-hint">⚡ Operação sob medida · Assistente dedicada · Entrega em reunião online</p>
+            <p class="hero-price-hint">⚡ Setup em 7 dias · Assistente dedicada · Entrega em reunião online</p>
             <div class="gateway-secondary-links">
-              <a href="/vagas">Sou corretor — ver vagas</a>
-              <span>·</span>
               <a href="#como-funciona">Como funciona</a>
               <span>·</span>
-              <a href="#plataformas">Plataformas</a>
+              <a href="/plataformas">Plataformas de acesso</a>
+              <span>·</span>
+              <a href="/vagas">Sou corretor — ver vagas</a>
             </div>
+          </div>
+
+          <div class="hero-numbers">
+            <div class="hero-number"><strong>+1.200</strong><span>Profissionais colocados</span></div>
+            <div class="hero-number"><strong>52 mil+</strong><span>Corretores mapeados</span></div>
+            <div class="hero-number"><strong>360</strong><span>Cidades disponíveis</span></div>
           </div>
         </div>
 
@@ -113,7 +207,7 @@
       </div>
     </section>
 
-    <!-- SOCIAL PROOF STRIP -->
+    <!-- 2. SOCIAL PROOF STRIP -->
     <section class="social-proof-strip">
       <div class="container">
         <div class="proof-quote reveal">
@@ -128,170 +222,102 @@
           <div><strong>+1.200</strong><span>profissionais colocados</span></div>
           <div><strong>52 mil+</strong><span>corretores mapeados</span></div>
           <div><strong>360</strong><span>cidades disponíveis</span></div>
-          <div><strong>2 meses</strong><span>para resultados visíveis</span></div>
+          <div><strong>7 dias</strong><span>para setup completo</span></div>
         </div>
       </div>
     </section>
 
-    <!-- 2. NÚMEROS -->
-    <section class="credibility strip">
-      <div class="container grid-four">
-        <article class="mini-card reveal">
-          <div class="icon">🏢</div>
-          <h3>Mercado imobiliário</h3>
-          <p>Especialização em imobiliárias, incorporadoras, loteadoras, alto padrão e operações comerciais.</p>
-        </article>
-        <article class="mini-card reveal">
-          <div class="icon">🔁</div>
-          <h3>Ponta a ponta</h3>
-          <p>Do diagnóstico da demanda à organização do funil e acompanhamento do processo.</p>
-        </article>
-        <article class="mini-card reveal">
-          <div class="icon">📈</div>
-          <h3>Escala operacional</h3>
-          <p>Estrutura para alta rotatividade, demandas recorrentes e contratação em volume.</p>
-        </article>
-        <article class="mini-card reveal">
-          <div class="icon">🧠</div>
-          <h3>Inteligência própria</h3>
-          <p>Tecnologia, automação e análise humana para buscar, validar e organizar profissionais.</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- 3. CONTRATAR -->
-    <section class="section-pad contratar-section" id="contratar">
-      <div class="container">
-        <div class="hero-grid">
-          <div class="hero-copy reveal">
-            <span class="section-kicker">Para imobiliárias e incorporadoras</span>
-            <h2>Sua equipe certa já existe. O desafio é encontrar, filtrar e atrair as pessoas certas.</h2>
-            <p>A RH IMOB busca, valida e organiza corretores, novos talentos e lideranças com método específico para o mercado imobiliário — da proposta ao funil, da abordagem à entrega.</p>
-
-            <div class="contratar-insights reveal">
-              <div class="contratar-insight">
-                <span>💡</span>
-                <div><strong>Proposta fraca gera custo alto</strong> — Quanto menos atrativa a oferta, mais abordagem é necessária para fechar o mesmo número de contratações.</div>
-              </div>
-              <div class="contratar-insight">
-                <span>🎯</span>
-                <div><strong>RH imobiliário é diferente</strong> — Autonomia, rotatividade e escala exigem funil e linguagem próprios. Não funciona com método genérico.</div>
-              </div>
-              <div class="contratar-insight">
-                <span>📋</span>
-                <div><strong>Triagem antes da reunião</strong> — Alinhamento de perfil e proposta reduz no-show e reuniões desalinhadas — o maior desperdício do recrutamento imobiliário.</div>
-              </div>
-            </div>
-
-            <!-- O que está incluso -->
-            <div class="incluso-box reveal">
-              <p class="incluso-label">O que está incluso em cada operação</p>
-              <div class="incluso-grid">
-                <div class="incluso-item"><span>👩‍💼</span><div><strong>Assistente dedicada</strong><small>Especialista em RH imobiliário apresentada em reunião antes do início</small></div></div>
-                <div class="incluso-item"><span>📋</span><div><strong>Construção da vaga</strong><small>Consultoria para formatar proposta atrativa — comissão, estrutura e diferenciais reais</small></div></div>
-                <div class="incluso-item"><span>🎯</span><div><strong>Banco de dados segmentado</strong><small>Corretores ativos + novos talentos filtrados pelo endereço da sua operação</small></div></div>
-                <div class="incluso-item"><span>📣</span><div><strong>Geração de leads</strong><small>Campanhas no Meta e Google Ads com investimento definido por você</small></div></div>
-                <div class="incluso-item"><span>🤝</span><div><strong>Entrega em reunião</strong><small>Os interessados são apresentados em reunião online para ouvir sua proposta</small></div></div>
-                <div class="incluso-item"><span>📊</span><div><strong>Relatório diário</strong><small>Acompanhamento semanal e visibilidade completa do funil em andamento</small></div></div>
-              </div>
-              <div class="incluso-footer">
-                <span>⏱ Setup em 7 dias · Prazo mínimo 2 meses · Operação sob medida para sua demanda</span>
-                <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero entender a estrutura contratável para minha demanda e receber um orçamento.">Consultar estrutura e orçamento</a>
-              </div>
-            </div>
-
-            <div class="hero-actions">
-              <a class="btn btn-cta btn-large js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e preciso contratar profissionais para minha operação imobiliária. Quero entender a solução.">Quero uma proposta agora</a>
-              <a class="btn btn-secondary btn-large" href="#contato">Enviar minha demanda</a>
-            </div>
-          </div>
-
-          <div class="dashboard-card reveal">
-            <div class="dash-top">
-              <div>
-                <strong>Pipeline de talentos</strong>
-                <small>Operação imobiliária</small>
-              </div>
-              <span class="status-pill">Ativo</span>
-            </div>
-            <div class="dash-metrics">
-              <div><strong>Busca</strong><span>Profissionais ativos</span></div>
-              <div><strong>Triagem</strong><span>Perfil e região</span></div>
-              <div><strong>Funil</strong><span>Acompanhamento</span></div>
-            </div>
-            <div class="pipeline-lines">
-              <div class="pipe-row"><span>Corretores e novos talentos</span><b style="width:86%"></b></div>
-              <div class="pipe-row"><span>Lideranças comerciais</span><b style="width:68%"></b></div>
-              <div class="pipe-row"><span>Crédito imobiliário</span><b style="width:54%"></b></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Soluções condensadas -->
-        <div class="solutions-compact reveal">
-          <p class="solutions-compact-label">O que a RH IMOB recruta</p>
-          <div class="solutions-compact-grid">
-            <div class="solutions-compact-item"><span>🏠</span> Corretores e novos talentos</div>
-            <div class="solutions-compact-item"><span>👔</span> Lideranças comerciais</div>
-            <div class="solutions-compact-item"><span>💳</span> Crédito imobiliário</div>
-            <div class="solutions-compact-item"><span>📞</span> SDR e atendimento</div>
-            <div class="solutions-compact-item"><span>🧑‍🏫</span> Apoio ao RH interno</div>
-            <div class="solutions-compact-item"><span>🚀</span> Projetos sob demanda</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. PLATAFORMAS -->
-    <section class="section-pad platforms-section" id="plataformas">
+    <!-- 3. PARA QUEM É -->
+    <section class="section-pad qual-section" id="para-quem">
       <div class="container">
         <div class="section-head reveal">
-          <span class="section-kicker">Plataformas RH IMOB</span>
-          <h2>Acesso inteligente a profissionais — com filtro, controle e abordagem pronta.</h2>
-          <p>Duas plataformas especializadas para encontrar quem você precisa antes de liberar o contato.</p>
+          <span class="section-kicker">Para quem é esse serviço</span>
+          <h2>RH imobiliário não é recrutamento genérico — e não é para todo mundo.</h2>
+          <p>A RH IMOB atende empresas com operação estruturada que precisam contratar com método, escala e rastreabilidade.</p>
+        </div>
+        <div class="qual-grid">
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">🏢</div>
+            <h3>Imobiliárias em expansão</h3>
+            <p>Precisam contratar corretores com CRECI ativo ou novos talentos para formação, sem ocupar o gerente com triagem interminável.</p>
+          </div>
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">🚀</div>
+            <h3>Incorporadoras com lançamento</h3>
+            <p>Volume e prazo definidos — precisam montar equipe antes do lançamento, com funil organizado e abordagem estruturada.</p>
+          </div>
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">😤</div>
+            <h3>Gestores que já tentaram de tudo</h3>
+            <p>Anúncio próprio, agência genérica, indicação — nada gerou o volume certo no prazo certo. Precisam de especialista imobiliário.</p>
+          </div>
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">📋</div>
+            <h3>RH interno sobrecarregado</h3>
+            <p>A equipe interna não tem base nem linguagem específica para o mercado imobiliário. Precisam de apoio operacional especializado.</p>
+          </div>
+        </div>
+        <div class="qual-anti reveal">
+          <strong>Este serviço não é para:</strong> freelancers individuais buscando um corretor para uma venda pontual · startups sem operação mínima estabelecida · empresas que precisam de apenas 1 profissional sem prazo definido. Prazo mínimo de operação: 2 meses.
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. O QUE ESTÁ INCLUSO -->
+    <section class="section-pad" id="o-que-inclui">
+      <div class="container">
+        <div class="hero-copy reveal">
+          <span class="section-kicker">O que está incluso</span>
+          <h2>Não é só uma lista de nomes — é um processo completo de ponta a ponta.</h2>
+          <p>Cada operação é conduzida por uma especialista dedicada, com método específico para o mercado imobiliário.</p>
         </div>
 
-        <div class="platforms-dual-grid">
-          <!-- Plataforma Corretores -->
-          <div class="platform-dual-card reveal">
-            <div class="platform-dual-head">
-              <div>
-                <span class="section-kicker">Plataforma Corretores</span>
-                <h3>Corretores ativos mapeados por cidade, ano e perfil.</h3>
-              </div>
-              <span class="status-pill">Ativa</span>
+        <div class="incluso-box reveal" style="margin-top: 40px;">
+          <p class="incluso-label">O que você recebe em cada operação</p>
+          <div class="incluso-grid">
+            <div class="incluso-item">
+              <span>👩‍💼</span>
+              <div><strong>Assistente dedicada</strong><small>Especialista em RH imobiliário apresentada em reunião antes do início — você sabe quem conduz o processo</small></div>
             </div>
-            <div class="platform-stats">
-              <div><strong data-rhimob-metric="corretores_total" data-format="integer">52.569</strong><span>corretores mapeados</span></div>
-              <div><strong data-rhimob-metric="corretores_cidades" data-format="integer">18</strong><span>cidades com filtro</span></div>
-              <div><strong data-rhimob-metric="corretores_combinacoes" data-format="integer">3.148</strong><span>combinações de busca</span></div>
+            <div class="incluso-item">
+              <span>📋</span>
+              <div><strong>Construção da vaga</strong><small>Consultoria para formatar uma proposta atrativa — comissão, estrutura e diferenciais reais que fazem diferença na abordagem</small></div>
             </div>
-            <p class="platform-dual-desc">Prévia protegida de nome e registro. Contato completo liberado apenas no ambiente contratado — com saldo e relatório por plano.</p>
-            <div class="platform-dual-actions">
-              <a class="btn btn-primary" href="/corretores.html">Acessar plataforma</a>
-              <a class="btn btn-secondary js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero entender o acesso à Plataforma Corretores com contatos completos, múltiplos usuários e relatório por plano.">Ver planos</a>
+            <div class="incluso-item">
+              <span>🎯</span>
+              <div><strong>Banco de dados segmentado</strong><small>52 mil+ corretores ativos e novos talentos filtrados por cidade, cargo, ano de inscrição e perfil comercial</small></div>
+            </div>
+            <div class="incluso-item">
+              <span>📣</span>
+              <div><strong>Abordagem estruturada</strong><small>Comunicação feita pela equipe RH IMOB — triagem inicial, qualificação de perfil e organização do funil sem demandar seu tempo</small></div>
+            </div>
+            <div class="incluso-item">
+              <span>🤝</span>
+              <div><strong>Entrega em reunião online</strong><small>Os candidatos qualificados são apresentados ao vivo para ouvir sua proposta — sem no-show, sem candidato desalinhado</small></div>
+            </div>
+            <div class="incluso-item">
+              <span>📊</span>
+              <div><strong>Relatório semanal</strong><small>Visibilidade completa do funil em andamento — candidatos abordados, triados, confirmados e entregues</small></div>
             </div>
           </div>
+          <div class="incluso-footer">
+            <span>⏱ Setup em 7 dias · Prazo mínimo 2 meses · Operação sob medida para sua demanda</span>
+            <a class="btn btn-cta" href="#proposta">Consultar investimento</a>
+          </div>
+        </div>
 
-          <!-- Plataforma Novos Talentos -->
-          <div class="platform-dual-card reveal">
-            <div class="platform-dual-head">
-              <div>
-                <span class="section-kicker">Novos Talentos</span>
-                <h3>Perfis comerciais por cidade, bairro, idade e metrô.</h3>
-              </div>
-              <span class="status-pill">Nova área</span>
-            </div>
-            <div class="platform-stats talentos-stats">
-              <div><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">57 mil+</strong><span>talentos mapeados</span></div>
-              <div><strong data-rhimob-metric="nt_cidades" data-format="integer">360</strong><span>cidades disponíveis</span></div>
-              <div><strong data-rhimob-metric="nt_metro" data-format="integer">310</strong><span>perfis perto do metrô</span></div>
-            </div>
-            <p class="platform-dual-desc">Contato liberado por plano. O operador recebe abordagem pronta para iniciar a conversa com mais velocidade e menos rejeição.</p>
-            <div class="platform-dual-actions">
-              <a class="btn btn-primary" href="/novos-talentos.html">Acessar plataforma</a>
-              <a class="btn btn-secondary js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero entender o acesso à Plataforma Novos Talentos, com filtros comerciais, múltiplos usuários e controle de consumo por plano.">Ver planos</a>
-            </div>
+        <div class="objecao-grid" style="margin-top: 56px;">
+          <div class="objecao-card reveal">
+            <strong>Proposta fraca gera custo alto</strong>
+            <p>Quanto menos atrativa a oferta, mais abordagem é necessária para fechar o mesmo número de contratações. Formatamos junto com você.</p>
+          </div>
+          <div class="objecao-card reveal">
+            <strong>RH imobiliário é diferente</strong>
+            <p>Autonomia, rotatividade e escala exigem funil e linguagem próprios. Método genérico gera candidatos errados.</p>
+          </div>
+          <div class="objecao-card reveal">
+            <strong>Triagem antes da reunião</strong>
+            <p>Perfil e proposta alinhados antes da apresentação eliminam no-show e reuniões com candidatos que nunca vão fechar.</p>
           </div>
         </div>
       </div>
@@ -303,19 +329,35 @@
         <div class="section-head reveal">
           <span class="section-kicker">Como funciona</span>
           <h2>Um processo organizado, rastreável e orientado a resultado.</h2>
-          <p>A RH IMOB combina tecnologia com análise humana para transformar demanda de contratação em rotina comercial clara.</p>
+          <p>Do diagnóstico inicial à entrega dos candidatos em reunião — sem passo oculto, sem surpresa no meio do processo.</p>
         </div>
         <div class="timeline">
-          <article class="step reveal"><b>1</b><h3>Diagnóstico</h3><p>Perfil desejado, região, volume, urgência, remuneração e critérios de seleção.</p></article>
-          <article class="step reveal"><b>2</b><h3>Busca e inteligência</h3><p>Bases segmentadas, validação de canais e organização de profissionais aderentes.</p></article>
-          <article class="step reveal"><b>3</b><h3>Abordagem</h3><p>Comunicação estruturada, triagem inicial, respostas e organização do funil.</p></article>
-          <article class="step reveal"><b>4</b><h3>Entrega</h3><p>Relatórios, acompanhamento e visão para gestores decidirem com mais velocidade.</p></article>
+          <article class="step reveal">
+            <b>1</b>
+            <h3>Diagnóstico</h3>
+            <p>Reunião com a Mariana para entender perfil, região, volume, urgência, remuneração e critérios de seleção. A proposta da vaga é formatada aqui.</p>
+          </article>
+          <article class="step reveal">
+            <b>2</b>
+            <h3>Busca e inteligência</h3>
+            <p>Seleção nas bases segmentadas, validação de canais e organização dos profissionais com melhor aderência ao perfil definido.</p>
+          </article>
+          <article class="step reveal">
+            <b>3</b>
+            <h3>Abordagem e funil</h3>
+            <p>Comunicação estruturada por WhatsApp, triagem de perfil e interesse, organização dos candidatos confirmados por nível de fit.</p>
+          </article>
+          <article class="step reveal">
+            <b>4</b>
+            <h3>Entrega em reunião</h3>
+            <p>Candidatos qualificados apresentados em reunião online para ouvir sua proposta. Relatório semanal com visão completa do funil.</p>
+          </article>
         </div>
       </div>
     </section>
 
     <!-- 6. DEPOIMENTOS -->
-    <section class="section-pad testimonial-section">
+    <section class="section-pad testimonial-section" id="depoimentos">
       <div class="container">
         <div class="testimonial-header reveal">
           <span class="section-kicker light">Quem já contratou recomenda</span>
@@ -328,10 +370,7 @@
             <p class="testimonial-full">A dedicação e o cuidado da RH IMOB em cada etapa do processo fizeram toda a diferença para encontrarmos profissionais alinhados com nossos valores, visão e objetivos. Recomendamos com muita satisfação para qualquer empresa que valorize eficiência e profissionalismo na busca por talentos.</p>
             <div class="testimonial-author">
               <div class="testimonial-avatar testimonial-avatar--photo" style="background-image:url('/assets/leandro-gki-v2.jpg')" role="img" aria-label="Leandro, Diretor Comercial GKI Imóveis"></div>
-              <div>
-                <strong>Leandro — Diretor Comercial</strong>
-                <span>GKI Imóveis · Pinheiros, São Paulo</span>
-              </div>
+              <div><strong>Leandro — Diretor Comercial</strong><span>GKI Imóveis · Pinheiros, São Paulo</span></div>
             </div>
           </div>
           <div class="testimonial-card reveal">
@@ -339,10 +378,7 @@
             <blockquote>A melhor empresa de Recrutamento e Seleção que existe. Profissionais de alto nível!</blockquote>
             <div class="testimonial-author">
               <div class="testimonial-avatar testimonial-avatar--photo" style="background-image:url('/assets/johnwaynemkt.jpg')" role="img" aria-label="John Wayne, especialista em marketing imobiliário"></div>
-              <div>
-                <strong>John Wayne</strong>
-                <span>Marketing Imobiliário · @johnwaynemkt</span>
-              </div>
+              <div><strong>John Wayne</strong><span>Marketing Imobiliário · @johnwaynemkt</span></div>
             </div>
           </div>
           <div class="testimonial-card testimonial-card--video reveal">
@@ -355,10 +391,7 @@
               <blockquote>Uma parceria de sucesso com a RH IMOB — o recrutamento certo transforma equipes e resultados.</blockquote>
               <div class="testimonial-author">
                 <div class="testimonial-avatar testimonial-avatar--photo" style="background-image:url('/assets/aldevinosuper.jpg')" role="img" aria-label="Aldevino, Superintendente Direções Imobiliária"></div>
-                <div>
-                  <strong>Aldevino — Superintendente</strong>
-                  <span>Direções Imobiliária · Podcast Corretor em Foco</span>
-                </div>
+                <div><strong>Aldevino — Superintendente</strong><span>Direções Imobiliária · Podcast Corretor em Foco</span></div>
               </div>
             </div>
           </div>
@@ -366,382 +399,120 @@
       </div>
     </section>
 
-    <!-- 7. VAGAS TEASER -->
-    <section class="section-pad vagas-teaser-section">
+    <!-- 7. FAQ -->
+    <section class="section-pad faq-section" id="faq">
       <div class="container">
-        <div class="vagas-teaser-card reveal">
-          <div class="vagas-teaser-copy">
-            <span class="talent-label">Para corretores e profissionais do mercado imobiliário</span>
-            <h2>Procurando vagas ou quer mudar de imobiliária?</h2>
-            <p>Veja as oportunidades abertas, entre no banco confidencial de talentos ou entenda qual imobiliária faz sentido para o seu momento de carreira.</p>
-            <ul>
-              <li>Vagas abertas em imobiliárias parceiras</li>
-              <li>Banco confidencial para receber propostas sem expor seu nome</li>
-              <li>Orientação gratuita da Mariana sobre o próximo passo</li>
-            </ul>
+        <div class="section-head reveal">
+          <span class="section-kicker">Perguntas frequentes</span>
+          <h2>Tudo que você quer saber antes de pedir uma proposta.</h2>
+        </div>
+        <div class="faq-list reveal">
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">Quanto custa o serviço?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>O investimento depende do volume de vagas, do prazo e do perfil desejado. Não trabalhamos com tabela de preço fixa porque cada operação tem uma complexidade diferente. Após o diagnóstico inicial, a Mariana apresenta uma proposta estruturada com escopo claro — sem surpresa no meio do processo.</p></div>
           </div>
-          <div class="vagas-teaser-actions">
-            <a class="btn btn-primary btn-large" href="/vagas">Ver vagas abertas</a>
-            <a class="btn btn-secondary btn-large" href="/vagas#banco-talentos">Entrar no banco de talentos</a>
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">Vocês atendem fora de São Paulo?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>Sim. Temos base mapeada em <strong>360 cidades</strong> do Brasil e realizamos todo o processo à distância — diagnóstico, abordagem e entrega em reunião online. A operação não depende de presença física em nenhuma etapa.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">Qual o prazo para ver o primeiro resultado?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>Setup concluído em até 7 dias corridos após alinhamento. Primeiras abordagens na segunda semana. Primeiras entregas em reunião entre 2 e 4 semanas, dependendo do volume e do perfil.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">Preciso ter minha proposta formatada antes de entrar em contato?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>Não. Uma das etapas do diagnóstico é justamente <strong>ajudar a formatar uma proposta atrativa</strong> — remuneração, modelo de contratação, diferenciais e como comunicar isso para o perfil que você quer atrair. Isso faz parte do serviço.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">O que acontece depois que preencho o formulário?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>A Mariana lê sua demanda e entra em contato pelo WhatsApp em até <strong>1 dia útil</strong> para agendar uma conversa de diagnóstico. Nessa conversa, ela entende sua operação e apresenta o formato de apoio mais adequado. Sem compromisso nessa primeira etapa.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">Quais perfis a RH IMOB recruta?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>Corretores com CRECI ativo · Novos talentos para formação · Lideranças comerciais (gerente, coordenador) · SDR e atendimento · Crédito imobiliário · Apoio ao RH interno. Se o perfil é do mercado imobiliário, provavelmente temos base mapeada.</p></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 8. CTA BAND -->
-    <section class="cta-band">
-      <div class="container cta-inner reveal">
-        <div>
-          <h2>Pronto para contratar com mais método e menos desperdício?</h2>
-          <p>A RH IMOB organiza o processo de ponta a ponta para imobiliárias, incorporadoras e loteadoras.</p>
+    <!-- 8. FORMULÁRIO -->
+    <section class="section-pad proposta-section" id="proposta">
+      <div class="container">
+        <div class="section-head reveal" style="margin-bottom: 40px;">
+          <span class="section-kicker">Solicite sua proposta</span>
+          <h2>Conte sua demanda. A Mariana retorna com uma proposta estruturada.</h2>
+          <p>Preencha os dados abaixo. Quanto mais contexto, mais precisa será a proposta que a Mariana preparará para você.</p>
         </div>
-        <div class="cta-actions">
-          <a class="btn btn-cta btn-large js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero entender como contratar profissionais para minha operação imobiliária.">Falar com a RH IMOB agora</a>
-          <a class="btn btn-light btn-large" href="/vagas">Sou profissional — ver vagas</a>
+        <div class="proposta-form-wrap reveal">
+          <form id="leadForm" class="job-form company-lead-form js-company-lead-form">
+            <input type="hidden" name="origem" value="Homepage RH IMOB" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <label>Nome<input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required /></label>
+              <label>Empresa<input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" required /></label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required /></label>
+              <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP, Curitiba/PR" required /></label>
+            </div>
+            <label>Cargo / função que precisa contratar<input type="text" name="cargoVaga" placeholder="Ex.: Corretor de vendas, SDR, Gerente comercial, Novos talentos" required /></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <label>Quantidade aproximada<input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" required /></label>
+              <label>Urgência/prazo
+                <select name="urgencia" required>
+                  <option value="">Selecione</option>
+                  <option>Imediata</option>
+                  <option>Até 15 dias</option>
+                  <option>Até 30 dias</option>
+                  <option>Até 60 dias</option>
+                  <option>Operação contínua</option>
+                  <option>Estou avaliando para os próximos meses</option>
+                </select>
+              </label>
+            </div>
+            <label>Tipo de demanda
+              <select name="demanda" required>
+                <option value="">Selecione</option>
+                <option>Corretores com CRECI ativo</option>
+                <option>Corretores e novos talentos</option>
+                <option>Novos talentos para formação</option>
+                <option>Liderança comercial</option>
+                <option>SDR e atendimento</option>
+                <option>Locação / terceiros / alto padrão</option>
+                <option>Crédito imobiliário</option>
+                <option>Projeto de alto volume</option>
+                <option>Apoio ao RH interno</option>
+                <option>Ainda preciso alinhar o perfil</option>
+              </select>
+            </label>
+            <label>Formato de contratação <span class="optional-label">opcional</span>
+              <select name="formatoContratacao">
+                <option value="">Selecione, se souber</option>
+                <option>Autônomo / comissão</option>
+                <option>Ajuda de custo + comissão</option>
+                <option>PJ</option>
+                <option>CLT</option>
+                <option>A definir</option>
+              </select>
+            </label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <label>Remuneração <span class="optional-label">opcional</span><input type="text" name="remuneracao" placeholder="Ex.: Autônomo 4% / CLT R$ 2.500 + comissão" /></label>
+              <label>Benefícios <span class="optional-label">opcional</span><input type="text" name="beneficios" placeholder="Ex.: VT, VR, plano de saúde" /></label>
+            </div>
+            <label>Exigências da vaga <span class="optional-label">opcional</span><textarea name="exigencias" rows="3" placeholder="Ex.: CRECI ativo, mínimo 1 ano em vendas, CNH B, disponibilidade para visitas presenciais"></textarea></label>
+            <label>Contexto adicional <span class="optional-label">opcional</span><textarea name="mensagem" rows="3" placeholder="Qualquer informação sobre a operação, cultura da empresa ou prazo específico"></textarea></label>
+            <button class="btn btn-cta btn-full" type="submit" style="margin-top:8px;">Enviar minha demanda para a Mariana →</button>
+            <p class="form-helper">A mensagem abrirá no WhatsApp da Mariana para você revisar antes de enviar. Retorno em até 1 dia útil.</p>
+          </form>
         </div>
-      </div>
-    </section>
-
-    <!-- 9. CONTATO -->
-    <section class="section-pad contact-section" id="contato">
-      <div class="container contact-grid">
-        <div class="reveal">
-          <span class="section-kicker">Contato para empresas</span>
-          <h2>Solicite uma proposta de recrutamento.</h2>
-          <p>Conte sua demanda de contratação para que a RH IMOB avalie o cenário e retorne com uma orientação mais precisa sobre formato de apoio, prazo e investimento.</p>
-          <div class="contact-note">
-            <strong>Atendimento empresas:</strong>
-            <span>Mariana • WhatsApp: +55 11 95397-3268</span>
-            <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram da RH IMOB: @rh_imob</a>
-            <a href="https://br.linkedin.com/in/marianarhimob" target="_blank" rel="noopener">LinkedIn da Mariana Souza</a>
-          </div>
-        </div>
-        <form class="lead-form reveal js-company-lead-form" id="leadForm">
-          <input type="hidden" name="origem" value="Formulário principal de contato" />
-          <label>Nome
-            <input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required />
-          </label>
-          <label>WhatsApp
-            <input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required />
-          </label>
-          <label>Tipo de demanda
-            <select name="demanda" required>
-              <option value="">O que você precisa?</option>
-              <option>Corretores e novos talentos</option>
-              <option>Corretores com CRECI ativo</option>
-              <option>Novos talentos para formação</option>
-              <option>Liderança comercial</option>
-              <option>SDR e atendimento</option>
-              <option>Locação / terceiros / alto padrão</option>
-              <option>Crédito imobiliário</option>
-              <option>Apoio ao RH interno</option>
-              <option>Projeto de alto volume</option>
-              <option>Acesso à plataforma RH IMOB</option>
-              <option>Ainda preciso alinhar o perfil</option>
-            </select>
-          </label>
-          <label>Mensagem breve
-            <textarea name="mensagem" rows="3" placeholder="Cidade, volume e urgência — o resto alinhamos no WhatsApp"></textarea>
-          </label>
-          <button class="btn btn-cta btn-full" type="submit">Enviar e receber retorno rápido</button>
-          <p class="form-helper">Retorno pelo WhatsApp em até 1 dia útil. Sem formulários intermináveis depois disso.</p>
-        </form>
       </div>
     </section>
 
   </main>
 
-  <div class="modal" id="supportModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle">
-    <div class="modal-backdrop" data-close-support-modal></div>
-    <div class="modal-panel support-modal-panel" role="document">
-      <button class="modal-close" type="button" data-close-support-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Atendimento RH IMOB</span>
-        <h2 id="supportModalTitle">Como podemos te ajudar?</h2>
-        <p>Escolha o caminho correto para que sua mensagem chegue com contexto e o atendimento seja mais rápido.</p>
-      </div>
-      <div class="support-choice-grid">
-        <button class="support-choice js-support-company" type="button" data-message="Clique em suporte: preciso contratar profissionais para minha empresa.">
-          <strong>Preciso contratar</strong>
-          <span>Sou imobiliária, incorporadora ou gestor e preciso contratar corretores, novos talentos ou profissionais para minha operação imobiliária.</span>
-        </button>
-        <button class="support-choice js-support-jobs" type="button">
-          <strong>Vagas</strong>
-          <span>Quero ver oportunidades abertas ou enviar meu perfil para receber propostas no mercado imobiliário.</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="companyLeadModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="companyLeadModalTitle">
-    <div class="modal-backdrop" data-close-company-lead-modal></div>
-    <div class="modal-panel" role="document">
-      <button class="modal-close" type="button" data-close-company-lead-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Preciso contratar</span>
-        <h2 id="companyLeadModalTitle">Envie sua demanda de contratação.</h2>
-        <p>Preencha as informações da sua demanda para que a RH IMOB entenda o cenário, avalie o melhor formato de apoio e retorne com uma orientação mais precisa.</p>
-      </div>
-      <form id="companyLeadForm" class="job-form company-lead-form js-company-lead-form">
-        <input type="hidden" name="origem" value="Site RH IMOB" />
-        <label>Nome
-          <input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required />
-        </label>
-        <label>Empresa
-          <input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" required />
-        </label>
-        <label>WhatsApp
-          <input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required />
-        </label>
-        <label>Cidade/Estado
-          <input type="text" name="cidade" placeholder="Ex.: Curitiba/PR" required />
-        </label>
-        <label>Cargo / função que precisa contratar
-          <input type="text" name="cargoVaga" placeholder="Ex.: Corretor de vendas, SDR, Gerente comercial" required />
-        </label>
-        <label>Tipo de demanda
-          <select name="demanda" required>
-            <option value="">Selecione</option>
-            <option>Corretores e novos talentos</option>
-            <option>Corretores com CRECI ativo</option>
-            <option>Novos talentos para formação</option>
-            <option>Liderança comercial</option>
-            <option>SDR e atendimento</option>
-            <option>Locação / terceiros / alto padrão</option>
-            <option>Crédito imobiliário</option>
-            <option>Projeto de alto volume</option>
-            <option>Acesso à plataforma RH IMOB</option>
-            <option>Ainda preciso alinhar o perfil</option>
-          </select>
-        </label>
-        <label>Quantidade aproximada
-          <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" required />
-        </label>
-        <label>Formato de contratação
-          <select name="formatoContratacao">
-            <option value="">Selecione, se souber</option>
-            <option>Autônomo / comissão</option>
-            <option>Ajuda de custo + comissão</option>
-            <option>PJ</option>
-            <option>CLT</option>
-            <option>A definir</option>
-          </select>
-        </label>
-        <label>Urgência/prazo
-          <select name="urgencia" required>
-            <option value="">Selecione</option>
-            <option>Imediata</option>
-            <option>Até 15 dias</option>
-            <option>Até 30 dias</option>
-            <option>Até 60 dias</option>
-            <option>Operação contínua</option>
-            <option>Estou avaliando para os próximos meses</option>
-          </select>
-        </label>
-        <label>Remuneração oferecida <span class="optional-label">opcional</span>
-          <input type="text" name="remuneracao" placeholder="Ex.: Autônomo 4% / CLT R$ 2.500 + comissão" />
-        </label>
-        <label>Benefícios oferecidos <span class="optional-label">opcional</span>
-          <input type="text" name="beneficios" placeholder="Ex.: VT, VR, plano de saúde, premiação" />
-        </label>
-        <label>Exigências da vaga
-          <textarea name="exigencias" rows="3" placeholder="Ex.: CRECI ativo, experiência mínima em vendas, CNH B, disponibilidade para visitas presenciais"></textarea>
-        </label>
-        <label>Observações <span class="optional-label">opcional</span>
-          <textarea name="mensagem" rows="3" placeholder="Qualquer informação adicional sobre a operação, cultura da empresa ou diferenciais"></textarea>
-        </label>
-        <button class="btn btn-primary btn-full" type="submit">Enviar minha demanda para análise</button>
-        <p class="form-helper">A mensagem chega estruturada para que a Mariana possa preparar uma proposta antes de te ligar.</p>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal" id="jobModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-backdrop" data-close-modal></div>
-    <div class="modal-panel" role="document">
-      <button class="modal-close" type="button" data-close-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Interesse na vaga</span>
-        <h2 id="modalTitle">Tenho interesse na vaga</h2>
-        <p id="modalSubtitle">Informe apenas seu nome e disponibilidade. O WhatsApp abrirá com os dados da vaga já preenchidos.</p>
-      </div>
-      <form id="jobForm" class="job-form">
-        <input type="hidden" name="jobId" />
-        <label>Nome completo
-          <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome" />
-        </label>
-        <label>Disponibilidade para início
-          <select name="inicio" required>
-            <option value="">Selecione</option>
-            <option>Tenho início imediato</option>
-            <option>Posso alinhar a melhor data</option>
-            <option>Estou avaliando a oportunidade</option>
-          </select>
-        </label>
-        <button class="btn btn-primary btn-full" type="submit">Enviar interesse pelo WhatsApp</button>
-        <p class="form-helper">A mensagem será aberta no WhatsApp do responsável da vaga com as informações da oportunidade. Você revisa antes de enviar.</p>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal" id="advertiseModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="advertiseModalTitle">
-    <div class="modal-backdrop" data-close-advertise-modal></div>
-    <div class="modal-panel" role="document">
-      <button class="modal-close" type="button" data-close-advertise-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Anunciar vaga</span>
-        <h2 id="advertiseModalTitle">Quero anunciar uma vaga</h2>
-        <p>Preencha as informações principais. O site abrirá uma mensagem pronta no WhatsApp da Mariana para alinhamento da divulgação.</p>
-      </div>
-      <form id="advertiseForm" class="job-form advertise-form">
-        <label>Seu nome
-          <input type="text" name="nome" autocomplete="name" required placeholder="Nome do responsável" />
-        </label>
-        <label>Empresa
-          <input type="text" name="empresa" required placeholder="Nome da imobiliária ou empresa" />
-        </label>
-        <label>WhatsApp para retorno
-          <input type="tel" name="whatsapp" autocomplete="tel" required placeholder="(11) 99999-9999" />
-        </label>
-        <label>E-mail <span class="optional-label">opcional</span>
-          <input type="email" name="email" autocomplete="email" placeholder="email@empresa.com.br" />
-        </label>
-        <label>Cidade/região da vaga
-          <input type="text" name="cidade" required placeholder="Ex.: Jardins/SP, Osasco/SP, ABC" />
-        </label>
-        <label>Título da vaga
-          <input type="text" name="cargoVaga" required placeholder="Ex.: Corretor de locação, SDR, Gerente de vendas" />
-        </label>
-        <label>Quantidade de vagas
-          <input type="text" name="quantidade" required placeholder="Ex.: 1, 5, 20 profissionais" />
-        </label>
-        <label>Formato de contratação
-          <select name="formatoContratacao">
-            <option value="">Selecione, se souber</option>
-            <option>Autônomo / comissão</option>
-            <option>Ajuda de custo + comissão</option>
-            <option>PJ</option>
-            <option>CLT</option>
-            <option>Estágio / formação</option>
-            <option>A definir</option>
-          </select>
-        </label>
-        <label>Modelo de trabalho
-          <select name="modeloTrabalho">
-            <option value="">Selecione</option>
-            <option>Presencial</option>
-            <option>Híbrido</option>
-            <option>Home office</option>
-            <option>A definir</option>
-          </select>
-        </label>
-        <label>Horário <span class="optional-label">opcional</span>
-          <input type="text" name="horario" placeholder="Ex.: Seg a Sex 9h–18h / Flexível com metas" />
-        </label>
-        <label>Urgência
-          <select name="urgencia" required>
-            <option value="">Selecione</option>
-            <option>Imediata</option>
-            <option>Até 7 dias</option>
-            <option>Até 15 dias</option>
-            <option>Até 30 dias</option>
-            <option>Estou planejando a contratação</option>
-          </select>
-        </label>
-        <label>Remuneração <span class="optional-label">opcional</span>
-          <input type="text" name="remuneracao" placeholder="Ex.: Autônomo 4% / CLT R$ 2.000 + comissão por meta" />
-        </label>
-        <label>Benefícios oferecidos <span class="optional-label">opcional</span>
-          <input type="text" name="beneficios" placeholder="Ex.: VT, VR R$30/dia, plano odontológico, premiação trimestral" />
-        </label>
-        <label>Exigências da vaga
-          <textarea name="exigencias" rows="3" placeholder="Ex.: CRECI ativo, mínimo 1 ano em vendas imobiliárias, CNH B, disponibilidade para visitas"></textarea>
-        </label>
-        <label>Perfil desejado
-          <textarea name="perfilDesejado" rows="3" placeholder="Ex.: Perfil comercial, comunicativo, proativo, que more próximo à região de atuação"></textarea>
-        </label>
-        <label>Descrição da função / rotina <span class="optional-label">opcional</span>
-          <textarea name="descricaoFuncao" rows="3" placeholder="Ex.: Atendimento de leads inbound, agendamento e realização de visitas, negociação e fechamento, pós-venda"></textarea>
-        </label>
-        <button class="btn btn-primary btn-full" type="submit">Enviar solicitação</button>
-        <p class="form-helper">A mensagem será aberta no WhatsApp da Mariana para você revisar antes de enviar.</p>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal" id="talentModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="talentModalTitle">
-    <div class="modal-backdrop" data-close-talent-modal></div>
-    <div class="modal-panel" role="document">
-      <button class="modal-close" type="button" data-close-talent-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Banco confidencial</span>
-        <h2 id="talentModalTitle">Quero receber propostas</h2>
-        <p>Preencha os dados principais. A mensagem será aberta no WhatsApp da Mariana para você revisar antes de enviar.</p>
-      </div>
-      <form id="talentForm" class="job-form talent-form">
-        <label>Nome completo
-          <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome" />
-        </label>
-        <label>WhatsApp
-          <input type="tel" name="whatsapp" autocomplete="tel" required placeholder="(11) 99999-9999" />
-        </label>
-        <label>Cidade/região onde atua
-          <input type="text" name="regiao" required placeholder="Ex.: Osasco, Zona Sul, ABC, Guarulhos" />
-        </label>
-        <label>CRECI, se tiver
-          <input type="text" name="creci" placeholder="Ex.: 123456-F ou ainda não tenho" />
-        </label>
-        <label>Função atual
-          <select name="funcao" required>
-            <option value="">Selecione</option>
-            <option>Corretor(a) autônomo(a)</option>
-            <option>Corretor(a) vinculado(a) a imobiliária</option>
-            <option>Gerente de vendas</option>
-            <option>Coordenador(a) comercial</option>
-            <option>SDR / Telemarketing / Atendimento</option>
-            <option>Crédito imobiliário</option>
-            <option>Novo talento em formação</option>
-            <option>Outro perfil comercial</option>
-          </select>
-        </label>
-        <label>Tempo de experiência
-          <select name="experiencia" required>
-            <option value="">Selecione</option>
-            <option>Menos de 1 ano</option>
-            <option>1 a 2 anos</option>
-            <option>3 a 5 anos</option>
-            <option>Mais de 5 anos</option>
-            <option>Ainda não atuo no imobiliário</option>
-          </select>
-        </label>
-        <label>Empresa atual ou último vínculo <span class="optional-label">opcional</span>
-          <input type="text" name="empresaAtual" placeholder="Pode deixar em branco se preferir" />
-        </label>
-        <label>O que faria você avaliar uma nova proposta?
-          <select name="interesse" required>
-            <option value="">Selecione</option>
-            <option>Ajuda de custo</option>
-            <option>Comissão melhor</option>
-            <option>Mais leads e estrutura comercial</option>
-            <option>Lançamentos / produtos melhores</option>
-            <option>Cargo de liderança</option>
-            <option>Treinamento e crescimento profissional</option>
-            <option>Estou aberto(a) a conversar</option>
-          </select>
-        </label>
-        <label>Observações confidenciais
-          <textarea name="observacoes" rows="3" placeholder="Ex.: região desejada, tipo de operação, melhor horário para contato"></textarea>
-        </label>
-        <button class="btn btn-primary btn-full" type="submit">Enviar meu perfil para Mariana</button>
-        <p class="form-helper">Seu cadastro não é publicado no site. Ele apenas abre uma mensagem no WhatsApp para você confirmar o envio.</p>
-      </form>
-    </div>
-  </div>
-
   <footer class="site-footer">
     <div class="container footer-grid">
       <div>
-        <a class="brand footer-brand" href="#inicio" aria-label="RH IMOB - início">
+        <a class="brand footer-brand" href="/" aria-label="RH IMOB - início">
           <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
           <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
         </a>
@@ -749,20 +520,18 @@
       </div>
       <div>
         <h3>Navegação</h3>
-        <a href="#contratar">Preciso contratar</a>
-        <a href="#rh-imobiliario">RH imobiliário estratégico</a>
-        <a href="#plataforma-corretores">Plataforma Corretores</a>
-        <a href="#plataforma-novos-talentos">Novos Talentos</a>
-        <a href="/vagas">Vagas</a>
-        <a href="/vagas#banco-talentos">Banco de talentos</a>
         <a href="#como-funciona">Como funciona</a>
-        <a href="#contato">Contato</a>
+        <a href="#o-que-inclui">O que está incluso</a>
+        <a href="#faq">Perguntas frequentes</a>
+        <a href="#proposta">Solicitar proposta</a>
+        <a href="/plataformas">Plataformas de acesso</a>
+        <a href="/vagas">Vagas abertas</a>
+        <a href="/carreira">Carreira no imobiliário</a>
       </div>
       <div>
         <h3>Contatos</h3>
-        <a class="js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e gostaria de receber mais informações.">Empresas: Mariana</a>
-        <a href="/vagas#vagas">Vagas: ver oportunidades</a>
-        <a href="/vagas#banco-talentos">Banco de talentos confidencial</a>
+        <a class="js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana. Vim pelo site da RH IMOB e gostaria de receber mais informações.">Empresas: Mariana</a>
+        <a href="/vagas">Vagas: ver oportunidades</a>
         <a href="/corretores.html">Plataforma Corretores</a>
         <a href="/novos-talentos.html">Plataforma Novos Talentos</a>
         <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram: @rh_imob</a>
@@ -780,12 +549,11 @@
     </div>
   </footer>
 
-  <a class="floating-wa js-whatsapp" href="#" aria-label="Abrir atendimento RH IMOB" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero contratar profissionais para minha operação imobiliária. Qual o próximo passo?">Quero contratar</a>
+  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB" data-type="empresa" data-message="Olá, Mariana. Vim pelo site da RH IMOB e quero contratar profissionais para minha operação imobiliária. Qual o próximo passo?">Quero contratar</a>
 
-  <!-- Sticky CTA mobile -->
   <div class="mobile-sticky-cta" id="mobileStickyBar">
-    <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, vim pelo site da RH IMOB e quero contratar profissionais para minha operação imobiliária. Qual o próximo passo?">
-      Quero contratar corretores →
+    <a class="btn btn-cta btn-full" href="#proposta">
+      Quero uma proposta →
     </a>
   </div>
 
@@ -793,6 +561,23 @@
   <script src="supabase-config-novos-talentos.js?v=20260509adslead"></script>
   <script src="google-ads-config.js?v=20260509adslead"></script>
   <script src="google-ads-events.js?v=20260511copy"></script>
-  <script src="script.js?v=20260513rhestrategico"></script>
+  <script src="script.js?v=20260626homepage"></script>
+
+  <script>
+    document.querySelectorAll('.faq-q').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = this.closest('.faq-item');
+        var isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(function(el) {
+          el.classList.remove('open');
+          el.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          item.classList.add('open');
+          this.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
