@@ -91,8 +91,48 @@
     /* ── Formulário âncora ───────────────────────── */
     .proposta-section { background: #faf9ff; }
     .proposta-section .section-kicker { color: var(--orange-600); }
-    .proposta-form-wrap { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 40px; max-width: 680px; margin: 0 auto; }
-    @media (max-width: 600px) { .proposta-form-wrap { padding: 24px 20px; } }
+    .proposta-form-wrap { background: #fff; border: 1px solid var(--line); border-radius: 24px; overflow: hidden; max-width: 680px; margin: 0 auto; box-shadow: 0 24px 64px rgba(43,18,77,.10); }
+    .proposta-form-header { background: linear-gradient(135deg, var(--purple-950), var(--purple-800) 60%, #5a1fd4); padding: 28px 40px; display: flex; align-items: center; gap: 16px; }
+    .proposta-form-header-avatar { width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.3); background: url('/assets/mariana-v2.jpg') center/cover; flex-shrink: 0; }
+    .proposta-form-header-text strong { display: block; color: #fff; font-size: 17px; font-weight: 900; margin-bottom: 3px; }
+    .proposta-form-header-text span { color: rgba(255,255,255,.7); font-size: 13px; }
+    .proposta-form-header-badge { margin-left: auto; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 800; color: rgba(255,255,255,.9); white-space: nowrap; }
+    .proposta-form-body { padding: 32px 40px 36px; }
+    @media (max-width: 600px) {
+      .proposta-form-header { padding: 22px 20px; flex-wrap: wrap; }
+      .proposta-form-header-badge { margin-left: 0; }
+      .proposta-form-body { padding: 24px 20px; }
+    }
+
+    /* ── Announce bar ────────────────────────────── */
+    .announce-bar { background: var(--purple-950); color: rgba(255,255,255,.85); font-size: 13px; font-weight: 700; text-align: center; padding: 10px 20px; display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .announce-bar a { color: var(--orange-400); text-decoration: none; font-weight: 900; white-space: nowrap; }
+    .announce-bar a:hover { color: var(--orange-500); }
+    @media (max-width: 680px) { .announce-bar span.announce-sep { display: none; } .announce-bar { gap: 8px; flex-wrap: wrap; } }
+
+    /* ── Hero caption ────────────────────────────── */
+    .hero-caption { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
+    .hero-caption-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(31,185,120,.18); flex-shrink: 0; }
+    .hero-caption strong { font-size: 14px; font-weight: 900; color: var(--purple-950); }
+    .hero-caption span { font-size: 13px; color: var(--muted); }
+
+    /* ── Logos strip ─────────────────────────────── */
+    .logos-strip { background: var(--off); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 32px 0; }
+    .logos-strip-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .logos-label { font-size: 12px; font-weight: 900; color: var(--muted-2); text-transform: uppercase; letter-spacing: .1em; white-space: nowrap; margin-right: 8px; }
+    .logos-sep { width: 1px; height: 28px; background: var(--line); flex-shrink: 0; }
+    .logo-pill { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 800; color: var(--purple-900); white-space: nowrap; letter-spacing: -.01em; }
+    .logo-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange-500); flex-shrink: 0; }
+    .logos-count { font-size: 13px; font-weight: 900; color: var(--muted); margin-left: 4px; }
+    @media (max-width: 680px) { .logos-sep { display: none; } .logos-strip-inner { gap: 8px; } }
+
+    /* ── Testimonial stars ───────────────────────── */
+    .testimonial-stars { display: flex; gap: 3px; margin-bottom: 12px; }
+    .testimonial-stars span { color: #f59e0b; font-size: 18px; line-height: 1; }
+
+    /* ── Section fade divider ────────────────────── */
+    .section-fade-top { height: 64px; background: linear-gradient(to bottom, #fff, transparent); pointer-events: none; margin-bottom: -64px; position: relative; z-index: 1; }
+    .section-fade-bottom { height: 64px; background: linear-gradient(to top, #fff, transparent); pointer-events: none; margin-top: -64px; position: relative; z-index: 1; }
   </style>
 
   <script type="application/ld+json">
@@ -117,6 +157,12 @@
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <div class="announce-bar" role="banner" aria-label="Destaque">
+    <span>⚡ +1.200 profissionais colocados · 52 mil corretores mapeados · 360 cidades</span>
+    <span class="announce-sep">·</span>
+    <a href="#proposta">Solicitar proposta grátis →</a>
+  </div>
 
   <header class="site-header" id="topo">
     <div class="container header-inner">
@@ -179,7 +225,29 @@
           <div class="hero-photo-wrap">
             <img src="/assets/mariana-v2.jpg" alt="Mariana, especialista em recrutamento imobiliário da RH IMOB" class="hero-photo" />
           </div>
+          <div class="hero-caption">
+            <span class="hero-caption-dot"></span>
+            <div>
+              <strong>Mariana Souza</strong>
+              <span> · Especialista em Recrutamento Imobiliário · RH IMOB</span>
+            </div>
+          </div>
         </aside>
+      </div>
+    </section>
+
+    <!-- 1.5 LOGOS STRIP -->
+    <section class="logos-strip" aria-label="Empresas parceiras">
+      <div class="container">
+        <div class="logos-strip-inner">
+          <span class="logos-label">Empresas atendidas</span>
+          <div class="logos-sep" aria-hidden="true"></div>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>GKI Imóveis</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Grupo Kaza</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Vitacon</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Direções Imobiliária</span>
+          <span class="logos-count">+ 200 imobiliárias e incorporadoras</span>
+        </div>
       </div>
     </section>
 
@@ -341,6 +409,7 @@
         </div>
         <div class="testimonial-grid">
           <div class="testimonial-card reveal">
+            <div class="testimonial-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
             <div class="quote-mark">"</div>
             <blockquote>Conseguimos resultados impressionantes em um curto espaço de tempo, superando nossas melhores expectativas.</blockquote>
             <p class="testimonial-full">A dedicação e o cuidado da RH IMOB em cada etapa do processo fizeram toda a diferença para encontrarmos profissionais alinhados com nossos valores, visão e objetivos. Recomendamos com muita satisfação para qualquer empresa que valorize eficiência e profissionalismo na busca por talentos.</p>
@@ -350,6 +419,7 @@
             </div>
           </div>
           <div class="testimonial-card reveal">
+            <div class="testimonial-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
             <div class="quote-mark">"</div>
             <blockquote>A melhor empresa de Recrutamento e Seleção que existe. Profissionais de alto nível!</blockquote>
             <div class="testimonial-author">
@@ -358,6 +428,7 @@
             </div>
           </div>
           <div class="testimonial-card testimonial-card--video reveal">
+            <div class="testimonial-stars" style="padding: clamp(18px,3vw,32px) clamp(18px,3vw,32px) 0;"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
             <a class="testimonial-video-thumb" href="https://www.instagram.com/p/DBHZ4GRPiQO/" target="_blank" rel="noopener" aria-label="Assista ao podcast Corretor em Foco com Aldevino">
               <img src="/assets/aldevinosuper.jpg" alt="Aldevino Superintendente — Corretor em Foco podcast com RH IMOB" loading="lazy" />
               <span class="play-badge" aria-hidden="true">&#9654;</span>
@@ -420,6 +491,15 @@
           <p>Preencha os dados abaixo. Quanto mais contexto, mais precisa será a proposta que a Mariana preparará para você.</p>
         </div>
         <div class="proposta-form-wrap reveal">
+          <div class="proposta-form-header">
+            <div class="proposta-form-header-avatar" role="img" aria-label="Mariana Souza"></div>
+            <div class="proposta-form-header-text">
+              <strong>Mariana Souza</strong>
+              <span>Especialista em Recrutamento Imobiliário · RH IMOB</span>
+            </div>
+            <div class="proposta-form-header-badge">⚡ Retorno em 1 dia útil</div>
+          </div>
+          <div class="proposta-form-body">
           <form id="leadForm" class="job-form company-lead-form js-company-lead-form">
             <input type="hidden" name="origem" value="Homepage RH IMOB" />
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -479,6 +559,7 @@
             <button class="btn btn-cta btn-full" type="submit" style="margin-top:8px;">Enviar minha demanda para a Mariana →</button>
             <p class="form-helper">A mensagem abrirá no WhatsApp da Mariana para você revisar antes de enviar. Retorno em até 1 dia útil.</p>
           </form>
+          </div>
         </div>
       </div>
     </section>
@@ -525,7 +606,10 @@
     </div>
   </footer>
 
-  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB" data-type="empresa" data-message="Olá, Mariana. Vim pelo site da RH IMOB e quero contratar profissionais para minha operação imobiliária. Qual o próximo passo?">Quero contratar</a>
+  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a Mariana no WhatsApp" data-type="empresa" data-message="Olá, Mariana. Vim pelo site da RH IMOB e quero contratar profissionais para minha operação imobiliária. Qual o próximo passo?">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.122 1.523 5.854L.057 23.882a.5.5 0 0 0 .606.625l6.192-1.625A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.81 9.81 0 0 1-5.032-1.384l-.36-.214-3.733.979.997-3.648-.235-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
+    Falar com a Mariana
+  </a>
 
   <div class="mobile-sticky-cta" id="mobileStickyBar">
     <a class="btn btn-cta btn-full" href="#proposta">
