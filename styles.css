@@ -89,8 +89,8 @@ button, input, textarea, select { font: inherit; }
 .brand-mark {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(75,23,139,.18);
+  border-radius: 50%;
+  box-shadow: 0 10px 24px rgba(75,23,139,.28);
 }
 .brand strong {
   display: block;
