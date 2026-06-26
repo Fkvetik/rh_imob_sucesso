@@ -1,6 +1,6 @@
 (() => {
   const cfg = window.RHIMOB_SUPABASE_CONFIG || {};
-  const WHATSAPP_FERNANDO = '5511978725515';
+  const WHATSAPP_FERNANDO = '5511953973268';
   const PAGE_SIZE = 12;
   const DEFAULT_FRASES = [
     'Olá, {nome}. Aqui é {Usuário}. Vi seu perfil profissional em {cidade} e gostaria de falar com você.',
