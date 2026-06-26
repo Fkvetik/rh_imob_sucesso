@@ -40,7 +40,7 @@
 
   function wa(context) {
     const text = [
-      'Olá, Fernando. Vim pelo site da RH IMOB.',
+      'Olá, Mariana. Vim pelo site da RH IMOB.',
       'Quero entender o acesso completo à plataforma de corretores ativos.',
       context ? `Filtro consultado: ${context}` : '',
       'Gostaria de ver como funciona a liberação dos contatos, múltiplos usuários e relatório por plano.'
