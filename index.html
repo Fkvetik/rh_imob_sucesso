@@ -496,6 +496,9 @@
         <label>Cidade/Estado
           <input type="text" name="cidade" placeholder="Ex.: Curitiba/PR" required />
         </label>
+        <label>Cargo / função que precisa contratar
+          <input type="text" name="cargoVaga" placeholder="Ex.: Corretor de vendas, SDR, Gerente comercial" required />
+        </label>
         <label>Tipo de demanda
           <select name="demanda" required>
             <option value="">Selecione</option>
@@ -512,11 +515,21 @@
           </select>
         </label>
         <label>Quantidade aproximada
-          <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" />
+          <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" required />
+        </label>
+        <label>Formato de contratação
+          <select name="formatoContratacao">
+            <option value="">Selecione, se souber</option>
+            <option>Autônomo / comissão</option>
+            <option>Ajuda de custo + comissão</option>
+            <option>PJ</option>
+            <option>CLT</option>
+            <option>A definir</option>
+          </select>
         </label>
         <label>Urgência/prazo
-          <select name="urgencia">
-            <option value="">Selecione, se souber</option>
+          <select name="urgencia" required>
+            <option value="">Selecione</option>
             <option>Imediata</option>
             <option>Até 15 dias</option>
             <option>Até 30 dias</option>
@@ -525,11 +538,20 @@
             <option>Estou avaliando para os próximos meses</option>
           </select>
         </label>
-        <label>Mensagem breve
-          <textarea name="mensagem" rows="4" placeholder="Ex.: cidade da operação, perfil desejado, modelo de atuação, volume e prazo esperado"></textarea>
+        <label>Remuneração oferecida <span class="optional-label">opcional</span>
+          <input type="text" name="remuneracao" placeholder="Ex.: Autônomo 4% / CLT R$ 2.500 + comissão" />
+        </label>
+        <label>Benefícios oferecidos <span class="optional-label">opcional</span>
+          <input type="text" name="beneficios" placeholder="Ex.: VT, VR, plano de saúde, premiação" />
+        </label>
+        <label>Exigências da vaga
+          <textarea name="exigencias" rows="3" placeholder="Ex.: CRECI ativo, experiência mínima em vendas, CNH B, disponibilidade para visitas presenciais"></textarea>
+        </label>
+        <label>Observações <span class="optional-label">opcional</span>
+          <textarea name="mensagem" rows="3" placeholder="Qualquer informação adicional sobre a operação, cultura da empresa ou diferenciais"></textarea>
         </label>
         <button class="btn btn-primary btn-full" type="submit">Enviar minha demanda para análise</button>
-        <p class="form-helper">A mensagem chega estruturada para acelerar o atendimento e evitar uma conversa sem contexto.</p>
+        <p class="form-helper">A mensagem chega estruturada para que a Mariana possa preparar uma proposta antes de te ligar.</p>
       </form>
     </div>
   </div>
@@ -604,6 +626,18 @@
             <option>A definir</option>
           </select>
         </label>
+        <label>Modelo de trabalho
+          <select name="modeloTrabalho">
+            <option value="">Selecione</option>
+            <option>Presencial</option>
+            <option>Híbrido</option>
+            <option>Home office</option>
+            <option>A definir</option>
+          </select>
+        </label>
+        <label>Horário <span class="optional-label">opcional</span>
+          <input type="text" name="horario" placeholder="Ex.: Seg a Sex 9h–18h / Flexível com metas" />
+        </label>
         <label>Urgência
           <select name="urgencia" required>
             <option value="">Selecione</option>
@@ -614,14 +648,23 @@
             <option>Estou planejando a contratação</option>
           </select>
         </label>
+        <label>Remuneração <span class="optional-label">opcional</span>
+          <input type="text" name="remuneracao" placeholder="Ex.: Autônomo 4% / CLT R$ 2.000 + comissão por meta" />
+        </label>
+        <label>Benefícios oferecidos <span class="optional-label">opcional</span>
+          <input type="text" name="beneficios" placeholder="Ex.: VT, VR R$30/dia, plano odontológico, premiação trimestral" />
+        </label>
+        <label>Exigências da vaga
+          <textarea name="exigencias" rows="3" placeholder="Ex.: CRECI ativo, mínimo 1 ano em vendas imobiliárias, CNH B, disponibilidade para visitas"></textarea>
+        </label>
         <label>Perfil desejado
-          <textarea name="perfilDesejado" rows="3" placeholder="Ex.: CRECI ativo, experiência com locação, fácil acesso à região, perfil comercial"></textarea>
+          <textarea name="perfilDesejado" rows="3" placeholder="Ex.: Perfil comercial, comunicativo, proativo, que more próximo à região de atuação"></textarea>
         </label>
-        <label>Informações da vaga
-          <textarea name="detalhes" rows="4" placeholder="Remuneração, horário, benefícios, rotina, diferenciais e link de arte/post se tiver"></textarea>
+        <label>Descrição da função / rotina <span class="optional-label">opcional</span>
+          <textarea name="descricaoFuncao" rows="3" placeholder="Ex.: Atendimento de leads inbound, agendamento e realização de visitas, negociação e fechamento, pós-venda"></textarea>
         </label>
-        <button class="btn btn-primary btn-full" type="submit">Enviar para o Fernando</button>
-        <p class="form-helper">A mensagem será aberta no WhatsApp do Fernando. Você revisa antes de enviar.</p>
+        <button class="btn btn-primary btn-full" type="submit">Enviar solicitação</button>
+        <p class="form-helper">A mensagem será aberta no WhatsApp da Mariana para você revisar antes de enviar.</p>
       </form>
     </div>
   </div>

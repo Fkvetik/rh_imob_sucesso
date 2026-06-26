@@ -391,20 +391,30 @@
 
   function buildCompanyLeadMessage(data) {
     return [
-      'Olá, vim pelo site da RH IMOB e quero enviar uma demanda de contratação para análise.',
+      'Olá, Mariana. Vim pelo site da RH IMOB e quero enviar uma demanda de contratação para análise.',
       '',
-      'Meus dados:',
+      '— DADOS DO RESPONSÁVEL —',
       `Nome: ${data.nome}`,
       `Empresa: ${data.empresa}`,
       `WhatsApp: ${data.whatsapp}`,
       `Cidade/Estado: ${data.cidade}`,
-      `Tipo de demanda: ${data.demanda}`,
-      `Quantidade aproximada: ${data.quantidade || 'Não informado'}`,
-      `Urgência/prazo: ${data.urgencia || 'Não informado'}`,
-      `Origem do clique: ${data.origem || 'Site RH IMOB'}`,
-      `Mensagem: ${data.mensagem || 'Não informado'}`,
       '',
-      'Gostaria de entender como a RH IMOB pode apoiar nossa empresa no recrutamento imobiliário e receber uma orientação sobre formato de operação, prazo estimado e investimento.'
+      '— DADOS DA VAGA —',
+      `Cargo/função: ${data.cargoVaga || 'Não informado'}`,
+      `Tipo de demanda: ${data.demanda}`,
+      `Quantidade: ${data.quantidade || 'Não informado'}`,
+      `Formato de contratação: ${data.formatoContratacao || 'Não informado'}`,
+      `Urgência/prazo: ${data.urgencia || 'Não informado'}`,
+      '',
+      '— REMUNERAÇÃO E BENEFÍCIOS —',
+      `Remuneração: ${data.remuneracao || 'Não informado'}`,
+      `Benefícios: ${data.beneficios || 'Não informado'}`,
+      '',
+      '— EXIGÊNCIAS —',
+      `Exigências da vaga: ${data.exigencias || 'Não informado'}`,
+      `Observações: ${data.mensagem || 'Não informado'}`,
+      '',
+      'Aguardo retorno com orientação sobre o formato de apoio, prazo estimado e investimento.'
     ].join('\n');
   }
 
@@ -421,13 +431,18 @@
           empresa: normalize(form.elements.empresa?.value),
           whatsapp: normalize(form.elements.whatsapp?.value),
           cidade: normalize(form.elements.cidade?.value),
+          cargoVaga: normalize(form.elements.cargoVaga?.value),
           demanda: normalize(form.elements.demanda?.value),
           quantidade: normalize(form.elements.quantidade?.value),
+          formatoContratacao: normalize(form.elements.formatoContratacao?.value),
           urgencia: normalize(form.elements.urgencia?.value),
+          remuneracao: normalize(form.elements.remuneracao?.value),
+          beneficios: normalize(form.elements.beneficios?.value),
+          exigencias: normalize(form.elements.exigencias?.value),
           origem: normalize(form.elements.origem?.value),
           mensagem: normalize(form.elements.mensagem?.value)
         };
-        const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'demanda'];
+        const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'demanda', 'quantidade', 'urgencia'];
         const missing = required.filter((field) => !data[field]);
         if (missing.length) {
           form.elements[missing[0]]?.focus();
@@ -899,23 +914,33 @@
 
   function buildAdvertiseMessage(data) {
     return [
-      'Olá, Fernando. Vim pelo site da RH IMOB e quero anunciar uma vaga.',
+      'Olá, Mariana. Vim pelo site da RH IMOB e quero anunciar uma vaga.',
       '',
-      'Dados para divulgação:',
-      `Responsável: ${data.nome}`,
+      '— DADOS DO RESPONSÁVEL —',
+      `Nome: ${data.nome}`,
       `Empresa: ${data.empresa}`,
       `WhatsApp: ${data.whatsapp}`,
       `E-mail: ${data.email || 'Não informado'}`,
-      `Cidade/região da vaga: ${data.cidade}`,
-      `Título da vaga: ${data.cargoVaga}`,
+      '',
+      '— DADOS DA VAGA —',
+      `Cargo/Título: ${data.cargoVaga}`,
+      `Cidade/região: ${data.cidade}`,
       `Quantidade: ${data.quantidade}`,
       `Formato de contratação: ${data.formatoContratacao || 'Não informado'}`,
+      `Modelo de trabalho: ${data.modeloTrabalho || 'Não informado'}`,
+      `Horário: ${data.horario || 'Não informado'}`,
       `Urgência: ${data.urgencia}`,
       '',
-      `Perfil desejado: ${data.perfilDesejado || 'Não informado'}`,
-      `Informações da vaga: ${data.detalhes || 'Não informado'}`,
+      '— REMUNERAÇÃO E BENEFÍCIOS —',
+      `Remuneração: ${data.remuneracao || 'Não informado'}`,
+      `Benefícios: ${data.beneficios || 'Não informado'}`,
       '',
-      'Gostaria de entender como anunciar essa vaga na RH IMOB e receber candidatos pelo WhatsApp.'
+      '— PERFIL E EXIGÊNCIAS —',
+      `Exigências: ${data.exigencias || 'Não informado'}`,
+      `Perfil desejado: ${data.perfilDesejado || 'Não informado'}`,
+      `Descrição da função: ${data.descricaoFuncao || 'Não informado'}`,
+      '',
+      'Aguardo retorno para alinhar os próximos passos.'
     ].join('\n');
   }
 
@@ -941,9 +966,14 @@
         cargoVaga: normalize(form.elements.cargoVaga?.value),
         quantidade: normalize(form.elements.quantidade?.value),
         formatoContratacao: normalize(form.elements.formatoContratacao?.value),
+        modeloTrabalho: normalize(form.elements.modeloTrabalho?.value),
+        horario: normalize(form.elements.horario?.value),
         urgencia: normalize(form.elements.urgencia?.value),
+        remuneracao: normalize(form.elements.remuneracao?.value),
+        beneficios: normalize(form.elements.beneficios?.value),
+        exigencias: normalize(form.elements.exigencias?.value),
         perfilDesejado: normalize(form.elements.perfilDesejado?.value),
-        detalhes: normalize(form.elements.detalhes?.value)
+        descricaoFuncao: normalize(form.elements.descricaoFuncao?.value)
       };
       const required = ['nome', 'empresa', 'whatsapp', 'cidade', 'cargoVaga', 'quantidade', 'urgencia'];
       const missing = required.filter((field) => !data[field]);
