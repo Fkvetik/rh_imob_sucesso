@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contratar Corretores e Talentos Imobiliários | RH IMOB</title>
+  <meta name="description" content="Contrate corretores, lideranças e novos talentos com assistente dedicada, banco de 52 mil profissionais e entrega em reunião online. Setup em 7 dias." />
+  <meta name="theme-color" content="#2b124d" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.rhimob.com.br/contratar" />
+
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=20260509anuncie" />
+  <link rel="manifest" href="/site.webmanifest?v=20260509anuncie" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="RH IMOB" />
+  <meta property="og:title" content="Contratar Corretores e Talentos Imobiliários | RH IMOB" />
+  <meta property="og:description" content="Assistente dedicada, banco de 52 mil profissionais e entrega em reunião. Setup em 7 dias para imobiliárias e incorporadoras." />
+  <meta property="og:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
+
+  <link rel="stylesheet" href="styles.css?v=20260626contratar" />
+
+  <style>
+    /* ── FAQ ─────────────────────────────────────── */
+    .faq-section { background: var(--purple-950); }
+    .faq-section .section-kicker { color: var(--orange-400); }
+    .faq-section h2 { color: #fff; }
+    .faq-list { display: flex; flex-direction: column; gap: 0; margin-top: 40px; }
+    .faq-item { border-bottom: 1px solid rgba(255,255,255,.1); }
+    .faq-q {
+      all: unset;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 22px 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      gap: 16px;
+    }
+    .faq-q:hover { color: var(--orange-400); }
+    .faq-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      color: rgba(255,255,255,.6);
+      transition: transform .25s ease, border-color .25s ease;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); border-color: var(--orange-400); color: var(--orange-400); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease;
+    }
+    .faq-item.open .faq-a { max-height: 300px; }
+    .faq-a p {
+      color: rgba(255,255,255,.7);
+      font-size: 15px;
+      line-height: 1.7;
+      padding-bottom: 22px;
+      margin: 0;
+    }
+    .faq-a strong { color: rgba(255,255,255,.9); }
+
+    /* ── Qualificação ────────────────────────────── */
+    .qual-section { background: #faf9ff; }
+    .qual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+    .qual-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px 24px;
+    }
+    .qual-card-icon { font-size: 28px; margin-bottom: 14px; }
+    .qual-card h3 { font-size: 16px; font-weight: 800; color: var(--purple-950); margin-bottom: 8px; }
+    .qual-card p { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+    .qual-anti {
+      margin-top: 28px;
+      background: #fff8f0;
+      border: 1px solid #fde8ca;
+      border-radius: 12px;
+      padding: 18px 22px;
+      font-size: 14px;
+      color: #7a4b1a;
+      line-height: 1.6;
+    }
+    .qual-anti strong { color: #5a3410; }
+
+    /* ── Números na hero ─────────────────────────── */
+    .hero-numbers {
+      display: flex;
+      gap: 28px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-number strong {
+      display: block;
+      font-size: 22px;
+      font-weight: 950;
+      color: var(--purple-900);
+      letter-spacing: -.03em;
+    }
+    .hero-number span {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    /* ── Processo (override para fundo claro) ────── */
+    .process-light { background: #fff; }
+    .process-light .timeline .step { background: var(--purple-950); }
+    .process-light .timeline .step h3 { color: #fff; }
+    .process-light .timeline .step p { color: rgba(255,255,255,.72); }
+
+    /* ── Destaques anti-objeção ──────────────────── */
+    .objecao-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .objecao-card {
+      border-left: 3px solid var(--purple-400);
+      padding: 18px 20px;
+      background: #faf9ff;
+      border-radius: 0 12px 12px 0;
+    }
+    .objecao-card strong { display: block; font-size: 15px; color: var(--purple-950); margin-bottom: 6px; }
+    .objecao-card p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    /* ── Formulário âncora ───────────────────────── */
+    .proposta-section { background: #faf9ff; }
+    .proposta-section .section-kicker { color: var(--orange-600); }
+    .proposta-form-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    @media (max-width: 600px) {
+      .proposta-form-wrap { padding: 24px 20px; }
+    }
+
+    /* ── header simplificado ─────────────────────── */
+    .contratar-nav a { color: var(--purple-700); font-weight: 700; font-size: 14px; text-decoration: none; }
+    .contratar-nav a:hover { color: var(--orange-600); }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "RH IMOB — Recrutamento Imobiliário",
+    "description": "Recrutamento especializado para imobiliárias e incorporadoras. Corretores, lideranças e novos talentos com assistente dedicada e entrega em reunião.",
+    "provider": {
+      "@type": "Organization",
+      "name": "RH IMOB",
+      "url": "https://www.rhimob.com.br"
+    },
+    "areaServed": { "@type": "Country", "name": "Brasil" },
+    "serviceType": "Recrutamento imobiliário"
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header" id="topo">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="RH IMOB — página inicial">
+        <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
+        <span>
+          <strong>RH IMOB</strong>
+          <small>Recrutamento imobiliário</small>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-contratar">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="main-nav contratar-nav" id="menu-contratar" aria-label="Menu">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#depoimentos">Quem contratou</a>
+        <a href="#faq">Perguntas</a>
+        <a href="/vagas">Sou corretor</a>
+      </nav>
+
+      <a class="btn btn-cta btn-header js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana. Vim pela página Contratar da RH IMOB e quero entender como vocês podem ajudar minha empresa a contratar profissionais imobiliários.">Falar com Mariana</a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+
+    <!-- 1. HERO -->
+    <section class="gateway section-pad" id="inicio">
+      <div class="container gateway-grid">
+        <div class="gateway-copy reveal">
+          <div class="eyebrow"><span></span> Recrutamento imobiliário · São Paulo e interior</div>
+          <h1>Cansado de perder tempo triando candidatos que somem antes da entrevista?</h1>
+          <p class="hero-subtitle">A RH IMOB busca, filtra e apresenta corretores, lideranças e novos talentos em reunião online — com assistente dedicada, banco de 52 mil profissionais e processo organizado do diagnóstico à entrega.</p>
+
+          <div class="hero-direct-cta">
+            <a class="btn btn-cta btn-xl" href="#proposta">
+              Quero uma proposta →
+            </a>
+            <p class="hero-price-hint">⚡ Setup em 7 dias · Assistente dedicada · Entrega em reunião online</p>
+            <div class="gateway-secondary-links">
+              <a href="#como-funciona">Como funciona</a>
+              <span>·</span>
+              <a href="#o-que-inclui">O que está incluso</a>
+              <span>·</span>
+              <a href="#faq">Perguntas frequentes</a>
+            </div>
+          </div>
+
+          <div class="hero-numbers">
+            <div class="hero-number"><strong>+1.200</strong><span>Profissionais colocados</span></div>
+            <div class="hero-number"><strong>52 mil+</strong><span>Corretores mapeados</span></div>
+            <div class="hero-number"><strong>360</strong><span>Cidades disponíveis</span></div>
+          </div>
+        </div>
+
+        <aside class="gateway-visual reveal" aria-label="Mariana — Especialista RH IMOB">
+          <div class="hero-photo-wrap">
+            <img src="/assets/mariana.png" alt="Mariana, especialista em recrutamento imobiliário da RH IMOB" class="hero-photo" />
+            <div class="hero-badge hero-badge--tl">
+              <span class="hero-badge-icon">🏆</span>
+              <div>
+                <strong>+1.200</strong>
+                <small>Profissionais colocados</small>
+              </div>
+            </div>
+            <div class="hero-badge hero-badge--br">
+              <span class="hero-badge-dot"></span>
+              <div>
+                <strong>Mariana</strong>
+                <small>Especialista em vagas · RH IMOB</small>
+              </div>
+            </div>
+          </div>
+          <div class="hero-badges-mobile">
+            <div class="hero-badge-mobile">
+              <span>🏆</span>
+              <div><strong>+1.200</strong> <small>Profissionais colocados</small></div>
+            </div>
+            <div class="hero-badge-mobile">
+              <span class="hero-badge-dot"></span>
+              <div><strong>Mariana</strong> <small>Especialista · RH IMOB</small></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 2. PARA QUEM É -->
+    <section class="section-pad qual-section" id="para-quem">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Para quem é esse serviço</span>
+          <h2>RH imobiliário não é recrutamento genérico — e não é para todo mundo.</h2>
+          <p>A RH IMOB atende empresas com operação estruturada que precisam contratar com método, escala e rastreabilidade.</p>
+        </div>
+
+        <div class="qual-grid">
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">🏢</div>
+            <h3>Imobiliárias em expansão</h3>
+            <p>Precisam contratar corretores com CRECI ativo ou novos talentos para formação, sem ocupar o gerente com triagem interminável.</p>
+          </div>
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">🚀</div>
+            <h3>Incorporadoras com lançamento</h3>
+            <p>Volume e prazo definidos — precisam montar equipe antes do lançamento, com funil organizado e abordagem estruturada.</p>
+          </div>
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">😤</div>
+            <h3>Gestores que já tentaram de tudo</h3>
+            <p>Anúncio próprio, agência genérica, indicação — nada gerou o volume certo no prazo certo. Precisam de especialista imobiliário.</p>
+          </div>
+          <div class="qual-card reveal">
+            <div class="qual-card-icon">📋</div>
+            <h3>RH interno sobrecarregado</h3>
+            <p>A equipe interna não tem base nem linguagem específica para o mercado imobiliário. Precisam de apoio operacional especializado.</p>
+          </div>
+        </div>
+
+        <div class="qual-anti reveal">
+          <strong>Este serviço não é para:</strong> freelancers individuais buscando um corretor para uma venda pontual · startups sem operação mínima estabelecida · empresas que precisam de apenas 1 profissional sem prazo definido. Prazo mínimo de operação: 2 meses.
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. O QUE ESTÁ INCLUSO -->
+    <section class="section-pad" id="o-que-inclui">
+      <div class="container">
+        <div class="hero-copy reveal">
+          <span class="section-kicker">O que está incluso</span>
+          <h2>Não é só uma lista de nomes — é um processo completo de ponta a ponta.</h2>
+          <p>Cada operação é conduzida por uma especialista dedicada, com método específico para o mercado imobiliário.</p>
+        </div>
+
+        <div class="incluso-box reveal" style="margin-top: 40px;">
+          <p class="incluso-label">O que você recebe em cada operação</p>
+          <div class="incluso-grid">
+            <div class="incluso-item">
+              <span>👩‍💼</span>
+              <div>
+                <strong>Assistente dedicada</strong>
+                <small>Especialista em RH imobiliário apresentada em reunião antes do início — você sabe quem conduz o processo</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>📋</span>
+              <div>
+                <strong>Construção da vaga</strong>
+                <small>Consultoria para formatar uma proposta atrativa — comissão, estrutura e diferenciais reais que fazem diferença na abordagem</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>🎯</span>
+              <div>
+                <strong>Banco de dados segmentado</strong>
+                <small>52 mil+ corretores ativos e novos talentos filtrados por cidade, cargo, ano de inscrição e perfil comercial</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>📣</span>
+              <div>
+                <strong>Abordagem estruturada</strong>
+                <small>Comunicação feita pela equipe RH IMOB — triagem inicial, qualificação de perfil e organização do funil sem demandar seu tempo</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>🤝</span>
+              <div>
+                <strong>Entrega em reunião online</strong>
+                <small>Os interessados qualificados são apresentados ao vivo para ouvir sua proposta — sem no-show, sem candidato desalinhado</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>📊</span>
+              <div>
+                <strong>Relatório semanal</strong>
+                <small>Visibilidade completa do funil em andamento — candidatos abordados, triados, confirmados e entregues</small>
+              </div>
+            </div>
+          </div>
+          <div class="incluso-footer">
+            <span>⏱ Setup em 7 dias · Prazo mínimo 2 meses · Operação sob medida para sua demanda</span>
+            <a class="btn btn-cta" href="#proposta">Consultar investimento</a>
+          </div>
+        </div>
+
+        <!-- Anti-objeções rápidas -->
+        <div class="objecao-grid" style="margin-top: 56px;">
+          <div class="objecao-card reveal">
+            <strong>Proposta fraca gera custo alto</strong>
+            <p>Quanto menos atrativa a oferta, mais abordagem é necessária para fechar o mesmo número de contratações. Formatamos junto com você.</p>
+          </div>
+          <div class="objecao-card reveal">
+            <strong>RH imobiliário é diferente</strong>
+            <p>Autonomia, rotatividade e escala exigem funil e linguagem próprios. Método genérico gera candidatos errados.</p>
+          </div>
+          <div class="objecao-card reveal">
+            <strong>Triagem antes da reunião</strong>
+            <p>Perfil e proposta alinhados antes da apresentação eliminam no-show e reuniões com candidatos que nunca vão fechar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. COMO FUNCIONA -->
+    <section class="section-pad process-light" id="como-funciona">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Como funciona</span>
+          <h2>Um processo organizado, rastreável e orientado a resultado.</h2>
+          <p>Do diagnóstico inicial à entrega dos candidatos em reunião — sem passo oculto, sem surpresa no meio do processo.</p>
+        </div>
+        <div class="timeline">
+          <article class="step reveal">
+            <b>1</b>
+            <h3>Diagnóstico</h3>
+            <p>Reunião com a Mariana para entender perfil, região, volume, urgência, remuneração e critérios de seleção. A proposta da vaga é formatada aqui.</p>
+          </article>
+          <article class="step reveal">
+            <b>2</b>
+            <h3>Busca e inteligência</h3>
+            <p>Seleção nas bases segmentadas, validação de canais e organização dos profissionais com melhor aderência ao perfil definido.</p>
+          </article>
+          <article class="step reveal">
+            <b>3</b>
+            <h3>Abordagem e funil</h3>
+            <p>Comunicação estruturada por WhatsApp, triagem de perfil e interesse, organização dos candidatos confirmados por nível de fit.</p>
+          </article>
+          <article class="step reveal">
+            <b>4</b>
+            <h3>Entrega em reunião</h3>
+            <p>Candidatos qualificados apresentados em reunião online para ouvir sua proposta. Relatório semanal com visão completa do funil.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. DEPOIMENTOS -->
+    <section class="section-pad testimonial-section" id="depoimentos">
+      <div class="container">
+        <div class="testimonial-header reveal">
+          <span class="section-kicker light">Quem já contratou recomenda</span>
+          <h2>Resultados reais de quem usou a RH IMOB.</h2>
+        </div>
+        <div class="testimonial-grid">
+          <div class="testimonial-card reveal">
+            <div class="quote-mark">"</div>
+            <blockquote>Conseguimos resultados impressionantes em um curto espaço de tempo, superando nossas melhores expectativas.</blockquote>
+            <p class="testimonial-full">A dedicação e o cuidado da RH IMOB em cada etapa do processo fizeram toda a diferença para encontrarmos profissionais alinhados com nossos valores, visão e objetivos. Recomendamos com muita satisfação para qualquer empresa que valorize eficiência e profissionalismo na busca por talentos.</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar testimonial-avatar--photo" style="background-image:url('/assets/leandro-gki-v2.jpg')" role="img" aria-label="Leandro, Diretor Comercial GKI Imóveis"></div>
+              <div>
+                <strong>Leandro — Diretor Comercial</strong>
+                <span>GKI Imóveis · Pinheiros, São Paulo</span>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card reveal">
+            <div class="quote-mark">"</div>
+            <blockquote>A melhor empresa de Recrutamento e Seleção que existe. Profissionais de alto nível!</blockquote>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar testimonial-avatar--photo" style="background-image:url('/assets/johnwaynemkt.jpg')" role="img" aria-label="John Wayne, especialista em marketing imobiliário"></div>
+              <div>
+                <strong>John Wayne</strong>
+                <span>Marketing Imobiliário · @johnwaynemkt</span>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card testimonial-card--video reveal">
+            <a class="testimonial-video-thumb" href="https://www.instagram.com/p/DBHZ4GRPiQO/" target="_blank" rel="noopener" aria-label="Assista ao podcast Corretor em Foco com Aldevino">
+              <img src="/assets/aldevinosuper.jpg" alt="Aldevino Superintendente — Corretor em Foco podcast com RH IMOB" loading="lazy" />
+              <span class="play-badge" aria-hidden="true">&#9654;</span>
+            </a>
+            <div class="testimonial-card-body">
+              <div class="quote-mark">"</div>
+              <blockquote>Uma parceria de sucesso com a RH IMOB — o recrutamento certo transforma equipes e resultados.</blockquote>
+              <div class="testimonial-author">
+                <div class="testimonial-avatar testimonial-avatar--photo" style="background-image:url('/assets/aldevinosuper.jpg')" role="img" aria-label="Aldevino, Superintendente Direções Imobiliária"></div>
+                <div>
+                  <strong>Aldevino — Superintendente</strong>
+                  <span>Direções Imobiliária · Podcast Corretor em Foco</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Números -->
+        <div class="proof-numbers" style="margin-top: 56px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 48px;">
+          <div><strong>+1.200</strong><span>profissionais colocados</span></div>
+          <div><strong>52 mil+</strong><span>corretores mapeados</span></div>
+          <div><strong>360</strong><span>cidades disponíveis</span></div>
+          <div><strong>7 dias</strong><span>para setup completo</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. FAQ -->
+    <section class="section-pad faq-section" id="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Perguntas frequentes</span>
+          <h2>Tudo que você quer saber antes de pedir uma proposta.</h2>
+        </div>
+
+        <div class="faq-list reveal">
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              Quanto custa o serviço?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>O investimento depende do volume de vagas, do prazo e do perfil desejado. Não trabalhamos com tabela de preço fixa porque cada operação tem uma complexidade diferente. Após o diagnóstico inicial, a Mariana apresenta uma proposta estruturada com escopo claro — sem surpresa no meio do processo.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              Vocês atendem fora de São Paulo?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>Sim. Temos base mapeada em <strong>360 cidades</strong> do Brasil e realizamos todo o processo à distância — diagnóstico, abordagem e entrega em reunião online. A operação não depende de presença física em nenhuma etapa.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              Qual o prazo para ver o primeiro resultado?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>Setup concluído em até 7 dias corridos após alinhamento. Primeiras abordagens na segunda semana. Primeiras entregas em reunião entre 2 e 4 semanas, dependendo do volume e do perfil. Resultados contínuos e mensuráveis a partir de 30 a 60 dias de operação.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              Preciso ter minha proposta formatada antes de entrar em contato?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>Não. Uma das etapas do diagnóstico é justamente <strong>ajudar a formatar uma proposta atrativa</strong> — remuneração, modelo de contratação, diferenciais e como comunicar isso para o perfil que você quer atrair. Isso faz parte do serviço e impacta diretamente o volume e a qualidade dos candidatos.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              O que acontece depois que preencho o formulário?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>A Mariana lê sua demanda e entra em contato pelo WhatsApp em até <strong>1 dia útil</strong> para agendar uma conversa de diagnóstico. Nessa conversa, ela entende sua operação, o perfil desejado e apresenta o formato de apoio mais adequado. Sem compromisso nessa primeira etapa.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              Vocês garantem contratação?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>Garantimos a entrega do processo — abordagem estruturada, triagem de perfil e apresentação de candidatos qualificados em reunião. A decisão final de contratação é da empresa. O que eliminamos é a causa mais comum do fracasso: candidatos sem perfil, sem interesse real e sem compromisso com a apresentação.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">
+              Quais perfis a RH IMOB recruta?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-a" role="region">
+              <p>Corretores com CRECI ativo · Novos talentos para formação · Lideranças comerciais (gerente, coordenador) · SDR e atendimento · Crédito imobiliário · Apoio ao RH interno. Se o perfil é do mercado imobiliário, provavelmente temos base mapeada.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. FORMULÁRIO -->
+    <section class="section-pad proposta-section" id="proposta">
+      <div class="container">
+        <div class="section-head reveal" style="margin-bottom: 40px;">
+          <span class="section-kicker">Solicite sua proposta</span>
+          <h2>Conte sua demanda. A Mariana retorna com uma proposta estruturada.</h2>
+          <p>Preencha os dados abaixo. Quanto mais contexto, mais precisa será a proposta que a Mariana preparará para você.</p>
+        </div>
+
+        <div class="proposta-form-wrap reveal">
+          <form id="contratarForm" class="job-form company-lead-form js-company-lead-form">
+            <input type="hidden" name="origem" value="Página Contratar" />
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <label style="grid-column: 1">Nome
+                <input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required />
+              </label>
+              <label style="grid-column: 2">Empresa
+                <input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" required />
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <label>WhatsApp
+                <input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required />
+              </label>
+              <label>Cidade/Estado da operação
+                <input type="text" name="cidade" placeholder="Ex.: São Paulo/SP, Curitiba/PR" required />
+              </label>
+            </div>
+
+            <label>Cargo / função que precisa contratar
+              <input type="text" name="cargoVaga" placeholder="Ex.: Corretor de vendas, SDR, Gerente comercial, Novos talentos" required />
+            </label>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <label>Quantidade aproximada
+                <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" required />
+              </label>
+              <label>Urgência/prazo
+                <select name="urgencia" required>
+                  <option value="">Selecione</option>
+                  <option>Imediata</option>
+                  <option>Até 15 dias</option>
+                  <option>Até 30 dias</option>
+                  <option>Até 60 dias</option>
+                  <option>Operação contínua</option>
+                  <option>Estou avaliando para os próximos meses</option>
+                </select>
+              </label>
+            </div>
+
+            <label>Tipo de demanda
+              <select name="demanda" required>
+                <option value="">Selecione</option>
+                <option>Corretores com CRECI ativo</option>
+                <option>Corretores e novos talentos</option>
+                <option>Novos talentos para formação</option>
+                <option>Liderança comercial</option>
+                <option>SDR e atendimento</option>
+                <option>Locação / terceiros / alto padrão</option>
+                <option>Crédito imobiliário</option>
+                <option>Projeto de alto volume</option>
+                <option>Apoio ao RH interno</option>
+                <option>Ainda preciso alinhar o perfil</option>
+              </select>
+            </label>
+
+            <label>Formato de contratação <span class="optional-label">opcional</span>
+              <select name="formatoContratacao">
+                <option value="">Selecione, se souber</option>
+                <option>Autônomo / comissão</option>
+                <option>Ajuda de custo + comissão</option>
+                <option>PJ</option>
+                <option>CLT</option>
+                <option>A definir</option>
+              </select>
+            </label>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <label>Remuneração oferecida <span class="optional-label">opcional</span>
+                <input type="text" name="remuneracao" placeholder="Ex.: Autônomo 4% / CLT R$ 2.500 + comissão" />
+              </label>
+              <label>Benefícios <span class="optional-label">opcional</span>
+                <input type="text" name="beneficios" placeholder="Ex.: VT, VR, plano de saúde" />
+              </label>
+            </div>
+
+            <label>Exigências da vaga <span class="optional-label">opcional</span>
+              <textarea name="exigencias" rows="3" placeholder="Ex.: CRECI ativo, mínimo 1 ano em vendas, CNH B, disponibilidade para visitas presenciais"></textarea>
+            </label>
+
+            <label>Contexto adicional <span class="optional-label">opcional</span>
+              <textarea name="mensagem" rows="3" placeholder="Qualquer informação sobre a operação, cultura da empresa ou prazo específico que ajude a Mariana a montar uma proposta mais precisa"></textarea>
+            </label>
+
+            <button class="btn btn-cta btn-full" type="submit" style="margin-top: 8px;">Enviar minha demanda para a Mariana →</button>
+            <p class="form-helper">A mensagem abrirá no WhatsApp da Mariana para você revisar antes de enviar. Retorno em até 1 dia útil.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="/" aria-label="RH IMOB - início">
+          <img src="/assets/rhimob-mark.svg?v=20260509anuncie" alt="" class="brand-mark" />
+          <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
+        </a>
+        <p>Recrutamento imobiliário com tecnologia, inteligência e operação especializada.</p>
+      </div>
+      <div>
+        <h3>Esta página</h3>
+        <a href="#para-quem">Para quem é</a>
+        <a href="#o-que-inclui">O que está incluso</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#depoimentos">Quem contratou</a>
+        <a href="#faq">Perguntas frequentes</a>
+        <a href="#proposta">Solicitar proposta</a>
+      </div>
+      <div>
+        <h3>Outras páginas</h3>
+        <a href="/">Site RH IMOB</a>
+        <a href="/vagas">Vagas abertas</a>
+        <a href="/carreira">Carreira no imobiliário</a>
+        <a href="/corretores.html">Plataforma Corretores</a>
+        <a href="/novos-talentos.html">Plataforma Novos Talentos</a>
+      </div>
+      <div>
+        <h3>Contato</h3>
+        <a class="js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana. Vim pela página Contratar da RH IMOB e quero entender como vocês podem ajudar minha empresa.">WhatsApp da Mariana</a>
+        <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram: @rh_imob</a>
+        <a href="https://br.linkedin.com/in/marianarhimob" target="_blank" rel="noopener">LinkedIn: Mariana Souza</a>
+        <a href="politica.html">Política de privacidade</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="year"></span> RH IMOB. Todos os direitos reservados.</span>
+      <a href="#inicio">Voltar ao topo ↑</a>
+    </div>
+  </footer>
+
+  <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a Mariana" data-type="empresa" data-message="Olá, Mariana. Vim pela página Contratar da RH IMOB e quero entender como vocês podem ajudar minha empresa a contratar profissionais imobiliários.">Falar com Mariana</a>
+
+  <div class="mobile-sticky-cta" id="mobileStickyBar">
+    <a class="btn btn-cta btn-full" href="#proposta">
+      Quero uma proposta →
+    </a>
+  </div>
+
+  <script src="supabase-config.js?v=20260509adslead"></script>
+  <script src="google-ads-config.js?v=20260509adslead"></script>
+  <script src="google-ads-events.js?v=20260511copy"></script>
+  <script src="script.js?v=20260626contratar"></script>
+
+  <script>
+    // FAQ accordion
+    document.querySelectorAll('.faq-q').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = this.closest('.faq-item');
+        var isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(function(el) {
+          el.classList.remove('open');
+          el.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          item.classList.add('open');
+          this.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
