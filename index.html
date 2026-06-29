@@ -133,6 +133,25 @@
     /* ── Section fade divider ────────────────────── */
     .section-fade-top { height: 64px; background: linear-gradient(to bottom, #fff, transparent); pointer-events: none; margin-bottom: -64px; position: relative; z-index: 1; }
     .section-fade-bottom { height: 64px; background: linear-gradient(to top, #fff, transparent); pointer-events: none; margin-top: -64px; position: relative; z-index: 1; }
+
+    /* ── Sticky mobile CTA ───────────────────────── */
+    .sticky-mobile-cta { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--purple-950); padding: 14px 20px; z-index: 200; box-shadow: 0 -4px 24px rgba(43,18,77,.35); align-items: center; gap: 14px; }
+    .sticky-mobile-cta-text strong { display: block; font-size: 14px; font-weight: 900; color: #fff; line-height: 1.2; }
+    .sticky-mobile-cta-text span { font-size: 12px; color: rgba(255,255,255,.6); }
+    .sticky-mobile-cta .btn { white-space: nowrap; flex-shrink: 0; font-size: 14px; padding: 12px 20px; }
+    @media (max-width: 768px) { .sticky-mobile-cta { display: flex; } body { padding-bottom: 72px; } }
+
+    /* ── Direct WA CTA ───────────────────────────── */
+    .direct-wa-wrap { text-align: center; margin: 0 0 24px; }
+    .direct-wa-wrap p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    .direct-wa-wrap .btn-wa { display: inline-flex; align-items: center; gap: 8px; background: #25d366; color: #fff; font-weight: 800; font-size: 15px; padding: 14px 28px; border-radius: 14px; text-decoration: none; }
+    .direct-wa-wrap .btn-wa:hover { background: #1ebe5d; }
+    .direct-wa-wrap .btn-wa svg { flex-shrink: 0; }
+
+    /* ── Price anchor ────────────────────────────── */
+    .price-anchor { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 10px 18px; margin-top: 12px; font-size: 14px; }
+    .price-anchor strong { color: #166534; font-weight: 900; }
+    .price-anchor span { color: #4b7a5e; }
   </style>
 
   <script type="application/ld+json">
@@ -191,11 +210,22 @@
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
-  <div class="announce-bar" role="banner" aria-label="Destaque">
-    <span>⚡ +1.200 profissionais colocados · 52 mil corretores mapeados · 360 cidades</span>
+  <div class="announce-bar" role="banner" aria-label="Destaque" id="announce-bar">
+    <span id="announce-text">⚡ +1.200 profissionais colocados · 52 mil corretores mapeados · 360 cidades</span>
     <span class="announce-sep">·</span>
-    <a href="#proposta">Solicitar proposta grátis →</a>
+    <a href="#proposta" id="announce-link">Solicitar proposta grátis →</a>
   </div>
+  <script>
+    (function(){
+      var msgs = [
+        {text:"⚡ +1.200 profissionais colocados · 52 mil corretores mapeados · 360 cidades", link:"Solicitar proposta grátis →", href:"#proposta"},
+        {text:"⏱ Setup em 7 dias · Primeiros candidatos em até 3 semanas · 100% online", link:"Ver como funciona →", href:"#como-funciona"},
+        {text:"💬 \"A melhor empresa de R&S que existe\" — John Wayne, Marketing Imobiliário", link:"Ver depoimentos →", href:"#depoimentos"}
+      ];
+      var i=0, t=document.getElementById("announce-text"), l=document.getElementById("announce-link");
+      if(t&&l){ setInterval(function(){i=(i+1)%msgs.length; t.textContent=msgs[i].text; l.textContent=msgs[i].link; l.href=msgs[i].href;},4000); }
+    })();
+  </script>
 
   <header class="site-header" id="topo">
     <div class="container header-inner">
@@ -279,6 +309,11 @@
           <span class="logo-pill"><span class="logo-pill-dot"></span>Grupo Kaza</span>
           <span class="logo-pill"><span class="logo-pill-dot"></span>Vitacon</span>
           <span class="logo-pill"><span class="logo-pill-dot"></span>Direções Imobiliária</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Cyrela</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Lopes</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>RE/MAX</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Keller Williams</span>
+          <span class="logo-pill"><span class="logo-pill-dot"></span>Century 21</span>
           <span class="logos-count">+ 200 imobiliárias e incorporadoras</span>
         </div>
       </div>
@@ -522,7 +557,16 @@
           <span class="section-kicker">Solicite sua proposta</span>
           <h2>Conte sua demanda. A Mariana retorna com uma proposta estruturada.</h2>
           <p>Preencha os dados abaixo. Quanto mais contexto, mais precisa será a proposta que a Mariana preparará para você.</p>
+          <div class="price-anchor"><strong>A partir de R$ 3.499/mês</strong><span>· 1 assistente dedicada · mínimo 2 meses · proposta sem compromisso</span></div>
         </div>
+        <div class="direct-wa-wrap reveal">
+          <p>Prefere não preencher formulário?</p>
+          <a class="btn-wa js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero conversar sobre recrutamento imobiliário para minha empresa.">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.359-.214-3.722.976.994-3.634-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+            Falar com a Mariana agora
+          </a>
+        </div>
+        <div class="direct-wa-sep" style="text-align:center;margin:0 0 24px;font-size:13px;color:var(--muted-2);font-weight:700;letter-spacing:.04em;text-transform:uppercase;">— ou envie sua demanda pelo formulário —</div>
         <div class="proposta-form-wrap reveal">
           <div class="proposta-form-header">
             <div class="proposta-form-header-avatar" role="img" aria-label="Mariana Souza"></div>
@@ -537,7 +581,7 @@
             <input type="hidden" name="origem" value="Homepage RH IMOB" />
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
               <label>Nome<input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required /></label>
-              <label>Empresa<input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" required /></label>
+              <label>Empresa <span class="optional-label">opcional</span><input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" /></label>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
               <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required /></label>
@@ -545,10 +589,10 @@
             </div>
             <label>Cargo / função que precisa contratar<input type="text" name="cargoVaga" placeholder="Ex.: Corretor de vendas, SDR, Gerente comercial, Novos talentos" required /></label>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-              <label>Quantidade aproximada<input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" required /></label>
+              <label>Quantidade <span class="optional-label">opcional</span><input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" /></label>
               <label>Urgência/prazo
-                <select name="urgencia" required>
-                  <option value="">Selecione</option>
+                <select name="urgencia">
+                  <option value="">Selecione (opcional)</option>
                   <option>Imediata</option>
                   <option>Até 15 dias</option>
                   <option>Até 30 dias</option>
@@ -559,8 +603,8 @@
               </label>
             </div>
             <label>Tipo de demanda
-              <select name="demanda" required>
-                <option value="">Selecione</option>
+              <select name="demanda">
+                <option value="">Selecione (opcional)</option>
                 <option>Corretores com CRECI ativo</option>
                 <option>Corretores e novos talentos</option>
                 <option>Novos talentos para formação</option>
@@ -700,6 +744,23 @@
         }
       });
     });
+  </script>
+  <div class="sticky-mobile-cta" id="sticky-mobile-cta">
+    <div class="sticky-mobile-cta-text">
+      <strong>Contratar com a RH IMOB</strong>
+      <span>Setup em 7 dias · 52 mil profissionais</span>
+    </div>
+    <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero contratar profissionais imobiliários.">Falar agora</a>
+  </div>
+  <script>
+    (function(){
+      var el=document.getElementById("sticky-mobile-cta");
+      if(!el) return;
+      window.addEventListener("scroll",function(){
+        el.style.display=window.scrollY>400?"flex":"none";
+      },{passive:true});
+      el.style.display="none";
+    })();
   </script>
 </body>
 </html>
