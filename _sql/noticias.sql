@@ -48,6 +48,35 @@ CREATE POLICY "anon_full_access" ON noticias
   FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================================
+-- Storage: bucket público para imagens de notícias
+-- ============================================================
+
+-- Criar bucket público
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'noticias',
+  'noticias',
+  true,
+  5242880,   -- 5 MB por arquivo
+  ARRAY['image/jpeg','image/jpg','image/png','image/webp','image/gif']
+) ON CONFLICT (id) DO NOTHING;
+
+-- Política: leitura pública
+DROP POLICY IF EXISTS "noticias_storage_read" ON storage.objects;
+CREATE POLICY "noticias_storage_read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'noticias');
+
+-- Política: upload via anon (protegido por senha no admin client-side)
+DROP POLICY IF EXISTS "noticias_storage_insert" ON storage.objects;
+CREATE POLICY "noticias_storage_insert" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'noticias');
+
+-- Política: deletar via anon
+DROP POLICY IF EXISTS "noticias_storage_delete" ON storage.objects;
+CREATE POLICY "noticias_storage_delete" ON storage.objects
+  FOR DELETE USING (bucket_id = 'noticias');
+
+-- ============================================================
 -- Artigo de exemplo para validar o setup
 -- ============================================================
 INSERT INTO noticias (titulo, resumo, corpo, imagem_url, slug, categoria, ativo)

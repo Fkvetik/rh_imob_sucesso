@@ -153,8 +153,23 @@
         </div>
 
         <div class="f-group">
-          <label for="f-imagem">URL da imagem de capa</label>
-          <input type="url" id="f-imagem" placeholder="https://... (deixe vazio para usar emoji de categoria)" />
+          <label>Imagem de capa</label>
+          <div id="img-upload-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:border .18s;position:relative" onclick="document.getElementById('f-imagem-file').click()" ondragover="event.preventDefault();this.style.borderColor='#2b124d'" ondragleave="this.style.borderColor='#e0dce8'" ondrop="handleImgDrop(event)">
+            <div id="img-preview-wrap" style="display:none;margin-bottom:12px">
+              <img id="img-preview" src="" alt="" style="max-height:140px;max-width:100%;border-radius:8px;object-fit:cover" />
+            </div>
+            <div id="img-placeholder">
+              <div style="font-size:28px;margin-bottom:6px">🖼</div>
+              <p style="font-size:13px;font-weight:700;color:#2b124d;margin:0">Clique ou arraste uma imagem</p>
+              <p style="font-size:12px;color:#aaa;margin:4px 0 0">JPG, PNG, WebP · até 5 MB</p>
+            </div>
+            <div id="img-uploading" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando...</div>
+            <input type="file" id="f-imagem-file" accept="image/*" style="display:none" onchange="handleImgFile(this.files[0])" />
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <input type="url" id="f-imagem" placeholder="Ou cole uma URL de imagem externa" style="flex:1;font-size:13px" oninput="previewFromUrl(this.value)" />
+            <button type="button" onclick="clearImage()" style="padding:8px 12px;border-radius:8px;border:1px solid #e0dce8;background:#fff;font-size:12px;color:#888;cursor:pointer;white-space:nowrap">✕ Limpar</button>
+          </div>
         </div>
 
         <div class="f-group">
@@ -279,6 +294,69 @@
     document.getElementById('slug-preview').textContent = this.value || '...';
   });
 
+  // ── IMAGE UPLOAD ─────────────────────────────────
+  function showPreview(url) {
+    const wrap = document.getElementById('img-preview-wrap');
+    const ph = document.getElementById('img-placeholder');
+    const img = document.getElementById('img-preview');
+    if (url) { img.src = url; wrap.style.display = 'block'; ph.style.display = 'none'; }
+    else { wrap.style.display = 'none'; ph.style.display = 'block'; }
+  }
+
+  function previewFromUrl(url) {
+    showPreview(url);
+  }
+
+  function clearImage() {
+    document.getElementById('f-imagem').value = '';
+    document.getElementById('f-imagem-file').value = '';
+    showPreview('');
+  }
+
+  function handleImgDrop(e) {
+    e.preventDefault();
+    document.getElementById('img-upload-area').style.borderColor = '#e0dce8';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleImgFile(file);
+  }
+
+  async function handleImgFile(file) {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Imagem muito grande (máx 5 MB)', false); return; }
+    const ph = document.getElementById('img-placeholder');
+    const uploading = document.getElementById('img-uploading');
+    const area = document.getElementById('img-upload-area');
+    ph.style.display = 'none';
+    uploading.style.display = 'block';
+    area.style.pointerEvents = 'none';
+    try {
+      const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+      const nome = `${Date.now()}.${ext}`;
+      const caminho = `noticias/${nome}`;
+      const res = await fetch(`${SB_URL}/storage/v1/object/${caminho}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SB_KEY}`,
+          'apikey': SB_KEY,
+          'Content-Type': file.type || 'image/jpeg',
+          'x-upsert': 'true',
+        },
+        body: file,
+      });
+      if (!res.ok) { const e = await res.text(); throw new Error(e); }
+      const publicUrl = `${SB_URL}/storage/v1/object/public/${caminho}`;
+      document.getElementById('f-imagem').value = publicUrl;
+      showPreview(publicUrl);
+      showToast('✅ Imagem enviada!');
+    } catch(e) {
+      showToast('Erro no upload: ' + e.message, false);
+      ph.style.display = 'block';
+    } finally {
+      uploading.style.display = 'none';
+      area.style.pointerEvents = '';
+    }
+  }
+
   // ── LOAD LIST ────────────────────────────────────
   async function loadList() {
     try {
@@ -338,6 +416,8 @@
       document.getElementById('f-resumo').value = n.resumo;
       document.getElementById('resumo-count').textContent = n.resumo.length;
       document.getElementById('f-imagem').value = n.imagem_url || '';
+      showPreview(n.imagem_url || '');
+      document.getElementById('f-imagem-file').value = '';
       document.getElementById('f-corpo').value = n.corpo;
       document.getElementById('btn-preview').href = `/noticias/${n.slug}`;
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -354,6 +434,8 @@
     document.getElementById('f-categoria').value = 'Mercado';
     document.getElementById('f-resumo').value = '';
     document.getElementById('f-imagem').value = '';
+    document.getElementById('f-imagem-file').value = '';
+    showPreview('');
     document.getElementById('f-corpo').value = '';
     document.getElementById('titulo-count').textContent = '0';
     document.getElementById('resumo-count').textContent = '0';
