@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Notícias | RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="stylesheet" href="/styles.css?v=20260706news" />
+  <style>
+    *{box-sizing:border-box}
+    body{background:#f5f4f8;font-family:'Inter',sans-serif;margin:0}
+    /* AUTH */
+    .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:48px 40px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:56px;height:56px;border-radius:50%;margin-bottom:20px}
+    .auth-card h1{font-size:22px;font-weight:900;color:#2b124d;margin-bottom:6px;letter-spacing:-.04em}
+    .auth-card p{color:#888;font-size:14px;margin-bottom:28px}
+    .auth-card input{width:100%;padding:14px 16px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:14px;outline:none;transition:border .18s}
+    .auth-card input:focus{border-color:#2b124d}
+    .auth-card button{width:100%;padding:14px;background:#2b124d;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .18s}
+    .auth-card button:hover{opacity:.88}
+    .auth-error{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+    /* LAYOUT */
+    .admin-wrap{display:none;min-height:100vh}
+    .admin-header{background:#2b124d;color:#fff;padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+    .admin-header strong{font-size:16px;font-weight:900;letter-spacing:-.03em}
+    .admin-header span{font-size:12px;color:rgba(255,255,255,.55);margin-left:4px}
+    .admin-header .spacer{flex:1}
+    .admin-header a{color:rgba(255,255,255,.7);font-size:13px;text-decoration:none}
+    .admin-header a:hover{color:#fff}
+    .admin-body{display:grid;grid-template-columns:1fr 400px;gap:24px;padding:24px;max-width:1400px;margin:0 auto}
+    @media(max-width:900px){.admin-body{grid-template-columns:1fr}}
+    /* CARD */
+    .admin-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(43,18,77,.07)}
+    .admin-card h2{font-size:16px;font-weight:800;color:#2b124d;margin-bottom:18px;letter-spacing:-.03em}
+    /* FORM */
+    .f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:600px){.f-row{grid-template-columns:1fr}}
+    label{display:block;font-size:13px;font-weight:700;color:#555;margin-bottom:4px}
+    .f-group{margin-bottom:14px}
+    input[type=text],input[type=url],input[type=datetime-local],select,textarea{width:100%;padding:11px 14px;border:1.5px solid #e0dce8;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border .18s;background:#fff}
+    input:focus,select:focus,textarea:focus{border-color:#2b124d}
+    textarea{resize:vertical;min-height:280px;font-size:13px;line-height:1.6}
+    .slug-preview{font-size:12px;color:#888;margin-top:4px}
+    .slug-preview span{color:#2b124d;font-weight:700}
+    /* BUTTONS */
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .btn-save{padding:12px 24px;background:#2b124d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .18s}
+    .btn-save:hover{opacity:.88}
+    .btn-save:disabled{opacity:.5;cursor:not-allowed}
+    .btn-pub{padding:12px 24px;background:#1a9e5c;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .18s}
+    .btn-pub:hover{opacity:.88}
+    .btn-draft{padding:12px 24px;background:#e8e4f2;color:#2b124d;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+    .btn-new{padding:10px 20px;background:#ff7a1a;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .18s}
+    .btn-new:hover{opacity:.88}
+    .btn-preview{padding:12px 24px;background:#f0eeff;color:#2b124d;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+    /* STATUS */
+    .status-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b124d;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:999;transition:opacity .3s;pointer-events:none}
+    /* LIST */
+    .news-list{display:flex;flex-direction:column;gap:10px}
+    .news-list-item{background:#faf9ff;border:1.5px solid #e8e4f2;border-radius:12px;padding:14px 16px;cursor:pointer;transition:border .18s;position:relative}
+    .news-list-item:hover{border-color:#2b124d}
+    .news-list-item.active{border-color:#2b124d;background:#f3f0ff}
+    .news-list-item h3{font-size:14px;font-weight:700;color:#2b124d;margin-bottom:4px;line-height:1.4;padding-right:80px}
+    .news-list-item .meta{font-size:12px;color:#888}
+    .item-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px}
+    .item-btn{padding:4px 10px;border-radius:8px;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:opacity .18s}
+    .item-btn:hover{opacity:.8}
+    .btn-toggle-pub{background:#1a9e5c;color:#fff}
+    .btn-toggle-draft{background:#f59e0b;color:#fff}
+    .btn-del{background:#fee2e2;color:#dc2626}
+    .badge{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:20px;margin-left:6px}
+    .badge-pub{background:#dcfce7;color:#166534}
+    .badge-draft{background:#fef3c7;color:#92400e}
+    .no-items{text-align:center;padding:40px 20px;color:#888;font-size:14px}
+    /* HTML HELP */
+    .html-tips{background:#f3f0ff;border-radius:10px;padding:12px 16px;margin-top:8px;font-size:12px;color:#5a4e8c;line-height:1.7}
+    .html-tips code{background:#e8e4f2;padding:1px 5px;border-radius:4px;font-size:11px}
+    .char-count{font-size:12px;color:#888;text-align:right;margin-top:4px}
+  </style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <img src="/assets/rhimob-logo.jpg" alt="RH IMOB" />
+    <h1>Admin Notícias</h1>
+    <p>Área restrita · RH IMOB</p>
+    <form id="auth-form">
+      <input type="password" id="auth-pwd" placeholder="Senha de acesso" autocomplete="current-password" />
+      <button type="submit">Entrar →</button>
+      <div class="auth-error" id="auth-error">Senha incorreta. Tente novamente.</div>
+    </form>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="admin-wrap">
+
+  <header class="admin-header">
+    <img src="/assets/rhimob-logo.jpg" alt="" style="width:32px;height:32px;border-radius:50%" />
+    <strong>RH IMOB</strong><span>Admin Notícias</span>
+    <div class="spacer"></div>
+    <a href="/noticias" target="_blank">Ver site →</a>
+    <button onclick="logout()" style="margin-left:16px;background:rgba(255,255,255,.12);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">Sair</button>
+  </header>
+
+  <div class="admin-body">
+
+    <!-- COLUNA ESQUERDA: FORMULÁRIO -->
+    <div>
+      <div class="admin-card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+          <h2 style="margin:0;flex:1" id="form-title">Nova notícia</h2>
+          <button class="btn-new" onclick="newArticle()">+ Nova</button>
+        </div>
+
+        <div class="f-group">
+          <label for="f-titulo">Título *</label>
+          <input type="text" id="f-titulo" placeholder="Ex.: Mercado imobiliário de SP bate recorde..." maxlength="160" oninput="autoSlug()" />
+          <div class="char-count"><span id="titulo-count">0</span>/160</div>
+        </div>
+
+        <div class="f-group">
+          <label for="f-slug">Slug (URL) *</label>
+          <input type="text" id="f-slug" placeholder="Ex.: mercado-sp-recorde-2026" />
+          <div class="slug-preview">URL: <span>rhimob.com.br/noticias/</span><span id="slug-preview">...</span></div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group">
+            <label for="f-categoria">Categoria *</label>
+            <select id="f-categoria">
+              <option value="Mercado">Mercado</option>
+              <option value="Recrutamento">Recrutamento</option>
+              <option value="Gestão">Gestão</option>
+              <option value="Legislação">Legislação</option>
+              <option value="RH IMOB">RH IMOB</option>
+            </select>
+          </div>
+          <div class="f-group">
+            <label for="f-data">Data de publicação *</label>
+            <input type="datetime-local" id="f-data" />
+          </div>
+        </div>
+
+        <div class="f-group">
+          <label for="f-resumo">Resumo (aparecer nos cards) *</label>
+          <textarea id="f-resumo" rows="3" maxlength="300" placeholder="Resumo em 1-2 frases para a listagem e meta description." oninput="document.getElementById('resumo-count').textContent=this.value.length"></textarea>
+          <div class="char-count"><span id="resumo-count">0</span>/300</div>
+        </div>
+
+        <div class="f-group">
+          <label for="f-imagem">URL da imagem de capa</label>
+          <input type="url" id="f-imagem" placeholder="https://... (deixe vazio para usar emoji de categoria)" />
+        </div>
+
+        <div class="f-group">
+          <label for="f-corpo">Corpo do artigo (HTML) *</label>
+          <textarea id="f-corpo" rows="18" placeholder="<p>Parágrafo...</p>&#10;<h2>Subtítulo</h2>&#10;<p>Mais texto...</p>&#10;<ul><li>Item</li></ul>"></textarea>
+          <div class="html-tips">
+            <strong>HTML aceito:</strong>
+            <code>&lt;p&gt;</code> parágrafos ·
+            <code>&lt;h2&gt;</code> subtítulos ·
+            <code>&lt;h3&gt;</code> tópicos ·
+            <code>&lt;ul&gt;&lt;li&gt;</code> listas ·
+            <code>&lt;strong&gt;</code> negrito ·
+            <code>&lt;a href="..."&gt;</code> links ·
+            <code>&lt;div class="article-callout"&gt;&lt;p&gt;...&lt;/p&gt;&lt;/div&gt;</code> destaque roxo
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-save" id="btn-save" onclick="saveArticle(false)">💾 Salvar rascunho</button>
+          <button class="btn-pub" onclick="saveArticle(true)">🚀 Publicar</button>
+          <a class="btn-preview" id="btn-preview" href="#" target="_blank">👁 Preview</a>
+        </div>
+
+        <div id="status-msg" style="margin-top:12px;font-size:13px;color:#1a9e5c;display:none"></div>
+      </div>
+    </div>
+
+    <!-- COLUNA DIREITA: LISTA -->
+    <div>
+      <div class="admin-card">
+        <div style="display:flex;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0;flex:1">Notícias <span id="list-count" style="font-size:13px;color:#888;font-weight:600"></span></h2>
+          <input type="text" id="list-search" placeholder="Buscar..." style="width:140px;padding:8px 12px;font-size:13px" oninput="filterList()" />
+        </div>
+        <div class="news-list" id="news-list">
+          <div class="no-items">Carregando...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="status-toast" id="toast" style="opacity:0"></div>
+
+<script>
+  const SB_URL = 'https://tnzmxpoxvdlckmjwdala.supabase.co';
+  const SB_KEY = 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv';
+  const ADMIN_PWD = 'rhimob@2026'; // ← altere esta senha
+
+  let allArticles = [];
+  let editingId = null;
+
+  // ── AUTH ─────────────────────────────────────────
+  function checkAuth() {
+    return sessionStorage.getItem('admin_auth') === '1';
+  }
+  function logout() {
+    sessionStorage.removeItem('admin_auth');
+    location.reload();
+  }
+  document.getElementById('auth-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const pwd = document.getElementById('auth-pwd').value;
+    if (pwd === ADMIN_PWD) {
+      sessionStorage.setItem('admin_auth', '1');
+      showAdmin();
+    } else {
+      document.getElementById('auth-error').style.display = 'block';
+    }
+  });
+
+  function showAdmin() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('admin-wrap').style.display = 'block';
+    setDefaultDate();
+    loadList();
+  }
+
+  if (checkAuth()) showAdmin();
+
+  // ── HELPERS ──────────────────────────────────────
+  function sbHeaders() {
+    return { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+  }
+
+  function showToast(msg, ok = true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = ok ? '#2b124d' : '#dc2626';
+    t.style.opacity = '1';
+    setTimeout(() => t.style.opacity = '0', 3000);
+  }
+
+  function setDefaultDate() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('f-data').value = now.toISOString().slice(0, 16);
+  }
+
+  function slugify(v) {
+    return String(v).toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  function autoSlug() {
+    const t = document.getElementById('f-titulo');
+    const s = document.getElementById('f-slug');
+    document.getElementById('titulo-count').textContent = t.value.length;
+    if (!editingId || !s.dataset.manual) {
+      s.value = slugify(t.value);
+      s.dataset.manual = '';
+    }
+    document.getElementById('slug-preview').textContent = s.value || '...';
+  }
+
+  document.getElementById('f-slug').addEventListener('input', function() {
+    this.dataset.manual = '1';
+    this.value = slugify(this.value);
+    document.getElementById('slug-preview').textContent = this.value || '...';
+  });
+
+  // ── LOAD LIST ────────────────────────────────────
+  async function loadList() {
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/noticias?order=publicado_em.desc&select=id,titulo,slug,categoria,publicado_em,ativo`, {
+        headers: sbHeaders()
+      });
+      allArticles = await res.json();
+      renderList(allArticles);
+    } catch(e) {
+      document.getElementById('news-list').innerHTML = '<div class="no-items">Erro ao carregar.</div>';
+    }
+  }
+
+  function renderList(items) {
+    document.getElementById('list-count').textContent = `(${items.length})`;
+    if (!items.length) {
+      document.getElementById('news-list').innerHTML = '<div class="no-items">Nenhuma notícia ainda.</div>';
+      return;
+    }
+    document.getElementById('news-list').innerHTML = items.map(n => `
+      <div class="news-list-item" id="item-${n.id}" onclick="loadEdit('${n.id}')">
+        <h3>${n.titulo}<span class="badge ${n.ativo ? 'badge-pub' : 'badge-draft'}">${n.ativo ? 'Publicado' : 'Rascunho'}</span></h3>
+        <div class="meta">${n.categoria} · ${new Date(n.publicado_em).toLocaleDateString('pt-BR')}</div>
+        <div class="item-actions" onclick="event.stopPropagation()">
+          <button class="item-btn ${n.ativo ? 'btn-toggle-draft' : 'btn-toggle-pub'}" onclick="togglePublish('${n.id}',${!n.ativo})">${n.ativo ? 'Despublicar' : 'Publicar'}</button>
+          <button class="item-btn btn-del" onclick="deleteArticle('${n.id}','${n.titulo.replace(/'/g,'\\\'').slice(0,40)}')">Excluir</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function filterList() {
+    const q = document.getElementById('list-search').value.toLowerCase();
+    renderList(allArticles.filter(n => n.titulo.toLowerCase().includes(q) || n.categoria.toLowerCase().includes(q)));
+  }
+
+  // ── LOAD EDIT ────────────────────────────────────
+  async function loadEdit(id) {
+    document.querySelectorAll('.news-list-item').forEach(el => el.classList.remove('active'));
+    const item = document.getElementById('item-' + id);
+    if (item) item.classList.add('active');
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/noticias?id=eq.${id}&limit=1`, { headers: sbHeaders() });
+      const data = await res.json();
+      if (!data[0]) return;
+      const n = data[0];
+      editingId = id;
+      document.getElementById('form-title').textContent = 'Editando notícia';
+      document.getElementById('f-titulo').value = n.titulo;
+      document.getElementById('titulo-count').textContent = n.titulo.length;
+      document.getElementById('f-slug').value = n.slug;
+      document.getElementById('f-slug').dataset.manual = '1';
+      document.getElementById('slug-preview').textContent = n.slug;
+      document.getElementById('f-categoria').value = n.categoria;
+      const dt = new Date(n.publicado_em);
+      dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+      document.getElementById('f-data').value = dt.toISOString().slice(0, 16);
+      document.getElementById('f-resumo').value = n.resumo;
+      document.getElementById('resumo-count').textContent = n.resumo.length;
+      document.getElementById('f-imagem').value = n.imagem_url || '';
+      document.getElementById('f-corpo').value = n.corpo;
+      document.getElementById('btn-preview').href = `/noticias/${n.slug}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) { showToast('Erro ao carregar artigo.', false); }
+  }
+
+  function newArticle() {
+    editingId = null;
+    document.getElementById('form-title').textContent = 'Nova notícia';
+    document.getElementById('f-titulo').value = '';
+    document.getElementById('f-slug').value = '';
+    document.getElementById('f-slug').dataset.manual = '';
+    document.getElementById('slug-preview').textContent = '...';
+    document.getElementById('f-categoria').value = 'Mercado';
+    document.getElementById('f-resumo').value = '';
+    document.getElementById('f-imagem').value = '';
+    document.getElementById('f-corpo').value = '';
+    document.getElementById('titulo-count').textContent = '0';
+    document.getElementById('resumo-count').textContent = '0';
+    document.getElementById('btn-preview').href = '#';
+    setDefaultDate();
+    document.querySelectorAll('.news-list-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('f-titulo').focus();
+  }
+
+  // ── SAVE ─────────────────────────────────────────
+  async function saveArticle(publish) {
+    const titulo = document.getElementById('f-titulo').value.trim();
+    const slug = document.getElementById('f-slug').value.trim();
+    const corpo = document.getElementById('f-corpo').value.trim();
+    const resumo = document.getElementById('f-resumo').value.trim();
+    if (!titulo || !slug || !corpo || !resumo) {
+      showToast('Preencha título, slug, resumo e corpo.', false); return;
+    }
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    const payload = {
+      titulo, slug, resumo, corpo,
+      imagem_url: document.getElementById('f-imagem').value.trim(),
+      categoria: document.getElementById('f-categoria').value,
+      publicado_em: new Date(document.getElementById('f-data').value).toISOString(),
+      ativo: publish
+    };
+    try {
+      let res, method, url;
+      if (editingId) {
+        url = `${SB_URL}/rest/v1/noticias?id=eq.${editingId}`;
+        method = 'PATCH';
+      } else {
+        url = `${SB_URL}/rest/v1/noticias`;
+        method = 'POST';
+      }
+      res = await fetch(url, { method, headers: sbHeaders(), body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || res.status);
+      }
+      const data = await res.json();
+      if (!editingId && data[0]) editingId = data[0].id;
+      document.getElementById('btn-preview').href = `/noticias/${slug}`;
+      showToast(publish ? '🚀 Publicado com sucesso!' : '💾 Rascunho salvo!');
+      await loadList();
+      if (editingId) {
+        const item = document.getElementById('item-' + editingId);
+        if (item) item.classList.add('active');
+      }
+    } catch(e) {
+      showToast('Erro: ' + e.message, false);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── TOGGLE PUBLISH ───────────────────────────────
+  async function togglePublish(id, toPublish) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/noticias?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: sbHeaders(),
+        body: JSON.stringify({ ativo: toPublish })
+      });
+      showToast(toPublish ? '🚀 Publicado!' : '📥 Movido para rascunho');
+      await loadList();
+    } catch(e) { showToast('Erro ao alterar status.', false); }
+  }
+
+  // ── DELETE ───────────────────────────────────────
+  async function deleteArticle(id, titulo) {
+    if (!confirm(`Excluir permanentemente:\n"${titulo}..."?\n\nEsta ação não pode ser desfeita.`)) return;
+    try {
+      await fetch(`${SB_URL}/rest/v1/noticias?id=eq.${id}`, { method: 'DELETE', headers: sbHeaders() });
+      showToast('🗑 Notícia excluída.');
+      if (editingId === id) newArticle();
+      await loadList();
+    } catch(e) { showToast('Erro ao excluir.', false); }
+  }
+</script>
+</body>
+</html>

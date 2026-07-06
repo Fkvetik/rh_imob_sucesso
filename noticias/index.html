@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notícias do Mercado Imobiliário | RH IMOB</title>
+  <meta name="description" content="Acompanhe as principais notícias sobre recrutamento e mercado imobiliário. Tendências de contratação, legislação e gestão de equipes." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.rhimob.com.br/noticias" />
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="RH IMOB" />
+  <meta property="og:title" content="Notícias do Mercado Imobiliário | RH IMOB" />
+  <meta property="og:description" content="Acompanhe notícias sobre recrutamento imobiliário, tendências de contratação e mercado." />
+  <meta property="og:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"RH IMOB","item":"https://www.rhimob.com.br/"},{"@type":"ListItem","position":2,"name":"Notícias","item":"https://www.rhimob.com.br/noticias"}]}
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NSJD4F675L"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-NSJD4F675L',{page_location:window.location.href,page_title:document.title});</script>
+  <link rel="stylesheet" href="/styles.css?v=20260706news" />
+  <style>
+    .news-hero{background:linear-gradient(135deg,var(--purple-950) 0%,var(--purple-800) 100%);padding:72px 0 56px}
+    .news-hero h1{color:#fff;font-size:clamp(28px,4vw,44px);max-width:640px;letter-spacing:-.04em;margin-bottom:12px}
+    .news-hero p{color:rgba(255,255,255,.72);font-size:17px;max-width:520px}
+    .news-hero .section-kicker{color:var(--orange-400);margin-bottom:14px}
+    .news-cats{display:flex;gap:8px;flex-wrap:wrap;margin:32px 0 0}
+    .news-cat-btn{padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,.25);background:transparent;color:rgba(255,255,255,.75);font-size:13px;font-weight:700;cursor:pointer;transition:all .18s}
+    .news-cat-btn:hover,.news-cat-btn.active{background:#fff;border-color:#fff;color:var(--purple-950)}
+    .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px;margin-top:40px}
+    .news-card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s;text-decoration:none;color:inherit}
+    .news-card:hover{box-shadow:0 16px 40px rgba(43,18,77,.12);transform:translateY(-3px)}
+    .news-card-img{width:100%;height:180px;object-fit:cover;background:var(--purple-50,#f3f0ff)}
+    .news-card-img-placeholder{width:100%;height:180px;background:linear-gradient(135deg,var(--purple-100,#ede8f7),var(--purple-50,#f3f0ff));display:flex;align-items:center;justify-content:center;font-size:40px}
+    .news-card-body{padding:24px;flex:1;display:flex;flex-direction:column}
+    .news-card-tag{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--purple-600);background:var(--purple-50,#f3f0ff);padding:4px 10px;border-radius:20px;margin-bottom:12px}
+    .news-card h2{font-size:18px;line-height:1.35;letter-spacing:-.03em;margin-bottom:10px;color:var(--purple-950)}
+    .news-card p{font-size:14px;color:var(--muted);line-height:1.6;flex:1;margin-bottom:18px}
+    .news-card-date{font-size:12px;color:var(--muted-2,#aaa);font-weight:600}
+    .news-card-link{display:block;padding:11px 18px;background:var(--purple-950);color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;margin-top:16px;transition:opacity .18s}
+    .news-card-link:hover{opacity:.85}
+    .news-load-more{display:block;margin:40px auto 0;padding:14px 36px;border-radius:14px;border:2px solid var(--purple-950);background:transparent;color:var(--purple-950);font-size:15px;font-weight:700;cursor:pointer;transition:all .18s}
+    .news-load-more:hover{background:var(--purple-950);color:#fff}
+    .news-load-more[hidden]{display:none}
+    .news-empty{text-align:center;padding:80px 20px;color:var(--muted)}
+    .news-empty svg{margin-bottom:16px;opacity:.35}
+    .news-skeleton{background:var(--line);border-radius:12px;animation:skeleton-pulse 1.4s ease-in-out infinite}
+    @keyframes skeleton-pulse{0%,100%{opacity:.6}50%{opacity:.3}}
+    .news-cta{background:linear-gradient(135deg,var(--purple-950),var(--purple-800));border-radius:24px;padding:48px 40px;text-align:center;margin-top:56px}
+    .news-cta h2{color:#fff;font-size:26px;letter-spacing:-.04em;margin-bottom:10px}
+    .news-cta p{color:rgba(255,255,255,.72);margin-bottom:24px}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/"><img src="/assets/rhimob-logo.jpg" alt="" class="brand-mark" /><span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span></a>
+      <nav class="main-nav">
+        <a href="/">Contratar</a>
+        <a href="/plataformas">Plataformas</a>
+        <a href="/vagas">Vagas</a>
+        <a href="/carreira">Carreira</a>
+      </nav>
+      <a class="btn btn-cta btn-header" href="/#proposta">Solicitar proposta</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="news-hero">
+      <div class="container">
+        <span class="section-kicker eyebrow"><span></span> Notícias · RH IMOB</span>
+        <h1>Mercado imobiliário em tempo real.</h1>
+        <p>Contratações, tendências e análises para quem recruta no setor imobiliário.</p>
+        <div class="news-cats" id="cats">
+          <button class="news-cat-btn active" data-cat="">Todas</button>
+          <button class="news-cat-btn" data-cat="Mercado">Mercado</button>
+          <button class="news-cat-btn" data-cat="Recrutamento">Recrutamento</button>
+          <button class="news-cat-btn" data-cat="Gestão">Gestão</button>
+          <button class="news-cat-btn" data-cat="Legislação">Legislação</button>
+          <button class="news-cat-btn" data-cat="RH IMOB">RH IMOB</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad" style="background:#faf9ff;">
+      <div class="container">
+        <div class="news-grid" id="news-grid">
+          <!-- Skeleton -->
+          <div style="border-radius:20px;overflow:hidden;background:#fff;border:1px solid var(--line)">
+            <div class="news-skeleton" style="height:180px"></div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:10px">
+              <div class="news-skeleton" style="height:18px;width:60%;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:24px;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:14px;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:14px;width:80%;border-radius:8px"></div>
+            </div>
+          </div>
+          <div style="border-radius:20px;overflow:hidden;background:#fff;border:1px solid var(--line)">
+            <div class="news-skeleton" style="height:180px"></div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:10px">
+              <div class="news-skeleton" style="height:18px;width:60%;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:24px;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:14px;border-radius:8px"></div>
+            </div>
+          </div>
+          <div style="border-radius:20px;overflow:hidden;background:#fff;border:1px solid var(--line)">
+            <div class="news-skeleton" style="height:180px"></div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:10px">
+              <div class="news-skeleton" style="height:18px;width:60%;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:24px;border-radius:8px"></div>
+              <div class="news-skeleton" style="height:14px;border-radius:8px"></div>
+            </div>
+          </div>
+        </div>
+        <button class="news-load-more" id="load-more" hidden>Carregar mais notícias</button>
+
+        <div class="news-cta">
+          <h2>Precisa contratar corretores?</h2>
+          <p>52 mil profissionais mapeados · Setup em 7 dias · Entrega em reunião online</p>
+          <a class="btn btn-cta" href="/#proposta">Solicitar proposta gratuita →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="/" aria-label="RH IMOB - início">
+          <img src="/assets/rhimob-logo.jpg" alt="" class="brand-mark" />
+          <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
+        </a>
+        <p>Recrutamento imobiliário com tecnologia, inteligência e operação especializada.</p>
+      </div>
+      <div>
+        <h3>Conteúdo</h3>
+        <a href="/noticias">Notícias</a>
+        <a href="/blog">Blog</a>
+        <a href="/salario-corretor-imoveis">Salário Corretor</a>
+        <a href="/contrato-corretor-autonomo">Contrato Autônomo</a>
+      </div>
+      <div>
+        <h3>Empresa</h3>
+        <a href="/">Contratar</a>
+        <a href="/plataformas">Plataformas</a>
+        <a href="/vagas">Vagas</a>
+        <a href="/carreira">Carreira</a>
+        <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram: @rh_imob</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© 2026 RH IMOB · Recrutamento imobiliário especializado</span>
+      <a href="/politica.html">Política de privacidade</a>
+    </div>
+  </footer>
+
+  <script>
+    const SB_URL = 'https://tnzmxpoxvdlckmjwdala.supabase.co';
+    const SB_KEY = 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv';
+    const PAGE_SIZE = 9;
+
+    let currentCat = '';
+    let currentOffset = 0;
+    let loading = false;
+    let hasMore = true;
+
+    const grid = document.getElementById('news-grid');
+    const loadMoreBtn = document.getElementById('load-more');
+
+    function formatDate(iso) {
+      return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function catEmoji(cat) {
+      const map = { 'Mercado': '📈', 'Recrutamento': '🎯', 'Gestão': '🏢', 'Legislação': '⚖️', 'RH IMOB': '🚀' };
+      return map[cat] || '📰';
+    }
+
+    function renderCard(n) {
+      const img = n.imagem_url
+        ? `<img class="news-card-img" src="${n.imagem_url}" alt="${n.titulo}" loading="lazy" />`
+        : `<div class="news-card-img-placeholder">${catEmoji(n.categoria)}</div>`;
+      return `
+      <a class="news-card reveal" href="/noticias/${n.slug}">
+        ${img}
+        <div class="news-card-body">
+          <span class="news-card-tag">${n.categoria}</span>
+          <h2>${n.titulo}</h2>
+          <p>${n.resumo}</p>
+          <span class="news-card-date">📅 ${formatDate(n.publicado_em)}</span>
+          <span class="news-card-link">Ler notícia →</span>
+        </div>
+      </a>`;
+    }
+
+    async function fetchNews(reset) {
+      if (loading) return;
+      loading = true;
+      if (reset) {
+        currentOffset = 0;
+        hasMore = true;
+        grid.innerHTML = '';
+        loadMoreBtn.hidden = true;
+      }
+      try {
+        let url = `${SB_URL}/rest/v1/noticias?ativo=eq.true&order=publicado_em.desc&limit=${PAGE_SIZE}&offset=${currentOffset}&select=titulo,resumo,slug,categoria,publicado_em,imagem_url`;
+        if (currentCat) url += `&categoria=eq.${encodeURIComponent(currentCat)}`;
+        const res = await fetch(url, {
+          headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Prefer': 'count=exact' }
+        });
+        const total = parseInt(res.headers.get('Content-Range')?.split('/')[1] || '0');
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          if (reset) grid.innerHTML = `<div class="news-empty" style="grid-column:1/-1"><p style="font-size:18px;font-weight:700;color:var(--purple-900)">Nenhuma notícia encontrada</p><p>Acompanhe em breve.</p></div>`;
+          loadMoreBtn.hidden = true;
+          hasMore = false;
+          return;
+        }
+        data.forEach(n => { grid.insertAdjacentHTML('beforeend', renderCard(n)); });
+        currentOffset += data.length;
+        hasMore = currentOffset < total;
+        loadMoreBtn.hidden = !hasMore;
+        // Trigger reveal animations
+        document.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
+          if (el.getBoundingClientRect().top < window.innerHeight + 80) {
+            el.classList.add('revealed');
+          }
+        });
+      } catch (e) {
+        console.error(e);
+      } finally {
+        loading = false;
+      }
+    }
+
+    // Category filter
+    document.getElementById('cats').addEventListener('click', e => {
+      const btn = e.target.closest('.news-cat-btn');
+      if (!btn) return;
+      document.querySelectorAll('.news-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      fetchNews(true);
+    });
+
+    loadMoreBtn.addEventListener('click', () => fetchNews(false));
+
+    window.addEventListener('scroll', () => {
+      document.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight + 80) el.classList.add('revealed');
+      });
+    }, { passive: true });
+
+    fetchNews(true);
+  </script>
+</body>
+</html>
