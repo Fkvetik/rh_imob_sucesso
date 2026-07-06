@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
@@ -184,7 +184,7 @@
         ? `<img class="news-card-img" src="${n.imagem_url}" alt="${n.titulo}" loading="lazy" />`
         : `<div class="news-card-img-placeholder">${catEmoji(n.categoria)}</div>`;
       return `
-      <a class="news-card reveal" href="/noticias/${n.slug}">
+      <a class="news-card reveal in-view" href="/noticias/${n.slug}">
         ${img}
         <div class="news-card-body">
           <span class="news-card-tag">${n.categoria}</span>
@@ -223,12 +223,7 @@
         currentOffset += data.length;
         hasMore = currentOffset < total;
         loadMoreBtn.hidden = !hasMore;
-        // Trigger reveal animations
-        document.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
-          if (el.getBoundingClientRect().top < window.innerHeight + 80) {
-            el.classList.add('revealed');
-          }
-        });
+        // reveal handled by IntersectionObserver
       } catch (e) {
         console.error(e);
       } finally {
@@ -248,11 +243,14 @@
 
     loadMoreBtn.addEventListener('click', () => fetchNews(false));
 
-    window.addEventListener('scroll', () => {
-      document.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
-        if (el.getBoundingClientRect().top < window.innerHeight + 80) el.classList.add('revealed');
-      });
-    }, { passive: true });
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal:not(.in-view)').forEach(el => obs.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in-view'));
+    }
 
     fetchNews(true);
   </script>
