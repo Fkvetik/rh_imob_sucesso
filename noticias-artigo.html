@@ -67,7 +67,40 @@
     @keyframes skeleton-pulse{0%,100%{opacity:.6}50%{opacity:.3}}
     .article-not-found{text-align:center;padding:80px 20px}
     .article-not-found h2{color:var(--purple-950);font-size:24px;margin-bottom:12px}
+    /* COMMENTS */
+    .comments-section{max-width:760px;margin:0 auto;padding:0 20px 72px}
+    .comments-title{font-size:22px;font-weight:900;letter-spacing:-.04em;color:var(--purple-950);border-top:1px solid var(--line);padding-top:40px;margin:0 0 24px}
+    .comment-item{padding:20px 0;border-bottom:1px solid var(--line)}
+    .comment-item:last-child{border-bottom:none}
+    .comment-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .comment-avatar{width:36px;height:36px;border-radius:50%;background:#2b124d;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+    .comment-author{font-size:14px;font-weight:700;color:#2b124d}
+    .comment-date{font-size:12px;color:#aaa}
+    .comment-text{font-size:15px;line-height:1.7;color:#444;margin:0}
+    .comment-form{background:#f3f0ff;border-radius:16px;padding:28px;margin-top:28px}
+    .comment-form h3{font-size:17px;font-weight:900;letter-spacing:-.03em;color:#2b124d;margin:0 0 18px}
+    .cf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:580px){.cf-row{grid-template-columns:1fr}}
+    .cf-group{margin-bottom:14px}
+    .cf-group label{display:block;font-size:13px;font-weight:700;color:#555;margin-bottom:5px}
+    .cf-group input,.cf-group textarea{width:100%;padding:11px 14px;border:1.5px solid #e0dce8;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border .18s;background:#fff}
+    .cf-group input:focus,.cf-group textarea:focus{border-color:#2b124d}
+    .cf-group textarea{resize:vertical;min-height:100px}
+    .cf-submit{padding:12px 28px;background:#2b124d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .18s}
+    .cf-submit:hover{opacity:.88}
+    .cf-submit:disabled{opacity:.5;cursor:not-allowed}
+    .cf-note{font-size:12px;color:#888;margin-top:10px}
+    .cf-success{background:#dcfce7;border-radius:10px;padding:14px 18px;color:#166534;font-size:14px;font-weight:700;margin-top:14px;display:none}
+    .comments-empty{color:#aaa;font-size:14px;padding:8px 0}
   </style>
+  <!-- Microsoft Clarity -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xluiu45itd");
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -102,6 +135,34 @@
       </div>
     </div>
   </main>
+
+  <!-- COMMENTS -->
+  <section class="comments-section" id="comments-section" style="display:none">
+    <h2 class="comments-title" id="comments-heading">Comentários</h2>
+    <div id="comments-list"></div>
+    <div class="comment-form">
+      <h3>Deixe seu comentário</h3>
+      <form id="comment-form" novalidate>
+        <div class="cf-row">
+          <div class="cf-group">
+            <label for="c-nome">Nome *</label>
+            <input type="text" id="c-nome" placeholder="Seu nome" maxlength="80" required />
+          </div>
+          <div class="cf-group">
+            <label for="c-email">E-mail <span style="font-weight:400;color:#aaa">(não publicado)</span></label>
+            <input type="email" id="c-email" placeholder="seu@email.com" />
+          </div>
+        </div>
+        <div class="cf-group">
+          <label for="c-texto">Comentário * <span id="c-count" style="font-weight:400;color:#aaa;font-size:12px">0/600</span></label>
+          <textarea id="c-texto" rows="4" maxlength="600" placeholder="Sua opinião sobre a notícia..." required oninput="document.getElementById('c-count').textContent=this.value.length+'/600'"></textarea>
+        </div>
+        <button class="cf-submit" type="submit" id="c-submit">Enviar comentário →</button>
+        <p class="cf-note">Comentários passam por moderação antes de serem publicados.</p>
+        <div class="cf-success" id="c-success">✅ Comentário enviado! Será publicado após moderação.</div>
+      </form>
+    </div>
+  </section>
 
   <footer class="site-footer">
     <div class="container footer-grid">
@@ -247,6 +308,7 @@
       if (window.gtag) gtag('event', 'page_view', { page_title: document.title, page_location: url });
 
       fetchRelated(slug, n.categoria);
+      loadComments(slug);
     }
 
     async function fetchRelated(currentSlug, categoria) {
@@ -293,6 +355,80 @@
       } catch (e) {
         console.error(e);
       }
+    }
+
+    // ── COMMENTS ──────────────────────────────────────────────────
+    function relTime(iso) {
+      const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+      if (d === 0) return 'hoje';
+      if (d === 1) return 'ontem';
+      if (d < 7) return `há ${d} dias`;
+      return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    async function loadComments(articleSlug) {
+      try {
+        const res = await fetch(
+          `${SB_URL}/rest/v1/comentarios?noticia_slug=eq.${encodeURIComponent(articleSlug)}&aprovado=eq.true&order=criado_em.asc`,
+          { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }
+        );
+        const data = await res.json();
+        const section = document.getElementById('comments-section');
+        const list = document.getElementById('comments-list');
+        const heading = document.getElementById('comments-heading');
+
+        if (Array.isArray(data) && data.length > 0) {
+          heading.textContent = `${data.length} Comentário${data.length > 1 ? 's' : ''}`;
+          list.innerHTML = data.map(c => {
+            const initial = (c.nome || '?')[0].toUpperCase();
+            return `<div class="comment-item">
+              <div class="comment-meta">
+                <div class="comment-avatar">${initial}</div>
+                <div>
+                  <div class="comment-author">${escHtml(c.nome)}</div>
+                  <div class="comment-date">${relTime(c.criado_em)}</div>
+                </div>
+              </div>
+              <p class="comment-text">${escHtml(c.texto).replace(/\n/g, '<br>')}</p>
+            </div>`;
+          }).join('');
+        } else {
+          heading.textContent = 'Comentários';
+          list.innerHTML = '<p class="comments-empty">Seja o primeiro a comentar esta notícia.</p>';
+        }
+        section.style.display = 'block';
+
+        // Comment form submit
+        document.getElementById('comment-form').addEventListener('submit', async e => {
+          e.preventDefault();
+          const nome = document.getElementById('c-nome').value.trim();
+          const email = document.getElementById('c-email').value.trim();
+          const texto = document.getElementById('c-texto').value.trim();
+          if (!nome || !texto) return;
+          const btn = document.getElementById('c-submit');
+          btn.disabled = true;
+          btn.textContent = 'Enviando...';
+          try {
+            await fetch(`${SB_URL}/rest/v1/comentarios`, {
+              method: 'POST',
+              headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ noticia_slug: articleSlug, nome, email, texto })
+            });
+            document.getElementById('c-success').style.display = 'block';
+            document.getElementById('comment-form').reset();
+            document.getElementById('c-count').textContent = '0/600';
+          } catch(err) {
+            alert('Erro ao enviar comentário. Tente novamente.');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enviar comentário →';
+          }
+        });
+      } catch(e) { console.error('comments', e); }
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     loadArticle();

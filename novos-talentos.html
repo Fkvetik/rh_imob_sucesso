@@ -24,6 +24,49 @@
   <link rel="icon" href="/favicon.ico?v=20260507nt" sizes="any" />
   <link rel="icon" href="/favicon.svg?v=20260507nt" type="image/svg+xml" />
   <link rel="stylesheet" href="novos-talentos.css?v=20260507nt20" />
+  <style>
+  /* Plans section */
+  .plans-section{padding:72px 0 80px;background:#faf9ff;border-top:1px solid #ede8f8}
+  .plans-head{text-align:center;margin-bottom:44px}
+  .plans-head h2{font-size:clamp(20px,3.2vw,28px);color:#2b124d;max-width:600px;margin:12px auto;line-height:1.35}
+  .plans-head p{color:#6b5e7e;font-size:15px;max-width:520px;margin:0 auto;line-height:1.6}
+  .plans-how{display:flex;justify-content:center;gap:36px;margin-bottom:40px;flex-wrap:wrap}
+  .plans-how__step{display:flex;align-items:flex-start;gap:10px;max-width:172px}
+  .plans-how__num{width:30px;height:30px;border-radius:50%;background:#7c3aed;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .plans-how__text strong{display:block;font-size:13px;font-weight:800;color:#2b124d;margin-bottom:2px}
+  .plans-how__text span{font-size:12px;color:#6b5e7e;line-height:1.4}
+  .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:768px){.plans-grid{grid-template-columns:1fr;max-width:380px;margin:0 auto}}
+  .plan-card{background:#fff;border:1.5px solid #e8e0f4;border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;position:relative}
+  .plan-card--popular{border-color:#7c3aed;box-shadow:0 4px 28px rgba(124,58,237,.13)}
+  .plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:4px 14px;border-radius:20px;white-space:nowrap}
+  .plan-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed}
+  .plan-price{display:flex;align-items:baseline;gap:2px;margin:8px 0 4px}
+  .plan-price strong{font-size:36px;font-weight:900;color:#2b124d;letter-spacing:-.03em}
+  .plan-price span{font-size:13px;color:#6b5e7e}
+  .plan-desc{font-size:13px;color:#6b5e7e;line-height:1.6;margin:0 0 18px}
+  .plan-features{list-style:none;padding:0;margin:0 0 24px;display:flex;flex-direction:column;gap:9px;flex:1}
+  .plan-features li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#1a0533;line-height:1.4}
+  .plan-features li::before{content:'✓';color:#7c3aed;font-weight:900;flex-shrink:0}
+  .plan-btn{display:block;width:100%;text-align:center;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .15s;box-sizing:border-box}
+  .plan-btn--primary{background:#7c3aed;color:#fff}
+  .plan-btn--outline{background:transparent;color:#7c3aed;border:2px solid #7c3aed}
+  .plan-btn:hover{opacity:.85}
+  .plans-note{text-align:center;font-size:12px;color:#9e90b0;margin-top:24px;line-height:1.7}
+  .nt-cta-section{padding:64px 0;background:#2b124d;text-align:center}
+  .nt-cta-section .nt-kicker{color:#c4b5fd}
+  .nt-cta-section h2{font-size:clamp(20px,3vw,26px);color:#fff;margin:12px auto 10px;max-width:520px;line-height:1.3}
+  .nt-cta-section p{color:#c4b5fd;font-size:15px;max-width:440px;margin:0 auto 28px;line-height:1.6}
+  .nt-cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  </style>
+  <!-- Microsoft Clarity -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xluiu45itd");
+  </script>
 </head>
 <body>
   <header class="nt-topbar">
@@ -56,20 +99,20 @@
     <section class="nt-hero">
       <div class="nt-container nt-hero__grid">
         <div>
-          <span class="nt-kicker">Área operacional</span>
-          <h1>Talentos comerciais prontos para prospecção, com filtros inteligentes e controle por plano.</h1>
-          <p>Encontre profissionais com potencial comercial por cidade, idade, perfil, bairro e proximidade de metrô. A prévia aparece protegida e o contato completo só é liberado quando sua conta decide consumir o perfil.</p>
+          <span class="nt-kicker">Para gestores e CEOs de imobiliárias</span>
+          <h1>57 mil talentos comerciais mapeados — filtre, aborde e monte seu time com controle de plano.</h1>
+          <p>Base exclusiva de profissionais no início da carreira imobiliária: por cidade, bairro, perfil e metrô próximo. Funil de abordagens, relatórios em tempo real e mensagens prontas. Planos a partir de R$199/mês.</p>
 
           <div class="nt-hero__actions">
-            <button class="nt-btn nt-btn-primary" type="button" id="heroLoginBtn">Entrar na plataforma</button>
-            <a class="nt-btn nt-btn-light" href="#consulta">Ver consulta</a>
+            <a class="nt-btn nt-btn-primary" href="#planos">Ver planos de acesso</a>
+            <button class="nt-btn nt-btn-light" type="button" id="heroLoginBtn">Já tenho acesso</button>
           </div>
 
           <div class="nt-trust">
-            <span>Saldo controlado por plano</span>
-            <span>Consumo compartilhado por empresa</span>
-            <span>Abordagens prontas</span>
-            <span>Base separada dos Corretores</span>
+            <span>57 mil+ talentos mapeados</span>
+            <span>A partir de R$199/mês</span>
+            <span>Login em até 1 dia útil</span>
+            <span>Sem fidelidade</span>
           </div>
         </div>
 
@@ -93,6 +136,89 @@
       </div>
     </section>
 
+    <section class="plans-section" id="planos">
+      <div class="nt-container">
+        <div class="plans-head">
+          <span class="nt-kicker">Planos de acesso</span>
+          <h2>Escolha seu plano e sua equipe já prospecta novos talentos em até 1 dia útil</h2>
+          <p>Acesso ao banco de 57 mil+ talentos comerciais mapeados. Relatórios, funil de abordagens e mensagens prontas incluídos em todos os planos.</p>
+        </div>
+
+        <div class="plans-how">
+          <div class="plans-how__step">
+            <div class="plans-how__num">1</div>
+            <div class="plans-how__text">
+              <strong>Escolha o plano</strong>
+              <span>Clique em "Assinar" e fale com a Mariana pelo WhatsApp</span>
+            </div>
+          </div>
+          <div class="plans-how__step">
+            <div class="plans-how__num">2</div>
+            <div class="plans-how__text">
+              <strong>Receba o acesso</strong>
+              <span>Login liberado em até 1 dia útil após confirmação</span>
+            </div>
+          </div>
+          <div class="plans-how__step">
+            <div class="plans-how__num">3</div>
+            <div class="plans-how__text">
+              <strong>Monte seu time</strong>
+              <span>Filtre por perfil, libere contatos e aborde pelo WhatsApp</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="plans-grid">
+          <div class="plan-card">
+            <span class="plan-name">Starter</span>
+            <div class="plan-price"><strong>R$&nbsp;199</strong><span>/mês</span></div>
+            <p class="plan-desc">500 contatos por mês. Para operações que estão começando a estruturar o time comercial.</p>
+            <ul class="plan-features">
+              <li>500 liberações de contato/mês</li>
+              <li>Filtros por cidade, bairro e perfil</li>
+              <li>Filtro por metrô próximo</li>
+              <li>Funil de abordagens integrado</li>
+              <li>Mensagens de abordagem prontas</li>
+            </ul>
+            <a class="plan-btn plan-btn--outline" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Starter+da+Plataforma+Novos+Talentos+%28500+contatos%2Fm%C3%AAs+-+R%24199%2Fm%C3%AAs%29.+Pode+me+dar+mais+detalhes%3F" target="_blank" rel="noopener">Assinar Starter →</a>
+          </div>
+
+          <div class="plan-card plan-card--popular">
+            <span class="plan-badge">Mais escolhido</span>
+            <span class="plan-name">Pro</span>
+            <div class="plan-price"><strong>R$&nbsp;349</strong><span>/mês</span></div>
+            <p class="plan-desc">1.000 contatos por mês. Para imobiliárias em expansão acelerada de time comercial.</p>
+            <ul class="plan-features">
+              <li>1.000 liberações de contato/mês</li>
+              <li>Filtros por cidade, bairro e perfil</li>
+              <li>Filtro por metrô próximo e faixa de idade</li>
+              <li>Funil de abordagens integrado</li>
+              <li>Relatórios por operador</li>
+              <li>Gestão de equipe de operadores</li>
+            </ul>
+            <a class="plan-btn plan-btn--primary" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Pro+da+Plataforma+Novos+Talentos+%281.000+contatos%2Fm%C3%AAs+-+R%24349%2Fm%C3%AAs%29.+Pode+me+dar+mais+detalhes%3F" target="_blank" rel="noopener">Assinar Pro →</a>
+          </div>
+
+          <div class="plan-card">
+            <span class="plan-name">Ilimitado</span>
+            <div class="plan-price"><strong>R$&nbsp;999</strong><span>/mês</span></div>
+            <p class="plan-desc">Contatos ilimitados. Para operações com alta demanda e múltiplos operadores simultâneos.</p>
+            <ul class="plan-features">
+              <li>Contatos ilimitados/mês</li>
+              <li>Todos os filtros disponíveis</li>
+              <li>Funil completo por equipe</li>
+              <li>Relatórios avançados por operador e período</li>
+              <li>Mensagens personalizadas por plano</li>
+              <li>Múltiplos operadores sem limite</li>
+            </ul>
+            <a class="plan-btn plan-btn--outline" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Ilimitado+da+Plataforma+Novos+Talentos+%28R%24999%2Fm%C3%AAs%29.+Pode+me+dar+mais+detalhes%3F" target="_blank" rel="noopener">Assinar Ilimitado →</a>
+          </div>
+        </div>
+
+        <p class="plans-note">Todos os planos são mensais sem fidelidade. Usuários adicionais: + o valor da assinatura mensal por usuário.<br>Login liberado em até 1 dia útil após confirmação do pagamento. Dúvidas? Fale com a Mariana.</p>
+      </div>
+    </section>
+
     <section class="nt-section" id="consulta">
       <div class="nt-container">
         <div class="nt-section-head">
@@ -103,7 +229,7 @@
 
         <div class="nt-login-warning" id="loginWarning">
           <strong>Consulte a prévia protegida.</strong>
-          <span>Navegue pela base protegida sem expor dados sensíveis. Para liberar telefone, e-mail e mensagem de abordagem, entre com seu acesso empresarial.</span>
+          <span>Para liberar contatos completos é necessário ter um plano ativo. <a href="#planos" style="color:inherit;font-weight:700;text-decoration:underline">Veja os planos →</a> ou entre se já tem acesso.</span>
           <button class="nt-btn nt-btn-primary" type="button" id="warningLoginBtn">Entrar para liberar contato</button>
         </div>
 
@@ -362,6 +488,18 @@
             <p class="nt-phrase-help">Placeholders: <strong>{saudacao_completa}</strong>, <strong>{primeiro_nome}</strong>, <strong>{operador}</strong>, <strong>{empresa}</strong>, <strong>{agendamento}</strong>.</p>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section class="nt-cta-section">
+      <div class="nt-container">
+        <span class="nt-kicker">Pronto para contratar?</span>
+        <h2>Escolha o plano e sua equipe já prospecta novos talentos em até 1 dia útil.</h2>
+        <p>Planos mensais a partir de R$199. Sem fidelidade. Relatórios, funil e mensagens prontas em todos os planos.</p>
+        <div class="nt-cta-btns">
+          <a class="nt-btn nt-btn-primary" href="#planos">Ver os planos →</a>
+          <a class="nt-btn nt-btn-secondary" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Quero+saber+mais+sobre+a+Plataforma+Novos+Talentos." target="_blank" rel="noopener">Falar com Mariana</a>
+        </div>
       </div>
     </section>
   </main>

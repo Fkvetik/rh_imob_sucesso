@@ -142,7 +142,39 @@
     .full-service-cta h2 { color: #fff; font-size: clamp(20px, 3vw, 28px); margin-bottom: 8px; }
     .full-service-cta p { color: rgba(255,255,255,.7); font-size: 15px; line-height: 1.6; margin: 0; }
     .full-service-cta .btn { white-space: nowrap; }
+
+    /* ── Planos ─────────────────────────────────── */
+    .planos-section { padding: 72px 0 80px; background: #faf9ff; border-top: 1px solid var(--line); }
+    .planos-head { text-align: center; margin-bottom: 44px; }
+    .planos-head h2 { font-size: clamp(20px, 3.2vw, 28px); color: var(--purple-950); max-width: 600px; margin: 12px auto; line-height: 1.35; }
+    .planos-head p { color: var(--muted); font-size: 15px; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+    .planos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 768px) { .planos-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; } }
+    .plano-card { background: #fff; border: 1.5px solid var(--line); border-radius: 20px; padding: 28px 24px; display: flex; flex-direction: column; position: relative; }
+    .plano-card--popular { border-color: var(--purple-600); box-shadow: 0 4px 28px rgba(124,58,237,.13); }
+    .plano-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--purple-600); color: #fff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; padding: 4px 14px; border-radius: 20px; white-space: nowrap; }
+    .plano-name { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--purple-600); }
+    .plano-price { display: flex; align-items: baseline; gap: 2px; margin: 8px 0 4px; }
+    .plano-price strong { font-size: 36px; font-weight: 900; color: var(--purple-950); letter-spacing: -.03em; }
+    .plano-price span { font-size: 13px; color: var(--muted); }
+    .plano-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0 0 18px; }
+    .plano-features { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+    .plano-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--body); line-height: 1.4; }
+    .plano-features li::before { content: '✓'; color: var(--purple-600); font-weight: 900; flex-shrink: 0; }
+    .plano-btn { display: block; width: 100%; text-align: center; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; text-decoration: none; transition: opacity .15s; box-sizing: border-box; }
+    .plano-btn--primary { background: var(--purple-600, #7c3aed); color: #fff; }
+    .plano-btn--outline { background: transparent; color: var(--purple-600, #7c3aed); border: 2px solid var(--purple-600, #7c3aed); }
+    .plano-btn:hover { opacity: .85; }
+    .planos-note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 24px; line-height: 1.7; }
   </style>
+  <!-- Microsoft Clarity -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xluiu45itd");
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -213,7 +245,7 @@
             </div>
             <div class="plat-card-cta">
               <a class="btn btn-cta btn-full" href="/corretores.html">Acessar Plataforma Corretores →</a>
-              <p class="plat-note">Acesso liberado via WhatsApp após diagnóstico inicial</p>
+              <p class="plat-note">Planos a partir de <strong>R$199/mês</strong> &bull; Sem fidelidade &bull; <a href="#planos" style="color:var(--purple-700,#6d28d9);font-weight:700">Ver planos →</a></p>
             </div>
           </div>
 
@@ -242,7 +274,7 @@
             </div>
             <div class="plat-card-cta">
               <a class="btn btn-cta btn-full" href="/novos-talentos.html">Acessar Plataforma Novos Talentos →</a>
-              <p class="plat-note">Acesso liberado via WhatsApp após diagnóstico inicial</p>
+              <p class="plat-note">Planos a partir de <strong>R$199/mês</strong> &bull; Sem fidelidade &bull; <a href="#planos" style="color:var(--purple-700,#6d28d9);font-weight:700">Ver planos →</a></p>
             </div>
           </div>
 
@@ -315,6 +347,66 @@
           <a class="btn btn-cta" href="/#proposta">Solicitar proposta completa →</a>
         </div>
 
+      </div>
+    </section>
+
+    <!-- PLANOS -->
+    <section class="planos-section" id="planos">
+      <div class="container">
+        <div class="planos-head">
+          <span class="section-kicker reveal">Planos de acesso</span>
+          <h2 class="reveal">O mesmo plano dá acesso a qualquer uma das plataformas</h2>
+          <p class="reveal">Escolha o plano, fale com a Mariana pelo WhatsApp e seu time começa a prospectar em até 1 dia útil. Relatórios, funil de abordagens e mensagens prontas em todos os planos.</p>
+        </div>
+
+        <div class="planos-grid">
+          <div class="plano-card reveal">
+            <span class="plano-name">Starter</span>
+            <div class="plano-price"><strong>R$&nbsp;199</strong><span>/mês</span></div>
+            <p class="plano-desc">500 contatos por mês. Ideal para operações que estão estruturando o processo de contratação com escala.</p>
+            <ul class="plano-features">
+              <li>500 liberações de contato/mês</li>
+              <li>Filtros por cidade, perfil e CRECI (ou bairro/metrô)</li>
+              <li>Funil de abordagens integrado</li>
+              <li>Relatórios de produção</li>
+              <li>Mensagens de abordagem prontas</li>
+            </ul>
+            <a class="plano-btn plano-btn--outline" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Starter+das+Plataformas+RH+IMOB+%28500+contatos%2Fm%C3%AAs+-+R%24199%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Starter →</a>
+          </div>
+
+          <div class="plano-card plano-card--popular reveal">
+            <span class="plano-badge">Mais escolhido</span>
+            <span class="plano-name">Pro</span>
+            <div class="plano-price"><strong>R$&nbsp;349</strong><span>/mês</span></div>
+            <p class="plano-desc">1.000 contatos por mês. Para imobiliárias e incorporadoras em expansão acelerada de equipe.</p>
+            <ul class="plano-features">
+              <li>1.000 liberações de contato/mês</li>
+              <li>Filtros por cidade, perfil e CRECI (ou bairro/metrô)</li>
+              <li>Funil de abordagens integrado</li>
+              <li>Relatórios detalhados por operador</li>
+              <li>Mensagens de abordagem prontas</li>
+              <li>Gestão de equipe de operadores</li>
+            </ul>
+            <a class="plano-btn plano-btn--primary" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Pro+das+Plataformas+RH+IMOB+%281.000+contatos%2Fm%C3%AAs+-+R%24349%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Pro →</a>
+          </div>
+
+          <div class="plano-card reveal">
+            <span class="plano-name">Ilimitado</span>
+            <div class="plano-price"><strong>R$&nbsp;999</strong><span>/mês</span></div>
+            <p class="plano-desc">Contatos ilimitados. Para operações com alta demanda e múltiplos operadores simultâneos.</p>
+            <ul class="plano-features">
+              <li>Contatos ilimitados/mês</li>
+              <li>Todos os filtros disponíveis</li>
+              <li>Funil completo por equipe</li>
+              <li>Relatórios avançados por operador e período</li>
+              <li>Mensagens personalizadas por plano</li>
+              <li>Múltiplos operadores sem limite</li>
+            </ul>
+            <a class="plano-btn plano-btn--outline" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Ilimitado+das+Plataformas+RH+IMOB+%28R%24999%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Ilimitado →</a>
+          </div>
+        </div>
+
+        <p class="planos-note reveal">Todos os planos são mensais sem fidelidade. Usuários adicionais: + o valor da assinatura mensal por usuário.<br>Login liberado em até 1 dia útil após confirmação. Prefere que a RH IMOB gerencie a operação? <a href="/#proposta" style="color:var(--purple-700,#6d28d9);font-weight:700">Solicite uma proposta completa →</a></p>
       </div>
     </section>
 

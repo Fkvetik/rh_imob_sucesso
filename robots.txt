@@ -1,5 +1,24 @@
 User-agent: *
 Allow: /
 
+# Bots de preview de links (WhatsApp, Facebook, Instagram)
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
 Sitemap: https://www.rhimob.com.br/sitemap.xml
 Sitemap: https://www.rhimob.com.br/api/sitemap-news

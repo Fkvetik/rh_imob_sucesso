@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Carrossel — 5 sinais | RH IMOB</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 40px 20px;
+  }
+
+  /* ── cada slide é 1080x1350 escalado para caber na tela ── */
+  .slide {
+    width: 1080px;
+    height: 1350px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    transform-origin: top left;
+  }
+
+  /* escala automática para telas menores */
+  @media (max-width: 1180px) {
+    .slide { transform: scale(0.55); margin-bottom: -610px; }
+  }
+
+  /* ── fundo base roxo ── */
+  .bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #1a0a2e 0%, #2b124d 55%, #1e0d38 100%);
+  }
+
+  /* ── ornamento geométrico de fundo ── */
+  .bg::before {
+    content: '';
+    position: absolute;
+    right: -120px; bottom: -120px;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,122,26,.18), transparent 70%);
+  }
+  .bg::after {
+    content: '';
+    position: absolute;
+    left: -80px; top: -80px;
+    width: 380px; height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(109,45,242,.22), transparent 70%);
+  }
+
+  /* ── skyline ── */
+  .skyline {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 260px;
+    opacity: .10;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1080 260' fill='%23ffffff'%3E%3Crect x='0' y='80' width='60' height='180'/%3E%3Crect x='70' y='40' width='40' height='220'/%3E%3Crect x='120' y='100' width='50' height='160'/%3E%3Crect x='180' y='20' width='70' height='240'/%3E%3Crect x='260' y='60' width='45' height='200'/%3E%3Crect x='315' y='90' width='35' height='170'/%3E%3Crect x='360' y='30' width='55' height='230'/%3E%3Crect x='425' y='70' width='40' height='190'/%3E%3Crect x='475' y='50' width='65' height='210'/%3E%3Crect x='550' y='10' width='80' height='250'/%3E%3Crect x='640' y='60' width='45' height='200'/%3E%3Crect x='695' y='40' width='55' height='220'/%3E%3Crect x='760' y='80' width='40' height='180'/%3E%3Crect x='810' y='20' width='70' height='240'/%3E%3Crect x='890' y='55' width='50' height='205'/%3E%3Crect x='950' y='90' width='40' height='170'/%3E%3Crect x='1000' y='35' width='80' height='225'/%3E%3C/svg%3E")
+      bottom center / cover no-repeat;
+  }
+
+  /* ── linha laranja lateral ── */
+  .accent-line {
+    position: absolute;
+    left: 56px; top: 120px; bottom: 120px;
+    width: 5px;
+    background: linear-gradient(to bottom, #ff7a1a, #ff8f3d55);
+    border-radius: 4px;
+  }
+
+  /* ── logo ── */
+  .logo {
+    position: absolute;
+    bottom: 52px; right: 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #ff7a1a, #ff8f3d);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: #fff;
+    letter-spacing: -.04em;
+  }
+  .logo-text { color: rgba(255,255,255,.7); font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+  /* ── conteúdo ── */
+  .content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 80px 80px 88px;
+    gap: 0;
+  }
+
+  .kicker {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #ff8f3d;
+    margin-bottom: 28px;
+  }
+
+  h1, h2 {
+    font-weight: 900;
+    line-height: .95;
+    letter-spacing: -.04em;
+    color: #fff;
+  }
+
+  /* ── slide 1 — capa ── */
+  .slide-capa h1 { font-size: 96px; }
+  .slide-capa .subtitle {
+    margin-top: 32px;
+    font-size: 28px;
+    font-weight: 700;
+    color: rgba(255,255,255,.65);
+    line-height: 1.4;
+    letter-spacing: -.01em;
+  }
+  .slide-capa .arrow {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #ff8f3d;
+    letter-spacing: .04em;
+  }
+  .slide-capa .arrow::after {
+    content: '→';
+    font-size: 28px;
+  }
+
+  /* ── slides de sinal ── */
+  .sinal-num {
+    font-size: 180px;
+    font-weight: 900;
+    letter-spacing: -.06em;
+    color: rgba(255,122,26,.18);
+    line-height: 1;
+    margin-bottom: -30px;
+  }
+  .sinal-titulo {
+    font-size: 64px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -.04em;
+    line-height: 1.0;
+    margin-bottom: 28px;
+  }
+  .sinal-desc {
+    font-size: 26px;
+    font-weight: 600;
+    color: rgba(255,255,255,.72);
+    line-height: 1.5;
+    letter-spacing: -.01em;
+  }
+  .sinal-badge {
+    margin-top: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,122,26,.15);
+    border: 1px solid rgba(255,122,26,.35);
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #ff8f3d;
+    letter-spacing: .04em;
+  }
+
+  /* ── slide fechamento ── */
+  .slide-cta .big {
+    font-size: 76px;
+    font-weight: 900;
+    color: #fff;
+    line-height: .95;
+    letter-spacing: -.04em;
+    margin-bottom: 32px;
+  }
+  .slide-cta .big em {
+    font-style: normal;
+    color: #ff7a1a;
+  }
+  .slide-cta .desc {
+    font-size: 26px;
+    font-weight: 600;
+    color: rgba(255,255,255,.70);
+    line-height: 1.5;
+    margin-bottom: 48px;
+  }
+  .btn-cta {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff7a1a, #ff8f3d);
+    color: #fff;
+    font-size: 24px;
+    font-weight: 900;
+    padding: 22px 48px;
+    border-radius: 999px;
+    letter-spacing: -.01em;
+    box-shadow: 0 18px 48px rgba(255,122,26,.40);
+  }
+
+  /* ── label de navegação ── */
+  .nav-dots {
+    position: absolute;
+    bottom: 52px; left: 88px;
+    display: flex; gap: 8px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+  }
+  .dot.active { background: #ff7a1a; width: 24px; border-radius: 4px; }
+
+  /* instrução de print */
+  .print-label {
+    color: #888;
+    font-family: monospace;
+    font-size: 13px;
+    margin-top: -16px;
+    align-self: flex-start;
+  }
+</style>
+</head>
+<body>
+
+<p style="color:#aaa;font-family:monospace;font-size:13px;padding:8px 16px;background:#1a1a1a;border-radius:8px;">
+  💡 Para exportar: pressione F11 (tela cheia), use a extensão <strong>GoFullPage</strong> ou <strong>FireShot</strong> para capturar cada slide. Ou Ctrl+Shift+P → "Capture full size screenshot" no DevTools.
+</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — CAPA -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 1 / 7 — CAPA</p>
+<div class="slide slide-capa">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">RH IMOB · Carreira imobiliária</span>
+    <h1>5 sinais<br>de que você<br>está na<br>imobiliária<br>errada</h1>
+    <p class="subtitle">Se você marcou 2 ou mais,<br>a gente precisa conversar.</p>
+    <div class="arrow">Arrasta para ver</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 2 — SINAL 1 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 2 / 7 — SINAL 1</p>
+<div class="slide">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">Sinal 1 de 5</span>
+    <div class="sinal-num">1</div>
+    <div class="sinal-titulo">Os leads<br>chegam frios<br>— ou não<br>chegam</div>
+    <p class="sinal-desc">Você prospecta tudo sozinho enquanto outros corretores da mesma imobiliária recebem indicação e carteira ativa.</p>
+    <div class="sinal-badge">⚠️ Sinal de alerta</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot"></div><div class="dot active"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 3 — SINAL 2 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 3 / 7 — SINAL 2</p>
+<div class="slide">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">Sinal 2 de 5</span>
+    <div class="sinal-num">2</div>
+    <div class="sinal-titulo">O produto<br>não tem<br>giro</div>
+    <p class="sinal-desc">Você prospecta, qualifica e leva o cliente — mas o produto não encanta. Você fecha menos do que deveria pelo seu esforço.</p>
+    <div class="sinal-badge">⚠️ Sinal de alerta</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot active"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 4 — SINAL 3 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 4 / 7 — SINAL 3</p>
+<div class="slide">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">Sinal 3 de 5</span>
+    <div class="sinal-num">3</div>
+    <div class="sinal-titulo">A comissão<br>é boa só<br>no papel</div>
+    <p class="sinal-desc">A tabela parece atrativa, mas no final das contas — descontos, splits e taxas — o que sobra não reflete o que você entregou.</p>
+    <div class="sinal-badge">⚠️ Sinal de alerta</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 5 — SINAL 4 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 5 / 7 — SINAL 4</p>
+<div class="slide">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">Sinal 4 de 5</span>
+    <div class="sinal-num">4</div>
+    <div class="sinal-titulo">Sem<br>treinamento,<br>sem suporte</div>
+    <p class="sinal-desc">Você foi contratado, recebeu o material e ficou por conta. Sem gestor presente, sem capacitação, sem feedback real sobre sua evolução.</p>
+    <div class="sinal-badge">⚠️ Sinal de alerta</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 6 — SINAL 5 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 6 / 7 — SINAL 5</p>
+<div class="slide">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">Sinal 5 de 5</span>
+    <div class="sinal-num">5</div>
+    <div class="sinal-titulo">Você se<br>sente sozinho<br>dentro da<br>empresa</div>
+    <p class="sinal-desc">Não tem equipe, não tem cultura, não tem pertencimento. Cada um por si. Isso drena energia e acaba com a motivação de qualquer profissional.</p>
+    <div class="sinal-badge">⚠️ Sinal de alerta</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot active"></div><div class="dot"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 7 — CTA FECHAMENTO -->
+<!-- ═══════════════════════════════════════════════════ -->
+<p class="print-label">▼ SLIDE 7 / 7 — FECHAMENTO</p>
+<div class="slide slide-cta">
+  <div class="bg"></div>
+  <div class="skyline"></div>
+  <div class="accent-line"></div>
+  <div class="content">
+    <span class="kicker">RH IMOB · Gratuito e confidencial</span>
+    <div class="big">Você merece<br>estar no<br><em>lugar certo.</em></div>
+    <p class="desc">A RH IMOB conecta corretores com imobiliárias que têm produto, leads e comissão que fazem sentido. Sem custo. Sem burocracia.</p>
+    <div class="btn-cta">Falar com a Mariana agora</div>
+  </div>
+  <div class="nav-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div>
+  </div>
+  <div class="logo"><div class="logo-icon">RH</div><span class="logo-text">rhimob.com.br</span></div>
+</div>
+
+</body>
+</html>

@@ -17,8 +17,12 @@
       "destination": "/favicon.ico"
     },
     {
+      "source": "/noticias/categoria/:cat",
+      "destination": "/noticias/categoria"
+    },
+    {
       "source": "/noticias/:slug",
-      "destination": "/noticias-artigo?slug=:slug"
+      "destination": "/api/artigo?slug=:slug"
     }
   ],
   "headers": [

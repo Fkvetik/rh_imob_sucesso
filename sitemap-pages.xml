@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Notícias -->
+  <url><loc>https://www.rhimob.com.br/noticias</loc><lastmod>2026-07-06</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+
+  <url><loc>https://www.rhimob.com.br/</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.rhimob.com.br/carreira</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.rhimob.com.br/plataformas</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+
+  <!-- Páginas de cidade — São Paulo -->
+  <url><loc>https://www.rhimob.com.br/corretor-sao-paulo</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-campinas</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-guarulhos</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-santo-andre</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-sao-bernardo-do-campo</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-osasco</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-barueri</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-ribeirao-preto</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-sorocaba</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-sao-jose-dos-campos</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-jundiai</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-santos</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-taubate</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-piracicaba</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-sao-jose-rio-preto</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-bauru</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-franca</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-sao-carlos</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-mogi-das-cruzes</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+
+  <!-- Páginas de cidade — Outras capitais e grandes cidades -->
+  <url><loc>https://www.rhimob.com.br/corretor-rio-de-janeiro</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-belo-horizonte</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-curitiba</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-porto-alegre</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-florianopolis</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.82</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-goiania</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.82</priority></url>
+  <url><loc>https://www.rhimob.com.br/corretor-brasilia</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+
+  <!-- Blog -->
+  <url><loc>https://www.rhimob.com.br/blog</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/como-contratar-corretor-imoveis</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/quanto-custa-recrutamento-imobiliario</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/equipe-lancamento-imobiliario</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/creci-o-que-e-como-verificar</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/corretor-autonomo-vs-clt</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/como-montar-equipe-corretores</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://www.rhimob.com.br/salario-corretor-imoveis</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://www.rhimob.com.br/contrato-corretor-autonomo</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+
+  <!-- Plataformas e outros -->
+  <url><loc>https://www.rhimob.com.br/corretores.html</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.rhimob.com.br/novos-talentos.html</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.rhimob.com.br/politica.html</loc><lastmod>2026-06-01</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>

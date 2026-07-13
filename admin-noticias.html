@@ -78,6 +78,36 @@
     .html-tips{background:#f3f0ff;border-radius:10px;padding:12px 16px;margin-top:8px;font-size:12px;color:#5a4e8c;line-height:1.7}
     .html-tips code{background:#e8e4f2;padding:1px 5px;border-radius:4px;font-size:11px}
     .char-count{font-size:12px;color:#888;text-align:right;margin-top:4px}
+    /* EDITOR TOOLBAR */
+    .editor-toolbar{display:flex;gap:5px;flex-wrap:wrap;padding:8px 10px;background:#f3f0ff;border-radius:10px 10px 0 0;border:1.5px solid #e0dce8;border-bottom:none}
+    .editor-toolbar button{padding:4px 10px;border-radius:6px;border:1.5px solid #d0c8e8;background:#fff;font-size:11px;font-weight:700;color:#2b124d;cursor:pointer;transition:background .15s;font-family:monospace}
+    .editor-toolbar button:hover{background:#e8e4f2}
+    .editor-toolbar .sep{width:1px;background:#e0dce8;margin:0 2px;flex-shrink:0}
+    /* LINK PANEL */
+    .links-panel{border:1.5px solid #e0dce8;border-top:none;overflow:hidden;margin-bottom:0}
+    .links-panel-header{padding:8px 14px;background:#faf9ff;cursor:pointer;font-size:12px;font-weight:700;color:#7c3aed;display:flex;align-items:center;justify-content:space-between;user-select:none;border-top:1px dashed #e0dce8}
+    .links-panel-header:hover{background:#f3f0ff}
+    .links-panel-body{padding:12px 14px;display:none;background:#fefeff}
+    .links-panel-body.open{display:block}
+    .link-group{margin-bottom:10px}
+    .link-group:last-child{margin-bottom:0}
+    .link-group-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#aaa;margin-bottom:6px}
+    .link-btns{display:flex;flex-wrap:wrap;gap:5px}
+    .link-btn-wrap{display:inline-flex;align-items:center;gap:0}
+    .link-btn{padding:4px 11px;border-radius:20px 0 0 20px;border:1.5px solid #e0dce8;border-right:none;background:#fff;font-size:12px;font-weight:600;color:#7c3aed;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .link-btn:hover{background:#7c3aed;color:#fff;border-color:#7c3aed}
+    .link-btn-solo{border-radius:20px;border-right:1.5px solid #e0dce8}
+    .link-btn-solo:hover{border-right-color:#7c3aed}
+    .link-btn-del{padding:3px 7px;border-radius:0 20px 20px 0;border:1.5px solid #e0dce8;background:#fff;font-size:11px;color:#ccc;cursor:pointer;transition:all .15s;line-height:1}
+    .link-btn-del:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+    .link-add-form{margin-top:14px;padding-top:12px;border-top:1px dashed #e0dce8;display:grid;grid-template-columns:1fr 1fr auto auto;gap:6px;align-items:end}
+    @media(max-width:700px){.link-add-form{grid-template-columns:1fr 1fr}}
+    .link-add-form input,.link-add-form select{padding:7px 10px;border:1.5px solid #e0dce8;border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:#fff}
+    .link-add-form input:focus,.link-add-form select:focus{border-color:#7c3aed}
+    .link-add-form label{font-size:10px;font-weight:700;color:#aaa;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+    .btn-add-link{padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .btn-add-link:hover{opacity:.88}
+    #f-corpo{border-radius:0;border-top:none}
   </style>
 </head>
 <body>
@@ -145,6 +175,10 @@
             <input type="datetime-local" id="f-data" />
           </div>
         </div>
+        <div class="f-group" style="display:flex;align-items:center;gap:10px;background:#f3f0ff;border-radius:10px;padding:12px 16px">
+          <input type="checkbox" id="f-destaque" style="width:18px;height:18px;cursor:pointer;accent-color:#2b124d;flex-shrink:0" />
+          <label for="f-destaque" style="cursor:pointer;font-size:14px;font-weight:700;color:#2b124d;margin:0">⭐ Manchete (hero destaque na listagem)</label>
+        </div>
 
         <div class="f-group">
           <label for="f-resumo">Resumo (aparecer nos cards) *</label>
@@ -154,11 +188,12 @@
 
         <div class="f-group">
           <label>Imagem de capa</label>
-          <div id="img-upload-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:border .18s;position:relative" onclick="document.getElementById('f-imagem-file').click()" ondragover="event.preventDefault();this.style.borderColor='#2b124d'" ondragleave="this.style.borderColor='#e0dce8'" ondrop="handleImgDrop(event)">
-            <div id="img-preview-wrap" style="display:none;margin-bottom:12px">
-              <img id="img-preview" src="" alt="" style="max-height:140px;max-width:100%;border-radius:8px;object-fit:cover" />
+          <div id="img-upload-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:border .18s;position:relative" ondragover="event.preventDefault();this.style.borderColor='#2b124d'" ondragleave="this.style.borderColor='#e0dce8'" ondrop="handleImgDrop(event)">
+            <div id="img-preview-wrap" style="display:none;margin-bottom:12px;position:relative">
+              <img id="img-preview" src="" alt="" style="max-height:140px;max-width:100%;border-radius:8px;object-fit:cover;display:block;margin:0 auto" />
+              <button type="button" onclick="document.getElementById('f-imagem-file').click()" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔄 Trocar foto</button>
             </div>
-            <div id="img-placeholder">
+            <div id="img-placeholder" onclick="document.getElementById('f-imagem-file').click()">
               <div style="font-size:28px;margin-bottom:6px">🖼</div>
               <p style="font-size:13px;font-weight:700;color:#2b124d;margin:0">Clique ou arraste uma imagem</p>
               <p style="font-size:12px;color:#aaa;margin:4px 0 0">JPG, PNG, WebP · até 5 MB</p>
@@ -174,17 +209,66 @@
 
         <div class="f-group">
           <label for="f-corpo">Corpo do artigo (HTML) *</label>
+
+          <!-- BARRA DE FORMATAÇÃO -->
+          <div class="editor-toolbar">
+            <button type="button" title="Parágrafo" onclick="wrapTag('<p>','</p>')">¶ p</button>
+            <button type="button" title="Subtítulo H2" onclick="wrapTag('<h2>','</h2>')">H2</button>
+            <button type="button" title="Tópico H3" onclick="wrapTag('<h3>','</h3>')">H3</button>
+            <button type="button" title="Negrito" onclick="wrapTag('<strong>','</strong>')"><b>B</b></button>
+            <button type="button" title="Lista" onclick="wrapTag('<ul>\n  <li>','</li>\n</ul>')">• ul</button>
+            <button type="button" title="Destaque roxo" onclick="wrapTag('<div class=&quot;article-callout&quot;><p>','</p></div>')">◈ destaque</button>
+            <div class="sep"></div>
+            <button type="button" title="Selecione o texto e clique num link abaixo" style="color:#7c3aed;border-color:#7c3aed" onclick="toggleLinkPanel()">🔗 Links internos ▾</button>
+          </div>
+
+          <!-- PAINEL DE LINKS INTERNOS -->
+          <div class="links-panel" id="links-panel">
+            <div class="links-panel-header" onclick="toggleLinkPanel()">
+              <span>🔗 Selecione o texto no corpo → clique no link para inserir</span>
+              <span id="links-panel-arrow">▸</span>
+            </div>
+            <div class="links-panel-body" id="links-panel-body">
+              <div id="links-panel-groups"></div>
+
+              <!-- FORMULÁRIO ADICIONAR LINK -->
+              <div class="link-add-form">
+                <div>
+                  <label>Nome do link</label>
+                  <input type="text" id="new-link-label" placeholder="ex.: Fortaleza" />
+                </div>
+                <div>
+                  <label>Caminho</label>
+                  <input type="text" id="new-link-href" placeholder="/corretor-fortaleza" />
+                </div>
+                <div>
+                  <label>Grupo</label>
+                  <select id="new-link-group">
+                    <option>Serviços</option>
+                    <option>Blog</option>
+                    <option>Cidades — São Paulo</option>
+                    <option>Outras capitais e cidades</option>
+                    <option>Outro</option>
+                  </select>
+                </div>
+                <button class="btn-add-link" onclick="addCustomLink()">+ Adicionar</button>
+              </div>
+            </div>
+          </div>
+
           <textarea id="f-corpo" rows="18" placeholder="<p>Parágrafo...</p>&#10;<h2>Subtítulo</h2>&#10;<p>Mais texto...</p>&#10;<ul><li>Item</li></ul>"></textarea>
           <div class="html-tips">
-            <strong>HTML aceito:</strong>
-            <code>&lt;p&gt;</code> parágrafos ·
-            <code>&lt;h2&gt;</code> subtítulos ·
-            <code>&lt;h3&gt;</code> tópicos ·
-            <code>&lt;ul&gt;&lt;li&gt;</code> listas ·
-            <code>&lt;strong&gt;</code> negrito ·
-            <code>&lt;a href="..."&gt;</code> links ·
-            <code>&lt;div class="article-callout"&gt;&lt;p&gt;...&lt;/p&gt;&lt;/div&gt;</code> destaque roxo
+            <strong>Dica:</strong> selecione um trecho do texto acima → clique no link desejado no painel para inserir automaticamente.
           </div>
+        </div>
+
+        <div class="f-group" style="margin-top:8px">
+          <label style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span>FAQ — Perguntas frequentes <small style="color:#aaa;font-weight:400">(melhora SEO · sem limite de itens)</small></span>
+            <button type="button" onclick="addFaqItem()" style="padding:6px 16px;border:1.5px solid #7c3aed;border-radius:8px;background:#7c3aed;color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Adicionar pergunta</button>
+          </label>
+          <div id="faq-list" style="display:flex;flex-direction:column;gap:12px"></div>
+          <p style="font-size:11px;color:#bbb;margin:10px 0 0">Cada par pergunta+resposta vira um item no acordeão do artigo e no FAQPage do Google. A resposta aceita HTML: <code style="background:#f3f0ff;padding:1px 4px;border-radius:3px;font-size:10px">&lt;strong&gt;</code> <code style="background:#f3f0ff;padding:1px 4px;border-radius:3px;font-size:10px">&lt;a href="..."&gt;</code> <code style="background:#f3f0ff;padding:1px 4px;border-radius:3px;font-size:10px">&lt;br&gt;</code></p>
         </div>
 
         <div class="btn-row">
@@ -197,14 +281,25 @@
       </div>
     </div>
 
-    <!-- COLUNA DIREITA: LISTA -->
-    <div>
+    <!-- COLUNA DIREITA: LISTA + COMENTÁRIOS -->
+    <div style="display:flex;flex-direction:column;gap:20px">
       <div class="admin-card">
         <div style="display:flex;align-items:center;margin-bottom:16px">
           <h2 style="margin:0;flex:1">Notícias <span id="list-count" style="font-size:13px;color:#888;font-weight:600"></span></h2>
           <input type="text" id="list-search" placeholder="Buscar..." style="width:140px;padding:8px 12px;font-size:13px" oninput="filterList()" />
         </div>
         <div class="news-list" id="news-list">
+          <div class="no-items">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- MODERAÇÃO DE COMENTÁRIOS -->
+      <div class="admin-card">
+        <div style="display:flex;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0;flex:1">Comentários pendentes <span id="comments-pending-count" style="font-size:13px;color:#888;font-weight:600"></span></h2>
+          <button onclick="loadPendingComments()" style="padding:6px 12px;border-radius:8px;border:1.5px solid #e0dce8;background:#fff;font-size:12px;font-weight:700;color:#2b124d;cursor:pointer">↺ Atualizar</button>
+        </div>
+        <div id="comments-pending-list">
           <div class="no-items">Carregando...</div>
         </div>
       </div>
@@ -248,6 +343,7 @@
     document.getElementById('admin-wrap').style.display = 'block';
     setDefaultDate();
     loadList();
+    loadPendingComments();
   }
 
   if (checkAuth()) showAdmin();
@@ -269,6 +365,142 @@
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('f-data').value = now.toISOString().slice(0, 16);
+  }
+
+  // ── EDITOR: LINKS E FORMATAÇÃO ───────────────────
+  const DEFAULT_LINKS = [
+    { group: 'Serviços', label: 'salário corretor', href: '/salario-corretor-imoveis' },
+    { group: 'Serviços', label: 'contrato autônomo', href: '/contrato-corretor-autonomo' },
+    { group: 'Serviços', label: 'contratar corretores', href: '/contratar' },
+    { group: 'Serviços', label: 'plataformas RH IMOB', href: '/plataformas' },
+    { group: 'Serviços', label: 'vagas corretores', href: '/vagas' },
+    { group: 'Serviços', label: 'carreira corretor', href: '/carreira' },
+    { group: 'Blog', label: 'como contratar corretor', href: '/blog/como-contratar-corretor-imoveis' },
+    { group: 'Blog', label: 'montar equipe de corretores', href: '/blog/como-montar-equipe-corretores' },
+    { group: 'Blog', label: 'corretor autônomo vs CLT', href: '/blog/corretor-autonomo-vs-clt' },
+    { group: 'Blog', label: 'CRECI', href: '/blog/creci-o-que-e-como-verificar' },
+    { group: 'Blog', label: 'equipe de lançamento', href: '/blog/equipe-lancamento-imobiliario' },
+    { group: 'Blog', label: 'custo do recrutamento', href: '/blog/quanto-custa-recrutamento-imobiliario' },
+    { group: 'Cidades — São Paulo', label: 'São Paulo', href: '/corretor-sao-paulo' },
+    { group: 'Cidades — São Paulo', label: 'Campinas', href: '/corretor-campinas' },
+    { group: 'Cidades — São Paulo', label: 'Guarulhos', href: '/corretor-guarulhos' },
+    { group: 'Cidades — São Paulo', label: 'Santo André', href: '/corretor-santo-andre' },
+    { group: 'Cidades — São Paulo', label: 'São Bernardo', href: '/corretor-sao-bernardo-do-campo' },
+    { group: 'Cidades — São Paulo', label: 'Osasco', href: '/corretor-osasco' },
+    { group: 'Cidades — São Paulo', label: 'Barueri / Alphaville', href: '/corretor-barueri' },
+    { group: 'Cidades — São Paulo', label: 'Ribeirão Preto', href: '/corretor-ribeirao-preto' },
+    { group: 'Cidades — São Paulo', label: 'Sorocaba', href: '/corretor-sorocaba' },
+    { group: 'Cidades — São Paulo', label: 'São José dos Campos', href: '/corretor-sao-jose-dos-campos' },
+    { group: 'Cidades — São Paulo', label: 'Jundiaí', href: '/corretor-jundiai' },
+    { group: 'Cidades — São Paulo', label: 'Santos', href: '/corretor-santos' },
+    { group: 'Cidades — São Paulo', label: 'Taubaté', href: '/corretor-taubate' },
+    { group: 'Cidades — São Paulo', label: 'Piracicaba', href: '/corretor-piracicaba' },
+    { group: 'Cidades — São Paulo', label: 'São José do Rio Preto', href: '/corretor-sao-jose-rio-preto' },
+    { group: 'Cidades — São Paulo', label: 'Bauru', href: '/corretor-bauru' },
+    { group: 'Cidades — São Paulo', label: 'Franca', href: '/corretor-franca' },
+    { group: 'Cidades — São Paulo', label: 'São Carlos', href: '/corretor-sao-carlos' },
+    { group: 'Cidades — São Paulo', label: 'Mogi das Cruzes', href: '/corretor-mogi-das-cruzes' },
+    { group: 'Outras capitais e cidades', label: 'Rio de Janeiro', href: '/corretor-rio-de-janeiro' },
+    { group: 'Outras capitais e cidades', label: 'Belo Horizonte', href: '/corretor-belo-horizonte' },
+    { group: 'Outras capitais e cidades', label: 'Curitiba', href: '/corretor-curitiba' },
+    { group: 'Outras capitais e cidades', label: 'Porto Alegre', href: '/corretor-porto-alegre' },
+    { group: 'Outras capitais e cidades', label: 'Florianópolis', href: '/corretor-florianopolis' },
+    { group: 'Outras capitais e cidades', label: 'Goiânia', href: '/corretor-goiania' },
+    { group: 'Outras capitais e cidades', label: 'Brasília', href: '/corretor-brasilia' },
+  ];
+
+  function getCustomLinks() {
+    try { return JSON.parse(localStorage.getItem('rh_links') || '[]'); } catch(e) { return []; }
+  }
+
+  function saveCustomLinks(arr) {
+    localStorage.setItem('rh_links', JSON.stringify(arr));
+  }
+
+  function renderLinkPanel() {
+    const all = [...DEFAULT_LINKS, ...getCustomLinks()];
+    const groups = [...new Set(all.map(l => l.group))];
+    const container = document.getElementById('links-panel-groups');
+    container.innerHTML = groups.map(g => {
+      const items = all.filter(l => l.group === g);
+      const btns = items.map(l => {
+        const isCustom = !DEFAULT_LINKS.some(d => d.href === l.href);
+        const hrefEsc = l.href.replace(/'/g, "\\'");
+        if (isCustom) {
+          return `<span class="link-btn-wrap">
+            <button class="link-btn" onclick="insertLink('${hrefEsc}')">${l.label}</button>
+            <button class="link-btn-del" onclick="removeCustomLink('${hrefEsc}')" title="Remover">×</button>
+          </span>`;
+        }
+        return `<button class="link-btn link-btn-solo" onclick="insertLink('${hrefEsc}')">${l.label}</button>`;
+      }).join('');
+      return `<div class="link-group">
+        <div class="link-group-label">${g}</div>
+        <div class="link-btns">${btns}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function addCustomLink() {
+    const label = document.getElementById('new-link-label').value.trim();
+    const href  = document.getElementById('new-link-href').value.trim();
+    const group = document.getElementById('new-link-group').value;
+    if (!label || !href) { showToast('Preencha nome e caminho', false); return; }
+    if (!href.startsWith('/')) { showToast('Caminho deve começar com /', false); return; }
+    const custom = getCustomLinks();
+    if ([...DEFAULT_LINKS, ...custom].some(l => l.href === href)) {
+      showToast('Este caminho já existe no painel', false); return;
+    }
+    custom.push({ group, label, href });
+    saveCustomLinks(custom);
+    document.getElementById('new-link-label').value = '';
+    document.getElementById('new-link-href').value = '';
+    renderLinkPanel();
+    showToast(`"${label}" adicionado ✓`);
+  }
+
+  function removeCustomLink(href) {
+    const custom = getCustomLinks().filter(l => l.href !== href);
+    saveCustomLinks(custom);
+    renderLinkPanel();
+  }
+
+  function insertLink(href) {
+    const ta = document.getElementById('f-corpo');
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const sel   = ta.value.substring(start, end);
+    if (!sel) {
+      showToast('Selecione o texto no corpo antes de clicar no link', false);
+      ta.focus();
+      return;
+    }
+    const html = `<a href="${href}">${sel}</a>`;
+    ta.value = ta.value.substring(0, start) + html + ta.value.substring(end);
+    ta.selectionStart = start;
+    ta.selectionEnd   = start + html.length;
+    ta.focus();
+    showToast('Link inserido ✓');
+  }
+
+  function wrapTag(open, close) {
+    const ta    = document.getElementById('f-corpo');
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const sel   = ta.value.substring(start, end);
+    const html  = open + sel + close;
+    ta.value = ta.value.substring(0, start) + html + ta.value.substring(end);
+    ta.selectionStart = sel ? start : start + open.length;
+    ta.selectionEnd   = sel ? start + html.length : start + open.length;
+    ta.focus();
+  }
+
+  function toggleLinkPanel() {
+    const body  = document.getElementById('links-panel-body');
+    const arrow = document.getElementById('links-panel-arrow');
+    const open  = body.classList.toggle('open');
+    arrow.textContent = open ? '▾' : '▸';
+    if (open) renderLinkPanel();
   }
 
   function slugify(v) {
@@ -330,7 +562,8 @@
     uploading.style.display = 'block';
     area.style.pointerEvents = 'none';
     try {
-      const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+      let ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+      if (ext === 'jfif' || ext === 'jpe') ext = 'jpg';
       const nome = `${Date.now()}.${ext}`;
       const caminho = `noticias/${nome}`;
       const res = await fetch(`${SB_URL}/storage/v1/object/${caminho}`, {
@@ -418,7 +651,9 @@
       document.getElementById('f-imagem').value = n.imagem_url || '';
       showPreview(n.imagem_url || '');
       document.getElementById('f-imagem-file').value = '';
+      document.getElementById('f-destaque').checked = !!n.destaque;
       document.getElementById('f-corpo').value = n.corpo;
+      loadFaq(n.faq);
       document.getElementById('btn-preview').href = `/noticias/${n.slug}`;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch(e) { showToast('Erro ao carregar artigo.', false); }
@@ -436,13 +671,60 @@
     document.getElementById('f-imagem').value = '';
     document.getElementById('f-imagem-file').value = '';
     showPreview('');
+    document.getElementById('f-destaque').checked = false;
     document.getElementById('f-corpo').value = '';
+    document.getElementById('faq-list').innerHTML = '';
     document.getElementById('titulo-count').textContent = '0';
     document.getElementById('resumo-count').textContent = '0';
     document.getElementById('btn-preview').href = '#';
     setDefaultDate();
     document.querySelectorAll('.news-list-item').forEach(el => el.classList.remove('active'));
     document.getElementById('f-titulo').focus();
+  }
+
+  // ── FAQ ──────────────────────────────────────────
+  function addFaqItem(pergunta = '', resposta = '') {
+    const list = document.getElementById('faq-list');
+    const n = list.children.length + 1;
+    const div = document.createElement('div');
+    div.style.cssText = 'border:1.5px solid #e0dce8;border-radius:12px;padding:14px 14px 12px;position:relative;background:#fafafe';
+    div.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<span style="font-size:11px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em">Pergunta ' + n + '</span>' +
+        '<button type="button" onclick="this.closest(\'[data-faq]\').remove();renumberFaq()" style="background:none;border:none;color:#c0b8d4;font-size:18px;cursor:pointer;line-height:1;padding:0 4px" title="Remover">×</button>' +
+      '</div>' +
+      '<div class="f-group" style="margin-bottom:10px">' +
+        '<label style="font-size:12px">Pergunta *</label>' +
+        '<input type="text" class="faq-p" placeholder="Ex.: O que aconteceu exatamente?" style="width:100%;box-sizing:border-box" />' +
+      '</div>' +
+      '<div class="f-group" style="margin-bottom:0">' +
+        '<label style="font-size:12px">Resposta * <small style="color:#bbb;font-weight:400">(aceita HTML: &lt;strong&gt; &lt;a href=""&gt; &lt;br&gt;)</small></label>' +
+        '<textarea class="faq-r" rows="4" placeholder="Descreva o fato em 1-2 frases. Pode usar &lt;strong&gt;negrito&lt;/strong&gt; e &lt;a href=&quot;/pagina&quot;&gt;links&lt;/a&gt;." style="width:100%;box-sizing:border-box;resize:vertical;font-size:13px"></textarea>' +
+      '</div>';
+    div.setAttribute('data-faq', '');
+    div.querySelector('.faq-p').value = pergunta;
+    div.querySelector('.faq-r').value = resposta;
+    list.appendChild(div);
+    div.querySelector('.faq-p').focus();
+  }
+
+  function renumberFaq() {
+    document.querySelectorAll('#faq-list [data-faq]').forEach((div, i) => {
+      const label = div.querySelector('span');
+      if (label) label.textContent = 'Pergunta ' + (i + 1);
+    });
+  }
+
+  function getFaqData() {
+    return Array.from(document.querySelectorAll('#faq-list > div')).map(el => ({
+      pergunta: el.querySelector('.faq-p').value.trim(),
+      resposta: el.querySelector('.faq-r').value.trim()
+    })).filter(f => f.pergunta && f.resposta);
+  }
+
+  function loadFaq(items) {
+    document.getElementById('faq-list').innerHTML = '';
+    (Array.isArray(items) ? items : []).forEach(f => addFaqItem(f.pergunta || '', f.resposta || ''));
   }
 
   // ── SAVE ─────────────────────────────────────────
@@ -458,9 +740,11 @@
     btn.disabled = true;
     const payload = {
       titulo, slug, resumo, corpo,
+      faq: getFaqData(),
       imagem_url: document.getElementById('f-imagem').value.trim(),
       categoria: document.getElementById('f-categoria').value,
       publicado_em: new Date(document.getElementById('f-data').value).toISOString(),
+      destaque: document.getElementById('f-destaque').checked,
       ativo: publish
     };
     try {
@@ -515,6 +799,70 @@
       if (editingId === id) newArticle();
       await loadList();
     } catch(e) { showToast('Erro ao excluir.', false); }
+  }
+
+  // ── COMENTÁRIOS ──────────────────────────────────
+  async function loadPendingComments() {
+    const el = document.getElementById('comments-pending-list');
+    const cnt = document.getElementById('comments-pending-count');
+    el.innerHTML = '<div class="no-items">Carregando...</div>';
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/comentarios?aprovado=eq.false&order=criado_em.asc`, {
+        headers: sbHeaders()
+      });
+      const data = await res.json();
+      cnt.textContent = data.length ? `(${data.length})` : '';
+      if (!data.length) {
+        el.innerHTML = '<div class="no-items">Nenhum comentário pendente. ✅</div>';
+        return;
+      }
+      el.innerHTML = data.map(c => `
+        <div id="cmt-${c.id}" style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:#2b124d;margin-bottom:2px">${escAdmin(c.nome)}
+            ${c.email ? `<span style="font-weight:400;color:#888;font-size:12px">· ${escAdmin(c.email)}</span>` : ''}
+          </div>
+          <div style="font-size:11px;color:#aaa;margin-bottom:8px">
+            <a href="/noticias/${c.noticia_slug}" target="_blank" style="color:#2b124d;font-weight:700">/noticias/${c.noticia_slug}</a>
+            · ${new Date(c.criado_em).toLocaleString('pt-BR')}
+          </div>
+          <p style="font-size:13px;color:#333;line-height:1.55;margin:0 0 12px">${escAdmin(c.texto)}</p>
+          <div style="display:flex;gap:8px">
+            <button class="item-btn btn-toggle-pub" onclick="approveComment('${c.id}')">✅ Aprovar</button>
+            <button class="item-btn btn-del" onclick="deleteComment('${c.id}')">🗑 Recusar</button>
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="no-items">Erro ao carregar comentários.</div>';
+    }
+  }
+
+  async function approveComment(id) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/comentarios?id=eq.${id}`, {
+        method: 'PATCH', headers: sbHeaders(), body: JSON.stringify({ aprovado: true })
+      });
+      document.getElementById('cmt-' + id)?.remove();
+      const remaining = document.querySelectorAll('[id^="cmt-"]').length;
+      if (!remaining) document.getElementById('comments-pending-list').innerHTML = '<div class="no-items">Nenhum comentário pendente. ✅</div>';
+      document.getElementById('comments-pending-count').textContent = remaining ? `(${remaining})` : '';
+      showToast('✅ Comentário aprovado!');
+    } catch(e) { showToast('Erro ao aprovar.', false); }
+  }
+
+  async function deleteComment(id) {
+    if (!confirm('Recusar e excluir este comentário?')) return;
+    try {
+      await fetch(`${SB_URL}/rest/v1/comentarios?id=eq.${id}`, { method: 'DELETE', headers: sbHeaders() });
+      document.getElementById('cmt-' + id)?.remove();
+      const remaining = document.querySelectorAll('[id^="cmt-"]').length;
+      if (!remaining) document.getElementById('comments-pending-list').innerHTML = '<div class="no-items">Nenhum comentário pendente. ✅</div>';
+      document.getElementById('comments-pending-count').textContent = remaining ? `(${remaining})` : '';
+      showToast('🗑 Comentário excluído.');
+    } catch(e) { showToast('Erro ao excluir comentário.', false); }
+  }
+
+  function escAdmin(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
 </body>

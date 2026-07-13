@@ -56,6 +56,44 @@
   </script>
 
   <link rel="stylesheet" href="corretores.css?v=20260506operacional" />
+  <style>
+  /* Plans section */
+  .plans-section{padding:72px 0 80px;background:#faf9ff;border-top:1px solid #ede8f8}
+  .plans-head{text-align:center;margin-bottom:44px}
+  .plans-head h2{font-size:clamp(20px,3.2vw,28px);color:#2b124d;max-width:600px;margin:12px auto;line-height:1.35}
+  .plans-head p{color:#6b5e7e;font-size:15px;max-width:520px;margin:0 auto;line-height:1.6}
+  .plans-how{display:flex;justify-content:center;gap:36px;margin-bottom:40px;flex-wrap:wrap}
+  .plans-how__step{display:flex;align-items:flex-start;gap:10px;max-width:172px}
+  .plans-how__num{width:30px;height:30px;border-radius:50%;background:#7c3aed;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .plans-how__text strong{display:block;font-size:13px;font-weight:800;color:#2b124d;margin-bottom:2px}
+  .plans-how__text span{font-size:12px;color:#6b5e7e;line-height:1.4}
+  .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:768px){.plans-grid{grid-template-columns:1fr;max-width:380px;margin:0 auto}}
+  .plan-card{background:#fff;border:1.5px solid #e8e0f4;border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;position:relative}
+  .plan-card--popular{border-color:#7c3aed;box-shadow:0 4px 28px rgba(124,58,237,.13)}
+  .plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:4px 14px;border-radius:20px;white-space:nowrap}
+  .plan-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed}
+  .plan-price{display:flex;align-items:baseline;gap:2px;margin:8px 0 4px}
+  .plan-price strong{font-size:36px;font-weight:900;color:#2b124d;letter-spacing:-.03em}
+  .plan-price span{font-size:13px;color:#6b5e7e}
+  .plan-desc{font-size:13px;color:#6b5e7e;line-height:1.6;margin:0 0 18px}
+  .plan-features{list-style:none;padding:0;margin:0 0 24px;display:flex;flex-direction:column;gap:9px;flex:1}
+  .plan-features li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#1a0533;line-height:1.4}
+  .plan-features li::before{content:'✓';color:#7c3aed;font-weight:900;flex-shrink:0}
+  .plan-btn{display:block;width:100%;text-align:center;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .15s;box-sizing:border-box}
+  .plan-btn--primary{background:#7c3aed;color:#fff}
+  .plan-btn--outline{background:transparent;color:#7c3aed;border:2px solid #7c3aed}
+  .plan-btn:hover{opacity:.85}
+  .plans-note{text-align:center;font-size:12px;color:#9e90b0;margin-top:24px;line-height:1.7}
+  </style>
+  <!-- Microsoft Clarity -->
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xluiu45itd");
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -84,12 +122,12 @@
     <section class="hero">
       <div class="container hero__grid">
         <div>
-          <span class="kicker">Plataforma RH IMOB</span>
-          <h1>Corretores ativos por cidade, ano de CRECI e sinais de contato.</h1>
-          <p>Conheça uma prévia protegida da inteligência RH IMOB. Com acesso contratado, sua equipe libera contatos completos, controla o saldo do plano e aborda profissionais com mensagens prontas.</p>
+          <span class="kicker">Para gestores e CEOs de imobiliárias</span>
+          <h1>Banco de 52 mil corretores com CRECI ativo — filtre, aborde e contrate com controle total.</h1>
+          <p>Plataforma de recrutamento imobiliário usada por imobiliárias e incorporadoras. Filtros por cidade, CRECI e perfil comercial. Funil de abordagens, relatórios em tempo real e mensagens prontas. Planos a partir de R$199/mês.</p>
           <div class="actions">
-            <a class="btn btn-primary" href="#consulta">Consultar profissionais</a>
-            <button class="btn btn-secondary" id="heroLoginBtn" type="button">Entrar com login e senha</button>
+            <a class="btn btn-primary" href="#planos">Ver planos de acesso</a>
+            <button class="btn btn-secondary" id="heroLoginBtn" type="button">Já tenho acesso</button>
           </div>
         </div>
         <aside class="summary">
@@ -103,6 +141,89 @@
           </div>
           <p>A prévia protege dados sensíveis. Os contatos completos são liberados somente com login contratado, respeitando o saldo e os usuários do plano.</p>
         </aside>
+      </div>
+    </section>
+
+    <section class="plans-section" id="planos">
+      <div class="container">
+        <div class="plans-head">
+          <span class="kicker">Planos de acesso</span>
+          <h2>Escolha seu plano e sua equipe já prospecta corretores em até 1 dia útil</h2>
+          <p>Acesso ao banco de 52 mil+ corretores ativos. Relatórios, funil de abordagens e mensagens prontas incluídos em todos os planos.</p>
+        </div>
+
+        <div class="plans-how">
+          <div class="plans-how__step">
+            <div class="plans-how__num">1</div>
+            <div class="plans-how__text">
+              <strong>Escolha o plano</strong>
+              <span>Clique em "Assinar" e fale com a Mariana pelo WhatsApp</span>
+            </div>
+          </div>
+          <div class="plans-how__step">
+            <div class="plans-how__num">2</div>
+            <div class="plans-how__text">
+              <strong>Receba o acesso</strong>
+              <span>Login liberado em até 1 dia útil após confirmação</span>
+            </div>
+          </div>
+          <div class="plans-how__step">
+            <div class="plans-how__num">3</div>
+            <div class="plans-how__text">
+              <strong>Prospecte corretores</strong>
+              <span>Sua equipe filtra, libera contatos e aborda pelo WhatsApp</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="plans-grid">
+          <div class="plan-card">
+            <span class="plan-name">Starter</span>
+            <div class="plan-price"><strong>R$&nbsp;199</strong><span>/mês</span></div>
+            <p class="plan-desc">500 contatos por mês. Para operações que estão começando a contratar com escala.</p>
+            <ul class="plan-features">
+              <li>500 liberações de contato/mês</li>
+              <li>Filtros por cidade, CRECI e perfil</li>
+              <li>Funil de abordagens integrado</li>
+              <li>Relatórios de produção</li>
+              <li>Mensagens de abordagem prontas</li>
+            </ul>
+            <a class="plan-btn plan-btn--outline" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Starter+da+Plataforma+Corretores+%28500+contatos%2Fm%C3%AAs+-+R%24199%2Fm%C3%AAs%29.+Pode+me+dar+mais+detalhes%3F" target="_blank" rel="noopener">Assinar Starter →</a>
+          </div>
+
+          <div class="plan-card plan-card--popular">
+            <span class="plan-badge">Mais escolhido</span>
+            <span class="plan-name">Pro</span>
+            <div class="plan-price"><strong>R$&nbsp;349</strong><span>/mês</span></div>
+            <p class="plan-desc">1.000 contatos por mês. Para imobiliárias e incorporadoras em expansão acelerada.</p>
+            <ul class="plan-features">
+              <li>1.000 liberações de contato/mês</li>
+              <li>Filtros por cidade, CRECI e perfil</li>
+              <li>Funil de abordagens integrado</li>
+              <li>Relatórios detalhados por operador</li>
+              <li>Mensagens de abordagem prontas</li>
+              <li>Gestão de equipe de operadores</li>
+            </ul>
+            <a class="plan-btn plan-btn--primary" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Pro+da+Plataforma+Corretores+%281.000+contatos%2Fm%C3%AAs+-+R%24349%2Fm%C3%AAs%29.+Pode+me+dar+mais+detalhes%3F" target="_blank" rel="noopener">Assinar Pro →</a>
+          </div>
+
+          <div class="plan-card">
+            <span class="plan-name">Ilimitado</span>
+            <div class="plan-price"><strong>R$&nbsp;999</strong><span>/mês</span></div>
+            <p class="plan-desc">Contatos ilimitados. Para operações com alta demanda e múltiplos operadores simultâneos.</p>
+            <ul class="plan-features">
+              <li>Contatos ilimitados/mês</li>
+              <li>Todos os filtros disponíveis</li>
+              <li>Funil completo por equipe</li>
+              <li>Relatórios avançados por operador e período</li>
+              <li>Mensagens personalizadas por plano</li>
+              <li>Múltiplos operadores sem limite</li>
+            </ul>
+            <a class="plan-btn plan-btn--outline" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Ilimitado+da+Plataforma+Corretores+%28R%24999%2Fm%C3%AAs%29.+Pode+me+dar+mais+detalhes%3F" target="_blank" rel="noopener">Assinar Ilimitado →</a>
+          </div>
+        </div>
+
+        <p class="plans-note">Todos os planos são mensais sem fidelidade. Usuários adicionais: + o valor da assinatura mensal por usuário.<br>Login liberado em até 1 dia útil após confirmação do pagamento. Dúvidas? Fale com a Mariana.</p>
       </div>
     </section>
 
@@ -373,9 +494,10 @@
     <section class="cta">
       <div class="container cta__inner">
         <div>
-          <span class="kicker">Acesso completo</span>
-          <h2>Acesso contratado com relatórios, saldo do plano e mensagens prontas.</h2>
-          <p>Cada contato liberado é registrado no saldo do plano. O administrador acompanha operadores, acessos disponíveis e mensagens de abordagem da equipe.</p>
+          <span class="kicker">Pronto para contratar?</span>
+          <h2>Escolha o plano e sua equipe já prospecta corretores em até 1 dia útil.</h2>
+          <p>Planos mensais a partir de R$199. Sem fidelidade. Relatórios, funil de abordagens e mensagens prontas em todos os planos. Usuários adicionais pelo valor da assinatura mensal.</p>
+          <a class="btn btn-primary" href="#planos" style="display:inline-flex;margin-top:16px">Ver os planos →</a>
         </div>
         <a class="btn btn-light" id="bottomWhatsapp" href="#" target="_blank" rel="noopener">Falar com Mariana</a>
       </div>
