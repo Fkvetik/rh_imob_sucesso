@@ -23,6 +23,10 @@
     {
       "source": "/noticias/:slug",
       "destination": "/api/artigo?slug=:slug"
+    },
+    {
+      "source": "/vaga/:slug",
+      "destination": "/api/vaga?slug=:slug"
     }
   ],
   "headers": [

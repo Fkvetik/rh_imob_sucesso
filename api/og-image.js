@@ -4,12 +4,12 @@
 
 export const config = { maxDuration: 15 };
 
-const ALLOWED_HOST = 'tnzmxpoxvdlckmjwdala.supabase.co';
+const ALLOWED_HOSTS = ['tnzmxpoxvdlckmjwdala.supabase.co', 'pufxvskozfdvfscqnays.supabase.co'];
 
 export default async function handler(req, res) {
   const rawUrl = req.query.url;
 
-  if (!rawUrl || !rawUrl.includes(ALLOWED_HOST)) {
+  if (!rawUrl || !ALLOWED_HOSTS.some((h) => rawUrl.includes(h))) {
     res.status(400).end();
     return;
   }

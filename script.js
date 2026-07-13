@@ -463,10 +463,8 @@
 
   function getJobShareUrl(job) {
     const key = getJobShareKey(job);
-    const url = new URL('/vagas.html', SITE_BASE_URL);
-    url.searchParams.set('vaga', key);
-    url.hash = 'vagas';
-    return url.toString();
+    // Página individual da vaga (OG próprio, compartilhável isoladamente)
+    return `${SITE_BASE_URL.replace(/\/$/, '')}/vaga/${key}`;
   }
 
   function buildJobShareText(job) {
