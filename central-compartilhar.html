@@ -145,17 +145,34 @@
     }
 
     function renderOutros(){
-      var url = BASE + '/aberto-a-propostas';
-      var text = 'O que faria você trocar de imobiliária?';
-      var artOpts = { kicker: '● ABERTO A PROPOSTAS', title: 'O que faria você trocar de imobiliária?', sub: 'Diga o que você busca e o que oferece. Receba propostas de empresas alinhadas.', ctaText: 'Quero receber propostas', ctaColor: '#ff7a1a', url: url, filename: 'aberto-propostas-rhimob.png' };
-      document.getElementById('outros-list').innerHTML =
-        '<div class="cc-card">' +
+      var paginas = [
+        {
+          url: BASE + '/aberto-a-propostas',
+          cat: 'Engajamento',
+          titulo: 'Aberto a Propostas',
+          meta: 'Para corretores e gestores em transição',
+          text: 'O que faria você trocar de imobiliária?',
+          art: { kicker: '● ABERTO A PROPOSTAS', title: 'O que faria você trocar de imobiliária?', sub: 'Diga o que você busca e o que oferece. Receba propostas de empresas alinhadas.', ctaText: 'Quero receber propostas', ctaColor: '#ff7a1a', filename: 'aberto-propostas-rhimob.png' }
+        },
+        {
+          url: BASE + '/vendedor-alto-ticket',
+          cat: 'Captação de vendedores',
+          titulo: 'Vendedor Alto Ticket',
+          meta: 'Para vendedores de outras áreas (seguros, veículos, comercial)',
+          text: 'Pare de vender barato. Comece a vender um produto de R$500 mil.',
+          art: { kicker: '💼 PARA VENDEDORES', title: 'Pare de vender barato.', sub: 'Comissões de R$10 a R$30 mil por venda. Descubra o produto.', ctaText: 'Quero saber mais', ctaColor: '#ff7a1a', filename: 'vendedor-alto-ticket-rhimob.png' }
+        }
+      ];
+      document.getElementById('outros-list').innerHTML = paginas.map(function(p){
+        var artOpts = Object.assign({}, p.art, { url: p.url });
+        return '<div class="cc-card">' +
           '<div class="cc-card-top">' +
-            '<div><span class="cc-card-cat">Engajamento</span><h3 class="cc-card-title">Aberto a Propostas</h3><span class="cc-card-meta">Para corretores e gestores em transição</span></div>' +
-            '<a class="cc-card-open" href="' + url + '" target="_blank" rel="noopener">Abrir página →</a>' +
+            '<div><span class="cc-card-cat">' + p.cat + '</span><h3 class="cc-card-title">' + p.titulo + '</h3><span class="cc-card-meta">' + p.meta + '</span></div>' +
+            '<a class="cc-card-open" href="' + p.url + '" target="_blank" rel="noopener">Abrir página →</a>' +
           '</div>' +
-          '<div class="cc-actions">' + shareIconsWithArt(url, text, artOpts) + '</div>' +
+          '<div class="cc-actions">' + shareIconsWithArt(p.url, p.text, artOpts) + '</div>' +
         '</div>';
+      }).join('');
     }
 
     function shareIconsWithArt(url, text, artOpts) {
