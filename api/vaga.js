@@ -74,7 +74,7 @@ function renderVaga(v, slug) {
   const atividades = splitList(v.detalhes || v.atividades);
   const requisitos = splitList(v.requisitos);
 
-  const ogImg   = ogImageUrl(v.imagem_url) || `${BASE}/assets/og-rhimob.jpg`;
+  const ogImg   = ogImageUrl(v.imagem_url) || `${BASE}/assets/og-vaga.jpg`;
   const ogTitle = truncate(titulo, 65);
   const ogDescParts = [local, modal, remun].filter(Boolean).join(' · ');
   const ogDesc  = truncate(v.resumo ? `${ogDescParts} — ${v.resumo}` : ogDescParts, 155);
