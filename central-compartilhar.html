@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Central de Compartilhamento | RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="/styles.css?v=20260713evolucao" />
+  <style>
+    body{background:#faf8ff}
+    .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:48px 40px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:56px;height:56px;border-radius:50%;margin-bottom:20px}
+    .auth-card h1{font-size:22px;font-weight:900;color:#2b124d;margin-bottom:6px;letter-spacing:-.04em}
+    .auth-card p{color:#888;font-size:14px;margin-bottom:28px}
+    .auth-card input{width:100%;padding:14px 16px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:14px;outline:none;transition:border .18s;box-sizing:border-box}
+    .auth-card input:focus{border-color:#2b124d}
+    .auth-card button{width:100%;padding:14px;background:#2b124d;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+    .auth-error{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+
+    .cc-wrap{display:none;max-width:920px;margin:0 auto;padding:40px 20px 80px}
+    .cc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .cc-header h1{font-size:26px;font-weight:900;color:#2b124d;letter-spacing:-.03em;margin:0}
+    .cc-header button{background:none;border:none;color:#8c809d;font-size:13px;font-weight:700;cursor:pointer}
+    .cc-sub{color:#6f6283;font-size:14px;margin:0 0 32px}
+    .cc-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--line)}
+    .cc-tab{padding:12px 18px;font-size:14px;font-weight:800;color:#8c809d;cursor:pointer;border-bottom:2.5px solid transparent}
+    .cc-tab.active{color:#2b124d;border-color:#ff7a1a}
+    .cc-panel{display:none}
+    .cc-panel.active{display:block}
+    .cc-loading{color:#8c809d;font-size:14px;padding:20px 0}
+
+    .cc-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:16px;display:flex;flex-direction:column;gap:14px}
+    .cc-card-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+    .cc-card-cat{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#ff7a1a;display:block;margin-bottom:6px}
+    .cc-card-title{font-size:17px;font-weight:800;color:#2b124d;margin:0 0 4px;line-height:1.35}
+    .cc-card-meta{font-size:13px;color:#8c809d}
+    .cc-card-open{font-size:13px;font-weight:700;color:#6d2df2;text-decoration:none;white-space:nowrap;flex-shrink:0}
+    .cc-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .cc-btn{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:none;cursor:pointer;flex-shrink:0;transition:transform .15s}
+    .cc-btn:hover{transform:scale(1.1)}
+    .cc-btn-wa{background:#25d366;color:#fff}.cc-btn-fb{background:#1877f2;color:#fff}
+    .cc-btn-x{background:#000;color:#fff}.cc-btn-li{background:#0077b5;color:#fff}
+    .cc-btn-copy{background:#f1edfb;color:#6d2df2}
+    .cc-btn-art{background:linear-gradient(135deg,#ff7a1a,#ff9d4d);color:#fff;width:auto;padding:0 16px;border-radius:22px;font-size:12px;font-weight:800;gap:6px;display:inline-flex;align-items:center}
+    .cc-btn-art:disabled{opacity:.6;cursor:wait}
+    .cc-empty{color:#8c809d;font-size:14px;padding:24px 0;text-align:center}
+    .cc-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b124d;color:#fff;padding:13px 24px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(43,18,77,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:999}
+    .cc-toast.show{opacity:1}
+    .cc-fixed-note{font-size:12px;color:#a99fc0;margin-top:-6px}
+  </style>
+</head>
+<body>
+
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-card">
+      <img src="/assets/rhimob-logo.jpg" alt="" />
+      <h1>Central de Compartilhamento</h1>
+      <p>Acesso restrito — RH IMOB</p>
+      <form id="auth-form">
+        <input type="password" id="auth-pwd" placeholder="Senha de acesso" required autocomplete="off" />
+        <button type="submit">Entrar</button>
+        <p class="auth-error" id="auth-error">Senha incorreta.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="cc-wrap" id="cc-wrap">
+    <div class="cc-header">
+      <h1>Central de Compartilhamento</h1>
+      <button onclick="logout()">Sair</button>
+    </div>
+    <p class="cc-sub">Compartilhe vagas e notícias direto — sem precisar abrir cada página.</p>
+
+    <div class="cc-tabs">
+      <div class="cc-tab active" data-tab="vagas">Vagas</div>
+      <div class="cc-tab" data-tab="noticias">Notícias</div>
+      <div class="cc-tab" data-tab="outros">Outras páginas</div>
+    </div>
+
+    <div class="cc-panel active" id="panel-vagas">
+      <div class="cc-loading" id="vagas-loading">Carregando vagas...</div>
+      <div id="vagas-list"></div>
+    </div>
+
+    <div class="cc-panel" id="panel-noticias">
+      <div class="cc-loading" id="noticias-loading">Carregando notícias...</div>
+      <div id="noticias-list"></div>
+    </div>
+
+    <div class="cc-panel" id="panel-outros">
+      <div id="outros-list"></div>
+    </div>
+  </div>
+
+  <div class="cc-toast" id="cc-toast"></div>
+
+  <script src="/assets/share-art.js"></script>
+  <script>
+    const ADMIN_PWD = 'rhimob@2026'; // ← mesma senha do admin de notícias
+    const VAGAS_SB = { url: 'https://pufxvskozfdvfscqnays.supabase.co', key: 'sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj' };
+    const NOTICIAS_SB = { url: 'https://tnzmxpoxvdlckmjwdala.supabase.co', key: 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv' };
+    const BASE = 'https://www.rhimob.com.br';
+
+    function checkAuth(){ return sessionStorage.getItem('cc_auth') === '1'; }
+    function logout(){ sessionStorage.removeItem('cc_auth'); location.reload(); }
+    document.getElementById('auth-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      var pwd = document.getElementById('auth-pwd').value;
+      if (pwd === ADMIN_PWD) { sessionStorage.setItem('cc_auth', '1'); showApp(); }
+      else document.getElementById('auth-error').style.display = 'block';
+    });
+
+    function showApp(){
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('cc-wrap').style.display = 'block';
+      loadVagas(); loadNoticias(); renderOutros();
+    }
+    if (checkAuth()) showApp();
+
+    document.querySelectorAll('.cc-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.cc-tab').forEach(function(t){ t.classList.remove('active'); });
+        document.querySelectorAll('.cc-panel').forEach(function(p){ p.classList.remove('active'); });
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    function ccToast(m){ var t=document.getElementById('cc-toast'); t.textContent=m; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},2000); }
+    function ccCopy(url){ navigator.clipboard.writeText(url).then(function(){ ccToast('Link copiado!'); }); }
+
+    window.__artToast = ccToast;
+
+    async function loadVagas(){
+      try {
+        var r = await fetch(VAGAS_SB.url + '/rest/v1/site_vagas_publicas?status=eq.ATIVA&order=prioridade.asc,updated_at.desc&select=vaga_id,titulo,categoria,localidade,remuneracao', { headers: { apikey: VAGAS_SB.key, Authorization: 'Bearer ' + VAGAS_SB.key } });
+        var rows = await r.json();
+        document.getElementById('vagas-loading').style.display = 'none';
+        var list = document.getElementById('vagas-list');
+        if (!Array.isArray(rows) || !rows.length) { list.innerHTML = '<p class="cc-empty">Nenhuma vaga ativa.</p>'; return; }
+        list.innerHTML = rows.map(function(v){
+          var url = BASE + '/vaga/' + v.vaga_id;
+          var text = 'Vaga: ' + v.titulo + (v.localidade ? ' — ' + v.localidade : '');
+          var tags = [];
+          if (v.localidade) tags.push({txt:'📍 ' + v.localidade});
+          if (v.remuneracao) tags.push({txt:'💰 ' + v.remuneracao, type:'pay'});
+          var artOpts = { kicker: '🚀 VAGA ABERTA · ' + (v.categoria||'').toUpperCase(), title: v.titulo, tags: tags, ctaText: 'Candidate-se pelo WhatsApp', ctaColor: '#25d366', url: url, filename: 'vaga-rhimob.png' };
+          return '<div class="cc-card">' +
+            '<div class="cc-card-top">' +
+              '<div><span class="cc-card-cat">' + (v.categoria||'Vaga') + '</span><h3 class="cc-card-title">' + v.titulo + '</h3><span class="cc-card-meta">' + (v.localidade||'') + (v.remuneracao ? ' · ' + v.remuneracao : '') + '</span></div>' +
+              '<a class="cc-card-open" href="' + url + '" target="_blank" rel="noopener">Abrir página →</a>' +
+            '</div>' +
+            '<div class="cc-actions">' + shareIconsWithArt(url, text, artOpts) + '</div>' +
+          '</div>';
+        }).join('');
+      } catch(e) {
+        document.getElementById('vagas-loading').textContent = 'Erro ao carregar vagas.';
+      }
+    }
+
+    async function loadNoticias(){
+      try {
+        var r = await fetch(NOTICIAS_SB.url + '/rest/v1/noticias?ativo=eq.true&order=publicado_em.desc&limit=20&select=slug,titulo,categoria,resumo', { headers: { apikey: NOTICIAS_SB.key, Authorization: 'Bearer ' + NOTICIAS_SB.key } });
+        var rows = await r.json();
+        document.getElementById('noticias-loading').style.display = 'none';
+        var list = document.getElementById('noticias-list');
+        if (!Array.isArray(rows) || !rows.length) { list.innerHTML = '<p class="cc-empty">Nenhuma notícia encontrada.</p>'; return; }
+        list.innerHTML = rows.map(function(n){
+          var url = BASE + '/noticias/' + n.slug;
+          var text = n.titulo;
+          var artOpts = { kicker: '📰 NOTÍCIA · ' + (n.categoria||'').toUpperCase(), title: n.titulo, sub: (n.resumo||'').slice(0,120), ctaText: 'Leia a matéria completa', ctaColor: '#ff7a1a', url: url, filename: 'noticia-rhimob.png' };
+          return '<div class="cc-card">' +
+            '<div class="cc-card-top">' +
+              '<div><span class="cc-card-cat">' + (n.categoria||'Notícia') + '</span><h3 class="cc-card-title">' + n.titulo + '</h3></div>' +
+              '<a class="cc-card-open" href="' + url + '" target="_blank" rel="noopener">Abrir página →</a>' +
+            '</div>' +
+            '<div class="cc-actions">' + shareIconsWithArt(url, text, artOpts) + '</div>' +
+          '</div>';
+        }).join('');
+      } catch(e) {
+        document.getElementById('noticias-loading').textContent = 'Erro ao carregar notícias.';
+      }
+    }
+
+    function renderOutros(){
+      var url = BASE + '/aberto-a-propostas';
+      var text = 'O que faria você trocar de imobiliária?';
+      var artOpts = { kicker: '● ABERTO A PROPOSTAS', title: 'O que faria você trocar de imobiliária?', sub: 'Diga o que você busca e o que oferece. Receba propostas de empresas alinhadas.', ctaText: 'Quero receber propostas', ctaColor: '#ff7a1a', url: url, filename: 'aberto-propostas-rhimob.png' };
+      document.getElementById('outros-list').innerHTML =
+        '<div class="cc-card">' +
+          '<div class="cc-card-top">' +
+            '<div><span class="cc-card-cat">Engajamento</span><h3 class="cc-card-title">Aberto a Propostas</h3><span class="cc-card-meta">Para corretores e gestores em transição</span></div>' +
+            '<a class="cc-card-open" href="' + url + '" target="_blank" rel="noopener">Abrir página →</a>' +
+          '</div>' +
+          '<div class="cc-actions">' + shareIconsWithArt(url, text, artOpts) + '</div>' +
+        '</div>';
+    }
+
+    function shareIconsWithArt(url, text, artOpts) {
+      var artId = 'art-' + Math.random().toString(36).slice(2, 9);
+      window['__art_' + artId] = artOpts;
+      var wa = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text + ' ' + url);
+      var fb = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+      var x  = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+      var li = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+      return '' +
+        '<a class="cc-btn cc-btn-wa" href="'+wa+'" target="_blank" rel="noopener" title="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></a>' +
+        '<a class="cc-btn cc-btn-fb" href="'+fb+'" target="_blank" rel="noopener" title="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>' +
+        '<a class="cc-btn cc-btn-x" href="'+x+'" target="_blank" rel="noopener" title="X (Twitter)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>' +
+        '<a class="cc-btn cc-btn-li" href="'+li+'" target="_blank" rel="noopener" title="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>' +
+        '<button class="cc-btn cc-btn-copy" title="Copiar link" onclick="ccCopy(\''+url+'\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button>' +
+        '<button class="cc-btn-art" onclick="gerarArteRHIMOB(window[\'__art_'+artId+'\'], this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1zm-4.5-6.5l-2 2.5-1.5-1.8L7 16h10l-3.5-3.5z"/></svg>Arte</button>';
+    }
+  </script>
+</body>
+</html>
