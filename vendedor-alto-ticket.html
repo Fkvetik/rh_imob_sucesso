@@ -393,6 +393,9 @@
     var SHARE_TXT='Pare de vender barato. Comece a vender um produto de R$500 mil — comissões de R$10 a R$30 mil por venda.';
     document.getElementById('sh-wa').href='https://api.whatsapp.com/send?text='+encodeURIComponent(SHARE_TXT+' '+PAGE_URL);
     document.getElementById('sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(PAGE_URL);
+    document.getElementById('sh-fb').addEventListener('click', function(){
+      navigator.clipboard.writeText(SHARE_TXT+'\n'+PAGE_URL).then(function(){ vtToast('Legenda copiada! Cole no post do Facebook.'); });
+    });
     document.getElementById('sh-x').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(SHARE_TXT)+'&url='+encodeURIComponent(PAGE_URL);
     document.getElementById('sh-li').href='https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(PAGE_URL);
 

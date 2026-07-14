@@ -278,6 +278,9 @@
     var SHARE_TXT='Corretor ou gestor em transição? Diga o que faria você trocar de imobiliária e receba propostas de empresas alinhadas.';
     document.getElementById('sh-wa').href='https://api.whatsapp.com/send?text='+encodeURIComponent(SHARE_TXT+' '+PAGE_URL);
     document.getElementById('sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(PAGE_URL);
+    document.getElementById('sh-fb').addEventListener('click', function(){
+      navigator.clipboard.writeText(SHARE_TXT+'\n'+PAGE_URL).then(function(){ apToast('Legenda copiada! Cole no post do Facebook.'); });
+    });
     document.getElementById('sh-x').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(SHARE_TXT)+'&url='+encodeURIComponent(PAGE_URL);
     document.getElementById('sh-li').href='https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(PAGE_URL);
 
