@@ -1341,7 +1341,7 @@ const canal = isLogged
 
     if (link) {
       if (phone.length >= 10) {
-        link.href = `https://wa.me/55${phone.replace(/^55/, '')}?text=${encodeURIComponent(msg)}`;
+        link.href = `https://api.whatsapp.com/send?phone=55${phone.replace(/^55/, '')}&text=${encodeURIComponent(msg)}`;
         link.removeAttribute('aria-disabled');
       } else {
         link.href = '#';
@@ -1782,7 +1782,7 @@ const canal = isLogged
       .replace(/\{agendamento\}/gi, agendamento);
     const tel = String(r.telefone_display || '').replace(/\D/g, '');
     if (!tel || tel.length < 5) return '';
-    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
+    const url = `https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`;
     return `<a class="nt-btn nt-btn-primary nt-wa-confirm" href="${esc(url)}" target="_blank" rel="noopener">📱 Confirmar agendamento via WhatsApp</a>`;
   }
 

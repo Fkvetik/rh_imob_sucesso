@@ -23,7 +23,7 @@
 
   function openWhatsApp(number, message) {
     const text = encodeURIComponent(message || '');
-    window.open(`https://wa.me/${number}?text=${text}`, '_blank', 'noopener,noreferrer');
+    window.open(`https://api.whatsapp.com/send?phone=${number}&text=${text}`, '_blank', 'noopener,noreferrer');
   }
 
   function formatPhoneField(input) {
@@ -494,7 +494,7 @@
     if (!job) return;
 
     const text = buildJobShareText(job);
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 
     flashShareButton(button, 'Abrindo...');
 

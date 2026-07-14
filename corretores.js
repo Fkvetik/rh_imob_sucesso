@@ -45,7 +45,7 @@
       context ? `Filtro consultado: ${context}` : '',
       'Gostaria de ver como funciona a liberação dos contatos, múltiplos usuários e relatório por plano.'
     ].filter(Boolean).join('\n\n');
-    return `https://wa.me/${WHATSAPP_FERNANDO}?text=${encodeURIComponent(text)}`;
+    return `https://api.whatsapp.com/send?phone=${WHATSAPP_FERNANDO}&text=${encodeURIComponent(text)}`;
   }
 
   function setupWhatsApp() {
@@ -567,7 +567,7 @@
     let phone = fromWa || fromTxt || fromBase;
     if (phone.length === 10 || phone.length === 11) phone = '55' + phone;
     if (!phone) return '';
-    return `https://wa.me/${phone}?text=${encodeURIComponent(message || '')}`;
+    return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message || '')}`;
   }
 
   function friendlyOpenLeadError(message) {
@@ -1256,7 +1256,7 @@
       .replace(/\{agendamento\}/gi, agendamento);
     const tel = String(r.telefone_display || '').replace(/\D/g, '');
     if (!tel || tel.length < 5) return '';
-    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
+    const url = `https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`;
     return `<a class="btn btn-primary nt-wa-confirm" href="${esc(url)}" target="_blank" rel="noopener">📱 Confirmar agendamento via WhatsApp</a>`;
   }
 

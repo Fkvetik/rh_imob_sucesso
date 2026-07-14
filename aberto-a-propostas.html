@@ -276,7 +276,7 @@
   <script>
     var PAGE_URL='https://www.rhimob.com.br/aberto-a-propostas';
     var SHARE_TXT='Corretor ou gestor em transição? Diga o que faria você trocar de imobiliária e receba propostas de empresas alinhadas.';
-    document.getElementById('sh-wa').href='https://wa.me/?text='+encodeURIComponent(SHARE_TXT+' '+PAGE_URL);
+    document.getElementById('sh-wa').href='https://api.whatsapp.com/send?text='+encodeURIComponent(SHARE_TXT+' '+PAGE_URL);
     document.getElementById('sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(PAGE_URL);
     document.getElementById('sh-x').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(SHARE_TXT)+'&url='+encodeURIComponent(PAGE_URL);
     document.getElementById('sh-li').href='https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(PAGE_URL);
@@ -318,7 +318,7 @@
       ].filter(Boolean);
       var msg=encodeURIComponent(linhas.join('\n'));
       if(window.gtag) gtag('event','aberto_propostas_envio',{perfil:perfil});
-      window.open('https://wa.me/5511953973268?text='+msg,'_blank');
+      window.open('https://api.whatsapp.com/send?phone=5511953973268&text='+msg,'_blank');
     });
   </script>
 </body>

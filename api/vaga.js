@@ -83,12 +83,12 @@ function renderVaga(v, slug) {
   const waMsg = encodeURIComponent(
     `Olá, ${respNome}! Vim pelo site da RH IMOB e tenho interesse na vaga: ${titulo}${local ? ' (' + local + ')' : ''}.\n${url}`
   );
-  const waCandidatar = `https://wa.me/${respWa}?text=${waMsg}`;
+  const waCandidatar = `https://api.whatsapp.com/send?phone=${respWa}&text=${waMsg}`;
 
   // Compartilhamento
   const shareUrlEnc = encodeURIComponent(url);
   const shareTextEnc = encodeURIComponent(`Vaga: ${titulo} — ${local}`);
-  const waShare = `https://wa.me/?text=${encodeURIComponent(`${titulo} — ${local}\n${url}`)}`;
+  const waShare = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${titulo} — ${local}\n${url}`)}`;
 
   // JSON-LD JobPosting
   const jobLD = JSON.stringify({
