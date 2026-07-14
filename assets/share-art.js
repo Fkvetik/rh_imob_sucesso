@@ -46,11 +46,11 @@
       // kicker
       if (o.kicker) {
         x.fillStyle = o.kickerColor || '#ffab40'; x.font = '900 28px Inter,Arial,sans-serif';
-        y = wrap(x, o.kicker, PX, y, W - PX * 2, 38) + 44;
+        y = wrap(x, o.kicker, PX, y, W - PX * 2, 38) + 92;
       }
       // título
       x.fillStyle = '#fff'; x.font = '900 74px Inter,Arial,sans-serif';
-      y = wrap(x, o.title, PX, y, W - PX * 2, 84) + 24;
+      y = wrap(x, o.title, PX, y, W - PX * 2, 84) + 34;
       // sub
       if (o.sub) {
         x.fillStyle = 'rgba(255,255,255,.8)'; x.font = '600 33px Inter,Arial,sans-serif';
