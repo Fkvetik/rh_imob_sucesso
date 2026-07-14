@@ -308,78 +308,26 @@ function renderVaga(v, slug) {
 
   <div class="vg-toast" id="vg-toast"></div>
 
+  <script src="/assets/share-art.js"></script>
   <script>
     function vgToast(msg){var t=document.getElementById('vg-toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000);}
-
-    /* ── GERAR ARTE DA VAGA (Status WhatsApp / Instagram) ─────────── */
-    async function gerarArteVaga(btn){
-      var TITULO='${escJs(titulo)}', LOCAL='${escJs(local)}', REMUN='${escJs(remun)}',
-          MODAL='${escJs(modal)}', CAT='${escJs(categoria)}', URL='${escJs(url)}';
-      var prev=btn.innerHTML; btn.disabled=true; btn.innerHTML='Gerando…';
-      try{
-        var W=1080,H=1350;
-        var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
-        var ctx=canvas.getContext('2d');
-        // fundo degradê roxo
-        var g=ctx.createLinearGradient(0,0,W,H);
-        g.addColorStop(0,'#1a0a30');g.addColorStop(.55,'#2b124d');g.addColorStop(1,'#3b1a6b');
-        ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-        // brilho laranja canto
-        var rg=ctx.createRadialGradient(W,0,0,W,0,700);
-        rg.addColorStop(0,'rgba(255,122,26,.35)');rg.addColorStop(1,'rgba(255,122,26,0)');
-        ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
-        var PX=96;
-        // marca
-        ctx.fillStyle='#fff';ctx.font='900 34px Inter,Arial,sans-serif';ctx.fillText('RH IMOB',PX,120);
-        ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='700 20px Inter,Arial,sans-serif';ctx.fillText('Recrutamento imobiliário',PX,152);
-        // kicker VAGA ABERTA
-        ctx.fillStyle='#ff9d4d';ctx.font='900 26px Inter,Arial,sans-serif';
-        ctx.fillText('🚀 VAGA ABERTA · '+CAT.toUpperCase(),PX,300);
-        // título (wrap)
-        ctx.fillStyle='#fff';ctx.font='900 68px Inter,Arial,sans-serif';
-        var y=wrapText(ctx,TITULO,PX,390,W-PX*2,78);
-        // tags
-        y+=40;
-        function pill(txt,fill,tcol){
-          ctx.font='800 28px Inter,Arial,sans-serif';
-          var w=ctx.measureText(txt).width+56;
-          ctx.fillStyle=fill;roundRect(ctx,PX,y,w,64,32);ctx.fill();
-          ctx.fillStyle=tcol;ctx.fillText(txt,PX+28,y+42);
-          y+=84;
-        }
-        if(LOCAL)pill('📍 '+LOCAL,'rgba(255,255,255,.12)','#fff');
-        if(MODAL)pill('💼 '+MODAL,'rgba(255,255,255,.12)','#fff');
-        if(REMUN)pill('💰 '+REMUN,'rgba(31,185,120,.22)','#a7f3d0');
-        // rodapé CTA
-        ctx.fillStyle='#25d366';roundRect(ctx,PX,H-260,W-PX*2,96,20);ctx.fill();
-        ctx.fillStyle='#fff';ctx.font='900 34px Inter,Arial,sans-serif';ctx.textAlign='center';
-        ctx.fillText('Candidate-se pelo WhatsApp',W/2,H-198);ctx.textAlign='left';
-        ctx.fillStyle='rgba(255,255,255,.75)';ctx.font='700 26px Inter,Arial,sans-serif';
-        ctx.fillText(URL.replace('https://www.',''),PX,H-110);
-        // baixar
-        canvas.toBlob(function(blob){
-          var file=new File([blob],'vaga-rhimob.png',{type:'image/png'});
-          if(navigator.canShare&&navigator.canShare({files:[file]})){
-            navigator.share({files:[file],title:TITULO}).catch(function(){});
-          }else{
-            var a=document.createElement('a');a.href=URL_createObj(blob);a.download='vaga-rhimob.png';a.click();
-            vgToast('Arte baixada! Poste no Status/Instagram.');
-          }
-          btn.disabled=false;btn.innerHTML=prev;
-        },'image/png');
-      }catch(e){btn.disabled=false;btn.innerHTML=prev;vgToast('Não foi possível gerar a arte.');}
+    window.__artToast=vgToast;
+    function gerarArteVaga(btn){
+      var tags=[];
+      var LOCAL='${escJs(local)}',MODAL='${escJs(modal)}',REMUN='${escJs(remun)}';
+      if(LOCAL)tags.push({txt:'📍 '+LOCAL});
+      if(MODAL)tags.push({txt:'💼 '+MODAL});
+      if(REMUN)tags.push({txt:'💰 '+REMUN,type:'pay'});
+      gerarArteRHIMOB({
+        kicker:'🚀 VAGA ABERTA · ${escJs(categoria)}'.toUpperCase(),
+        title:'${escJs(titulo)}',
+        tags:tags,
+        ctaText:'Candidate-se pelo WhatsApp',
+        ctaColor:'#25d366',
+        url:'${escJs(url)}',
+        filename:'vaga-rhimob.png'
+      },btn);
     }
-    function URL_createObj(b){return (window.URL||window.webkitURL).createObjectURL(b);}
-    function wrapText(ctx,text,x,y,maxW,lh){
-      var words=text.split(' '),line='';
-      for(var i=0;i<words.length;i++){
-        var test=line+words[i]+' ';
-        if(ctx.measureText(test).width>maxW&&i>0){ctx.fillText(line.trim(),x,y);line=words[i]+' ';y+=lh;}
-        else line=test;
-      }
-      ctx.fillText(line.trim(),x,y);return y;
-    }
-    function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
   </script>
 </body>
 </html>`;

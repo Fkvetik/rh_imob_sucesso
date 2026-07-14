@@ -307,9 +307,9 @@ function renderArticle(n, slug) {
           <a class="share-btn share-li" href="https://www.linkedin.com/sharing/share-offsite/?url=${liUrl}" title="LinkedIn" target="_blank" rel="noopener">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
           </a>
-          <button class="share-btn share-status" id="btn-status" onclick="compartilharStatus(this)" title="Compartilhar no Status do WhatsApp">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="4.2"/></svg>
-            Status
+          <button class="share-btn share-status" id="btn-status" onclick="compartilharStatus(this)" title="Baixar arte para Status / Story / Instagram">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1zm-4.5-6.5l-2 2.5-1.5-1.8L7 16h10l-3.5-3.5z"/></svg>
+            Baixar arte
           </button>
           <button class="share-btn share-copy" title="Copiar link" onclick="navigator.clipboard.writeText('${url}').then(()=>{this.innerHTML='<svg width=18 height=18 viewBox=\\'0 0 24 24\\' fill=\\'currentColor\\'><path d=\\'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z\\'/></svg>'});setTimeout(()=>{this.innerHTML='<svg width=18 height=18 viewBox=\\'0 0 24 24\\' fill=\\'currentColor\\'><path d=\\'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z\\'/></svg>'},2200)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
@@ -388,9 +388,23 @@ function renderArticle(n, slug) {
     </div>
   </footer>
 
+  <script src="/assets/share-art.js"></script>
   <script>
-    /* ── COMPARTILHAR NO STATUS DO WHATSAPP ─────────────────────── */
-    async function compartilharStatus(btn) {
+    function __artToast(m){var t=document.getElementById('art-toast');if(!t){t=document.createElement('div');t.id='art-toast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b124d;color:#fff;padding:13px 24px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(43,18,77,.4);opacity:0;transition:opacity .25s;z-index:9999;pointer-events:none';document.body.appendChild(t);}t.textContent=m;t.style.opacity='1';setTimeout(function(){t.style.opacity='0'},2200);}
+    window.__artToast=__artToast;
+    function compartilharStatus(btn){
+      gerarArteRHIMOB({
+        kicker:'📰 NOTÍCIA · ${escJs(n.categoria)}'.toUpperCase(),
+        title:'${escJs(n.titulo)}',
+        sub:'${escJs(truncate(n.resumo || '', 120))}',
+        ctaText:'Leia a matéria completa',
+        ctaColor:'#ff7a1a',
+        url:'${escJs(url)}',
+        filename:'noticia-rhimob.png'
+      },btn);
+    }
+    /* legado (não usado) */
+    async function __legacyStatus(btn) {
       const OG_URL  = '${escJs(ogImg)}';
       const TITULO  = '${escJs(n.titulo)}';
       const ART_URL = '${escJs(url)}';
