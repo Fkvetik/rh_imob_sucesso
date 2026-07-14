@@ -9,20 +9,9 @@
   <link rel="stylesheet" href="/styles.css?v=20260713evolucao" />
   <style>
     body{background:#faf8ff}
-    .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-    .auth-card{background:#fff;border-radius:24px;padding:48px 40px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
-    .auth-card img{width:56px;height:56px;border-radius:50%;margin-bottom:20px}
-    .auth-card h1{font-size:22px;font-weight:900;color:#2b124d;margin-bottom:6px;letter-spacing:-.04em}
-    .auth-card p{color:#888;font-size:14px;margin-bottom:28px}
-    .auth-card input{width:100%;padding:14px 16px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:14px;outline:none;transition:border .18s;box-sizing:border-box}
-    .auth-card input:focus{border-color:#2b124d}
-    .auth-card button{width:100%;padding:14px;background:#2b124d;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
-    .auth-error{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
-
-    .cc-wrap{display:none;max-width:920px;margin:0 auto;padding:40px 20px 80px}
+    .cc-wrap{max-width:920px;margin:0 auto;padding:40px 20px 80px}
     .cc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
     .cc-header h1{font-size:26px;font-weight:900;color:#2b124d;letter-spacing:-.03em;margin:0}
-    .cc-header button{background:none;border:none;color:#8c809d;font-size:13px;font-weight:700;cursor:pointer}
     .cc-sub{color:#6f6283;font-size:14px;margin:0 0 32px}
     .cc-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--line)}
     .cc-tab{padding:12px 18px;font-size:14px;font-weight:800;color:#8c809d;cursor:pointer;border-bottom:2.5px solid transparent}
@@ -53,23 +42,9 @@
 </head>
 <body>
 
-  <div class="auth-screen" id="auth-screen">
-    <div class="auth-card">
-      <img src="/assets/rhimob-logo.jpg" alt="" />
-      <h1>Central de Compartilhamento</h1>
-      <p>Acesso restrito — RH IMOB</p>
-      <form id="auth-form">
-        <input type="password" id="auth-pwd" placeholder="Senha de acesso" required autocomplete="off" />
-        <button type="submit">Entrar</button>
-        <p class="auth-error" id="auth-error">Senha incorreta.</p>
-      </form>
-    </div>
-  </div>
-
   <div class="cc-wrap" id="cc-wrap">
     <div class="cc-header">
       <h1>Central de Compartilhamento</h1>
-      <button onclick="logout()">Sair</button>
     </div>
     <p class="cc-sub">Compartilhe vagas e notícias direto — sem precisar abrir cada página.</p>
 
@@ -98,26 +73,11 @@
 
   <script src="/assets/share-art.js"></script>
   <script>
-    const ADMIN_PWD = 'rhimob@2026'; // ← mesma senha do admin de notícias
     const VAGAS_SB = { url: 'https://pufxvskozfdvfscqnays.supabase.co', key: 'sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj' };
     const NOTICIAS_SB = { url: 'https://tnzmxpoxvdlckmjwdala.supabase.co', key: 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv' };
     const BASE = 'https://www.rhimob.com.br';
 
-    function checkAuth(){ return sessionStorage.getItem('cc_auth') === '1'; }
-    function logout(){ sessionStorage.removeItem('cc_auth'); location.reload(); }
-    document.getElementById('auth-form').addEventListener('submit', function(e){
-      e.preventDefault();
-      var pwd = document.getElementById('auth-pwd').value;
-      if (pwd === ADMIN_PWD) { sessionStorage.setItem('cc_auth', '1'); showApp(); }
-      else document.getElementById('auth-error').style.display = 'block';
-    });
-
-    function showApp(){
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('cc-wrap').style.display = 'block';
-      loadVagas(); loadNoticias(); renderOutros();
-    }
-    if (checkAuth()) showApp();
+    loadVagas(); loadNoticias(); renderOutros();
 
     document.querySelectorAll('.cc-tab').forEach(function(tab){
       tab.addEventListener('click', function(){
