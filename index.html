@@ -143,11 +143,13 @@
     .section-fade-bottom { height: 64px; background: linear-gradient(to top, #fff, transparent); pointer-events: none; margin-top: -64px; position: relative; z-index: 1; }
 
     /* ── Sticky mobile CTA ───────────────────────── */
-    .sticky-mobile-cta { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--purple-950); padding: 14px 20px; z-index: 200; box-shadow: 0 -4px 24px rgba(43,18,77,.35); align-items: center; gap: 14px; }
-    .sticky-mobile-cta-text strong { display: block; font-size: 14px; font-weight: 900; color: #fff; line-height: 1.2; }
-    .sticky-mobile-cta-text span { font-size: 12px; color: rgba(255,255,255,.6); }
-    .sticky-mobile-cta .btn { white-space: nowrap; flex-shrink: 0; font-size: 14px; padding: 12px 20px; }
-    @media (max-width: 768px) { .sticky-mobile-cta { display: flex; } body { padding-bottom: 72px; } }
+    .sticky-mobile-cta { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--purple-950); padding: 12px 16px; z-index: 200; box-shadow: 0 -4px 24px rgba(43,18,77,.35); align-items: center; justify-content: space-between; gap: 12px; flex-wrap: nowrap; }
+    .sticky-mobile-cta-text { flex: 1; min-width: 0; }
+    .sticky-mobile-cta-text strong { display: block; font-size: 13.5px; font-weight: 900; color: #fff; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sticky-mobile-cta-text span { font-size: 11.5px; color: rgba(255,255,255,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .sticky-mobile-cta .btn { white-space: nowrap; flex-shrink: 0; font-size: 14px; padding: 11px 18px; }
+    /* No mobile mostra só a barra; esconde a pílula flutuante para não sobrepor */
+    @media (max-width: 768px) { body { padding-bottom: 74px; } .floating-wa { display: none !important; } }
 
     /* ── Direct WA CTA ───────────────────────────── */
     .direct-wa-wrap { text-align: center; margin: 0 0 24px; }
@@ -671,12 +673,12 @@
           <form id="leadForm" class="job-form company-lead-form js-company-lead-form">
             <input type="hidden" name="origem" value="Homepage RH IMOB" />
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-              <label>Nome<input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required /></label>
-              <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required /></label>
+              <label>Nome<input type="text" name="nome" autocomplete="name" placeholder="Seu nome" /></label>
+              <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" /></label>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-              <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP, Curitiba/PR" required /></label>
-              <label>Cargo que precisa contratar<input type="text" name="cargoVaga" placeholder="Ex.: Corretor, SDR, Gerente" required /></label>
+              <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP, Curitiba/PR" /></label>
+              <label>Cargo que precisa contratar<input type="text" name="cargoVaga" placeholder="Ex.: Corretor, SDR, Gerente" /></label>
             </div>
             <details class="form-details">
               <summary>+ Detalhar minha demanda <span class="optional-label">opcional — deixa a proposta mais precisa</span></summary>
@@ -833,7 +835,7 @@
   <script src="supabase-config-novos-talentos.js?v=20260509adslead"></script>
   <script src="google-ads-config.js?v=20260509adslead"></script>
   <script src="google-ads-events.js?v=20260511copy"></script>
-  <script src="script.js?v=20260626homepage"></script>
+  <script src="script.js?v=20260714leadfix"></script>
 
   <script>
     document.querySelectorAll('.faq-q').forEach(function(btn) {
@@ -856,7 +858,7 @@
       <strong>Contratar com a RH IMOB</strong>
       <span>Setup em 7 dias · 52 mil profissionais</span>
     </div>
-    <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero contratar profissionais imobiliários.">Falar com a Mariana</a>
+    <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero contratar profissionais imobiliários.">Falar agora</a>
   </div>
   <script>
     (function(){
@@ -885,10 +887,10 @@
     (function(){
       var el=document.getElementById("sticky-mobile-cta");
       if(!el) return;
-      window.addEventListener("scroll",function(){
-        el.style.display=window.scrollY>400?"flex":"none";
-      },{passive:true});
-      el.style.display="none";
+      function upd(){ el.style.display=(window.innerWidth<=768 && window.scrollY>400)?"flex":"none"; }
+      window.addEventListener("scroll",upd,{passive:true});
+      window.addEventListener("resize",upd);
+      upd();
     })();
   </script>
 </body>
