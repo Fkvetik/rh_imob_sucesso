@@ -409,12 +409,55 @@
     return lines.join('\n');
   }
 
+  // ── CAPTURA PROGRESSIVA DE LEAD ────────────────────────────────
+  // Salva o lead no Supabase (site_leads) assim que houver nome ou telefone,
+  // ANTES de abrir o WhatsApp. Nunca perde lead, mesmo com envio incompleto.
+  let _leadSession = null;
+  function ensureLeadSession() {
+    if (_leadSession) return _leadSession;
+    try { _leadSession = sessionStorage.getItem('rh_lead_sid'); } catch (e) {}
+    if (!_leadSession) {
+      _leadSession = 'web-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      try { sessionStorage.setItem('rh_lead_sid', _leadSession); } catch (e) {}
+    }
+    return _leadSession;
+  }
+  function saveLeadEmpresa(form, enviou) {
+    const cfg = getNtSupabaseConfig();
+    if (!cfg) return;
+    const g = (n) => normalize(form.elements[n]?.value);
+    const nome = g('nome'), whatsapp = g('whatsapp');
+    if (!nome && !whatsapp) return; // ainda não há nada útil para salvar
+    const row = {
+      session_id: ensureLeadSession(),
+      nome, whatsapp,
+      empresa: g('empresa'), cidade: g('cidade'), cargo_vaga: g('cargoVaga'),
+      quantidade: g('quantidade'), urgencia: g('urgencia'),
+      formato_contratacao: g('formatoContratacao'), remuneracao: g('remuneracao'),
+      beneficios: g('beneficios'), exigencias: g('exigencias'),
+      mensagem: g('mensagem'),
+      origem: g('origem') || document.title || location.pathname,
+      pagina: location.href,
+      enviou_whatsapp: !!enviou
+    };
+    fetch(`${cfg.url.replace(/\/$/, '')}/rest/v1/site_leads`, {
+      method: 'POST',
+      headers: supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify(row)
+    }).catch(() => {});
+  }
+
   function setupCompanyForm() {
     const forms = $$('.js-company-lead-form, #leadForm, #companyLeadForm');
     forms.forEach((form) => {
       if (!form || form.dataset.companyFormReady === 'true') return;
       form.dataset.companyFormReady = 'true';
       formatPhoneField(form.elements.whatsapp);
+      // captura progressiva: salva ao sair dos campos-chave
+      ['nome', 'whatsapp', 'cidade', 'cargoVaga'].forEach((n) => {
+        const el = form.elements[n];
+        if (el) el.addEventListener('blur', () => saveLeadEmpresa(form, false));
+      });
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         const data = {
@@ -442,6 +485,7 @@
           missingEl.reportValidity?.();
           return;
         }
+        saveLeadEmpresa(form, true);
         openWhatsApp(EMPRESA_WHATSAPP, buildCompanyLeadMessage(data));
       });
     });

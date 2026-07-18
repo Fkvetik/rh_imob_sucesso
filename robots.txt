@@ -22,3 +22,4 @@ Allow: /
 
 Sitemap: https://www.rhimob.com.br/sitemap.xml
 Sitemap: https://www.rhimob.com.br/api/sitemap-news
+Sitemap: https://www.rhimob.com.br/api/sitemap-vagas

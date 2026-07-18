@@ -8,4 +8,8 @@
     <loc>https://www.rhimob.com.br/api/sitemap-news</loc>
     <lastmod>2026-07-06</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://www.rhimob.com.br/api/sitemap-vagas</loc>
+    <lastmod>2026-07-14</lastmod>
+  </sitemap>
 </sitemapindex>

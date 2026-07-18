@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leads — Admin RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="/styles.css?v=20260714leadfix" />
+  <style>
+    body{background:#faf8ff}
+    .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:52px;height:52px;border-radius:50%;margin-bottom:18px}
+    .auth-card h1{font-size:20px;font-weight:900;color:#2b124d;margin:0 0 6px}
+    .auth-card p{color:#888;font-size:13px;margin:0 0 24px}
+    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none;box-sizing:border-box}
+    .auth-card input:focus{border-color:#2b124d}
+    .auth-card button{width:100%;padding:13px;background:#2b124d;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
+    .auth-err{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+
+    .wrap{display:none;max-width:1100px;margin:0 auto;padding:32px 18px 80px}
+    .top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px}
+    .top h1{font-size:24px;font-weight:900;color:#2b124d;margin:0}
+    .top .out{background:none;border:none;color:#8c809d;font-size:13px;font-weight:700;cursor:pointer}
+    .sub{color:#6f6283;font-size:14px;margin:0 0 20px}
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 20px;flex:1;min-width:130px}
+    .stat strong{display:block;font-size:24px;font-weight:900;color:#2b124d}
+    .stat span{font-size:12px;color:#8c809d;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .stat.alerta strong{color:#c2410c}
+    .filters{display:flex;gap:8px;margin-bottom:16px}
+    .filt{padding:9px 16px;border:1.5px solid var(--line);border-radius:30px;font-size:13px;font-weight:800;color:#8c809d;cursor:pointer;background:#fff}
+    .filt.on{background:#2b124d;border-color:#2b124d;color:#fff}
+    .lead{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:12px}
+    .lead.recuperar{border-color:#fdba74;background:#fff8f0}
+    .lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+    .lead-nome{font-size:16px;font-weight:800;color:#2b124d;margin:0}
+    .lead-meta{font-size:12px;color:#8c809d;margin-top:2px}
+    .badge{font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;white-space:nowrap}
+    .badge.ok{background:#dcfce7;color:#166534}
+    .badge.rec{background:#ffedd5;color:#c2410c}
+    .lead-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px 18px;margin:12px 0 4px}
+    .lead-grid div{font-size:13px;color:#4e415e}
+    .lead-grid b{color:#8c809d;font-weight:700}
+    .lead-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .wa-btn{background:#25d366;color:#fff;font-weight:800;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+    .wa-btn.rec{background:#ff7a1a}
+    .empty{color:#8c809d;text-align:center;padding:40px 0}
+    .loading{color:#8c809d;padding:20px 0}
+  </style>
+</head>
+<body>
+  <div class="auth" id="auth">
+    <div class="auth-card">
+      <img src="/assets/rhimob-logo.jpg" alt="" />
+      <h1>Leads — RH IMOB</h1>
+      <p>Acesso restrito</p>
+      <form id="auth-form">
+        <input type="password" id="tok" placeholder="Token de acesso" autocomplete="off" />
+        <button type="submit">Entrar</button>
+        <p class="auth-err" id="auth-err">Token inválido.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap" id="wrap">
+    <div class="top">
+      <h1>Leads capturados</h1>
+      <button class="out" onclick="sair()">Sair</button>
+    </div>
+    <p class="sub">Todo lead é salvo assim que digita nome ou telefone — mesmo sem finalizar. Os laranja não abriram o WhatsApp: recupere.</p>
+    <div class="stats" id="stats"></div>
+    <div class="filters">
+      <button class="filt on" data-f="todos" onclick="setFiltro('todos',this)">Todos</button>
+      <button class="filt" data-f="recuperar" onclick="setFiltro('recuperar',this)">Para recuperar</button>
+    </div>
+    <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+
+  <script>
+    var TOKEN = null, LEADS = [], FILTRO = 'todos';
+
+    function sair(){ try{sessionStorage.removeItem('leads_tok');}catch(e){} location.reload(); }
+
+    document.getElementById('auth-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      TOKEN = document.getElementById('tok').value.trim();
+      carregar(true);
+    });
+
+    (function(){ try{ var t=sessionStorage.getItem('leads_tok'); if(t){TOKEN=t;carregar(false);} }catch(e){} })();
+
+    function fmtData(iso){ try{ return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return iso; } }
+    function soDigitos(t){ return String(t||'').replace(/\D/g,''); }
+    function waNum(t){ var d=soDigitos(t); if(!d) return ''; if(d.length<=11 && d.indexOf('55')!==0) d='55'+d; return d; }
+
+    async function carregar(fromForm){
+      try{
+        var r = await fetch('/api/leads?token='+encodeURIComponent(TOKEN));
+        var j = await r.json();
+        if(!r.ok || j.error){
+          if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent = j.message || 'Token inválido.'; }
+          return;
+        }
+        try{ sessionStorage.setItem('leads_tok', TOKEN); }catch(e){}
+        LEADS = j.leads || [];
+        document.getElementById('auth').style.display='none';
+        document.getElementById('wrap').style.display='block';
+        render();
+      }catch(e){
+        if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent='Erro de conexão.'; }
+      }
+    }
+
+    function setFiltro(f, btn){
+      FILTRO=f;
+      document.querySelectorAll('.filt').forEach(function(b){b.classList.remove('on');});
+      btn.classList.add('on');
+      render();
+    }
+
+    function render(){
+      var total = LEADS.length;
+      var recuperar = LEADS.filter(function(l){ return !l.enviou_whatsapp; }).length;
+      var comTel = LEADS.filter(function(l){ return soDigitos(l.whatsapp); }).length;
+      document.getElementById('stats').innerHTML =
+        '<div class="stat"><strong>'+total+'</strong><span>Leads capturados</span></div>' +
+        '<div class="stat"><strong>'+comTel+'</strong><span>Com telefone</span></div>' +
+        '<div class="stat alerta"><strong>'+recuperar+'</strong><span>Para recuperar</span></div>';
+
+      var arr = FILTRO==='recuperar' ? LEADS.filter(function(l){return !l.enviou_whatsapp;}) : LEADS;
+      if(!arr.length){ document.getElementById('lista').innerHTML='<div class="empty">Nenhum lead '+(FILTRO==='recuperar'?'para recuperar':'ainda')+'.</div>'; return; }
+
+      document.getElementById('lista').innerHTML = arr.map(function(l){
+        var rec = !l.enviou_whatsapp;
+        var num = waNum(l.whatsapp);
+        var msg = encodeURIComponent('Olá'+(l.nome?' '+l.nome.split(' ')[0]:'')+'! Aqui é a Mariana, da RH IMOB. Vi que você começou uma solicitação de contratação no nosso site e queria te ajudar a seguir. Posso te passar os próximos passos?');
+        var campos = [
+          ['Empresa', l.empresa], ['Cidade', l.cidade], ['Cargo', l.cargo_vaga],
+          ['Quantidade', l.quantidade], ['Urgência', l.urgencia],
+          ['Formato', l.formato_contratacao], ['Remuneração', l.remuneracao],
+          ['Benefícios', l.beneficios], ['Exigências', l.exigencias],
+          ['Contexto', l.mensagem], ['Origem', l.origem]
+        ].filter(function(c){return c[1];})
+         .map(function(c){return '<div><b>'+c[0]+':</b> '+esc(c[1])+'</div>';}).join('');
+        return '<div class="lead'+(rec?' recuperar':'')+'">' +
+          '<div class="lead-top">' +
+            '<div><p class="lead-nome">'+esc(l.nome||'(sem nome)')+'</p>' +
+              '<p class="lead-meta">'+fmtData(l.created_at)+' · '+esc(l.whatsapp||'sem telefone')+'</p></div>' +
+            '<span class="badge '+(rec?'rec':'ok')+'">'+(rec?'NÃO enviou — recuperar':'Enviou WhatsApp')+'</span>' +
+          '</div>' +
+          (campos?'<div class="lead-grid">'+campos+'</div>':'') +
+          '<div class="lead-actions">' +
+            (num?'<a class="wa-btn'+(rec?' rec':'')+'" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone='+num+'&text='+msg+'"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.1 1.5 5.8L0 24l6.3-1.6C8 23.4 10 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>'+(rec?'Recuperar no WhatsApp':'Falar no WhatsApp')+'</a>':'<span class="lead-meta">Sem telefone para contato</span>') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  </script>
+</body>
+</html>
