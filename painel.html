@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --linha:#e8e4f2; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:#2b124d}
+    /* login */
+    .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:56px;height:56px;border-radius:50%;margin-bottom:18px}
+    .auth-card h1{font-size:22px;font-weight:900;margin:0 0 4px}
+    .auth-card p{color:#888;font-size:13px;margin:0 0 24px}
+    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid var(--linha);border-radius:12px;font-size:16px;margin-bottom:12px;outline:none}
+    .auth-card input:focus{border-color:var(--roxo)}
+    .auth-card button{width:100%;padding:13px;background:var(--roxo);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
+    .auth-err{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+    /* painel */
+    .app{display:none;height:100vh;flex-direction:column}
+    .bar{background:linear-gradient(135deg,var(--roxo),var(--roxo2));color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:56px;flex-shrink:0}
+    .bar .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:16px}
+    .bar .brand img{width:30px;height:30px;border-radius:50%}
+    .bar .out{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:13px;font-weight:700;padding:7px 14px;border-radius:9px;cursor:pointer}
+    .tabs{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--linha);padding:0 8px;flex-shrink:0;overflow-x:auto}
+    .tab{padding:14px 18px;font-size:14px;font-weight:800;color:#8c809d;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px}
+    .tab.on{color:var(--roxo);border-color:#ff7a1a}
+    .frames{flex:1;position:relative;background:#faf8ff;overflow:hidden}
+    .frames iframe{position:absolute;inset:0;width:100%;height:100%;border:none;display:none;background:#faf8ff}
+    .frames iframe.on{display:block}
+    .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8c809d;font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="auth" id="auth">
+    <div class="auth-card">
+      <img src="/assets/rhimob-logo.jpg" alt="" />
+      <h1>Painel RH IMOB</h1>
+      <p>Acesso único — tudo em um lugar</p>
+      <form id="auth-form">
+        <input type="password" id="pwd" placeholder="Senha" autocomplete="off" />
+        <button type="submit">Entrar</button>
+        <p class="auth-err" id="auth-err">Senha incorreta.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="app" id="app">
+    <div class="bar">
+      <div class="brand"><img src="/assets/rhimob-logo.jpg" alt="" /> Painel RH IMOB</div>
+      <button class="out" onclick="sair()">Sair</button>
+    </div>
+    <div class="tabs">
+      <button class="tab on" data-tab="leads"      data-src="/admin-leads.html"          onclick="abrir(this)">📊 Leads</button>
+      <button class="tab"    data-tab="noticias"   data-src="/admin-noticias.html"       onclick="abrir(this)">📰 Notícias</button>
+      <button class="tab"    data-tab="compartilhar" data-src="/central-compartilhar.html" onclick="abrir(this)">🔗 Compartilhar</button>
+      <button class="tab"    data-tab="vagas"      data-src="/vagas"                     onclick="abrir(this)">💼 Vagas</button>
+    </div>
+    <div class="frames" id="frames">
+      <div class="placeholder" id="ph">Carregando…</div>
+    </div>
+  </div>
+
+  <script>
+    var PWD = 'rhimob@2026';
+    var KEY = 'rh_painel_ok';
+    var loaded = {};
+
+    function sair(){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); }
+
+    document.getElementById('auth-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      if (document.getElementById('pwd').value === PWD) { entrar(); }
+      else { document.getElementById('auth-err').style.display='block'; }
+    });
+    (function(){ try{ if(localStorage.getItem(KEY)===PWD) entrar(); }catch(e){} })();
+
+    function entrar(){
+      try{ localStorage.setItem(KEY, PWD); }catch(e){}
+      document.getElementById('auth').style.display='none';
+      document.getElementById('app').style.display='flex';
+      abrir(document.querySelector('.tab.on'));
+    }
+
+    function abrir(tab){
+      var id = tab.dataset.tab;
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('on', t===tab); });
+      // cria o iframe na primeira vez
+      if(!loaded[id]){
+        var f = document.createElement('iframe');
+        f.id = 'f-'+id;
+        f.src = tab.dataset.src;
+        document.getElementById('frames').appendChild(f);
+        loaded[id] = f;
+      }
+      var ph = document.getElementById('ph'); if(ph) ph.style.display='none';
+      Object.keys(loaded).forEach(function(k){ loaded[k].classList.toggle('on', k===id); });
+    }
+  </script>
+</body>
+</html>

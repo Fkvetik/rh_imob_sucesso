@@ -89,7 +89,14 @@
       carregar(true);
     });
 
-    (function(){ try{ var t=sessionStorage.getItem('leads_tok'); if(t){TOKEN=t;carregar(false);} }catch(e){} })();
+    (function(){
+      try{
+        // Login único do /painel: usa a senha do painel como token dos leads
+        var p=localStorage.getItem('rh_painel_ok');
+        if(p){ TOKEN=p; carregar(false); return; }
+        var t=sessionStorage.getItem('leads_tok'); if(t){TOKEN=t;carregar(false);}
+      }catch(e){}
+    })();
 
     function fmtData(iso){ try{ return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return iso; } }
     function soDigitos(t){ return String(t||'').replace(/\D/g,''); }

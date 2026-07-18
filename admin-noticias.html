@@ -321,6 +321,8 @@
 
   // ── AUTH ─────────────────────────────────────────
   function checkAuth() {
+    // Login único do /painel destrava automaticamente
+    try { if (localStorage.getItem('rh_painel_ok') === ADMIN_PWD) return true; } catch (e) {}
     return sessionStorage.getItem('admin_auth') === '1';
   }
   function logout() {
