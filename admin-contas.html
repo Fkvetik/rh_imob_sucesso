@@ -7,50 +7,93 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <style>
-    :root{ --roxo:#2b124d; --linha:#e8e4f2 }
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --laranja:#ff7a1a; --linha:#e8e4f2 }
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:#2b124d}
+    button{font-family:inherit}
+    /* login */
     .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
     .auth-card{background:#fff;border-radius:24px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
     .auth-card img{width:52px;height:52px;border-radius:50%;margin-bottom:18px}
-    .auth-card h1{font-size:20px;font-weight:900;color:#2b124d;margin:0 0 6px}
+    .auth-card h1{font-size:20px;font-weight:900;margin:0 0 6px}
     .auth-card p{color:#888;font-size:13px;margin:0 0 24px}
-    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none;box-sizing:border-box}
-    .auth-card button{width:100%;padding:13px;background:#2b124d;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
+    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none}
+    .auth-card button{width:100%;padding:13px;background:var(--roxo);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
     .auth-err{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
 
-    .wrap{display:none;max-width:1100px;margin:0 auto;padding:32px 18px 80px}
-    .top h1{font-size:24px;font-weight:900;color:#2b124d;margin:0 0 4px}
-    .sub{color:#6f6283;font-size:14px;margin:0 0 20px}
+    .wrap{display:none;max-width:1100px;margin:0 auto;padding:28px 18px 90px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+    .top h1{font-size:24px;font-weight:900;margin:0}
+    .sub{color:#6f6283;font-size:14px;margin:0 0 22px}
+    .btn{border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;padding:10px 16px}
+    .btn-primary{background:var(--roxo);color:#fff}
+    .btn-laranja{background:var(--laranja);color:#fff}
+    .btn-ghost{background:#fff;border:1.5px solid var(--linha);color:var(--roxo)}
+    .btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+    .btn:disabled{opacity:.5;cursor:default}
 
-    .plano-card{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 20px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-    .plano-card b{font-size:15px}
-    .plano-card span{color:#8c809d;font-size:13px}
-    .badge{font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;white-space:nowrap}
-    .badge.ativo{background:#dcfce7;color:#166534}
-    .badge.inativo{background:#fee2e2;color:#991b1b}
+    .section-title{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#8c809d;margin:26px 0 12px}
 
-    .conta{background:#fff;border:1px solid var(--linha);border-radius:16px;padding:18px 20px;margin-bottom:14px}
+    /* planos */
+    .planos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:8px}
+    .plano-card{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 18px}
+    .plano-card h3{font-size:15px;margin:0 0 2px}
+    .plano-tipo{font-size:11px;font-weight:800;color:#8c809d;text-transform:uppercase;letter-spacing:.04em}
+    .plano-modo{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;margin:8px 0}
+    .modo-cliente{background:#dcfce7;color:#166534}
+    .modo-rhimob{background:#ede9fe;color:#5b21b6}
+    .modo-none{background:#f1edf9;color:#8c809d}
+    .plano-card label{display:block;font-size:11px;font-weight:700;color:#8c809d;margin:8px 0 3px}
+    .plano-card input,.plano-card textarea{width:100%;border:1.5px solid var(--linha);border-radius:9px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit}
+    .plano-card textarea{resize:vertical;min-height:52px}
+    .plano-hint{font-size:11px;color:#a99fb5;margin-top:6px}
+
+    /* contas */
+    .conta{background:#fff;border:1px solid var(--linha);border-radius:16px;padding:16px 20px;margin-bottom:12px}
     .conta-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;cursor:pointer}
-    .conta-nome{font-size:16px;font-weight:800;color:#2b124d;margin:0}
+    .conta-nome{font-size:16px;font-weight:800;margin:0}
     .conta-meta{font-size:12px;color:#8c809d;margin-top:2px}
+    .badge{font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;white-space:nowrap}
+    .badge.ativa,.badge.ativo{background:#dcfce7;color:#166534}
+    .badge.inativa,.badge.inativo{background:#fee2e2;color:#991b1b}
+    .badge.suspensa{background:#ffedd5;color:#c2410c}
     .saldo-bar{background:#f1edf9;border-radius:8px;height:8px;margin-top:10px;overflow:hidden}
-    .saldo-fill{background:linear-gradient(90deg,#5a1fd4,#ff7a1a);height:100%}
-    .conta-stats{display:flex;gap:18px;margin-top:8px;font-size:12px;color:#6f6283}
-    .conta-stats b{color:#2b124d}
+    .saldo-fill{background:linear-gradient(90deg,var(--roxo2),var(--laranja));height:100%}
+    .conta-stats{display:flex;gap:18px;margin-top:8px;font-size:12px;color:#6f6283;flex-wrap:wrap}
+    .conta-stats b{color:var(--roxo)}
 
-    .usuarios{margin-top:14px;border-top:1px dashed var(--linha);padding-top:12px;display:none}
-    .usuarios.on{display:block}
-    .usuario-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f4f1fa;gap:10px;flex-wrap:wrap}
+    .painel{display:none;margin-top:14px;border-top:1px dashed var(--linha);padding-top:14px}
+    .painel.on{display:block}
+    .painel-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .usuarios-head{font-size:12px;font-weight:800;color:#8c809d;text-transform:uppercase;letter-spacing:.04em;margin:6px 0 8px}
+    .usuario-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f4f1fa;gap:10px;flex-wrap:wrap}
     .usuario-row:last-child{border-bottom:none}
     .usuario-info b{font-size:13.5px;display:block}
     .usuario-info span{font-size:12px;color:#8c809d}
-    .toggle-btn{font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:1.5px solid var(--linha);background:#fff;cursor:pointer}
-    .toggle-btn.ativar{color:#166534;border-color:#bbf7d0}
-    .toggle-btn.desativar{color:#991b1b;border-color:#fecaca}
-    .toggle-btn:disabled{opacity:.5;cursor:default}
-    .empty{color:#8c809d;text-align:center;padding:40px 0}
+    .perfil-tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:#f1edf9;color:#5b21b6;margin-left:6px}
+    .usuario-acoes{display:flex;gap:6px;flex-wrap:wrap}
+
+    .empty{color:#8c809d;text-align:center;padding:36px 0}
     .loading{color:#8c809d;padding:20px 0}
+
+    /* modal */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(43,18,77,.42);z-index:50;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+    .modal-bg.on{display:flex}
+    .modal{background:#fff;border-radius:20px;padding:26px 26px 22px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(43,18,77,.28)}
+    .modal h2{font-size:18px;font-weight:900;margin:0 0 4px}
+    .modal .modal-sub{font-size:12.5px;color:#8c809d;margin:0 0 18px}
+    .field{margin-bottom:13px}
+    .field label{display:block;font-size:12px;font-weight:700;color:#6f6283;margin-bottom:4px}
+    .field input,.field select,.field textarea{width:100%;border:1.5px solid var(--linha);border-radius:10px;padding:11px 12px;font-size:14px;outline:none;font-family:inherit}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--roxo)}
+    .field textarea{resize:vertical;min-height:56px}
+    .field-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .senha-row{display:flex;gap:8px}
+    .senha-row input{flex:1}
+    .modal-actions{display:flex;gap:10px;margin-top:20px}
+    .modal-actions .btn{flex:1;padding:12px}
+    .modal-err{color:#e53e3e;font-size:12.5px;margin-top:10px;display:none}
+    .modal-danger-note{background:#fff5f5;border:1px solid #fed7d7;color:#c53030;font-size:12.5px;padding:10px 12px;border-radius:10px;margin-bottom:14px}
   </style>
 </head>
 <body>
@@ -69,16 +112,27 @@
 
   <div class="wrap" id="wrap">
     <div class="top">
-      <h1>Contas, perfis e planos</h1>
-      <p class="sub">Empresas com acesso à Plataforma Novos Talentos, seus usuários e o consumo de cada conta.</p>
+      <div>
+        <h1>Contas, perfis e planos</h1>
+        <p class="sub">Crie contas quando um cliente compra, defina plano, limites e usuários, e gerencie os logins de acesso.</p>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalConta()">+ Nova conta</button>
     </div>
-    <div id="planos"></div>
+
+    <div class="section-title">Planos (o que o cliente vê e paga)</div>
+    <div class="planos-grid" id="planos"></div>
+
+    <div class="section-title">Contas de clientes</div>
     <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+
+  <!-- modal genérico -->
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal" id="modal"></div>
   </div>
 
   <script>
     var TOKEN = null, CONTAS = [], USUARIOS = [], PLANOS = [], ABERTAS = {};
-    var SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 
     (function(){
       try{
@@ -99,7 +153,7 @@
         var r = await fetch('/api/contas?token=' + encodeURIComponent(TOKEN));
         var j = await r.json();
         if(!r.ok || j.error){
-          if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent = j.message || 'Token inválido.'; }
+          if(fromForm){ mostrarErroLogin(j.message || 'Token inválido.'); }
           return;
         }
         try{ sessionStorage.setItem('contas_tok', TOKEN); }catch(e){}
@@ -108,70 +162,284 @@
         document.getElementById('wrap').style.display='block';
         render();
       }catch(e){
-        if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent='Erro de conexão.'; }
+        if(fromForm){ mostrarErroLogin('Erro de conexão.'); }
       }
+    }
+    function mostrarErroLogin(msg){ var el=document.getElementById('auth-err'); el.style.display='block'; el.textContent=msg; }
+
+    async function recarregar(){
+      try{
+        var r = await fetch('/api/contas?token=' + encodeURIComponent(TOKEN));
+        var j = await r.json();
+        if(j.ok){ CONTAS=j.contas||[]; USUARIOS=j.usuarios||[]; PLANOS=j.planos||[]; render(); }
+      }catch(e){}
     }
 
     function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+    function attr(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+    function brl(v){ if(v==null||v==='') return '—'; return 'R$ ' + Number(v).toFixed(2).replace('.',','); }
+    function modoLabel(m){ return m==='CLIENTE_PROPRIO' ? 'Cliente traz Catho' : m==='RHIMOB_FORNECE' ? 'RH IMOB fornece' : 'Sem modo'; }
+    function modoClasse(m){ return m==='CLIENTE_PROPRIO' ? 'modo-cliente' : m==='RHIMOB_FORNECE' ? 'modo-rhimob' : 'modo-none'; }
 
+    // ───────── render principal ─────────
     function render(){
+      // PLANOS (editáveis inline)
       document.getElementById('planos').innerHTML = PLANOS.map(function(p){
         return '<div class="plano-card">' +
-          '<div><b>' + esc(p.nome_comercial) + '</b><br><span>' + esc(p.descricao_comercial||'') + '</span></div>' +
-          '<span class="badge ' + (p.status==='ATIVO'?'ativo':'inativo') + '">' + esc(p.status) + '</span>' +
+          '<div class="plano-tipo">' + esc(p.plano_tipo) + '</div>' +
+          '<h3>' + esc(p.nome_comercial||'') + '</h3>' +
+          '<span class="plano-modo ' + modoClasse(p.modo_integracao) + '">' + modoLabel(p.modo_integracao) + '</span>' +
+          '<label>Preço mensal (R$)</label>' +
+          '<input type="number" step="0.01" min="0" id="preco-' + esc(p.plano_tipo) + '" value="' + (p.preco_mensal!=null?p.preco_mensal:'') + '">' +
+          '<label>Descrição comercial</label>' +
+          '<textarea id="desc-' + esc(p.plano_tipo) + '">' + esc(p.descricao_comercial||'') + '</textarea>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">' +
+            '<span class="plano-hint">Clientes veem na página pública</span>' +
+            '<button class="btn btn-ghost btn-sm" onclick="salvarPlano(\'' + esc(p.plano_tipo) + '\', this)">Salvar</button>' +
+          '</div>' +
         '</div>';
-      }).join('');
+      }).join('') || '<div class="empty">Nenhum plano cadastrado.</div>';
 
-      if(!CONTAS.length){ document.getElementById('lista').innerHTML = '<div class="empty">Nenhuma conta ainda.</div>'; return; }
-
+      // CONTAS
+      if(!CONTAS.length){ document.getElementById('lista').innerHTML = '<div class="empty">Nenhuma conta ainda. Clique em “+ Nova conta”.</div>'; return; }
       document.getElementById('lista').innerHTML = CONTAS.map(function(c, i){
         var pct = c.limite_total ? Math.min(100, Math.round((c.consumidos/c.limite_total)*100)) : 0;
-        var usuariosDaConta = USUARIOS.filter(function(u){ return u.conta_id === c.conta_id; });
+        var us = USUARIOS.filter(function(u){ return u.conta_id === c.conta_id; });
+        var st = (c.status||'').toLowerCase();
         return '<div class="conta">' +
-          '<div class="conta-top" onclick="toggleUsuarios(' + i + ')">' +
+          '<div class="conta-top" onclick="togglePainel(' + i + ')">' +
             '<div><p class="conta-nome">' + esc(c.nome_conta) + '</p>' +
-              '<p class="conta-meta">' + esc(c.plano_tipo) + ' · ' + usuariosDaConta.length + ' usuário(s)</p></div>' +
-            '<span class="badge ' + (c.status==='ATIVA'?'ativo':'inativo') + '">' + esc(c.status) + '</span>' +
+              '<p class="conta-meta">' + esc(c.plano_tipo) + ' · ' + modoLabel(c.modo_integracao) + ' · ' + us.length + '/' + (c.usuarios_contratados||'?') + ' usuários</p></div>' +
+            '<span class="badge ' + st + '">' + esc(c.status||'') + '</span>' +
           '</div>' +
           '<div class="saldo-bar"><div class="saldo-fill" style="width:' + pct + '%"></div></div>' +
-          '<div class="conta-stats"><span>Limite: <b>' + c.limite_total + '</b></span><span>Consumidos: <b>' + c.consumidos + '</b></span><span>Saldo: <b>' + c.saldo + '</b></span></div>' +
-          '<div class="usuarios' + (ABERTAS[c.conta_id]?' on':'') + '" id="usuarios-' + i + '">' +
-            (usuariosDaConta.length ? usuariosDaConta.map(function(u){
-              var ativo = u.status === 'ATIVO';
-              return '<div class="usuario-row">' +
-                '<div class="usuario-info"><b>' + esc(u.nome||'(sem nome)') + '</b><span>' + esc(u.email_login||'') + ' · ' + esc(u.perfil||'') + '</span></div>' +
-                '<button class="toggle-btn ' + (ativo?'desativar':'ativar') + '" onclick="alternarStatus(\'' + u.usuario_id + '\', \'' + (ativo?'INATIVO':'ATIVO') + '\', this)">' + (ativo?'Desativar':'Ativar') + '</button>' +
-              '</div>';
-            }).join('') : '<div class="usuario-row"><span class="usuario-info">Nenhum usuário nesta conta.</span></div>') +
+          '<div class="conta-stats"><span>Disparos/limite: <b>' + (c.limite_total!=null?c.limite_total:'—') + '</b></span>' +
+            '<span>Consumidos: <b>' + c.consumidos + '</b></span><span>Saldo: <b>' + c.saldo + '</b></span>' +
+            '<span>Por usuário: <b>' + (c.limite_por_usuario!=null?c.limite_por_usuario:'—') + '</b></span></div>' +
+          '<div class="painel' + (ABERTAS[c.conta_id]?' on':'') + '" id="painel-' + i + '">' +
+            '<div class="painel-acoes">' +
+              '<button class="btn btn-ghost btn-sm" onclick="abrirModalConta(\'' + esc(c.conta_id) + '\')">✎ Editar conta</button>' +
+              '<button class="btn btn-laranja btn-sm" onclick="abrirModalUsuario(\'' + esc(c.conta_id) + '\')">+ Adicionar usuário</button>' +
+            '</div>' +
+            '<div class="usuarios-head">Usuários / logins</div>' +
+            (us.length ? us.map(renderUsuario).join('') : '<div class="conta-meta" style="padding:6px 0">Nenhum usuário nesta conta ainda.</div>') +
           '</div>' +
         '</div>';
       }).join('');
     }
 
-    function toggleUsuarios(i){
-      var c = CONTAS[i];
-      if(!c) return;
+    function renderUsuario(u){
+      var ativo = u.status === 'ATIVO';
+      return '<div class="usuario-row">' +
+        '<div class="usuario-info"><b>' + esc(u.nome||'(sem nome)') + '<span class="perfil-tag">' + esc(u.perfil||'') + '</span></b>' +
+          '<span>' + esc(u.email_login||'') + (u.senha_temporaria?(' · senha: ' + esc(u.senha_temporaria)):'') + '</span></div>' +
+        '<div class="usuario-acoes">' +
+          '<button class="btn btn-ghost btn-sm" onclick="abrirModalUsuario(\'' + esc(u.conta_id) + '\',\'' + u.usuario_id + '\')">Editar</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="abrirModalSenha(\'' + u.usuario_id + '\',\'' + esc((u.nome||'').replace(/\\/g,'')) + '\')">Senha</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="alternarStatus(\'' + u.usuario_id + '\',\'' + (ativo?'INATIVO':'ATIVO') + '\',this)">' + (ativo?'Desativar':'Ativar') + '</button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:#c53030;border-color:#fecaca" onclick="excluirUsuario(\'' + u.usuario_id + '\',\'' + esc((u.nome||'').replace(/\\/g,'')) + '\')">Excluir</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function togglePainel(i){
+      var c = CONTAS[i]; if(!c) return;
       ABERTAS[c.conta_id] = !ABERTAS[c.conta_id];
-      var el = document.getElementById('usuarios-' + i);
+      var el = document.getElementById('painel-' + i);
       if(el) el.classList.toggle('on', ABERTAS[c.conta_id]);
+    }
+
+    // ───────── ações rápidas ─────────
+    async function salvarPlano(planoTipo, btn){
+      var preco = document.getElementById('preco-' + planoTipo).value;
+      var desc = document.getElementById('desc-' + planoTipo).value;
+      btn.disabled = true; var txt = btn.textContent; btn.textContent = 'Salvando...';
+      try{
+        await postAcao({ acao:'editar_plano', plano_tipo:planoTipo, preco_mensal:preco, descricao_comercial:desc });
+        btn.textContent = 'Salvo ✓';
+        setTimeout(function(){ btn.textContent = txt; btn.disabled=false; }, 1400);
+        var p = PLANOS.find(function(x){return x.plano_tipo===planoTipo;});
+        if(p){ p.preco_mensal = preco; p.descricao_comercial = desc; }
+      }catch(e){ alert('Erro ao salvar plano: ' + e.message); btn.textContent = txt; btn.disabled=false; }
     }
 
     async function alternarStatus(usuarioId, novoStatus, btn){
       btn.disabled = true;
       try{
-        var r = await fetch('/api/contas?token=' + encodeURIComponent(TOKEN), {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ acao: 'alterar_status_usuario', usuario_id: usuarioId, status: novoStatus })
-        });
-        if(!r.ok) throw new Error('Falha ao atualizar.');
+        await postAcao({ acao:'alterar_status_usuario', usuario_id:usuarioId, status:novoStatus });
         var u = USUARIOS.find(function(x){ return x.usuario_id === usuarioId; });
         if(u) u.status = novoStatus;
         render();
-      }catch(e){
-        alert('Erro ao alterar status: ' + e.message);
-        btn.disabled = false;
+      }catch(e){ alert('Erro: ' + e.message); btn.disabled=false; }
+    }
+
+    async function excluirUsuario(usuarioId, nome){
+      if(!confirm('Excluir o usuário "' + nome + '"?\n\nIsso remove o login de acesso permanentemente. Não dá para desfazer.')) return;
+      try{
+        await postAcao({ acao:'excluir_usuario', usuario_id:usuarioId });
+        await recarregar();
+      }catch(e){ alert('Erro ao excluir: ' + e.message); }
+    }
+
+    // ───────── modais ─────────
+    function fecharModal(){ document.getElementById('modal-bg').classList.remove('on'); }
+    document.getElementById('modal-bg').addEventListener('click', function(e){ if(e.target===this) fecharModal(); });
+
+    function planoOptions(sel){
+      return PLANOS.map(function(p){
+        return '<option value="' + attr(p.plano_tipo) + '"' + (p.plano_tipo===sel?' selected':'') + '>' + esc(p.nome_comercial||p.plano_tipo) + '</option>';
+      }).join('');
+    }
+
+    function abrirModalConta(contaId){
+      var c = contaId ? CONTAS.find(function(x){return x.conta_id===contaId;}) : null;
+      var editar = !!c;
+      document.getElementById('modal').innerHTML =
+        '<h2>' + (editar?'Editar conta':'Nova conta') + '</h2>' +
+        '<p class="modal-sub">' + (editar?esc(c.conta_id):'Uma conta é a empresa/cliente que assinou a ferramenta.') + '</p>' +
+        '<div class="field"><label>Nome da conta</label><input id="f-nome" value="' + (editar?attr(c.nome_conta):'') + '" placeholder="Ex.: Imobiliária Silva"></div>' +
+        '<div class="field"><label>Plano</label><select id="f-plano" onchange="aplicarPlano()">' + planoOptions(editar?c.plano_tipo:'') + '</select></div>' +
+        '<div class="field"><label>Modo de integração</label><select id="f-modo">' +
+          '<option value="">—</option>' +
+          '<option value="CLIENTE_PROPRIO"' + (editar&&c.modo_integracao==='CLIENTE_PROPRIO'?' selected':'') + '>Cliente traz a Catho dele</option>' +
+          '<option value="RHIMOB_FORNECE"' + (editar&&c.modo_integracao==='RHIMOB_FORNECE'?' selected':'') + '>RH IMOB fornece a Catho</option>' +
+        '</select></div>' +
+        '<div class="field-2">' +
+          '<div class="field"><label>Disparos/mês (limite total)</label><input id="f-limite" type="number" min="0" value="' + (editar&&c.limite_total!=null?c.limite_total:'') + '" placeholder="ilimitado"></div>' +
+          '<div class="field"><label>Limite por usuário</label><input id="f-limiteuser" type="number" min="0" value="' + (editar&&c.limite_por_usuario!=null?c.limite_por_usuario:'') + '"></div>' +
+        '</div>' +
+        '<div class="field-2">' +
+          '<div class="field"><label>Nº de usuários contratados</label><input id="f-usuarios" type="number" min="0" value="' + (editar&&c.usuarios_contratados!=null?c.usuarios_contratados:'') + '"></div>' +
+          '<div class="field"><label>Status</label><select id="f-status">' +
+            ['ATIVA','INATIVA','SUSPENSA'].map(function(s){return '<option'+(editar&&c.status===s?' selected':'')+'>'+s+'</option>';}).join('') +
+          '</select></div>' +
+        '</div>' +
+        '<div class="field"><label>Observação (interno)</label><textarea id="f-obs">' + (editar?esc(c.observacao||''):'') + '</textarea></div>' +
+        '<p class="modal-err" id="m-err"></p>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>' +
+          '<button class="btn btn-primary" id="m-save" onclick="salvarConta(' + (editar?('\''+esc(c.conta_id)+'\''):'null') + ')">' + (editar?'Salvar':'Criar conta') + '</button>' +
+        '</div>';
+      document.getElementById('modal-bg').classList.add('on');
+    }
+
+    function aplicarPlano(){
+      var tipo = document.getElementById('f-plano').value;
+      var p = PLANOS.find(function(x){return x.plano_tipo===tipo;});
+      if(!p) return;
+      var lim = document.getElementById('f-limite'), us = document.getElementById('f-usuarios'), modo = document.getElementById('f-modo');
+      if(lim && !lim.value) lim.value = p.limite_total_padrao!=null ? p.limite_total_padrao : '';
+      if(us && !us.value) us.value = p.usuarios_padrao!=null ? p.usuarios_padrao : '';
+      if(modo && p.modo_integracao) modo.value = p.modo_integracao;
+    }
+
+    async function salvarConta(contaId){
+      var payload = {
+        acao: contaId ? 'editar_conta' : 'criar_conta',
+        conta_id: contaId || undefined,
+        nome_conta: val('f-nome'),
+        plano_tipo: val('f-plano'),
+        modo_integracao: val('f-modo'),
+        limite_total: val('f-limite'),
+        limite_por_usuario: val('f-limiteuser'),
+        usuarios_contratados: val('f-usuarios'),
+        status: val('f-status'),
+        observacao: val('f-obs')
+      };
+      if(!payload.nome_conta){ return modalErr('Informe o nome da conta.'); }
+      var btn = document.getElementById('m-save'); btn.disabled=true; btn.textContent='Salvando...';
+      try{
+        await postAcao(payload);
+        fecharModal(); await recarregar();
+      }catch(e){ modalErr(e.message); btn.disabled=false; btn.textContent = contaId?'Salvar':'Criar conta'; }
+    }
+
+    function abrirModalUsuario(contaId, usuarioId){
+      var u = usuarioId ? USUARIOS.find(function(x){return x.usuario_id===usuarioId;}) : null;
+      var editar = !!u;
+      var conta = CONTAS.find(function(x){return x.conta_id===contaId;});
+      document.getElementById('modal').innerHTML =
+        '<h2>' + (editar?'Editar usuário':'Adicionar usuário') + '</h2>' +
+        '<p class="modal-sub">Conta: ' + esc(conta?conta.nome_conta:contaId) + '</p>' +
+        '<div class="field"><label>Nome</label><input id="u-nome" value="' + (editar?attr(u.nome):'') + '"></div>' +
+        '<div class="field"><label>E-mail de login</label><input id="u-email" type="email" value="' + (editar?attr(u.email_login):'') + '"' + (editar?' disabled style="opacity:.6"':'') + '></div>' +
+        (editar?'':'<div class="field"><label>Senha inicial</label><div class="senha-row"><input id="u-senha" value=""><button type="button" class="btn btn-ghost btn-sm" onclick="gerarSenha()">Gerar</button></div></div>') +
+        '<div class="field"><label>Perfil</label><select id="u-perfil">' +
+          ['OPERADOR','ADMIN','MASTER'].map(function(pf){return '<option'+(editar&&u.perfil===pf?' selected':'')+'>'+pf+'</option>';}).join('') +
+        '</select></div>' +
+        '<p class="modal-err" id="m-err"></p>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>' +
+          '<button class="btn btn-primary" id="m-save" onclick="salvarUsuario(\'' + esc(contaId) + '\',' + (editar?('\''+u.usuario_id+'\''):'null') + ')">' + (editar?'Salvar':'Criar usuário') + '</button>' +
+        '</div>';
+      document.getElementById('modal-bg').classList.add('on');
+      if(!editar) gerarSenha();
+    }
+
+    function gerarSenha(){
+      var chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      var s=''; for(var i=0;i<10;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+      var el=document.getElementById('u-senha'); if(el) el.value=s;
+    }
+
+    async function salvarUsuario(contaId, usuarioId){
+      var btn = document.getElementById('m-save');
+      var payload;
+      if(usuarioId){
+        payload = { acao:'editar_usuario', usuario_id:usuarioId, nome:val('u-nome'), perfil:val('u-perfil') };
+        if(!payload.nome) return modalErr('Informe o nome.');
+      }else{
+        payload = { acao:'criar_usuario', conta_id:contaId, nome:val('u-nome'), email_login:val('u-email'), senha:val('u-senha'), perfil:val('u-perfil') };
+        if(!payload.nome) return modalErr('Informe o nome.');
+        if(!payload.email_login) return modalErr('Informe o e-mail.');
+        if((payload.senha||'').length<6) return modalErr('Senha deve ter ao menos 6 caracteres.');
       }
+      btn.disabled=true; btn.textContent='Salvando...';
+      try{
+        await postAcao(payload);
+        fecharModal(); await recarregar();
+      }catch(e){ modalErr(e.message); btn.disabled=false; btn.textContent = usuarioId?'Salvar':'Criar usuário'; }
+    }
+
+    function abrirModalSenha(usuarioId, nome){
+      document.getElementById('modal').innerHTML =
+        '<h2>Redefinir senha</h2>' +
+        '<p class="modal-sub">Usuário: ' + esc(nome) + '</p>' +
+        '<div class="field"><label>Nova senha</label><div class="senha-row"><input id="s-senha" value=""><button type="button" class="btn btn-ghost btn-sm" onclick="gerarSenhaReset()">Gerar</button></div></div>' +
+        '<p class="modal-err" id="m-err"></p>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>' +
+          '<button class="btn btn-primary" id="m-save" onclick="salvarSenha(\'' + usuarioId + '\')">Redefinir</button>' +
+        '</div>';
+      document.getElementById('modal-bg').classList.add('on');
+      gerarSenhaReset();
+    }
+    function gerarSenhaReset(){
+      var chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      var s=''; for(var i=0;i<10;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+      var el=document.getElementById('s-senha'); if(el) el.value=s;
+    }
+    async function salvarSenha(usuarioId){
+      var senha = val('s-senha');
+      if(senha.length<6) return modalErr('Senha deve ter ao menos 6 caracteres.');
+      var btn = document.getElementById('m-save'); btn.disabled=true; btn.textContent='Salvando...';
+      try{
+        await postAcao({ acao:'resetar_senha_usuario', usuario_id:usuarioId, senha:senha });
+        fecharModal(); await recarregar();
+        alert('Senha redefinida. Nova senha: ' + senha);
+      }catch(e){ modalErr(e.message); btn.disabled=false; btn.textContent='Redefinir'; }
+    }
+
+    // ───────── util ─────────
+    function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+    function modalErr(msg){ var el=document.getElementById('m-err'); if(el){ el.style.display='block'; el.textContent=msg; } }
+    async function postAcao(payload){
+      var r = await fetch('/api/contas?token=' + encodeURIComponent(TOKEN), {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok || j.error){ throw new Error(j.message || ('Falha (' + r.status + ')')); }
+      return j;
     }
   </script>
 </body>
