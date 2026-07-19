@@ -95,18 +95,34 @@
     grid.innerHTML = cards.join('');
   }
 
+  // Atualiza os números da página (contagem de talentos e preço mínimo) que
+  // antes eram fixos no HTML. Ex.: <span data-nt-talentos>, <span data-nt-preco-min>.
+  function atualizarStats(j) {
+    var n = j && j.total_talentos;
+    if (isFinite(n) && n > 0) {
+      var txt = n >= 1000 ? (Math.floor(n / 1000) + ' mil') : String(n);
+      document.querySelectorAll('[data-nt-talentos]').forEach(function (el) { el.textContent = txt; });
+    }
+    var pmin = j && j.preco_min;
+    if (isFinite(pmin) && pmin > 0) {
+      var pt = Number.isInteger(pmin) ? String(pmin) : pmin.toFixed(2).replace('.', ',');
+      document.querySelectorAll('[data-nt-preco-min]').forEach(function (el) { el.textContent = pt; });
+    }
+  }
+
   function init() {
     var grid = document.getElementById('planosGrid');
-    if (!grid) return;
-    var px = grid.getAttribute('data-prefix') || 'plan';
-    var produto = grid.getAttribute('data-produto') || 'Plataforma RH IMOB';
+    var px = grid ? (grid.getAttribute('data-prefix') || 'plan') : 'plan';
+    var produto = grid ? (grid.getAttribute('data-produto') || 'Plataforma RH IMOB') : 'Plataforma RH IMOB';
     fetch('/api/planos-publicos')
       .then(function (r) { return r.json(); })
       .then(function (j) {
+        atualizarStats(j);
+        if (!grid) return;
         if (j && j.ok && Array.isArray(j.planos) && j.planos.length) render(grid, j.planos);
         else fallback(grid, px, produto);
       })
-      .catch(function () { fallback(grid, px, produto); });
+      .catch(function () { if (grid) fallback(grid, px, produto); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
