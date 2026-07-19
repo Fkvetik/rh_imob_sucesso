@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vagas — Admin RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --laranja:#ff7a1a; --linha:#e8e4f2 }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:#2b124d}
+    button{font-family:inherit}
+    .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:52px;height:52px;border-radius:50%;margin-bottom:18px}
+    .auth-card h1{font-size:20px;font-weight:900;margin:0 0 6px}
+    .auth-card p{color:#888;font-size:13px;margin:0 0 24px}
+    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none}
+    .auth-card button{width:100%;padding:13px;background:var(--roxo);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
+    .auth-err{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+
+    .wrap{display:none;max-width:1000px;margin:0 auto;padding:28px 18px 90px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+    .top h1{font-size:24px;font-weight:900;margin:0}
+    .sub{color:#6f6283;font-size:14px;margin:0 0 18px}
+    .btn{border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;padding:10px 16px}
+    .btn-primary{background:var(--roxo);color:#fff}
+    .btn-ghost{background:#fff;border:1.5px solid var(--linha);color:var(--roxo)}
+    .btn-sm{padding:6px 11px;font-size:12px;border-radius:8px}
+    .btn:disabled{opacity:.5;cursor:default}
+
+    .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+    .barra input{flex:1;min-width:200px;border:1.5px solid var(--linha);border-radius:10px;padding:10px 13px;font-size:14px;outline:none}
+    .contador{font-size:12px;color:#8c809d;font-weight:700}
+
+    .vaga{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:14px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .vaga-info{min-width:0;flex:1}
+    .vaga-titulo{font-size:15px;font-weight:800;margin:0}
+    .vaga-meta{font-size:12px;color:#8c809d;margin-top:2px}
+    .badge{font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;white-space:nowrap;margin-left:8px}
+    .badge.ativa{background:#dcfce7;color:#166534}
+    .badge.inativa,.badge.pausada{background:#fee2e2;color:#991b1b}
+    .vaga-acoes{display:flex;gap:6px;flex-wrap:wrap}
+    .empty{color:#8c809d;text-align:center;padding:40px 0}
+    .loading{color:#8c809d;padding:20px 0}
+
+    /* modal */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(43,18,77,.42);z-index:50;align-items:flex-start;justify-content:center;padding:34px 16px;overflow-y:auto}
+    .modal-bg.on{display:flex}
+    .modal{background:#fff;border-radius:20px;padding:24px 24px 20px;max-width:620px;width:100%;box-shadow:0 30px 80px rgba(43,18,77,.28)}
+    .modal h2{font-size:18px;font-weight:900;margin:0 0 2px}
+    .modal .modal-sub{font-size:12.5px;color:#8c809d;margin:0 0 16px}
+    .grp-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#8c809d;margin:16px 0 8px;border-top:1px solid var(--linha);padding-top:14px}
+    .grp-title:first-of-type{border-top:none;padding-top:0;margin-top:4px}
+    .field{margin-bottom:11px}
+    .field label{display:block;font-size:12px;font-weight:700;color:#6f6283;margin-bottom:4px}
+    .field .dica{font-weight:400;color:#a99fb5}
+    .field input,.field select,.field textarea{width:100%;border:1.5px solid var(--linha);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit}
+    .field textarea{resize:vertical;min-height:60px}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--roxo)}
+    .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;position:sticky;bottom:0;background:#fff;padding-top:6px}
+    .modal-actions .btn{flex:1;padding:12px}
+    .modal-err{color:#e53e3e;font-size:12.5px;margin-top:10px;display:none}
+    @media(max-width:560px){.cols-2,.cols-3{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="auth" id="auth">
+    <div class="auth-card">
+      <img src="/assets/rhimob-logo.jpg" alt="" />
+      <h1>Vagas — RH IMOB</h1>
+      <p>Acesso restrito</p>
+      <form id="auth-form">
+        <input type="password" id="tok" placeholder="Token de acesso" autocomplete="off" />
+        <button type="submit">Entrar</button>
+        <p class="auth-err" id="auth-err">Token inválido.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap" id="wrap">
+    <div class="top">
+      <div>
+        <h1>Gestão de vagas</h1>
+        <p class="sub">Crie, edite, ative/desative ou exclua vagas. Só as ATIVAS aparecem em /vagas.</p>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModal()">+ Nova vaga</button>
+    </div>
+    <div class="barra">
+      <input id="busca" type="search" placeholder="Buscar por título, cidade, categoria…" oninput="render()">
+      <span class="contador" id="contador"></span>
+    </div>
+    <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+
+  <div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+
+  <script>
+    var TOKEN=null, VAGAS=[];
+
+    (function(){
+      try{
+        var p=localStorage.getItem('rh_painel_ok');
+        if(p){ TOKEN=p; carregar(false); return; }
+        var t=sessionStorage.getItem('vagas_tok'); if(t){ TOKEN=t; carregar(false); }
+      }catch(e){}
+    })();
+    document.getElementById('auth-form').addEventListener('submit',function(e){ e.preventDefault(); TOKEN=document.getElementById('tok').value.trim(); carregar(true); });
+
+    async function carregar(fromForm){
+      try{
+        var r=await fetch('/api/vagas-admin?token='+encodeURIComponent(TOKEN));
+        var j=await r.json();
+        if(!r.ok||j.error){ if(fromForm){ var el=document.getElementById('auth-err'); el.style.display='block'; el.textContent=j.message||'Token inválido.'; } return; }
+        try{ sessionStorage.setItem('vagas_tok',TOKEN); }catch(e){}
+        VAGAS=j.vagas||[];
+        document.getElementById('auth').style.display='none';
+        document.getElementById('wrap').style.display='block';
+        render();
+      }catch(e){ if(fromForm){ var el=document.getElementById('auth-err'); el.style.display='block'; el.textContent='Erro de conexão.'; } }
+    }
+    async function recarregar(){ try{ var r=await fetch('/api/vagas-admin?token='+encodeURIComponent(TOKEN)); var j=await r.json(); if(j.ok){ VAGAS=j.vagas||[]; render(); } }catch(e){} }
+
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+    function attr(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+
+    function render(){
+      var q=(document.getElementById('busca').value||'').toLowerCase().trim();
+      var arr=VAGAS.filter(function(v){
+        if(!q) return true;
+        return [v.titulo,v.cidade,v.estado_uf,v.categoria,v.localidade,v.vaga_id].join(' ').toLowerCase().indexOf(q)>=0;
+      });
+      var ativas=VAGAS.filter(function(v){return v.status==='ATIVA';}).length;
+      document.getElementById('contador').textContent=VAGAS.length+' vagas · '+ativas+' ativas';
+      if(!arr.length){ document.getElementById('lista').innerHTML='<div class="empty">Nenhuma vaga'+(q?' para “'+esc(q)+'”':'')+'.</div>'; return; }
+      document.getElementById('lista').innerHTML=arr.map(function(v){
+        var ativa=v.status==='ATIVA';
+        var st=(v.status||'').toLowerCase();
+        return '<div class="vaga">'+
+          '<div class="vaga-info">'+
+            '<p class="vaga-titulo">'+esc(v.titulo||'(sem título)')+'<span class="badge '+st+'">'+esc(v.status||'')+'</span></p>'+
+            '<p class="vaga-meta">'+esc([v.categoria,v.localidade||((v.cidade||'')+'/'+(v.estado_uf||''))].filter(Boolean).join(' · '))+' · prio '+(v.prioridade!=null?v.prioridade:'—')+'</p>'+
+          '</div>'+
+          '<div class="vaga-acoes">'+
+            '<a class="btn btn-ghost btn-sm" href="/vaga/'+encodeURIComponent(v.vaga_id)+'" target="_blank" rel="noopener">Ver</a>'+
+            '<button class="btn btn-ghost btn-sm" onclick="abrirModal(\''+esc(v.vaga_id)+'\')">Editar</button>'+
+            '<button class="btn btn-ghost btn-sm" onclick="alternarStatus(\''+esc(v.vaga_id)+'\',\''+(ativa?'INATIVA':'ATIVA')+'\',this)">'+(ativa?'Desativar':'Ativar')+'</button>'+
+            '<button class="btn btn-ghost btn-sm" style="color:#c53030;border-color:#fecaca" onclick="excluir(\''+esc(v.vaga_id)+'\')">Excluir</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    async function alternarStatus(vagaId,novo,btn){
+      btn.disabled=true;
+      try{ await postAcao({acao:'alterar_status_vaga',vaga_id:vagaId,status:novo}); await recarregar(); }
+      catch(e){ alert('Erro: '+e.message); btn.disabled=false; }
+    }
+    async function excluir(vagaId){
+      var v=VAGAS.find(function(x){return x.vaga_id===vagaId;});
+      var titulo=v?(v.titulo||vagaId):vagaId;
+      if(!confirm('Excluir a vaga "'+titulo+'" permanentemente?\n\nSe quiser só tirar do site, use “Desativar”.')) return;
+      try{ await postAcao({acao:'excluir_vaga',vaga_id:vagaId}); await recarregar(); }
+      catch(e){ alert('Erro ao excluir: '+e.message); }
+    }
+
+    // ───── modal criar/editar ─────
+    function fecharModal(){ document.getElementById('modal-bg').classList.remove('on'); }
+    document.getElementById('modal-bg').addEventListener('click',function(e){ if(e.target===this) fecharModal(); });
+
+    function f(id,v){ return '<input id="'+id+'" value="'+attr(v||'')+'">'; }
+    function ta(id,v){ return '<textarea id="'+id+'">'+esc(v||'')+'</textarea>'; }
+
+    function abrirModal(vagaId){
+      var v = vagaId ? VAGAS.find(function(x){return x.vaga_id===vagaId;}) : {};
+      var editar = !!vagaId;
+      document.getElementById('modal').innerHTML =
+        '<h2>'+(editar?'Editar vaga':'Nova vaga')+'</h2>'+
+        '<p class="modal-sub">'+(editar?('URL: /vaga/'+esc(v.vaga_id)):'Preencha os dados. A vaga entra no ar como ATIVA.')+'</p>'+
+
+        '<div class="grp-title">Básico</div>'+
+        '<div class="field"><label>Título *</label>'+f('v-titulo',v.titulo)+'</div>'+
+        '<div class="cols-2">'+
+          '<div class="field"><label>Categoria</label>'+f('v-categoria',v.categoria)+'</div>'+
+          '<div class="field"><label>Selo <span class="dica">(ex.: Início imediato)</span></label>'+f('v-selo',v.selo)+'</div>'+
+        '</div>'+
+        '<div class="cols-3">'+
+          '<div class="field"><label>Cidade</label>'+f('v-cidade',v.cidade)+'</div>'+
+          '<div class="field"><label>UF</label>'+f('v-estado_uf',v.estado_uf)+'</div>'+
+          '<div class="field"><label>Região/zona <span class="dica">(localidade)</span></label>'+f('v-localidade',v.localidade)+'</div>'+
+        '</div>'+
+        '<div class="cols-3">'+
+          '<div class="field"><label>Modalidade</label>'+f('v-modalidade',v.modalidade)+'</div>'+
+          '<div class="field"><label>Remuneração</label>'+f('v-remuneracao',v.remuneracao)+'</div>'+
+          '<div class="field"><label>Horário</label>'+f('v-horario',v.horario)+'</div>'+
+        '</div>'+
+
+        '<div class="grp-title">Conteúdo</div>'+
+        '<div class="field"><label>Resumo <span class="dica">(1 frase, aparece no card)</span></label>'+ta('v-resumo',v.resumo)+'</div>'+
+        '<div class="field"><label>Destaques <span class="dica">(um por linha)</span></label>'+ta('v-destaques',v.destaques)+'</div>'+
+        '<div class="field"><label>Requisitos <span class="dica">(um por linha)</span></label>'+ta('v-requisitos',v.requisitos)+'</div>'+
+        '<div class="field"><label>Atividades <span class="dica">(um por linha)</span></label>'+ta('v-atividades',v.atividades)+'</div>'+
+        '<div class="field"><label>Detalhes <span class="dica">(texto livre)</span></label>'+ta('v-detalhes',v.detalhes)+'</div>'+
+
+        '<div class="grp-title">Publicação</div>'+
+        '<div class="cols-2">'+
+          '<div class="field"><label>Status</label><select id="v-status">'+
+            ['ATIVA','INATIVA','PAUSADA'].map(function(s){return '<option'+((v.status||'ATIVA')===s?' selected':'')+'>'+s+'</option>';}).join('')+
+          '</select></div>'+
+          '<div class="field"><label>Prioridade <span class="dica">(menor = aparece antes)</span></label><input id="v-prioridade" type="number" value="'+(v.prioridade!=null?v.prioridade:50)+'"></div>'+
+        '</div>'+
+
+        '<div class="grp-title">Responsável / contato</div>'+
+        '<div class="cols-2">'+
+          '<div class="field"><label>Nome</label>'+f('v-responsavel_nome',v.responsavel_nome||'Mariana')+'</div>'+
+          '<div class="field"><label>WhatsApp <span class="dica">(só números)</span></label>'+f('v-responsavel_whatsapp',v.responsavel_whatsapp||'5511953973268')+'</div>'+
+        '</div>'+
+        '<div class="cols-3">'+
+          '<div class="field"><label>Empresa</label>'+f('v-responsavel_empresa',v.responsavel_empresa||'RH Imob')+'</div>'+
+          '<div class="field"><label>Cargo</label>'+f('v-responsavel_cargo',v.responsavel_cargo)+'</div>'+
+          '<div class="field"><label>E-mail</label>'+f('v-responsavel_email',v.responsavel_email)+'</div>'+
+        '</div>'+
+
+        '<div class="grp-title">Mídia (opcional)</div>'+
+        '<div class="cols-2">'+
+          '<div class="field"><label>Instagram (URL do post)</label>'+f('v-instagram_url',v.instagram_url)+'</div>'+
+          '<div class="field"><label>Imagem (URL)</label>'+f('v-imagem_url',v.imagem_url)+'</div>'+
+        '</div>'+
+        '<div class="field"><label>Imagem para preview no WhatsApp <span class="dica">(imagem_og — URL)</span></label>'+f('v-imagem_og',v.imagem_og)+'</div>'+
+
+        (editar?'':'<div class="grp-title">Identificador da URL</div><div class="field"><label>vaga_id <span class="dica">(deixe vazio p/ gerar do título)</span></label>'+f('v-vaga_id','')+'</div>')+
+
+        '<p class="modal-err" id="m-err"></p>'+
+        '<div class="modal-actions">'+
+          '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>'+
+          '<button class="btn btn-primary" id="m-save" onclick="salvar('+(editar?('\''+esc(v.vaga_id)+'\''):'null')+')">'+(editar?'Salvar':'Criar vaga')+'</button>'+
+        '</div>';
+      document.getElementById('modal-bg').classList.add('on');
+      document.getElementById('modal-bg').scrollTop=0;
+    }
+
+    async function salvar(vagaId){
+      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','instagram_url','imagem_url','imagem_og'];
+      var payload={ acao: vagaId?'editar_vaga':'criar_vaga' };
+      if(vagaId) payload.vaga_id=vagaId; else { var vid=val('v-vaga_id'); if(vid) payload.vaga_id=vid; }
+      campos.forEach(function(c){ payload[c]=val('v-'+c); });
+      payload.status=val('v-status'); payload.prioridade=val('v-prioridade');
+      if(payload.instagram_url && !payload.imagem_url) payload.midia_tipo='instagram';
+      if(!payload.titulo) return modalErr('Informe o título.');
+      var btn=document.getElementById('m-save'); btn.disabled=true; btn.textContent='Salvando...';
+      try{ await postAcao(payload); fecharModal(); await recarregar(); }
+      catch(e){ modalErr(e.message); btn.disabled=false; btn.textContent=vagaId?'Salvar':'Criar vaga'; }
+    }
+
+    function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+    function modalErr(m){ var el=document.getElementById('m-err'); if(el){ el.style.display='block'; el.textContent=m; } }
+    async function postAcao(payload){
+      var r=await fetch('/api/vagas-admin?token='+encodeURIComponent(TOKEN),{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      var j=await r.json().catch(function(){return {};});
+      if(!r.ok||j.error){ throw new Error(j.message||('Falha ('+r.status+')')); }
+      return j;
+    }
+  </script>
+</body>
+</html>
