@@ -11,6 +11,12 @@
       "permanent": true
     }
   ],
+  "crons": [
+    {
+      "path": "/api/enriquecer-talentos?limit=300",
+      "schedule": "*/15 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/favicon.ico",

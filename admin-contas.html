@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contas — Admin RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --linha:#e8e4f2 }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:#2b124d}
+    .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:52px;height:52px;border-radius:50%;margin-bottom:18px}
+    .auth-card h1{font-size:20px;font-weight:900;color:#2b124d;margin:0 0 6px}
+    .auth-card p{color:#888;font-size:13px;margin:0 0 24px}
+    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none;box-sizing:border-box}
+    .auth-card button{width:100%;padding:13px;background:#2b124d;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
+    .auth-err{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+
+    .wrap{display:none;max-width:1100px;margin:0 auto;padding:32px 18px 80px}
+    .top h1{font-size:24px;font-weight:900;color:#2b124d;margin:0 0 4px}
+    .sub{color:#6f6283;font-size:14px;margin:0 0 20px}
+
+    .plano-card{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 20px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+    .plano-card b{font-size:15px}
+    .plano-card span{color:#8c809d;font-size:13px}
+    .badge{font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;white-space:nowrap}
+    .badge.ativo{background:#dcfce7;color:#166534}
+    .badge.inativo{background:#fee2e2;color:#991b1b}
+
+    .conta{background:#fff;border:1px solid var(--linha);border-radius:16px;padding:18px 20px;margin-bottom:14px}
+    .conta-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;cursor:pointer}
+    .conta-nome{font-size:16px;font-weight:800;color:#2b124d;margin:0}
+    .conta-meta{font-size:12px;color:#8c809d;margin-top:2px}
+    .saldo-bar{background:#f1edf9;border-radius:8px;height:8px;margin-top:10px;overflow:hidden}
+    .saldo-fill{background:linear-gradient(90deg,#5a1fd4,#ff7a1a);height:100%}
+    .conta-stats{display:flex;gap:18px;margin-top:8px;font-size:12px;color:#6f6283}
+    .conta-stats b{color:#2b124d}
+
+    .usuarios{margin-top:14px;border-top:1px dashed var(--linha);padding-top:12px;display:none}
+    .usuarios.on{display:block}
+    .usuario-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f4f1fa;gap:10px;flex-wrap:wrap}
+    .usuario-row:last-child{border-bottom:none}
+    .usuario-info b{font-size:13.5px;display:block}
+    .usuario-info span{font-size:12px;color:#8c809d}
+    .toggle-btn{font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:1.5px solid var(--linha);background:#fff;cursor:pointer}
+    .toggle-btn.ativar{color:#166534;border-color:#bbf7d0}
+    .toggle-btn.desativar{color:#991b1b;border-color:#fecaca}
+    .toggle-btn:disabled{opacity:.5;cursor:default}
+    .empty{color:#8c809d;text-align:center;padding:40px 0}
+    .loading{color:#8c809d;padding:20px 0}
+  </style>
+</head>
+<body>
+  <div class="auth" id="auth">
+    <div class="auth-card">
+      <img src="/assets/rhimob-logo.jpg" alt="" />
+      <h1>Contas — RH IMOB</h1>
+      <p>Acesso restrito</p>
+      <form id="auth-form">
+        <input type="password" id="tok" placeholder="Token de acesso" autocomplete="off" />
+        <button type="submit">Entrar</button>
+        <p class="auth-err" id="auth-err">Token inválido.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap" id="wrap">
+    <div class="top">
+      <h1>Contas, perfis e planos</h1>
+      <p class="sub">Empresas com acesso à Plataforma Novos Talentos, seus usuários e o consumo de cada conta.</p>
+    </div>
+    <div id="planos"></div>
+    <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+
+  <script>
+    var TOKEN = null, CONTAS = [], USUARIOS = [], PLANOS = [], ABERTAS = {};
+    var SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
+
+    (function(){
+      try{
+        var p = localStorage.getItem('rh_painel_ok');
+        if(p){ TOKEN = p; carregar(false); return; }
+        var t = sessionStorage.getItem('contas_tok'); if(t){ TOKEN=t; carregar(false); }
+      }catch(e){}
+    })();
+
+    document.getElementById('auth-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      TOKEN = document.getElementById('tok').value.trim();
+      carregar(true);
+    });
+
+    async function carregar(fromForm){
+      try{
+        var r = await fetch('/api/contas?token=' + encodeURIComponent(TOKEN));
+        var j = await r.json();
+        if(!r.ok || j.error){
+          if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent = j.message || 'Token inválido.'; }
+          return;
+        }
+        try{ sessionStorage.setItem('contas_tok', TOKEN); }catch(e){}
+        CONTAS = j.contas || []; USUARIOS = j.usuarios || []; PLANOS = j.planos || [];
+        document.getElementById('auth').style.display='none';
+        document.getElementById('wrap').style.display='block';
+        render();
+      }catch(e){
+        if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent='Erro de conexão.'; }
+      }
+    }
+
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+    function render(){
+      document.getElementById('planos').innerHTML = PLANOS.map(function(p){
+        return '<div class="plano-card">' +
+          '<div><b>' + esc(p.nome_comercial) + '</b><br><span>' + esc(p.descricao_comercial||'') + '</span></div>' +
+          '<span class="badge ' + (p.status==='ATIVO'?'ativo':'inativo') + '">' + esc(p.status) + '</span>' +
+        '</div>';
+      }).join('');
+
+      if(!CONTAS.length){ document.getElementById('lista').innerHTML = '<div class="empty">Nenhuma conta ainda.</div>'; return; }
+
+      document.getElementById('lista').innerHTML = CONTAS.map(function(c, i){
+        var pct = c.limite_total ? Math.min(100, Math.round((c.consumidos/c.limite_total)*100)) : 0;
+        var usuariosDaConta = USUARIOS.filter(function(u){ return u.conta_id === c.conta_id; });
+        return '<div class="conta">' +
+          '<div class="conta-top" onclick="toggleUsuarios(' + i + ')">' +
+            '<div><p class="conta-nome">' + esc(c.nome_conta) + '</p>' +
+              '<p class="conta-meta">' + esc(c.plano_tipo) + ' · ' + usuariosDaConta.length + ' usuário(s)</p></div>' +
+            '<span class="badge ' + (c.status==='ATIVA'?'ativo':'inativo') + '">' + esc(c.status) + '</span>' +
+          '</div>' +
+          '<div class="saldo-bar"><div class="saldo-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="conta-stats"><span>Limite: <b>' + c.limite_total + '</b></span><span>Consumidos: <b>' + c.consumidos + '</b></span><span>Saldo: <b>' + c.saldo + '</b></span></div>' +
+          '<div class="usuarios' + (ABERTAS[c.conta_id]?' on':'') + '" id="usuarios-' + i + '">' +
+            (usuariosDaConta.length ? usuariosDaConta.map(function(u){
+              var ativo = u.status === 'ATIVO';
+              return '<div class="usuario-row">' +
+                '<div class="usuario-info"><b>' + esc(u.nome||'(sem nome)') + '</b><span>' + esc(u.email_login||'') + ' · ' + esc(u.perfil||'') + '</span></div>' +
+                '<button class="toggle-btn ' + (ativo?'desativar':'ativar') + '" onclick="alternarStatus(\'' + u.usuario_id + '\', \'' + (ativo?'INATIVO':'ATIVO') + '\', this)">' + (ativo?'Desativar':'Ativar') + '</button>' +
+              '</div>';
+            }).join('') : '<div class="usuario-row"><span class="usuario-info">Nenhum usuário nesta conta.</span></div>') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function toggleUsuarios(i){
+      var c = CONTAS[i];
+      if(!c) return;
+      ABERTAS[c.conta_id] = !ABERTAS[c.conta_id];
+      var el = document.getElementById('usuarios-' + i);
+      if(el) el.classList.toggle('on', ABERTAS[c.conta_id]);
+    }
+
+    async function alternarStatus(usuarioId, novoStatus, btn){
+      btn.disabled = true;
+      try{
+        var r = await fetch('/api/contas?token=' + encodeURIComponent(TOKEN), {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ acao: 'alterar_status_usuario', usuario_id: usuarioId, status: novoStatus })
+        });
+        if(!r.ok) throw new Error('Falha ao atualizar.');
+        var u = USUARIOS.find(function(x){ return x.usuario_id === usuarioId; });
+        if(u) u.status = novoStatus;
+        render();
+      }catch(e){
+        alert('Erro ao alterar status: ' + e.message);
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
