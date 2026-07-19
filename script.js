@@ -428,8 +428,12 @@
     const g = (n) => normalize(form.elements[n]?.value);
     const nome = g('nome'), whatsapp = g('whatsapp');
     if (!nome && !whatsapp) return; // ainda não há nada útil para salvar
+    // Cada gravação recebe um id único (prefixo estável da sessão + sufixo único),
+    // porque session_id tem constraint UNIQUE. O painel agrupa pelo prefixo antes
+    // do "#" e funde as linhas da mesma pessoa em 1 lead completo.
+    const base = ensureLeadSession();
     const row = {
-      session_id: ensureLeadSession(),
+      session_id: base + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       nome, whatsapp,
       empresa: g('empresa'), cidade: g('cidade'), cargo_vaga: g('cargoVaga'),
       quantidade: g('quantidade'), urgencia: g('urgencia'),
@@ -440,9 +444,13 @@
       pagina: location.href,
       enviou_whatsapp: !!enviou
     };
+    // INSERT simples (cada gravação = foto completa do formulário naquele momento).
+    // Não uso upsert/merge-duplicates porque o público não tem permissão de
+    // LEITURA na tabela (protege os telefones dos leads), e o upsert do PostgREST
+    // precisa de SELECT interno. O painel deduplica por session_id no servidor.
     fetch(`${cfg.url.replace(/\/$/, '')}/rest/v1/site_leads`, {
       method: 'POST',
-      headers: supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      headers: supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
       body: JSON.stringify(row)
     }).catch(() => {});
   }
