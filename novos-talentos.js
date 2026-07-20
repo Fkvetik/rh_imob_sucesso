@@ -830,6 +830,42 @@
     }
   }
 
+  // Normaliza o valor de cidade ("São Paulo||SP") para a cidade_key da MV ("sao paulo").
+  function cidadeKeyFromValor(v) {
+    const cidade = String(v || '').split('||')[0];
+    return stripAccents(cidade).toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  // Lê a cache pré-agregada quando os únicos filtros ativos são cidade/estado.
+  // Retorna true se preencheu a partir da cache; false para cair no RPC ao vivo.
+  async function tryOpcoesCache(tipo, select, placeholder, previous) {
+    const f = state.filters;
+    const soCidade = !f.regiao_macro && !f.micro_regiao && !f.bairro &&
+      !f.faixa_idade && !f.cargo && !f.estacao && !f.termo;
+    if (!soCidade) return false;
+
+    const client = getClient();
+    if (!client) return false;
+
+    // cidade: a lista de cidades não muda por filtro de cidade → sempre __ALL__.
+    const ck = tipo === 'cidade' ? '__ALL__' : (f.cidade ? cidadeKeyFromValor(f.cidade) : '__ALL__');
+
+    try {
+      const { data, error } = await client
+        .from('nt_opcoes_cache')
+        .select('valor,label,total')
+        .eq('tipo', tipo)
+        .eq('cidade_key', ck)
+        .order('total', { ascending: false })
+        .limit(700);
+      if (error || !Array.isArray(data) || !data.length) return false;
+      fillRows(select, data, placeholder, previous, tipo);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   async function loadOptionsForType(tipo, preserveValue = true) {
     const map = {
       cidade: ['cidadeSelect', 'Todas as cidades'],
@@ -847,6 +883,11 @@
 
     const previous = preserveValue ? select.value : '';
     resetSelect(select, placeholder);
+
+    // Atalho pela cache pré-agregada (nt_opcoes_cache): serve os 2 casos que
+    // saturavam o free tier — sem filtro e só cidade. Leitura indexada,
+    // instantânea. Combinações mais profundas seguem no RPC ao vivo.
+    if (await tryOpcoesCache(tipo, select, placeholder, previous)) return;
 
     const payload = {
       p_tipo: tipo,
