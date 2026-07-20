@@ -950,7 +950,13 @@
     const seq = ++state.filterRequestSeq;
     if (!opts.silent) status('Atualizando filtros...');
 
-    await Promise.all(types.map((tipo) => loadOptionsForType(tipo, preserve)));
+    // Sequencial (não Promise.all): cada opção agrega ~112k linhas e o free tier
+    // satura se as 7 dropdowns + busca disputam CPU ao mesmo tempo (todas dão
+    // timeout 57014). Uma de cada vez desafoga e deixa a busca respirar.
+    for (const tipo of types) {
+      if (seq !== state.filterRequestSeq) return false; // usuário trocou filtro no meio
+      await loadOptionsForType(tipo, preserve);
+    }
 
     // Evita aplicar resultado antigo quando o operador troca filtros rápido.
     if (seq !== state.filterRequestSeq) return false;
