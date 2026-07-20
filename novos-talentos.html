@@ -75,8 +75,15 @@
   </style>
   <script>
     /* Aplica nt-logged antes do paint se houver sessão salva — evita mostrar
-       os planos e escondê-los depois (era a maior fonte de layout shift). */
-    try{ if(localStorage.getItem('sb-pufxvskozfdvfscqnays-auth-token')) document.documentElement.classList.add('nt-logged'); }catch(e){}
+       os planos e escondê-los depois (era a maior fonte de layout shift).
+       Varre qualquer chave com o prefixo do token: o supabase-js divide
+       sessões grandes em ...auth-token.0/.1, e a chave base não existe. */
+    try{
+      var _p='sb-pufxvskozfdvfscqnays-auth-token';
+      for(var i=0;i<localStorage.length;i++){
+        if((localStorage.key(i)||'').indexOf(_p)===0){ document.documentElement.classList.add('nt-logged'); break; }
+      }
+    }catch(e){}
   </script>
   <!-- Microsoft Clarity -->
   <script type="text/javascript">
@@ -540,7 +547,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config-novos-talentos.js?v=20260720filtros"></script>
-  <script src="novos-talentos.js?v=20260720filtros"></script>
+  <script src="novos-talentos.js?v=20260720cls-metro"></script>
   <script src="planos-render.js?v=20260719"></script>
 </body>
 </html>

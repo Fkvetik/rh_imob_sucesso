@@ -361,7 +361,13 @@
       document.documentElement.classList.add('nt-logged');
     } else {
       let temToken = false;
-      try { temToken = !!localStorage.getItem('sb-pufxvskozfdvfscqnays-auth-token'); } catch (e) {}
+      // sessão grande é dividida em ...auth-token.0/.1 — varre por prefixo
+      try {
+        const p = 'sb-pufxvskozfdvfscqnays-auth-token';
+        for (let i = 0; i < localStorage.length; i++) {
+          if ((localStorage.key(i) || '').indexOf(p) === 0) { temToken = true; break; }
+        }
+      } catch (e) {}
       if (!temToken) document.documentElement.classList.remove('nt-logged');
     }
 
