@@ -773,7 +773,8 @@
     resetSelect(select, placeholder);
 
     dedupeOptionRows(rows, tipo).forEach((row) => {
-      select.appendChild(option(row.label || row.valor, row.valor, formatNumber(row.total)));
+      // total == null → veio do fallback por amostra; não mostrar contagem enganosa
+      select.appendChild(option(row.label || row.valor, row.valor, row.total == null ? '' : formatNumber(row.total)));
     });
 
     if (selectedValue && [...select.options].some((o) => o.value === selectedValue)) {
@@ -841,29 +842,34 @@
     const previous = preserveValue ? select.value : '';
     resetSelect(select, placeholder);
 
-    try {
-      const rows = await rpc('nt_opcoes_filtro_publico_v10', {
-        p_tipo: tipo,
-        p_cidade: state.filters.cidade || null,
-        p_estado_uf: state.filters.estado_uf || null,
-        p_regiao_macro: state.filters.regiao_macro || null,
-        p_micro_regiao: state.filters.micro_regiao || null,
-        p_bairro: state.filters.bairro || null,
-        p_faixa_idade: state.filters.faixa_idade || null,
-        p_cargo: state.filters.cargo || null,
-        p_estacao: state.filters.estacao || null,
-        p_termo: state.filters.termo || null
-      });
+    const payload = {
+      p_tipo: tipo,
+      p_cidade: state.filters.cidade || null,
+      p_estado_uf: state.filters.estado_uf || null,
+      p_regiao_macro: state.filters.regiao_macro || null,
+      p_micro_regiao: state.filters.micro_regiao || null,
+      p_bairro: state.filters.bairro || null,
+      p_faixa_idade: state.filters.faixa_idade || null,
+      p_cargo: state.filters.cargo || null,
+      p_estacao: state.filters.estacao || null,
+      p_termo: state.filters.termo || null
+    };
 
-      fillRows(select, rows, placeholder, previous, tipo);
-      return;
-    } catch (err) {
-      console.warn(`[NT] fallback filtro ${tipo}:`, err);
+    // 2 tentativas: sob carga (7 filtros em paralelo) a primeira pode estourar o timeout do banco.
+    for (let tentativa = 1; tentativa <= 2; tentativa++) {
+      try {
+        const rows = await rpc('nt_opcoes_filtro_publico_v10', payload);
+        fillRows(select, rows, placeholder, previous, tipo);
+        return;
+      } catch (err) {
+        console.warn(`[NT] filtro ${tipo} tentativa ${tentativa}:`, err);
+      }
     }
 
-    // Fallback sem RPC: evita tela quebrada se SQL ainda estiver em cache.
+    // Fallback sem RPC: evita tela quebrada, mas conta só uma amostra —
+    // por isso as contagens são omitidas (total: null).
     const fallbackRows = await loadOptionsFallback(tipo);
-    fillRows(select, fallbackRows, placeholder, previous, tipo);
+    fillRows(select, fallbackRows.map((r) => ({ ...r, total: r.total == null || tipo === 'cidade' ? r.total : null })), placeholder, previous, tipo);
   }
 
   async function loadOptionsFallback(tipo) {
