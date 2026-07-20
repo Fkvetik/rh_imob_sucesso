@@ -354,7 +354,16 @@
     if (loginBtn) loginBtn.hidden = logged;
 
     // Cliente logado já assinou — não faz sentido mostrar os planos/CTA de assinatura.
+    // documentElement recebe a classe pré-paint (script no head); só remove quando
+    // não há sessão salva — senão os planos piscam enquanto a sessão restaura.
     document.body.classList.toggle('nt-logged', logged);
+    if (logged) {
+      document.documentElement.classList.add('nt-logged');
+    } else {
+      let temToken = false;
+      try { temToken = !!localStorage.getItem('sb-pufxvskozfdvfscqnays-auth-token'); } catch (e) {}
+      if (!temToken) document.documentElement.classList.remove('nt-logged');
+    }
 
     if (logged) {
       setText('sessionName', `${state.context.nome || 'Usuário'} • ${state.context.perfil || 'Acesso'}`);
@@ -891,7 +900,8 @@
     if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
     if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
     if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
-    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao);
+    // mesma regra da busca principal: estação só conta até 5 km
+    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao).lte('distancia_metro_km', 5);
 
     const { data, error } = await query;
     if (error) throw error;
@@ -1162,7 +1172,8 @@ const canal = isLogged
     if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
     if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
     if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
-    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao);
+    // mesma regra da busca principal: estação só conta até 5 km
+    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao).lte('distancia_metro_km', 5);
 
     const from = state.offset;
     const to = state.offset + PAGE_SIZE - 1;
