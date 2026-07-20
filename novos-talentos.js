@@ -353,6 +353,9 @@
     if (sessionBox) sessionBox.hidden = !logged;
     if (loginBtn) loginBtn.hidden = logged;
 
+    // Cliente logado já assinou — não faz sentido mostrar os planos/CTA de assinatura.
+    document.body.classList.toggle('nt-logged', logged);
+
     if (logged) {
       setText('sessionName', `${state.context.nome || 'Usuário'} • ${state.context.perfil || 'Acesso'}`);
     }
