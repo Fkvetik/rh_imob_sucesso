@@ -1216,23 +1216,33 @@ const canal = isLogged
     }
   }
 
+  // Fallback quando a listagem RPC estoura: lê a MESMA materialized view que o
+  // RPC (nt_base_pub_mv) e aplica TODOS os filtros no banco — inclusive macro e
+  // micro (macro_calc/micro_calc). Antes filtrava macro/micro no cliente, então
+  // o total (count) os ignorava e divergia do dropdown (ex.: mostrava 430 onde o
+  // correto era 1). Agora é um espelho fiel do RPC: total sempre bate.
   async function searchFallback() {
     const client = getClient();
     if (!client) return { rows: [], total: 0 };
 
+    const f = state.filters;
     let query = client
-      .from('nt_talentos_publicos')
-      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,pretensao_salarial,tags_publicas,ativo,updated_at', { count: 'exact' })
-      .eq('produto_codigo', PRODUCT_CODE)
+      .from('nt_base_pub_mv')
+      .select('talento_key,nome_mascarado,primeiro_nome,cargo,idade_anos,faixa_idade,cidade,estado_uf,bairro,regiao_macro,micro_regiao,macro_calc,micro_calc,tem_whatsapp,tem_email,tem_geo,estacao_mais_proxima,linha_metro_mais_proxima,cor_linha_metro,distancia_metro_km,pretensao_salarial,tags_publicas,ativo,updated_at', { count: 'exact' })
       .eq('ativo', true);
 
-    if (state.filters.cidade) query = query.eq('cidade', state.filters.cidade);
-    if (state.filters.estado_uf) query = query.eq('estado_uf', state.filters.estado_uf);
-    if (state.filters.bairro) query = query.eq('bairro', state.filters.bairro);
-    if (state.filters.faixa_idade) query = query.eq('faixa_idade', state.filters.faixa_idade);
-    if (state.filters.cargo) query = query.eq('cargo', state.filters.cargo);
-    // mesma regra da busca principal: estação só conta até 5 km
-    if (state.filters.estacao) query = query.eq('estacao_mais_proxima', state.filters.estacao).lte('distancia_metro_km', 5);
+    if (f.cidade) query = query.eq('cidade_key', cidadeKeyFromValor(f.cidade));
+    if (f.regiao_macro) query = query.eq('macro_calc', f.regiao_macro);
+    if (f.micro_regiao) query = query.eq('micro_calc', f.micro_regiao);
+    if (f.bairro) query = query.eq('bairro', f.bairro);
+    if (f.faixa_idade) query = query.eq('faixa_idade', f.faixa_idade);
+    if (f.cargo) query = query.eq('cargo', f.cargo);
+    // mesma regra do RPC: estação só conta até 5 km
+    if (f.estacao) query = query.eq('estacao_mais_proxima', f.estacao).lte('distancia_metro_km', 5);
+    if (f.termo) {
+      const t = String(f.termo).replace(/[%,()]/g, ' ').trim();
+      if (t) query = query.or(`cargo.ilike.%${t}%,bairro.ilike.%${t}%,nome_mascarado.ilike.%${t}%`);
+    }
 
     const from = state.offset;
     const to = state.offset + PAGE_SIZE - 1;
@@ -1240,25 +1250,7 @@ const canal = isLogged
     const { data, error, count } = await query.order('updated_at', { ascending: false }).range(from, to);
     if (error) throw error;
 
-    const rows = (data || []).filter((row) => {
-      if (state.filters.regiao_macro && inferMacro(row) !== state.filters.regiao_macro) return false;
-      if (state.filters.micro_regiao && inferMicro(row) !== state.filters.micro_regiao) return false;
-
-      if (state.filters.termo) {
-        const haystack = [
-          row.nome_mascarado,
-          row.cargo,
-          row.bairro,
-          row.cidade,
-          row.tags_publicas
-        ].map(lower).join(' ');
-        if (!haystack.includes(lower(state.filters.termo))) return false;
-      }
-
-      return true;
-    });
-
-    return { rows, total: count || rows.length };
+    return { rows: data || [], total: count || 0 };
   }
 
   async function consumirTalento(key, button) {
