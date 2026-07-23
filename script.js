@@ -1231,6 +1231,79 @@
     if (year) year.textContent = new Date().getFullYear();
   }
 
+  // ── TEIA DE LINKS INTERNOS ────────────────────────────────────
+  // Liga a PRIMEIRA ocorrência de termos curados ao artigo/página correspondente,
+  // só dentro do texto de conteúdo (nunca menu, título, botão ou link existente).
+  // Cria continuidade de navegação e conduz o visitante rumo à conversão.
+  // Ordem: frases mais específicas primeiro (evita casar o termo curto antes).
+  const INTERNAL_LINKS = [
+    { re: /contrato de parceria|contrato de corretor aut[oô]nomo/i, url: '/contrato-corretor-autonomo.html' },
+    { re: /aut[oô]nomo ou clt|aut[oô]nomo vs\.? clt/i, url: '/blog/corretor-autonomo-vs-clt.html' },
+    { re: /quanto custa (um )?recrutamento|custo de recrutamento/i, url: '/blog/quanto-custa-recrutamento-imobiliario.html' },
+    { re: /como contratar (um )?corretor/i, url: '/blog/como-contratar-corretor-imoveis.html' },
+    { re: /montar (uma )?equipe( de corretores)?|equipe de corretores/i, url: '/blog/como-montar-equipe-corretores.html' },
+    { re: /lan[çc]amento imobili[aá]rio/i, url: '/blog/equipe-lancamento-imobiliario.html' },
+    { re: /sal[aá]rio (de|do) corretor|comiss[aã]o (de|do) corretor|quanto ganha um corretor/i, url: '/salario-corretor-imoveis.html' },
+    { re: /alto ticket/i, url: '/vendedor-alto-ticket.html' },
+    { re: /banco de talentos|novos talentos/i, url: '/novos-talentos' },
+    { re: /vagas de corretor/i, url: '/vagas.html' },
+    { re: /recrutamento imobili[aá]rio/i, url: '/contratar.html' },
+    { re: /\bCRECI\b/, url: '/blog/creci-o-que-e-como-verificar.html' }
+  ];
+  const LINK_MAX = 5; // teto por página — discreto e profissional
+
+  function setupInternalLinks() {
+    const here = location.pathname.replace(/\/index\.html$/, '/').replace(/(.)\/$/, '$1');
+    // Prioriza o container de PROSA (evita hero/assinatura); só cai em section
+    // se a página não tiver um container de artigo dedicado.
+    const main = $('.article-body') || $('.post-body') || $('article') || $('main') || $('.content');
+    const roots = main ? [main] : $$('section');
+    if (!roots.length) return;
+    const BLOCK = new Set(['A', 'BUTTON', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'NAV', 'HEADER', 'FOOTER', 'FORM', 'SELECT', 'LABEL', 'CODE', 'SCRIPT', 'STYLE']);
+    const used = new Set();      // urls já linkadas (1 por destino)
+    let count = 0;
+    const pending = INTERNAL_LINKS.filter((l) => l.url.replace(/\/$/, '') !== here.replace(/\/$/, ''));
+
+    for (const root of roots) {
+      if (count >= LINK_MAX) break;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          if (!node.nodeValue || !node.nodeValue.trim() || node.nodeValue.length < 6) return NodeFilter.FILTER_REJECT;
+          for (let p = node.parentNode; p && p !== root.parentNode; p = p.parentNode) {
+            if (p.nodeType === 1 && (BLOCK.has(p.tagName) || p.classList?.contains('no-link') || p.dataset?.leadWired)) return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      const nodes = [];
+      let n; while ((n = walker.nextNode())) nodes.push(n);
+      for (const node of nodes) {
+        if (count >= LINK_MAX) break;
+        for (const link of pending) {
+          if (used.has(link.url)) continue;
+          const m = link.re.exec(node.nodeValue);
+          if (!m) continue;
+          const a = document.createElement('a');
+          a.href = link.url;
+          a.className = 'rh-inline-link';
+          a.textContent = m[0];
+          const after = node.splitText(m.index);
+          after.nodeValue = after.nodeValue.slice(m[0].length);
+          node.parentNode.insertBefore(a, after);
+          used.add(link.url);
+          count++;
+          break; // um link por nó de texto
+        }
+      }
+    }
+    if (count && !$('#rh-inline-link-style')) {
+      const s = document.createElement('style');
+      s.id = 'rh-inline-link-style';
+      s.textContent = '.rh-inline-link{color:#7c3aed;text-decoration:underline;text-decoration-color:rgba(124,58,237,.35);text-underline-offset:2px;font-weight:600}.rh-inline-link:hover{text-decoration-color:#7c3aed}';
+      document.head.appendChild(s);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setupMenu();
     setupReveal();
@@ -1239,6 +1312,7 @@
     setupSupportModal();
     setupCompanyForm();
     setupLeadEngine();
+    setupInternalLinks();
     setupJobFilters();
     setupJobModal();
     setupTalentModal();
