@@ -329,32 +329,201 @@
     document.body.classList.remove('modal-open');
   }
 
-  function openCompanyLeadModal(trigger) {
+  // ── MOTOR DE CAPTAÇÃO CONTEXTUAL ──────────────────────────────
+  // Cada página ranqueia para uma busca diferente no Google e chega gente com
+  // intenção diferente (contratar vs. trabalhar). O modal é UM componente, mas
+  // a copy, a jornada e a origem vêm do contexto da página (mapa abaixo).
+  const LEAD_DEFAULT = {
+    empresa: {
+      titulo: 'Receba uma proposta de recrutamento',
+      subtitulo: 'Conte o que você precisa. A Mariana retorna em até 1 dia útil.',
+      cta: 'Enviar minha demanda →',
+      campoLabel: 'O que você precisa contratar?',
+      campoPlaceholder: 'Ex.: Corretor com CRECI, SDR, Gerente comercial',
+      origem: 'Site RH IMOB'
+    },
+    candidato: {
+      titulo: 'Entre no banco de talentos',
+      subtitulo: 'Deixe seu contato e receba oportunidades no seu perfil.',
+      cta: 'Quero receber vagas →',
+      campoLabel: 'Cargo/área em que você atua',
+      campoPlaceholder: 'Ex.: Corretor, SDR, Gerente, Estágio',
+      origem: 'Site RH IMOB'
+    }
+  };
+  // Mapa por página: journey = intenção primária; copy sob medida do ângulo da busca.
+  const LEAD_CONTEXTS = {
+    '/': { journey: 'empresa', empresa: { titulo: 'Receba uma proposta de recrutamento', subtitulo: 'Conte o perfil que precisa e a Mariana volta em 1 dia útil.', origem: 'Home — proposta' } },
+    '/index.html': { journey: 'empresa', empresa: { titulo: 'Receba uma proposta de recrutamento', subtitulo: 'Conte o perfil que precisa e a Mariana volta em 1 dia útil.', origem: 'Home — proposta' } },
+    '/contratar.html': { journey: 'empresa', empresa: { titulo: 'Contratar corretores e talentos', subtitulo: 'Diga o perfil e o volume — montamos a seleção para você.', origem: 'Contratar' } },
+    '/corretores.html': { journey: 'empresa', empresa: { titulo: 'Quero corretores para minha operação', subtitulo: 'Base com CRECI ativo. Conte sua necessidade.', origem: 'Plataforma Corretores' } },
+    '/plataformas.html': { journey: 'empresa', empresa: { titulo: 'Quero acesso às plataformas', subtitulo: 'Fale com a Mariana para liberar seu acesso.', origem: 'Plataformas' } },
+    '/vagas.html': { journey: 'candidato', candidato: { titulo: 'Quero vagas de corretor', subtitulo: 'Entre no banco e receba oportunidades no seu perfil.', origem: 'Vagas SP' } },
+    '/carreira.html': { journey: 'candidato', candidato: { titulo: 'Vagas com leads e ajuda de custo', subtitulo: 'Trabalhe em imobiliária com estrutura. Deixe seu contato.', origem: 'Carreira — autônomo SP' } },
+    '/salario-corretor-imoveis.html': { journey: 'candidato', candidato: { titulo: 'Quero ganhar mais como corretor', subtitulo: 'Receba vagas com a comissão e as condições que você busca.', origem: 'Página salário' } },
+    '/vendedor-alto-ticket.html': { journey: 'candidato', candidato: { titulo: 'Quero vender alto ticket', subtitulo: 'Oportunidades com comissões de R$10 a R$30 mil por venda.', campoLabel: 'Sua experiência em vendas', origem: 'Alto ticket' } },
+    '/aberto-a-propostas.html': { journey: 'candidato', candidato: { titulo: 'Estou aberto a propostas', subtitulo: 'Corretor ou gestor em transição? Receba oportunidades certas.', origem: 'Aberto a propostas' } },
+    '/contrato-corretor-autonomo.html': { journey: 'candidato', candidato: { titulo: 'Quero atuar como corretor autônomo', subtitulo: 'Vagas de parceria com contrato claro. Deixe seu contato.', origem: 'Contrato autônomo' } },
+    '/blog/como-contratar-corretor-imoveis.html': { journey: 'empresa', empresa: { titulo: 'Contratar corretor autônomo', subtitulo: 'Fazemos a seleção pra você. Conte sua necessidade.', origem: 'Blog — como contratar' } },
+    '/blog/como-montar-equipe-corretores.html': { journey: 'empresa', empresa: { titulo: 'Montar minha equipe de corretores', subtitulo: 'Do perfil ao time pronto. Fale com a Mariana.', origem: 'Blog — montar equipe' } },
+    '/blog/equipe-lancamento-imobiliario.html': { journey: 'empresa', empresa: { titulo: 'Equipe para lançamento', subtitulo: 'Time comercial dimensionado para o seu lançamento.', origem: 'Blog — lançamento' } },
+    '/blog/corretor-autonomo-vs-clt.html': { journey: 'empresa', empresa: { titulo: 'Recrutar no modelo certo', subtitulo: 'Autônomo, PJ ou CLT — montamos a seleção conforme sua operação.', origem: 'Blog — autônomo vs CLT' } },
+    '/blog/quanto-custa-recrutamento-imobiliario.html': { journey: 'empresa', empresa: { titulo: 'Receber proposta de recrutamento', subtitulo: 'Sem custo fixo de RH interno. Conte sua demanda.', origem: 'Blog — custo recrutamento' } },
+    '/blog/creci-o-que-e-como-verificar.html': { journey: 'candidato', candidato: { titulo: 'Quero vagas para corretor com CRECI', subtitulo: 'Tem CRECI ativo? Receba oportunidades no seu perfil.', origem: 'Blog — CRECI' } }
+  };
+
+  function titleCaseCidade(slug) {
+    return String(slug || '').split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  // Resolve o contexto da página atual (+ cidade dinâmica das páginas corretor-<cidade>).
+  function resolvePageContext() {
+    let path = location.pathname.replace(/\/index\.html$/, '/');
+    if (path.length > 1) path = path.replace(/\/$/, '');
+    if (LEAD_CONTEXTS[path]) return LEAD_CONTEXTS[path];
+    const m = path.match(/\/corretor-([a-z-]+)\.html$/);
+    if (m) {
+      const cidade = titleCaseCidade(m[1]);
+      return { journey: 'empresa', empresa: { titulo: `Contratar corretor em ${cidade}`, subtitulo: 'Selecionamos profissionais da região para sua operação.', origem: `Contratar ${cidade}`, prefill: { cidade } } };
+    }
+    return null;
+  }
+
+  // Monta o contexto final para abrir o modal: página + jornada + overrides do CTA.
+  function buildLeadContext(journey, trigger) {
+    const page = resolvePageContext();
+    const jn = journey || trigger?.dataset?.journey || page?.journey || 'empresa';
+    const base = { ...LEAD_DEFAULT[jn], ...(page && page[jn]) };
+    // Overrides no próprio botão (data-*): permite CTA específico dentro da página.
+    if (trigger?.dataset?.origem) base.origem = trigger.dataset.origem;
+    if (trigger?.dataset?.titulo) base.titulo = trigger.dataset.titulo;
+    if (trigger?.dataset?.subtitulo) base.subtitulo = trigger.dataset.subtitulo;
+    // Contexto vindo do template (ex.: notícia) via window.RH_LEAD_CONTEXT.
+    if (window.RH_LEAD_CONTEXT && window.RH_LEAD_CONTEXT[jn]) Object.assign(base, window.RH_LEAD_CONTEXT[jn]);
+    base.journey = jn;
+    return base;
+  }
+
+  // Injeta UMA vez o markup + o CSS do modal (funciona em qualquer página).
+  function ensureLeadModal() {
+    if ($('#companyLeadModal')) return;
+    const css = document.createElement('style');
+    css.textContent = `
+      #companyLeadModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}
+      #companyLeadModal[aria-hidden="false"]{display:flex}
+      #companyLeadModal .rhlm-ov{position:absolute;inset:0;background:rgba(22,8,38,.62);backdrop-filter:blur(2px)}
+      #companyLeadModal .rhlm-card{position:relative;width:100%;max-width:440px;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(22,8,38,.4);padding:26px 24px 22px;max-height:92vh;overflow:auto;animation:rhlmIn .22s ease}
+      @keyframes rhlmIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+      #companyLeadModal .rhlm-x{position:absolute;top:12px;right:14px;border:none;background:none;font-size:24px;line-height:1;color:#9385a8;cursor:pointer}
+      #companyLeadModal h3{margin:0 6px 6px 0;font-size:20px;font-weight:900;color:#2b124d;line-height:1.25}
+      #companyLeadModal .rhlm-sub{margin:0 0 18px;font-size:14px;color:#6b5e7e;line-height:1.5}
+      #companyLeadModal label{display:block;font-size:12.5px;font-weight:700;color:#2b124d;margin-bottom:12px}
+      #companyLeadModal input,#companyLeadModal select,#companyLeadModal textarea{width:100%;box-sizing:border-box;margin-top:5px;padding:12px 13px;border:1.5px solid #e5ddf2;border-radius:11px;font-size:15px;font-family:inherit;outline:none}
+      #companyLeadModal input:focus,#companyLeadModal select:focus,#companyLeadModal textarea:focus{border-color:#7c3aed}
+      #companyLeadModal .rhlm-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      #companyLeadModal .rhlm-more{margin:2px 0 14px}
+      #companyLeadModal .rhlm-more summary{cursor:pointer;font-size:12.5px;font-weight:700;color:#7c3aed;list-style:none}
+      #companyLeadModal .rhlm-btn{width:100%;padding:14px;border:none;border-radius:12px;background:#7c3aed;color:#fff;font-size:15px;font-weight:800;cursor:pointer}
+      #companyLeadModal .rhlm-help{margin:12px 0 0;font-size:11.5px;color:#9385a8;line-height:1.5;text-align:center}
+      body.modal-open{overflow:hidden}
+    `;
+    document.head.appendChild(css);
+    const wrap = document.createElement('div');
+    wrap.id = 'companyLeadModal';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.innerHTML = `
+      <div class="rhlm-ov" data-close-company-lead-modal></div>
+      <div class="rhlm-card">
+        <button type="button" class="rhlm-x" data-close-company-lead-modal aria-label="Fechar">×</button>
+        <h3 id="rhlmTitulo">Fale com a Mariana</h3>
+        <p class="rhlm-sub" id="rhlmSub">Deixe seu contato.</p>
+        <form id="companyLeadForm" class="js-company-lead-form">
+          <input type="hidden" name="origem" value="" />
+          <input type="hidden" name="tipo" value="empresa" />
+          <label>Nome<input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required /></label>
+          <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required /></label>
+          <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP" /></label>
+          <label id="rhlmCampoWrap"><span id="rhlmCampoLabel">O que você precisa contratar?</span><input type="text" name="cargoVaga" id="rhlmCampo" placeholder="" /></label>
+          <details class="rhlm-more" id="rhlmMore">
+            <summary>Detalhar (opcional)</summary>
+            <div class="rhlm-row" style="margin-top:10px">
+              <label>Quantidade<input type="text" name="quantidade" placeholder="Ex.: 3" /></label>
+              <label>Urgência<select name="urgencia"><option value="">Selecione</option><option>Imediata</option><option>Até 15 dias</option><option>Até 30 dias</option><option>Sem pressa</option></select></label>
+            </div>
+            <label>Mensagem<textarea name="mensagem" rows="2" placeholder="Algo que a Mariana deva saber"></textarea></label>
+          </details>
+          <button type="submit" class="rhlm-btn" id="rhlmSubmit">Enviar →</button>
+          <p class="rhlm-help">A mensagem abre no WhatsApp da Mariana para você revisar. Seus dados seguem a <a href="/politica.html">LGPD</a>.</p>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener('click', (e) => { if (e.target === wrap.querySelector('.rhlm-ov')) closeCompanyLeadModal(); });
+  }
+
+  function openLeadModal(journey, trigger) {
+    ensureLeadModal();
+    const ctx = buildLeadContext(journey, trigger);
     const modal = $('#companyLeadModal');
     const form = $('#companyLeadForm');
-    const origin = getTriggerOrigin(trigger);
-    if (!modal || !form) {
-      const pageForm = $('#leadForm');
-      if (pageForm) {
-        if (pageForm.elements.origem) pageForm.elements.origem.value = origin;
-        pageForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => pageForm.elements.nome?.focus(), 200);
-      }
-      return;
-    }
+    if (!modal || !form) return;
     form.reset();
-    if (form.elements.origem) form.elements.origem.value = origin;
+    $('#rhlmTitulo').textContent = ctx.titulo;
+    $('#rhlmSub').textContent = ctx.subtitulo;
+    $('#rhlmCampoLabel').textContent = ctx.campoLabel || LEAD_DEFAULT[ctx.journey].campoLabel;
+    $('#rhlmCampo').placeholder = ctx.campoPlaceholder || LEAD_DEFAULT[ctx.journey].campoPlaceholder;
+    $('#rhlmSubmit').textContent = ctx.cta || LEAD_DEFAULT[ctx.journey].cta;
+    // quantidade/urgência só fazem sentido para empresa
+    $('#rhlmMore').style.display = ctx.journey === 'empresa' ? '' : 'none';
+    if (form.elements.origem) form.elements.origem.value = ctx.origem || 'Site RH IMOB';
+    if (form.elements.tipo) form.elements.tipo.value = ctx.journey;
+    if (ctx.prefill?.cidade && form.elements.cidade) form.elements.cidade.value = ctx.prefill.cidade;
     closeSupportModal();
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
-    setTimeout(() => form.elements.nome?.focus(), 50);
+    setTimeout(() => form.elements.nome?.focus(), 60);
   }
+
+  // Compatível com os 29 CTAs js-company já existentes.
+  function openCompanyLeadModal(trigger) { openLeadModal('empresa', trigger); }
+  function openCandidateLeadModal(trigger) { openLeadModal('candidato', trigger); }
+  window.RHLead = { open: openLeadModal };
 
   function closeCompanyLeadModal() {
     const modal = $('#companyLeadModal');
     if (!modal) return;
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+  }
+
+  // Religа CTAs de âncora/scroll para ABRIR o modal (empresa ou candidato conforme a página).
+  function setupLeadEngine() {
+    ensureLeadModal();
+    const page = resolvePageContext();
+    const pageJourney = page?.journey || 'empresa';
+    // Qualquer link que aponte para a seção de proposta/contato/formulário — na
+    // própria página OU na home (/#contato) — passa a ABRIR o modal contextual,
+    // em vez de rolar a tela ou navegar para a home e perder o contexto.
+    const wantsLead = (href) => /(^|\/)#(proposta|contato|formulario|planos|inscricao|cadastro)$/.test(href || '');
+    $$('a[href]').forEach((el) => {
+      if (el.dataset.leadWired) return;
+      const href = el.getAttribute('href') || '';
+      const isCandidate = el.classList.contains('js-candidato') || href.replace(/\/$/, '').endsWith('#banco-talentos') || href.replace(/\/$/, '').endsWith('#vagas-cta');
+      if (!wantsLead(href) && !el.classList.contains('js-open-lead') && !isCandidate) return;
+      el.dataset.leadWired = '1';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        openLeadModal(el.dataset.journey || (isCandidate ? 'candidato' : pageJourney), el);
+      });
+    });
+    // Botões/spans que não são <a> (ex.: .js-open-lead, perfil-card-cta):
+    $$('.js-open-lead, .js-candidato').forEach((el) => {
+      if (el.tagName === 'A' || el.dataset.leadWired) return; el.dataset.leadWired = '1';
+      el.addEventListener('click', (e) => { e.preventDefault(); openLeadModal(el.dataset.journey || (el.classList.contains('js-candidato') ? 'candidato' : pageJourney), el); });
+    });
+    // Fecha no ESC:
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCompanyLeadModal(); });
   }
 
   function openJobsPath() {
@@ -432,6 +601,7 @@
     // porque session_id tem constraint UNIQUE. O painel agrupa pelo prefixo antes
     // do "#" e funde as linhas da mesma pessoa em 1 lead completo.
     const base = ensureLeadSession();
+    const tipo = g('tipo') || 'empresa';
     const row = {
       session_id: base + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       nome, whatsapp,
@@ -440,6 +610,7 @@
       formato_contratacao: g('formatoContratacao'), remuneracao: g('remuneracao'),
       beneficios: g('beneficios'), exigencias: g('exigencias'),
       mensagem: g('mensagem'),
+      tipo,
       origem: g('origem') || document.title || location.pathname,
       pagina: location.href,
       enviou_whatsapp: !!enviou
@@ -448,11 +619,19 @@
     // Não uso upsert/merge-duplicates porque o público não tem permissão de
     // LEITURA na tabela (protege os telefones dos leads), e o upsert do PostgREST
     // precisa de SELECT interno. O painel deduplica por session_id no servidor.
-    fetch(`${cfg.url.replace(/\/$/, '')}/rest/v1/site_leads`, {
-      method: 'POST',
-      headers: supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
-      body: JSON.stringify(row)
-    }).catch(() => {});
+    const url = `${cfg.url.replace(/\/$/, '')}/rest/v1/site_leads`;
+    const headers = supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'return=minimal' });
+    fetch(url, { method: 'POST', headers, body: JSON.stringify(row) })
+      .then((r) => {
+        // Se a coluna `tipo` ainda não existir no banco (migração pendente),
+        // reenvia sem ela — nunca perde o lead. O tipo também vai na origem.
+        if (!r.ok) {
+          const { tipo: _t, ...semTipo } = row;
+          semTipo.origem = `[${tipo}] ${semTipo.origem}`;
+          return fetch(url, { method: 'POST', headers, body: JSON.stringify(semTipo) });
+        }
+      })
+      .catch(() => {});
   }
 
   function setupCompanyForm() {
@@ -494,11 +673,29 @@
           return;
         }
         saveLeadEmpresa(form, true);
-        openWhatsApp(EMPRESA_WHATSAPP, buildCompanyLeadMessage(data));
+        const tipo = normalize(form.elements.tipo?.value) || 'empresa';
+        if (tipo === 'candidato') {
+          openWhatsApp(VAGAS_WHATSAPP, buildCandidateLeadMessage(data));
+        } else {
+          openWhatsApp(EMPRESA_WHATSAPP, buildCompanyLeadMessage(data));
+        }
+        closeCompanyLeadModal();
       });
     });
 
     $$('[data-close-company-lead-modal]').forEach((el) => el.addEventListener('click', closeCompanyLeadModal));
+  }
+
+  function buildCandidateLeadMessage(data) {
+    const lines = ['Olá, Mariana! Vim pelo site da RH IMOB e quero receber vagas.'];
+    const add = (label, val) => { if (val) lines.push(`${label}: ${val}`); };
+    lines.push('');
+    add('Nome', data.nome);
+    add('Cidade', data.cidade);
+    add('Cargo/área', data.cargoVaga);
+    add('Observação', data.mensagem);
+    if (data.origem) { lines.push(''); lines.push(`(Interesse: ${data.origem})`); }
+    return lines.join('\n');
   }
 
 
@@ -1037,9 +1234,11 @@
   document.addEventListener('DOMContentLoaded', () => {
     setupMenu();
     setupReveal();
+    ensureLeadModal();
     setupWhatsAppLinks();
     setupSupportModal();
     setupCompanyForm();
+    setupLeadEngine();
     setupJobFilters();
     setupJobModal();
     setupTalentModal();
