@@ -1304,6 +1304,68 @@
     }
   }
 
+  // ── BLOCO DE CONTINUIDADE ("Continue por aqui") ───────────────
+  // Evita becos sem saída: no fim de cada página de conteúdo, oferece 2-3 links
+  // relacionados escolhidos pela JORNADA da página + um empurrão para a conversão.
+  const RELATED_POOL = {
+    empresa: [
+      { label: 'Como contratar um corretor', url: '/blog/como-contratar-corretor-imoveis.html' },
+      { label: 'Quanto custa recrutar', url: '/blog/quanto-custa-recrutamento-imobiliario.html' },
+      { label: 'Montar sua equipe de corretores', url: '/blog/como-montar-equipe-corretores.html' },
+      { label: 'Banco de novos talentos', url: '/novos-talentos' },
+      { label: 'Contratar corretores e talentos', url: '/contratar.html' }
+    ],
+    candidato: [
+      { label: 'Ver vagas abertas', url: '/vagas.html' },
+      { label: 'Salário e comissão do corretor', url: '/salario-corretor-imoveis.html' },
+      { label: 'Contrato de corretor autônomo', url: '/contrato-corretor-autonomo.html' },
+      { label: 'Autônomo ou CLT: qual escolher', url: '/blog/corretor-autonomo-vs-clt.html' },
+      { label: 'O que é o CRECI', url: '/blog/creci-o-que-e-como-verificar.html' }
+    ]
+  };
+
+  function setupContinuityBlock() {
+    const path = location.pathname.replace(/\/index\.html$/, '/');
+    if (path === '/' || document.querySelector('#rh-continuity')) return; // home já tem funil
+    const page = resolvePageContext();
+    if (!page) return;
+    const journey = page.journey || 'empresa';
+    const here = path.replace(/(.)\/$/, '$1');
+    const related = RELATED_POOL[journey]
+      .filter((l) => l.url.replace(/\/$/, '') !== here.replace(/\/$/, ''))
+      .slice(0, 3);
+    if (!related.length) return;
+
+    const ctaLabel = journey === 'candidato' ? 'Quero receber vagas →' : 'Receber uma proposta →';
+    const wrap = document.createElement('section');
+    wrap.id = 'rh-continuity';
+    wrap.innerHTML = `
+      <div class="rhc-inner">
+        <span class="rhc-kicker">Continue por aqui</span>
+        <div class="rhc-links">
+          ${related.map((l) => `<a href="${l.url}">${l.label}<span>→</span></a>`).join('')}
+        </div>
+        <button type="button" class="rhc-cta">${ctaLabel}</button>
+      </div>`;
+    const style = document.createElement('style');
+    style.textContent = `
+      #rh-continuity{background:#faf8ff;border-top:1px solid #ede8f8;padding:40px 20px}
+      #rh-continuity .rhc-inner{max-width:900px;margin:0 auto}
+      #rh-continuity .rhc-kicker{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:16px}
+      #rh-continuity .rhc-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:22px}
+      #rh-continuity .rhc-links a{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #e8e0f4;border-radius:12px;padding:15px 18px;color:#2b124d;text-decoration:none;font-weight:700;font-size:14.5px;transition:border-color .15s,transform .15s}
+      #rh-continuity .rhc-links a:hover{border-color:#7c3aed;transform:translateY(-1px)}
+      #rh-continuity .rhc-links a span{color:#7c3aed;font-weight:900}
+      #rh-continuity .rhc-cta{background:#7c3aed;color:#fff;border:none;border-radius:12px;padding:14px 26px;font-size:15px;font-weight:800;cursor:pointer}
+      #rh-continuity .rhc-cta:hover{opacity:.9}
+    `;
+    document.head.appendChild(style);
+    wrap.querySelector('.rhc-cta').addEventListener('click', () => openLeadModal(journey, null));
+    const footer = document.querySelector('footer');
+    if (footer && footer.parentNode) footer.parentNode.insertBefore(wrap, footer);
+    else document.body.appendChild(wrap);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setupMenu();
     setupReveal();
@@ -1313,6 +1375,7 @@
     setupCompanyForm();
     setupLeadEngine();
     setupInternalLinks();
+    setupContinuityBlock();
     setupJobFilters();
     setupJobModal();
     setupTalentModal();
