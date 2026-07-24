@@ -294,13 +294,22 @@
           </div>
         </div>`;
 
-      // Body
+      // Body + CTA contextual pela intenção do artigo (título manda mais que a
+      // categoria). Candidato lendo "quanto ganha/ajuda de custo" não deve ver
+      // "contratar corretores". O botão ABRE o modal (não manda pra home) e leva
+      // o título do artigo como origem, para a Mariana ver de qual assunto veio.
+      const _candRe = /vale a pena|quanto ganha|sal[aá]rio|comiss[aã]o|ser corretor|como (ser|se tornar)|carreira|ajuda de custo|iniciante|primeiro (emprego|ano)|autônomo/i;
+      const _journey = _candRe.test(n.titulo) ? 'candidato' : 'empresa';
+      const _origem = ('Notícia: ' + n.titulo).replace(/"/g, '&quot;').slice(0, 120);
+      const _cta = _journey === 'candidato'
+        ? { h: 'Quer trabalhar como corretor?', p: 'Receba vagas no seu perfil — com leads, estrutura e as condições que você busca.', b: 'Quero receber vagas →' }
+        : { h: 'Precisa contratar corretores?', p: '52 mil profissionais mapeados · Setup em 7 dias · 100% online', b: 'Solicitar proposta →' };
       document.getElementById('article-wrap').innerHTML = `
         <div class="article-body">${n.corpo}</div>
         <div class="article-cta">
-          <h3>Precisa contratar corretores?</h3>
-          <p>52 mil profissionais mapeados · Setup em 7 dias · 100% online</p>
-          <a class="btn btn-cta" href="/#proposta">Solicitar proposta gratuita →</a>
+          <h3>${_cta.h}</h3>
+          <p>${_cta.p}</p>
+          <button type="button" class="btn btn-cta" data-journey="${_journey}" data-origem="${_origem}" onclick="window.RHLead ? window.RHLead.open('${_journey}', this) : (location.href='/#proposta')">${_cta.b}</button>
         </div>
         <div class="article-related" id="related"></div>`;
 
