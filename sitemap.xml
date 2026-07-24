@@ -12,4 +12,8 @@
     <loc>https://www.rhimob.com.br/api/sitemap-vagas</loc>
     <lastmod>2026-07-14</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://www.rhimob.com.br/api/sitemap-incorporadoras</loc>
+    <lastmod>2026-07-24</lastmod>
+  </sitemap>
 </sitemapindex>

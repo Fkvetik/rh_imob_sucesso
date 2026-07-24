@@ -1248,6 +1248,7 @@
     { re: /banco de talentos|novos talentos/i, url: '/novos-talentos' },
     { re: /vagas de corretor/i, url: '/vagas.html' },
     { re: /recrutamento imobili[aá]rio/i, url: '/contratar.html' },
+    { re: /incorporadoras (de |em )?s[ãa]o paulo|construtoras (de |em )?s[ãa]o paulo/i, url: '/incorporadoras' },
     { re: /\bCRECI\b/, url: '/blog/creci-o-que-e-como-verificar.html' }
   ];
   const LINK_MAX = 5; // teto por página — discreto e profissional

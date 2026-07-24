@@ -20,6 +20,9 @@
   "functions": {
     "api/incorporadora.js": {
       "includeFiles": "data/incorporadoras.json"
+    },
+    "api/sitemap-incorporadoras.js": {
+      "includeFiles": "data/incorporadoras.json"
     }
   },
   "rewrites": [

@@ -13,6 +13,51 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 function has(v) { return v && String(v).trim() && String(v).trim() !== '—'; }
+const sim = (v) => /(^|[^a-zç])sim([^a-zç]|$)/i.test(v || '');
+
+// "Por que trabalhar na X" — SOMENTE a partir dos dados auditados. Nada inventado;
+// se a fonte não traz, o motivo simplesmente não aparece.
+function whyWork(c) {
+  const R = [];
+  if (sim(c.housePropria)) {
+    const nome = /—\s*(.+)/.test(c.housePropria) ? ` (${c.housePropria.split('—')[1].trim()})` : '';
+    R.push(`Tem house própria${nome}: estrutura de vendas montada, com plantões e gestão comercial — você não depende só da sua rede.`);
+  }
+  if (sim(c.aceitaIniciantes)) R.push('Aceita corretor iniciante ou em formação (TTI) — dá para começar mesmo sem experiência.');
+  if (/não obrigat/i.test(c.creci || '')) R.push('CRECI não é obrigatório para a inscrição inicial: você regulariza ao longo do processo.');
+  if (sim(c.treinamento)) R.push('Oferece treinamento e onboarding para quem está chegando.');
+  if (sim(c.leads)) R.push('As vagas citam leads e fluxo de clientes — menos prospecção no frio.');
+  const nd = parseInt(c.notaDemanda, 10);
+  if (nd >= 4) R.push(`Demanda alta por corretores (${c.notaDemanda}/5): recrutamento recorrente e muitas oportunidades abertas.`);
+  if (has(c.lancamentos)) {
+    const n = c.lancamentos.split(';').map((s) => s.trim()).filter(Boolean).length;
+    R.push(`${n > 1 ? `${n} lançamentos` : 'Lançamentos'} citados na fonte — mais produto para vender e comissionar.`);
+  }
+  if (has(c.segmento)) R.push(`Atua em ${c.segmento}${has(c.presenca) ? ` (${c.presenca})` : ''}.`);
+  return R;
+}
+
+// FAQ por empresa — respostas só com o que temos; onde não há, responde com
+// transparência e linka o guia de salário (malha interna).
+function faqItems(c) {
+  const reasons = whyWork(c);
+  const f = [];
+  f.push({
+    q: `Por que trabalhar como corretor na ${c.empresa}?`,
+    a: reasons.length ? reasons.join(' ') : `${c.empresa} atua em ${c.segmento || 'São Paulo'}. As condições específicas para corretores não são amplamente divulgadas — vale confirmar diretamente ou pela RH IMOB.`
+  });
+  if (has(c.aceitaIniciantes)) f.push({ q: `A ${c.empresa} aceita corretor iniciante?`, a: c.aceitaIniciantes });
+  if (has(c.housePropria)) f.push({ q: `A ${c.empresa} tem house própria?`, a: c.housePropria });
+  if (has(c.leads)) f.push({ q: `A ${c.empresa} fornece leads para os corretores?`, a: c.leads });
+  f.push({
+    q: `Quanto ganha um corretor na ${c.empresa}?`,
+    a: (has(c.comissao) || has(c.ajudaCusto))
+      ? [has(c.comissao) ? `Comissão: ${c.comissao}` : '', has(c.ajudaCusto) ? `Ajuda de custo: ${c.ajudaCusto}` : ''].filter(Boolean).join(' · ')
+      : `A ${c.empresa} não divulga publicamente comissão ou ajuda de custo. Veja a referência de mercado no nosso guia de salário e comissão do corretor.`
+  });
+  if (has(c.regioesContratando)) f.push({ q: `Onde a ${c.empresa} está contratando corretores?`, a: c.regioesContratando });
+  return f;
+}
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -80,6 +125,18 @@ function head(title, desc, canonical) {
     .inc-card:hover{border-color:#7c3aed;transform:translateY(-2px)}
     .inc-card h3{margin:0 0 4px;font-size:16px}.inc-card span{font-size:13px;color:#6b5e7e}
     .inc-mesh a{color:#7c3aed;font-weight:700}
+    .inc-why{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+    .inc-why li{padding:12px 16px 12px 42px;background:#faf8ff;border:1px solid #ede8f8;border-radius:12px;position:relative;font-size:14.5px;color:#2b124d;line-height:1.5}
+    .inc-why li::before{content:'✓';position:absolute;left:16px;top:12px;color:#7c3aed;font-weight:900}
+    .inc-faq{display:flex;flex-direction:column;gap:10px}
+    .inc-faq-item{border:1.5px solid #e8e4f2;border-radius:14px;overflow:hidden}
+    .inc-faq-item[open]{border-color:#7c3aed}
+    .inc-faq-item summary{padding:16px 20px;font-size:15px;font-weight:700;color:#2b124d;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:14px}
+    .inc-faq-item summary::-webkit-details-marker{display:none}
+    .inc-faq-item summary::after{content:'+';color:#7c3aed;font-size:20px;line-height:1}
+    .inc-faq-item[open] summary::after{content:'−'}
+    .inc-faq-item>div{padding:0 20px 16px;font-size:14.5px;color:#444;line-height:1.7}
+    .inc-faq-item a{color:#7c3aed;font-weight:700}
   </style></head><body>
   <header class="site-header"><div class="container header-inner">
     <a class="brand" href="/"><img src="/assets/rhimob-logo.jpg" alt="" class="brand-mark"/><span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span></a>
@@ -107,6 +164,12 @@ function renderCompany(c) {
   const title = `Vagas e Como Trabalhar na ${c.empresa} (Corretor) | RH IMOB`;
   const desc = `${c.empresa}: ${[c.segmento, c.presenca].filter(has).join(' · ') || 'incorporadora em São Paulo'}. Como atuar como corretor, o que a empresa divulga e oportunidades. Dados auditados pela RH IMOB.`;
   const origemBase = `Incorporadora: ${c.empresa}`;
+
+  const reasons = whyWork(c);
+  const faq = faqItems(c);
+  const faqLD = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })) }).replace(/<\//g, '<\\/');
+  // linka o guia de salário na resposta de "quanto ganha" (malha interna)
+  const faqAnswerHtml = (a) => esc(a).replace(/guia de salário e comissão do corretor/i, '<a href="/salario-corretor-imoveis.html">guia de salário e comissão do corretor</a>');
 
   const fact = (label, val) => has(val) ? `<div class="inc-fact"><dt>${esc(label)}</dt><dd>${esc(val)}</dd></div>` : '';
   const facts = [
@@ -165,12 +228,24 @@ function renderCompany(c) {
       ${has(c.trabalheConosco) ? `<p style="margin-top:14px"><a class="inc-mesh" href="${esc(c.trabalheConosco)}" target="_blank" rel="noopener nofollow">Canal oficial da ${esc(c.empresa)} para corretores ↗</a></p>` : ''}
     </div></section>
 
+    ${reasons.length ? `<section class="inc-section"><div class="container">
+      <h2>Por que trabalhar como corretor na ${esc(c.empresa)}</h2>
+      <ul class="inc-why">${reasons.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
+      <p class="inc-note">Baseado no que a ${esc(c.empresa)} e suas vagas divulgam publicamente (auditado em ${esc(c.atualizacao || '—')}). Condições podem variar por equipe e lançamento.</p>
+    </div></section>` : ''}
+
     ${offersSection}
 
     <section class="inc-section"><div class="container inc-mesh">
       <h2>Oportunidades pela RH IMOB</h2>
       <p style="color:#6b5e7e;font-size:15px;line-height:1.6">Veja as <a href="/vagas">vagas que estamos anunciando</a>, entre no <a href="/novos-talentos">banco de novos talentos</a> ou volte para a <a href="/incorporadoras">lista de incorporadoras mapeadas</a>.</p>
     </div></section>
+
+    <section class="inc-section"><div class="container">
+      <h2>Perguntas frequentes</h2>
+      <div class="inc-faq">${faq.map((x) => `<details class="inc-faq-item"><summary>${esc(x.q)}</summary><div>${faqAnswerHtml(x.a)}</div></details>`).join('')}</div>
+    </div></section>
+    <script type="application/ld+json">${faqLD}</script>
 
     <section class="inc-cta-band b2b"><div class="container">
       <p class="inc-cta-h">Precisa de corretores para a sua operação?</p>
