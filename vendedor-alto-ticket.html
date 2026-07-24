@@ -145,6 +145,16 @@
     .vt-form-note{font-size:12.5px;color:#8c809d;margin:14px 0 0;text-align:center;line-height:1.5}
     .vt-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b124d;color:#fff;padding:13px 24px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(43,18,77,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:999}
     .vt-toast.show{opacity:1}
+    .home-news{background:#fff}
+    .home-news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:28px}
+    .home-news-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease}
+    .home-news-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(43,18,77,.1)}
+    .home-news-img{width:100%;height:150px;object-fit:cover;background:#f3f0ff}
+    .home-news-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+    .home-news-cat{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#ff7a1a}
+    .home-news-title{font-size:15.5px;font-weight:800;color:var(--purple-950);line-height:1.35;margin:0}
+    .home-news-resumo{font-size:13.5px;color:var(--muted);line-height:1.6;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .home-news-more{text-align:center;margin-top:24px}
   </style>
 </head>
 <body>
@@ -359,6 +369,48 @@
         </div>
       </div>
     </section>
+
+    <section class="section-pad" style="background:var(--purple-950);">
+      <div class="container" style="text-align:center;">
+        <span class="section-kicker" style="color:var(--orange-400);">Você também pode ser quem contrata</span>
+        <h2 style="color:#fff;margin-bottom:12px;">Precisa contratar corretores para sua operação?</h2>
+        <p style="color:rgba(255,255,255,.72);font-size:15px;max-width:520px;margin:0 auto 24px;">A RH IMOB recruta e forma times comerciais para imobiliárias e incorporadoras em todo o Brasil.</p>
+        <a class="btn btn-cta btn-large" href="#proposta-empresa" onclick="event.preventDefault();window.RHLead&&window.RHLead.open('empresa',this)" data-journey="empresa" data-origem="Vendedor alto ticket (CTA empresa)">Quero contratar corretores →</a>
+      </div>
+    </section>
+
+    <section class="section-pad home-news" id="noticias-home" style="border-top:1px solid var(--line);">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker">RH IMOB Notícias</span>
+          <h2>Mais sobre o mercado imobiliário</h2>
+          <p>Análises e dados publicados pela equipe RH IMOB.</p>
+        </div>
+        <div class="home-news-grid" id="home-news-grid" aria-live="polite"></div>
+        <div class="home-news-more"><a class="btn btn-ghost" href="/noticias">Ver todas as notícias →</a></div>
+      </div>
+    </section>
+    <script>
+    (function(){
+      var grid = document.getElementById('home-news-grid');
+      if (!grid) return;
+      fetch('https://tnzmxpoxvdlckmjwdala.supabase.co/rest/v1/noticias?ativo=eq.true&order=publicado_em.desc&limit=3&select=titulo,resumo,slug,categoria,imagem_url', {
+        headers: { apikey: 'sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv' }
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(arts){
+        if (!Array.isArray(arts) || !arts.length) { document.getElementById('noticias-home').style.display = 'none'; return; }
+        grid.innerHTML = arts.map(function(a){
+          var img = a.imagem_url ? '<img class="home-news-img" src="' + a.imagem_url + '" alt="" loading="lazy" />' : '<div class="home-news-img"></div>';
+          return '<a class="home-news-card" href="/noticias/' + a.slug + '">' + img +
+            '<div class="home-news-body"><span class="home-news-cat">' + (a.categoria || 'Mercado') + '</span>' +
+            '<h3 class="home-news-title">' + a.titulo + '</h3>' +
+            '<p class="home-news-resumo">' + (a.resumo || '') + '</p></div></a>';
+        }).join('');
+      })
+      .catch(function(){ document.getElementById('noticias-home').style.display = 'none'; });
+    })();
+    </script>
   </main>
 
   <footer class="site-footer">
