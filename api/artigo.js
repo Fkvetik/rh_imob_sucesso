@@ -99,6 +99,16 @@ function renderArticle(n, slug) {
   const pubDate = formatDate(n.publicado_em);
   const mins   = readingTime(n.corpo);
 
+  // Jornada do artigo pela intenção do TÍTULO (categoria não serve: "quanto
+  // ganha" está em Mercado mas é candidato). Define copy dos CTAs e a origem.
+  const _cand = /vale a pena|quanto ganha|sal[aá]rio|comiss[aã]o|ser corretor|como (ser|se tornar)|carreira|ajuda de custo|iniciante|primeiro (emprego|ano)|autônomo/i.test(n.titulo || '');
+  const journey  = _cand ? 'candidato' : 'empresa';
+  const origemCta = ('Notícia: ' + (n.titulo || '')).replace(/"/g, '&quot;').slice(0, 120);
+  const ctaH = _cand ? 'Quer trabalhar como corretor?' : 'Precisa contratar corretores?';
+  const ctaP = _cand ? 'Receba vagas no seu perfil — com leads, estrutura e as condições que você busca.' : '52 mil profissionais mapeados · Setup em 7 dias · 100% online';
+  const ctaB = _cand ? 'Quero receber vagas →' : 'Solicitar proposta →';
+  const headerB = _cand ? 'Quero vagas' : 'Solicitar proposta';
+
   const breadcrumbLD = JSON.stringify({
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
     itemListElement: [
@@ -279,7 +289,7 @@ function renderArticle(n, slug) {
         <a href="/vagas">Vagas</a>
         <a href="/carreira">Carreira</a>
       </nav>
-      <a class="btn btn-cta btn-header" href="/#proposta">Solicitar proposta</a>
+      <a class="btn btn-cta btn-header" href="/#proposta" data-journey="${journey}" data-origem="${origemCta}">${headerB}</a>
     </div>
   </header>
 
@@ -326,9 +336,9 @@ function renderArticle(n, slug) {
 
     <div class="article-wrap" style="padding-top:0">
       <div class="article-cta">
-        <h3>Precisa contratar corretores?</h3>
-        <p>52 mil profissionais mapeados · Setup em 7 dias · 100% online</p>
-        <a class="btn btn-cta" href="/#proposta">Solicitar proposta gratuita →</a>
+        <h3>${ctaH}</h3>
+        <p>${ctaP}</p>
+        <button type="button" class="btn btn-cta" data-journey="${journey}" data-origem="${origemCta}" onclick="window.RHLead ? window.RHLead.open('${journey}', this) : (location.href='/#proposta')">${ctaB}</button>
       </div>
       <div class="article-related" id="related"></div>
     </div>
@@ -632,6 +642,8 @@ function renderArticle(n, slug) {
       finally { btn.disabled = false; btn.textContent = 'Enviar comentário →'; }
     });
   </script>
+  <script src="/supabase-config-novos-talentos.js?v=20260721leadengine"></script>
+  <script src="/script.js?v=20260721leadengine"></script>
 </body>
 </html>`;
 }
