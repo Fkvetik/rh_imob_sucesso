@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mercado — Admin RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --laranja:#ff7a1a; --linha:#e8e4f2 }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:#2b124d}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 90px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+    .top h1{font-size:24px;font-weight:900;margin:0}
+    .sub{color:#6f6283;font-size:14px;margin:0 0 20px}
+    .sub a{color:var(--roxo2);font-weight:700;text-decoration:none}
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+    .stat{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:14px 16px}
+    .stat strong{display:block;font-size:26px;font-weight:900;color:var(--roxo2);line-height:1.1}
+    .stat span{font-size:12px;color:#8c809d;display:block;margin-top:4px;line-height:1.4}
+    .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+    .barra input{flex:1;min-width:200px;border:1.5px solid var(--linha);border-radius:10px;padding:10px 13px;font-size:14px;outline:none}
+    .contador{font-size:12px;color:#8c809d;font-weight:700;white-space:nowrap}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(43,18,77,.06)}
+    th{background:#f3f0ff;text-align:left;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:#6f6283;padding:10px 12px;white-space:nowrap;cursor:pointer;user-select:none}
+    th:hover{color:var(--roxo)}
+    td{padding:10px 12px;font-size:13px;border-top:1px solid var(--linha);vertical-align:top}
+    tr:hover td{background:#faf8ff}
+    .empresa-link{font-weight:800;color:var(--roxo);text-decoration:none}
+    .empresa-link:hover{text-decoration:underline}
+    .tag{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:#e7f7ee;color:#137a3f;white-space:nowrap}
+    .tag.no{background:#f3f0ff;color:#8c809d}
+    .muted{color:#b3a9c2}
+    .loading,.empty{color:#8c809d;text-align:center;padding:40px 0}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>Mercado — Incorporadoras &amp; Benchmark</h1>
+    </div>
+    <p class="sub">Visão dos dados públicos de <a href="/incorporadoras" target="_blank">/incorporadoras</a> e <a href="/mercado-corretores" target="_blank">/mercado-corretores</a>. Só leitura — atualize a planilha-fonte e reprocesse para mudar estes números.</p>
+
+    <div class="stat-grid" id="stats"><div class="loading">Carregando indicadores...</div></div>
+
+    <div class="barra">
+      <input type="text" id="busca" placeholder="Buscar por empresa, segmento ou região..." oninput="render()" />
+      <span class="contador" id="contador"></span>
+    </div>
+    <div id="tabelaWrap"><div class="loading">Carregando empresas...</div></div>
+  </div>
+
+  <script>
+    var COMPANIES = [], SORT = { col: 'empresa', dir: 1 };
+
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function sim(v) { return /^sim/i.test(v || ''); }
+    function tag(v) {
+      if (!v) return '<span class="muted">—</span>';
+      return sim(v) ? '<span class="tag">Sim</span>' : '<span class="tag no">' + esc(v.length > 28 ? v.slice(0, 28) + '…' : v) + '</span>';
+    }
+
+    async function carregar() {
+      try {
+        var [rInc, rMc] = await Promise.all([
+          fetch('/data/incorporadoras.json'),
+          fetch('/data/mercado-corretores.json')
+        ]);
+        var inc = await rInc.json();
+        var mc = await rMc.json();
+        COMPANIES = inc.companies || [];
+        renderStats(mc, inc);
+        render();
+      } catch (e) {
+        document.getElementById('tabelaWrap').innerHTML = '<div class="empty">Erro ao carregar dados: ' + esc(e.message) + '</div>';
+      }
+    }
+
+    function renderStats(mc, inc) {
+      var E = mc.empresaAgg || {}, R = mc.radarAgg || {};
+      var items = [
+        [inc.companies.length, 'incorporadoras mapeadas'],
+        [(E.pctDemandaAltaMuitoAlta || 0) + '%', 'com demanda alta/muito alta'],
+        [(E.pctHousePropria || 0) + '%', 'com house própria'],
+        [(E.pctDivulgaComissao || 0) + '%', 'divulgam comissão'],
+        [(E.pctDivulgaAjudaCusto || 0) + '%', 'divulgam ajuda de custo'],
+        [(E.pctOfereceLeads || 0) + '%', 'afirmam fornecer leads'],
+        [R.total || 0, 'vagas monitoradas (' + (R.ativas || 0) + ' ativas)'],
+        [R.notaMedia || '—', 'nota média (vagas c/ proposta completa)']
+      ];
+      document.getElementById('stats').innerHTML = items.map(function (it) {
+        return '<div class="stat"><strong>' + it[0] + '</strong><span>' + it[1] + '</span></div>';
+      }).join('');
+    }
+
+    var COLS = [
+      ['empresa', 'Empresa'], ['segmento', 'Segmento'], ['presenca', 'Presença'],
+      ['notaDemanda', 'Demanda'], ['housePropria', 'House própria'], ['aceitaIniciantes', 'Aceita iniciante'],
+      ['treinamento', 'Treinamento'], ['leads', 'Leads'], ['comissao', 'Comissão'], ['ajudaCusto', 'Ajuda custo'],
+      ['atualizacao', 'Atualizado']
+    ];
+
+    function sortBy(col) {
+      if (SORT.col === col) SORT.dir *= -1; else { SORT.col = col; SORT.dir = 1; }
+      render();
+    }
+
+    function render() {
+      var q = (document.getElementById('busca').value || '').toLowerCase().trim();
+      var arr = COMPANIES.filter(function (c) {
+        if (!q) return true;
+        return [c.empresa, c.segmento, c.presenca, c.atuacao].join(' ').toLowerCase().indexOf(q) >= 0;
+      });
+      arr.sort(function (a, b) {
+        var x = (a[SORT.col] || ''), y = (b[SORT.col] || '');
+        if (SORT.col === 'notaDemanda') { x = parseInt(x, 10) || 0; y = parseInt(y, 10) || 0; return (x - y) * SORT.dir; }
+        return String(x).localeCompare(String(y), 'pt-BR') * SORT.dir;
+      });
+      document.getElementById('contador').textContent = arr.length + ' de ' + COMPANIES.length + ' empresas';
+
+      if (!arr.length) { document.getElementById('tabelaWrap').innerHTML = '<div class="empty">Nenhuma empresa encontrada.</div>'; return; }
+
+      var thead = '<tr>' + COLS.map(function (c) { return '<th onclick="sortBy(\'' + c[0] + '\')">' + c[1] + (SORT.col === c[0] ? (SORT.dir > 0 ? ' ▲' : ' ▼') : '') + '</th>'; }).join('') + '</tr>';
+      var rows = arr.map(function (c) {
+        return '<tr>' +
+          '<td><a class="empresa-link" href="/incorporadoras/' + esc(c.slug) + '" target="_blank">' + esc(c.empresa) + '</a></td>' +
+          '<td>' + esc(c.segmento || '—') + '</td>' +
+          '<td>' + esc(c.presenca || '—') + '</td>' +
+          '<td>' + (c.notaDemanda ? esc(c.notaDemanda) + '/5' : '<span class="muted">—</span>') + '</td>' +
+          '<td>' + tag(c.housePropria) + '</td>' +
+          '<td>' + tag(c.aceitaIniciantes) + '</td>' +
+          '<td>' + tag(c.treinamento) + '</td>' +
+          '<td>' + tag(c.leads) + '</td>' +
+          '<td>' + (c.comissao ? esc(c.comissao.length > 30 ? c.comissao.slice(0, 30) + '…' : c.comissao) : '<span class="muted">Não divulgado</span>') + '</td>' +
+          '<td>' + (c.ajudaCusto ? esc(c.ajudaCusto.length > 30 ? c.ajudaCusto.slice(0, 30) + '…' : c.ajudaCusto) : '<span class="muted">Não divulgado</span>') + '</td>' +
+          '<td>' + esc(c.atualizacao || '—') + '</td>' +
+          '</tr>';
+      }).join('');
+      document.getElementById('tabelaWrap').innerHTML = '<table><thead>' + thead + '</thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    carregar();
+  </script>
+</body>
+</html>
