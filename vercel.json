@@ -23,12 +23,19 @@
     },
     "api/sitemap-incorporadoras.js": {
       "includeFiles": "data/incorporadoras.json"
+    },
+    "api/mercado-corretores.js": {
+      "includeFiles": "data/mercado-corretores.json"
     }
   },
   "rewrites": [
     {
       "source": "/favicon.ico",
       "destination": "/favicon.ico"
+    },
+    {
+      "source": "/mercado-corretores",
+      "destination": "/api/mercado-corretores"
     },
     {
       "source": "/incorporadoras",
