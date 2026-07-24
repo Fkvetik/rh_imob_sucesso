@@ -28,3 +28,4 @@ higienizar_github_rhimob.ps1
 Thumbs.db
 .vercel
 .env*
+.claude/
