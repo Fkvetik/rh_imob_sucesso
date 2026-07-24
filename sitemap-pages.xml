@@ -41,6 +41,7 @@
 
   <!-- Blog -->
   <url><loc>https://www.rhimob.com.br/blog</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.rhimob.com.br/blog/onde-trabalhar-corretor-imoveis-sp</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
   <url><loc>https://www.rhimob.com.br/blog/como-contratar-corretor-imoveis</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
   <url><loc>https://www.rhimob.com.br/blog/quanto-custa-recrutamento-imobiliario</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
   <url><loc>https://www.rhimob.com.br/blog/equipe-lancamento-imobiliario</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
@@ -51,6 +52,34 @@
   <url><loc>https://www.rhimob.com.br/contrato-corretor-autonomo</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
   <url><loc>https://www.rhimob.com.br/aberto-a-propostas</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
   <url><loc>https://www.rhimob.com.br/vendedor-alto-ticket</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+
+  <!-- Vagas de corretor por cidade (jornada candidato) -->
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-barueri</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-bauru</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-belo-horizonte</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-brasilia</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-campinas</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-curitiba</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-florianopolis</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-franca</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-goiania</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-guarulhos</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-jundiai</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-mogi-das-cruzes</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-osasco</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-piracicaba</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-porto-alegre</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-ribeirao-preto</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-rio-de-janeiro</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-santo-andre</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-santos</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-sao-bernardo-do-campo</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-sao-carlos</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-sao-jose-dos-campos</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-sao-jose-rio-preto</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-sao-paulo</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-sorocaba</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
+  <url><loc>https://www.rhimob.com.br/vagas-corretor-taubate</loc><lastmod>2026-07-25</lastmod><changefreq>monthly</changefreq><priority>0.72</priority></url>
 
   <!-- Plataformas e outros -->
   <url><loc>https://www.rhimob.com.br/corretores</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>

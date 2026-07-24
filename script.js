@@ -381,10 +381,17 @@
     let path = location.pathname.replace(/\/index\.html$/, '/');
     if (path.length > 1) path = path.replace(/\/$/, '');
     if (LEAD_CONTEXTS[path]) return LEAD_CONTEXTS[path];
-    const m = path.match(/\/corretor-([a-z-]+)\.html$/);
+    // (?:\.html)? — o cleanUrls do Vercel serve sem extensão em produção, mas o
+    // arquivo local ainda é .html; aceitar os dois evita o contexto quebrar.
+    const m = path.match(/\/corretor-([a-z-]+)(?:\.html)?$/);
     if (m) {
       const cidade = titleCaseCidade(m[1]);
       return { journey: 'empresa', empresa: { titulo: `Contratar corretor em ${cidade}`, subtitulo: 'Selecionamos profissionais da região para sua operação.', origem: `Contratar ${cidade}`, prefill: { cidade } } };
+    }
+    const mv = path.match(/\/vagas-corretor-([a-z-]+)(?:\.html)?$/);
+    if (mv) {
+      const cidade = titleCaseCidade(mv[1]);
+      return { journey: 'candidato', candidato: { titulo: `Vagas de corretor em ${cidade}`, subtitulo: 'Receba oportunidades reais de imobiliárias e incorporadoras da região.', origem: `Vagas ${cidade}`, campoLabel: 'Cargo/área em que você atua', prefill: { cidade } } };
     }
     return null;
   }
