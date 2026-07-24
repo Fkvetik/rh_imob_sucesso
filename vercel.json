@@ -17,10 +17,23 @@
       "schedule": "*/15 * * * *"
     }
   ],
+  "functions": {
+    "api/incorporadora.js": {
+      "includeFiles": "data/incorporadoras.json"
+    }
+  },
   "rewrites": [
     {
       "source": "/favicon.ico",
       "destination": "/favicon.ico"
+    },
+    {
+      "source": "/incorporadoras",
+      "destination": "/api/incorporadora"
+    },
+    {
+      "source": "/incorporadoras/:slug",
+      "destination": "/api/incorporadora?slug=:slug"
     },
     {
       "source": "/noticias/categoria/:cat",
