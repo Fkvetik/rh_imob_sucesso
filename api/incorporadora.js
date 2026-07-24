@@ -95,7 +95,7 @@ function head(title, desc, canonical) {
   <style>
     .inc-hero{background:linear-gradient(135deg,#180826,#3b1a6b);color:#fff;padding:52px 0 40px}
     .inc-hero .eyebrow{color:#c4b5fd;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-    .inc-hero h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;margin:10px 0 8px;line-height:1.15}
+    .inc-hero h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;margin:10px 0 8px;line-height:1.15;color:#ffab40}
     .inc-hero p{color:rgba(255,255,255,.8);font-size:16px;max-width:640px;line-height:1.6}
     .inc-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
     .inc-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700}

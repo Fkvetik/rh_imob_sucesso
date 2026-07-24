@@ -111,7 +111,7 @@ function render() {
   <style>
     .mc-hero{background:linear-gradient(135deg,#180826,#3b1a6b);color:#fff;padding:56px 0 44px}
     .mc-hero .eyebrow{color:#c4b5fd;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-    .mc-hero h1{font-size:clamp(26px,4.2vw,42px);letter-spacing:-.02em;margin:10px 0 12px;line-height:1.15}
+    .mc-hero h1{font-size:clamp(26px,4.2vw,42px);letter-spacing:-.02em;margin:10px 0 12px;line-height:1.15;color:#ffab40}
     .mc-hero p{color:rgba(255,255,255,.82);font-size:16.5px;max-width:700px;line-height:1.65}
     .mc-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:26px}
     .mc-stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:16px 18px}
