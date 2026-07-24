@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rh-imob",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", ".", "--no-clipboard", "-p", "3500"],
+      "port": 3500
+    },
+    {
+      "name": "rh-imob-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vercel", "dev", "--listen", "3501", "--yes"],
+      "port": 3501
+    }
+  ]
+}
