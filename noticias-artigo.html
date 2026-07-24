@@ -6,7 +6,10 @@
   <!-- Meta tags dinâmicas (sobrescritas por JS) -->
   <title>Notícia | RH IMOB</title>
   <meta name="description" content="Notícias sobre recrutamento e mercado imobiliário pela RH IMOB." />
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="noindex, follow" />
+  <!-- Template legado: as notícias reais são servidas por /noticias/:slug via api/artigo.js (SSR).
+       Acessado sem slug, este arquivo mostra "Notícia não encontrada" — noindex evita
+       que o Google indexe essa página vazia/fantasma. -->
   <link rel="canonical" id="link-canonical" href="https://www.rhimob.com.br/noticias" />
   <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
   <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
