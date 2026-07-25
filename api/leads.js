@@ -1,6 +1,9 @@
-// Vercel Function — leitura segura dos leads (site_leads) para o admin.
+// Vercel Function — leitura e exclusão dos leads (site_leads) para o admin.
 // A chave de serviço fica só no servidor (env var), nunca no cliente.
 // Protegido por token: /api/leads?token=SEU_TOKEN
+//
+// GET  → leads agrupados por sessão (comportamento original)
+// POST { acao: 'excluir_lead', session_id? , id? } → apaga as linhas da sessão (ou 1 linha avulsa)
 
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 
@@ -19,6 +22,42 @@ export default async function handler(req, res) {
   if (token !== ADMIN_TOKEN) {
     res.status(401).send(JSON.stringify({ error: 'auth', message: 'Token inválido.' }));
     return;
+  }
+
+  const headers = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
+
+  if (req.method === 'POST') {
+    try {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+      if (body.acao !== 'excluir_lead') {
+        res.status(400).send(JSON.stringify({ error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao }));
+        return;
+      }
+      const sessionId = (body.session_id || '').trim();
+      const id = (body.id || '').trim();
+      if (!sessionId && !id) {
+        res.status(400).send(JSON.stringify({ error: 'validacao', message: 'session_id ou id é obrigatório.' }));
+        return;
+      }
+      // Cada sessão pode ter várias linhas (uma por gravação/blur) com session_id
+      // no formato "<prefixo>#<sufixo>" — apaga todas com esse prefixo via LIKE.
+      const filtro = sessionId
+        ? `session_id=like.${encodeURIComponent(sessionId)}*`
+        : `id=eq.${encodeURIComponent(id)}`;
+      const r = await fetch(`${SB_URL}/rest/v1/site_leads?${filtro}`, {
+        method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' }
+      });
+      if (!r.ok) {
+        const t = await r.text().catch(() => '');
+        res.status(502).send(JSON.stringify({ error: 'supabase', status: r.status, message: t.slice(0, 300) }));
+        return;
+      }
+      res.status(200).send(JSON.stringify({ ok: true }));
+      return;
+    } catch (e) {
+      res.status(500).send(JSON.stringify({ error: 'exception', message: String(e && e.message || e) }));
+      return;
+    }
   }
 
   try {

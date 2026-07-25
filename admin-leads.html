@@ -46,6 +46,9 @@
     .lead-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
     .wa-btn{background:#25d366;color:#fff;font-weight:800;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
     .wa-btn.rec{background:#ff7a1a}
+    .del-btn{background:#fff;color:#c53030;font-weight:800;font-size:13px;padding:9px 16px;border-radius:10px;border:1.5px solid #f2c8c8;cursor:pointer}
+    .del-btn:hover{background:#fff5f5}
+    .del-btn:disabled{opacity:.5;cursor:default}
     .empty{color:#8c809d;text-align:center;padding:40px 0}
     .loading{color:#8c809d;padding:20px 0}
   </style>
@@ -151,7 +154,8 @@
           ['Contexto', l.mensagem], ['Origem', l.origem]
         ].filter(function(c){return c[1];})
          .map(function(c){return '<div><b>'+c[0]+':</b> '+esc(c[1])+'</div>';}).join('');
-        return '<div class="lead'+(rec?' recuperar':'')+'">' +
+        var key = l.session_id ? esc(l.session_id) : ('id:'+esc(l.id));
+        return '<div class="lead'+(rec?' recuperar':'')+'" data-key="'+key+'">' +
           '<div class="lead-top">' +
             '<div><p class="lead-nome">'+esc(l.nome||'(sem nome)')+'</p>' +
               '<p class="lead-meta">'+fmtData(l.created_at)+' · '+esc(l.whatsapp||'sem telefone')+'</p></div>' +
@@ -160,11 +164,34 @@
           (campos?'<div class="lead-grid">'+campos+'</div>':'') +
           '<div class="lead-actions">' +
             (num?'<a class="wa-btn'+(rec?' rec':'')+'" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone='+num+'&text='+msg+'"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.1 1.5 5.8L0 24l6.3-1.6C8 23.4 10 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>'+(rec?'Recuperar no WhatsApp':'Falar no WhatsApp')+'</a>':'<span class="lead-meta">Sem telefone para contato</span>') +
+            '<button type="button" class="del-btn" onclick="excluirLead(this,'+(l.session_id?"'"+esc(l.session_id)+"'":'null')+','+(l.id?"'"+esc(l.id)+"'":'null')+')">Excluir</button>' +
           '</div>' +
         '</div>';
       }).join('');
     }
     function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+    async function excluirLead(btn, sessionId, id){
+      if(!confirm('Excluir este lead? Essa ação não pode ser desfeita.')) return;
+      btn.disabled = true; btn.textContent = 'Excluindo...';
+      try{
+        var r = await fetch('/api/leads?token='+encodeURIComponent(TOKEN), {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ acao: 'excluir_lead', session_id: sessionId, id: id })
+        });
+        var j = await r.json();
+        if(!r.ok || j.error){ alert('Erro ao excluir: '+(j.message||'tente novamente.')); btn.disabled=false; btn.textContent='Excluir'; return; }
+        LEADS = LEADS.filter(function(l){
+          if(sessionId) return l.session_id !== sessionId;
+          return l.id !== id;
+        });
+        render();
+      }catch(e){
+        alert('Erro de conexão ao excluir.');
+        btn.disabled = false; btn.textContent = 'Excluir';
+      }
+    }
   </script>
 </body>
 </html>
