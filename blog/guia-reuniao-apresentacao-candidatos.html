@@ -18,6 +18,7 @@
     {"@context":"https://schema.org","@type":"Article","headline":"Guia: Como Conduzir a Reunião de Apresentação de Candidatos","author":{"@type":"Person","name":"Mariana Souza","url":"https://www.rhimob.com.br"},"publisher":{"@type":"Organization","name":"RH IMOB","url":"https://www.rhimob.com.br"},"datePublished":"2026-07-26","dateModified":"2026-07-26","description":"Guia prático para empresas que recebem candidatos da RH IMOB conduzirem a reunião de apresentação e os primeiros dias do novo colaborador."}
   ]
   </script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Por que o candidato não diz o motivo real da desistência?","acceptedAnswer":{"@type":"Answer","text":"Porque apontar diretamente falhas da reunião (câmera fechada, falta de preparo, proposta divergente) é socialmente mais difícil do que dar um motivo genérico como 'achei que era outro modelo de contrato'. Isso é um padrão documentado em pesquisas de candidate experience, não uma suposição."}},{"@type":"Question","name":"A reunião online realmente influencia a decisão de um corretor experiente?","acceptedAnswer":{"@type":"Answer","text":"Sim. Corretores de alto padrão, com opções reais de mercado, avaliam a empresa durante a reunião da mesma forma que são avaliados. Uma reunião mal conduzida sinaliza desorganização — o oposto do que uma empresa de alto padrão precisa comunicar."}},{"@type":"Question","name":"Quanto tempo deve durar o período de imersão de um novo corretor?","acceptedAnswer":{"@type":"Answer","text":"Não existe um número universal, mas o princípio é: quanto mais estruturado e mais tempo de atenção dedicada nos primeiros dias, maior a chance de retenção. Empresas com onboarding formal e responsável definido desde o primeiro dia tendem a reter mais do que empresas que direcionam o novo colaborador direto ao gestor, sem transição."}},{"@type":"Question","name":"O que fazer se o candidato desistir mesmo com a reunião bem conduzida?","acceptedAnswer":{"@type":"Answer","text":"Registrar o feedback real (quando o candidato der) e comunicar à RH IMOB. Nem toda desistência é evitável — pessoas recebem outras propostas, mudam de prioridade. O objetivo deste guia é eliminar as desistências causadas por falhas evitáveis na condução do processo, não todas as desistências."}}]}</script>
   <link rel="stylesheet" href="/styles.css?v=20260626blog" />
   <style>
     .article-hero{background:linear-gradient(135deg,var(--purple-950) 0%,var(--purple-800) 100%);padding:72px 0 56px}
@@ -41,6 +42,25 @@
     .checklist ul{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:12px}
     .checklist li{display:flex;align-items:flex-start;gap:10px;color:rgba(255,255,255,.88);font-size:15px;line-height:1.5}
     .checklist li::before{content:'✓';color:var(--orange-400);font-weight:900;flex-shrink:0}
+    .toc{background:var(--off);border-radius:14px;padding:20px 24px;margin:24px 0}
+    .toc h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .toc ol{margin:0;padding-left:20px;font-size:14.5px;color:var(--purple-800)}
+    .toc li{margin-bottom:6px}
+    .toc a{color:inherit;font-weight:700;text-decoration:none}
+    .toc a:hover{text-decoration:underline}
+    .script-box{background:#fffbe8;border:1px solid #f5deb3;border-radius:14px;padding:22px 24px;margin:20px 0}
+    .script-box h3{margin:0 0 10px;color:#8a5a1a;font-size:14px;text-transform:uppercase;letter-spacing:.04em}
+    .script-box p{margin:0;font-style:italic;color:#5c3d0e;line-height:1.7}
+    .compare-table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px}
+    .compare-table th{padding:12px 16px;text-align:left;font-size:12.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#fff}
+    .compare-table th.bad{background:#dc2626}
+    .compare-table th.good{background:#16a34a}
+    .compare-table td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+    .compare-table tr:nth-child(even) td{background:var(--off)}
+    .timeline-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:14px;display:flex;gap:18px}
+    .timeline-box .when{flex-shrink:0;width:110px;font-weight:900;color:var(--purple-950);font-size:14px}
+    .timeline-box .what strong{display:block;color:var(--purple-950);margin-bottom:4px;font-size:15px}
+    .timeline-box .what p{margin:0;font-size:14px;color:#444;line-height:1.6}
     .article-cta{background:linear-gradient(135deg,var(--purple-950),var(--purple-800));border-radius:20px;padding:40px;text-align:center;margin-top:48px}
     .article-cta h3{color:#fff;font-size:22px;letter-spacing:-.03em;margin-bottom:10px}
     .article-cta p{color:rgba(255,255,255,.72);margin-bottom:20px;font-size:15px}
@@ -80,7 +100,7 @@
         <h1>Como conduzir a reunião de apresentação de candidatos (e os primeiros dias que vêm depois)</h1>
         <div class="article-hero-meta">
           <img src="/assets/mariana-v3.jpg" alt="Mariana Souza" />
-          <span>Mariana Souza · Especialista em Recrutamento Imobiliário · 9 min de leitura</span>
+          <span>Mariana Souza · Especialista em Recrutamento Imobiliário · 13 min de leitura</span>
         </div>
         <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:18px;">
           <span style="color:rgba(255,255,255,.6);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-right:2px;">Compartilhar</span>
@@ -99,7 +119,22 @@
 
       <div class="article-callout"><p>Quando o candidato desiste depois de uma reunião fraca, ele raramente diz "a câmera estava fechada" ou "a proposta não bateu com o combinado". Ele diz algo mais fácil de engolir: "achei que era CLT", "não sabia que era pra corretor". Esse motivo alternativo pode até virar reclamação sobre a qualidade da entrega — quando na verdade a causa está na condução da reunião.</p></div>
 
-      <h2>Antes da reunião</h2>
+      <div class="toc">
+        <h3>Neste guia</h3>
+        <ol>
+          <li><a href="#antes">Antes da reunião</a></li>
+          <li><a href="#coerencia">Coerência entre o que se busca e o que se entrega</a></li>
+          <li><a href="#roteiro">Roteiro de abertura (exemplo pronto)</a></li>
+          <li><a href="#durante">Durante a reunião</a></li>
+          <li><a href="#sinais">Sinais de alerta durante a conversa</a></li>
+          <li><a href="#depois">Depois da reunião</a></li>
+          <li><a href="#onboarding">Primeiros dias: estrutura de imersão</a></li>
+          <li><a href="#checklist-rapido">Checklist rápido</a></li>
+          <li><a href="#faq-guia">Perguntas frequentes</a></li>
+        </ol>
+      </div>
+
+      <h2 id="antes">Antes da reunião</h2>
       <div class="guide-step">
         <h3><span class="n">1</span> Ambiente e câmera</h3>
         <p>Câmera ligada do início ao fim, enquadramento correto, ambiente silencioso e identificável como profissional — nunca dentro de um carro ou em local de passagem. Estudos mostram que a câmera fechada prejudica diretamente a reputação percebida de quem a mantém fechada.</p>
@@ -115,10 +150,29 @@
         <p>Saiba quem é a pessoa antes de abrir a câmera: nome, o que motivou a indicação, o resumo enviado pela RH IMOB. Isso evita perguntas básicas que já foram respondidas na abordagem — e que sinalizam desatenção ao candidato.</p>
       </div>
 
-      <h2>Coerência entre o que se busca e o que se entrega</h2>
+      <h2 id="coerencia">Coerência entre o que se busca e o que se entrega</h2>
       <div class="article-callout"><p>Se a empresa busca um corretor de alto padrão — alto VGV, boa apresentação, excelência — a reunião precisa refletir esse mesmo padrão. Pedir excelência do candidato enquanto a própria empresa entrega uma reunião com câmera fechada, sem estrutura e sem proposta clara é uma contradição que o candidato percebe, mesmo sem apontar isso como o motivo da recusa.</p></div>
 
-      <h2>Durante a reunião</h2>
+      <table class="compare-table">
+        <thead><tr><th class="bad">Reunião que afasta o candidato de alto padrão</th><th class="good">Reunião que atrai o candidato de alto padrão</th></tr></thead>
+        <tbody>
+          <tr><td>Câmera fechada ou dentro do carro</td><td>Câmera ligada, ambiente de escritório identificável</td></tr>
+          <tr><td>"Depois te falo os detalhes da comissão"</td><td>Remuneração, estrutura e benefícios apresentados com clareza, iguais ao combinado no WhatsApp</td></tr>
+          <tr><td>Entra atrasado ou sem saber quem é o candidato</td><td>Pontual, já revisou o perfil antes de entrar</td></tr>
+          <tr><td>Interrogatório de perguntas genéricas</td><td>Conversa real, com espaço para o candidato perguntar</td></tr>
+          <tr><td>Some depois da reunião, sem prazo de resposta</td><td>Define prazo de retorno antes de encerrar a call</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="roteiro">Roteiro de abertura (exemplo pronto)</h2>
+      <p>Não precisa improvisar a abertura. Um roteiro simples, adaptado à realidade da empresa, já resolve boa parte do problema de comunicação inconsistente:</p>
+      <div class="script-box">
+        <h3>Exemplo de abertura</h3>
+        <p>"Olá, [nome do candidato], tudo bem? Sou [seu nome], [seu cargo] aqui na [empresa]. Obrigado por separar esse tempo. Vi seu perfil que a RH IMOB me passou e gostei muito de [ponto específico do perfil]. Antes de mais nada, deixa eu confirmar rapidamente o que já foi conversado com você: estamos falando de uma vaga de [cargo], modelo [CLT/autônomo/PJ], com [remuneração/comissão] e [principais benefícios]. Isso confere com o que te passaram?"</p>
+      </div>
+      <p>Essa abertura faz duas coisas ao mesmo tempo: mostra preparo (o candidato percebe que você leu o perfil dele) e confirma — em vez de reapresentar do zero — o que já foi combinado, eliminando a chance de divergência silenciosa.</p>
+
+      <h2 id="durante">Durante a reunião</h2>
       <div class="guide-step">
         <h3><span class="n">4</span> Pontualidade e abertura direta</h3>
         <p>Entre na hora combinada. Abra apresentando quem é a empresa e o que ela oferece de diferencial real — de forma breve e concreta, não genérica.</p>
@@ -132,7 +186,16 @@
         <p>Se algo mudou entre a abordagem inicial e a reunião — remuneração, formato, prazo — comunique isso de forma direta. Deixar o candidato descobrir sozinho é uma das causas mais comuns de desistência silenciosa.</p>
       </div>
 
-      <h2>Depois da reunião</h2>
+      <h2 id="sinais">Sinais de alerta durante a conversa</h2>
+      <p>Alguns comportamentos do candidato indicam que ele está se desengajando em tempo real — e ainda dá tempo de reagir dentro da própria reunião:</p>
+      <ul style="font-size:16px;line-height:1.8;color:#333;padding-left:22px;margin-bottom:16px;">
+        <li><strong>Respostas cada vez mais curtas</strong> — pode indicar que algo dito não fez sentido para ele; vale parar e perguntar diretamente se ficou alguma dúvida;</li>
+        <li><strong>Perguntas sobre pontos que já deveriam estar claros</strong> ("mas é CLT ou autônomo mesmo?") — sinal de que a proposta não está sendo comunicada com clareza suficiente;</li>
+        <li><strong>Desvio de olhar frequente ou câmera cada vez mais distante</strong> — pode ser desconforto com algo dito, vale reforçar a transparência em vez de acelerar o discurso;</li>
+        <li><strong>"Vou pensar e te retorno" sem pergunta nenhuma</strong> — geralmente indica que a decisão já foi tomada, e o candidato está apenas encerrando educadamente.</li>
+      </ul>
+
+      <h2 id="depois">Depois da reunião</h2>
       <div class="guide-step">
         <h3><span class="n">7</span> Feedback rápido, mesmo se negativo</h3>
         <p>Corretores e novos talentos bons têm outras opções. Deixar a resposta no vácuo — positiva ou negativa — custa oportunidades e prejudica a reputação da empresa nas próximas abordagens.</p>
@@ -142,8 +205,24 @@
         <p>Combine, na própria reunião, até quando a resposta (de qualquer um dos lados) será dada. Isso reduz a ambiguidade que leva a desistências não comunicadas.</p>
       </div>
 
-      <h2>Depois da contratação: os primeiros dias decidem</h2>
-      <p>A reunião de apresentação é só a primeira parte. O que acontece nos primeiros dias do novo colaborador determina se ele constrói carreira na empresa ou sai antes de completar o primeiro trimestre.</p>
+      <h2 id="onboarding">Primeiros dias: estrutura de imersão</h2>
+      <p>A reunião de apresentação é só a primeira parte. O que acontece nos primeiros dias do novo colaborador determina se ele constrói carreira na empresa ou sai antes de completar o primeiro trimestre. O erro mais comum: passar o novo colaborador direto para o gestor final, que "não tem tempo" nos primeiros dias — deixando a pessoa ociosa exatamente no período em que ela decide se vale a pena continuar.</p>
+
+      <h3 style="margin-top:28px;">Um exemplo de estrutura por fases</h3>
+      <div class="timeline-box">
+        <div class="when">Dia 1</div>
+        <div class="what"><strong>Imersão institucional</strong><p>Apresentação da empresa, cultura, ferramentas e processos — com um responsável dedicado a esse momento, não o gestor final. Objetivo: o novo colaborador entender o "padrão de trabalho" antes de qualquer cobrança de resultado.</p></div>
+      </div>
+      <div class="timeline-box">
+        <div class="when">Dias 2–3</div>
+        <div class="what"><strong>Acompanhamento guiado</strong><p>Observação de rotinas reais (atendimento, visitas, uso do CRM) ao lado de alguém experiente. Ainda sem cobrança de produção — o foco é absorção, não performance.</p></div>
+      </div>
+      <div class="timeline-box">
+        <div class="when">Semana 1</div>
+        <div class="what"><strong>Transição para o gestor direto</strong><p>Só depois da imersão o novo colaborador é direcionado ao gestor que vai acompanhá-lo no dia a dia — já com contexto sobre a empresa e sem a sensação de estar "largado" desde o primeiro dia.</p></div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);">Este é um modelo de referência — o número exato de dias varia conforme o porte e a operação da empresa. O princípio que importa é: nenhum novo colaborador deve ficar sem responsável definido nos primeiros dias.</p>
+
       <div class="guide-step">
         <h3><span class="n">9</span> Estruture o período de imersão</h3>
         <p>Defina um responsável claro pelos primeiros dias — não deixe o novo colaborador esperando o gestor "ter tempo". Onboarding estruturado está diretamente ligado a maior satisfação e permanência.</p>
@@ -151,10 +230,10 @@
       </div>
       <div class="guide-step">
         <h3><span class="n">10</span> Garanta atenção do gestor direto</h3>
-        <p>O gestor direto tem peso desproporcional no engajamento da equipe. Se o novo colaborador fica ocioso ou sem direcionamento nos primeiros dias, o risco de saída precoce sobe — especialmente porque ele já está exposto a outras oportunidades do setor.</p>
+        <p>O gestor direto tem peso desproporcional no engajamento da equipe. Se o novo colaborador fica ocioso ou sem direcionamento nos primeiros dias, o risco de saída precoce sobe — especialmente porque ele já está exposto a outras oportunidades do setor pelas redes sociais.</p>
       </div>
 
-      <div class="checklist">
+      <div class="checklist" id="checklist-rapido">
         <h2>Checklist rápido antes de entrar na reunião</h2>
         <ul>
           <li>Câmera ligada, ambiente silencioso e profissional</li>
@@ -166,6 +245,24 @@
           <li>Prazo de resposta definido antes de encerrar</li>
           <li>Responsável definido para os primeiros dias do novo colaborador</li>
         </ul>
+      </div>
+
+      <h2 id="faq-guia">Perguntas frequentes</h2>
+      <div class="guide-step">
+        <h3 style="display:block;">Por que o candidato não diz o motivo real da desistência?</h3>
+        <p>Porque apontar diretamente falhas da reunião (câmera fechada, falta de preparo, proposta divergente) é socialmente mais difícil do que dar um motivo genérico como "achei que era outro modelo de contrato". Isso é um padrão documentado em pesquisas de candidate experience, não uma suposição.</p>
+      </div>
+      <div class="guide-step">
+        <h3 style="display:block;">A reunião online realmente influencia a decisão de um corretor experiente?</h3>
+        <p>Sim. Corretores de alto padrão, com opções reais de mercado, avaliam a empresa durante a reunião da mesma forma que são avaliados. Uma reunião mal conduzida sinaliza desorganização — o oposto do que uma empresa de alto padrão precisa comunicar.</p>
+      </div>
+      <div class="guide-step">
+        <h3 style="display:block;">Quanto tempo deve durar o período de imersão de um novo corretor?</h3>
+        <p>Não existe um número universal, mas o princípio é: quanto mais estruturado e mais tempo de atenção dedicada nos primeiros dias, maior a chance de retenção. Empresas com onboarding formal e responsável definido desde o primeiro dia tendem a reter mais do que empresas que direcionam o novo colaborador direto ao gestor, sem transição.</p>
+      </div>
+      <div class="guide-step">
+        <h3 style="display:block;">O que fazer se o candidato desistir mesmo com a reunião bem conduzida?</h3>
+        <p>Registrar o feedback real (quando o candidato der) e comunicar à RH IMOB. Nem toda desistência é evitável — pessoas recebem outras propostas, mudam de prioridade. O objetivo deste guia é eliminar as desistências causadas por falhas evitáveis na condução do processo, não todas as desistências.</p>
       </div>
 
       <p style="margin-top:24px;font-size:14px;color:var(--muted);">Leia também: <a href="/blog/camera-aberta-ou-fechada-reuniao-online">Câmera aberta ou fechada na reunião online</a> · <a href="/blog/comunicacao-consistente-processo-seletivo">Comunicação consistente no processo seletivo</a> · <a href="/blog/onboarding-retencao-primeiros-dias">Onboarding e retenção nos primeiros dias</a></p>
