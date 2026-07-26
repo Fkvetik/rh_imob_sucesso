@@ -300,7 +300,7 @@ function renderArticle(n, slug) {
         <div class="article-kicker"><span></span> <a href="/noticias" style="color:inherit;text-decoration:none">Notícias</a> · ${esc(n.categoria)}</div>
         <h1>${esc(n.titulo)}</h1>
         <div class="article-hero-meta">
-          <img src="/assets/mariana-v2.jpg" alt="RH IMOB" />
+          <img src="/assets/mariana-v3.jpg" alt="RH IMOB" />
           <span>RH IMOB · ${pubDate} · ${mins} min de leitura</span>
           <span class="cat-badge">${esc(n.categoria)}</span>
         </div>

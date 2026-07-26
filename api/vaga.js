@@ -186,7 +186,7 @@ function renderVaga(v, slug) {
     .vg-block li::before{content:'';position:absolute;left:0;top:7px;width:16px;height:16px;border-radius:50%;background:#f0e9ff;border:1.5px solid #7c3aed}
     .vg-block li::after{content:'✓';position:absolute;left:3.5px;top:4px;font-size:11px;font-weight:900;color:#7c3aed}
     .vg-resp{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#faf7ff,#f3eeff);border:1px solid #e8e0ff;border-radius:18px;padding:22px 24px;margin-top:8px}
-    .vg-resp-av{width:56px;height:56px;border-radius:50%;background:url('/assets/mariana-v2.jpg') center/cover;flex-shrink:0;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)}
+    .vg-resp-av{width:56px;height:56px;border-radius:50%;background:url('/assets/mariana-v3.jpg') center/cover;flex-shrink:0;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)}
     .vg-resp strong{display:block;font-size:16px;color:#2b124d;font-weight:800}
     .vg-resp span{font-size:13px;color:#6f6283}
     .vg-cta{background:linear-gradient(135deg,#2b124d,#5b21b6);border-radius:20px;padding:40px 32px;text-align:center;margin:40px 0}
