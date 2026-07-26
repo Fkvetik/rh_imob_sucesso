@@ -12,7 +12,7 @@
   <meta property="og:locale" content="pt_BR" />
   <meta property="og:site_name" content="RH IMOB" />
   <meta property="og:title" content="Plataforma Novos Talentos | RH IMOB" />
-  <meta property="og:description" content="130 mil+ talentos comerciais organizados por cidade, perfil e metrô próximo. Plataforma de recrutamento imobiliário da RH IMOB." />
+  <meta property="og:description" content="120 mil+ talentos comerciais organizados por cidade, perfil e metrô próximo. Plataforma de recrutamento imobiliário da RH IMOB." />
   <meta property="og:image" content="https://www.rhimob.com.br/assets/og-novos-talentos.jpg?v=20260719" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -20,7 +20,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.rhimob.com.br/assets/og-novos-talentos.jpg?v=20260719" />
   <meta name="twitter:title" content="Plataforma Novos Talentos | RH IMOB" />
-  <meta name="twitter:description" content="130 mil+ talentos comerciais organizados por cidade, perfil e metrô próximo. Plataforma de recrutamento imobiliário da RH IMOB." />
+  <meta name="twitter:description" content="120 mil+ talentos comerciais organizados por cidade, perfil e metrô próximo. Plataforma de recrutamento imobiliário da RH IMOB." />
   <link rel="icon" href="/favicon.ico?v=20260507nt" sizes="any" />
   <link rel="icon" href="/favicon.svg?v=20260507nt" type="image/svg+xml" />
   <link rel="stylesheet" href="novos-talentos.css?v=20260507nt20" />
@@ -549,5 +549,22 @@
   <script src="supabase-config-novos-talentos.js?v=20260720filtros"></script>
   <script src="novos-talentos.js?v=20260721fallback"></script>
   <script src="planos-render.js?v=20260719"></script>
+  <script>
+    (function(){
+      var cfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || {};
+      if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return;
+      var els = document.querySelectorAll('[data-nt-talentos]');
+      if (!els.length) return;
+      fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/nt_talentos_publicos?select=cidade&produto_codigo=eq.NOVOS_TALENTOS&ativo=eq.true&limit=1', {
+        headers: { apikey: cfg.publishableKey, Authorization: 'Bearer ' + cfg.publishableKey, Prefer: 'count=exact' }
+      }).then(function(r){
+        var range = r.headers.get('content-range') || '';
+        var total = parseInt(range.split('/')[1], 10);
+        if (!isFinite(total) || !total) return;
+        var label = Math.floor(total / 1000) + ' mil';
+        els.forEach(function(el){ el.textContent = label; });
+      }).catch(function(){});
+    })();
+  </script>
 </body>
 </html>
