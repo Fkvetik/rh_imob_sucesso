@@ -453,6 +453,7 @@
           <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required /></label>
           <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP" /></label>
           <label id="rhlmCampoWrap"><span id="rhlmCampoLabel">O que você precisa contratar?</span><input type="text" name="cargoVaga" id="rhlmCampo" placeholder="" /></label>
+          <label id="rhlmPerfilWrap">Já atua como corretor?<select name="perfilCandidato"><option value="">Selecione</option><option value="Sim, já atua como corretor">Sim, já atua como corretor</option><option value="Não, estou começando agora">Não, estou começando agora</option></select></label>
           <details class="rhlm-more" id="rhlmMore">
             <summary>Detalhar (opcional)</summary>
             <div class="rhlm-row" style="margin-top:10px">
@@ -481,8 +482,9 @@
     $('#rhlmCampoLabel').textContent = ctx.campoLabel || LEAD_DEFAULT[ctx.journey].campoLabel;
     $('#rhlmCampo').placeholder = ctx.campoPlaceholder || LEAD_DEFAULT[ctx.journey].campoPlaceholder;
     $('#rhlmSubmit').textContent = ctx.cta || LEAD_DEFAULT[ctx.journey].cta;
-    // quantidade/urgência só fazem sentido para empresa
+    // quantidade/urgência só fazem sentido para empresa; perfil (já é corretor?) só para candidato
     $('#rhlmMore').style.display = ctx.journey === 'empresa' ? '' : 'none';
+    $('#rhlmPerfilWrap').style.display = ctx.journey === 'candidato' ? '' : 'none';
     if (form.elements.origem) form.elements.origem.value = ctx.origem || 'Site RH IMOB';
     if (form.elements.tipo) form.elements.tipo.value = ctx.journey;
     if (ctx.prefill?.cidade && form.elements.cidade) form.elements.cidade.value = ctx.prefill.cidade;
@@ -566,22 +568,18 @@
   }
 
   function buildCompanyLeadMessage(data) {
-    const lines = ['Olá, Mariana. Vim pelo site da RH IMOB e quero contratar profissionais.'];
+    const lines = [];
+    if (data.origem) lines.push(`📋 Novo contato — ${data.origem}`);
+    lines.push('Olá, Mariana. Vim pelo site da RH IMOB e quero contratar profissionais.');
     const add = (label, val) => { if (val) lines.push(`${label}: ${val}`); };
     lines.push('');
     add('Nome', data.nome);
-    add('Empresa', data.empresa);
     add('WhatsApp', data.whatsapp);
     add('Cidade/Estado', data.cidade);
-    add('Cargo/função', data.cargoVaga);
-    add('Tipo de demanda', data.demanda);
+    add('O que precisa contratar', data.cargoVaga);
     add('Quantidade', data.quantidade);
-    add('Formato de contratação', data.formatoContratacao);
     add('Urgência/prazo', data.urgencia);
-    add('Remuneração', data.remuneracao);
-    add('Benefícios', data.beneficios);
-    add('Exigências', data.exigencias);
-    add('Contexto', data.mensagem);
+    add('Mensagem', data.mensagem);
     return lines.join('\n');
   }
 
@@ -656,17 +654,12 @@
         event.preventDefault();
         const data = {
           nome: normalize(form.elements.nome?.value),
-          empresa: normalize(form.elements.empresa?.value),
           whatsapp: normalize(form.elements.whatsapp?.value),
           cidade: normalize(form.elements.cidade?.value),
           cargoVaga: normalize(form.elements.cargoVaga?.value),
-          demanda: normalize(form.elements.demanda?.value),
+          perfilCandidato: normalize(form.elements.perfilCandidato?.value),
           quantidade: normalize(form.elements.quantidade?.value),
-          formatoContratacao: normalize(form.elements.formatoContratacao?.value),
           urgencia: normalize(form.elements.urgencia?.value),
-          remuneracao: normalize(form.elements.remuneracao?.value),
-          beneficios: normalize(form.elements.beneficios?.value),
-          exigencias: normalize(form.elements.exigencias?.value),
           origem: normalize(form.elements.origem?.value),
           mensagem: normalize(form.elements.mensagem?.value)
         };
@@ -694,14 +687,17 @@
   }
 
   function buildCandidateLeadMessage(data) {
-    const lines = ['Olá, Mariana! Vim pelo site da RH IMOB e quero receber vagas.'];
+    const lines = [];
+    const perfilTag = data.perfilCandidato ? ` · ${data.perfilCandidato}` : '';
+    if (data.origem) lines.push(`📋 Novo contato — ${data.origem}${perfilTag}`);
+    lines.push('Olá, Mariana! Vim pelo site da RH IMOB e quero receber vagas.');
     const add = (label, val) => { if (val) lines.push(`${label}: ${val}`); };
     lines.push('');
     add('Nome', data.nome);
     add('Cidade', data.cidade);
+    add('Já atua como corretor?', data.perfilCandidato);
     add('Cargo/área', data.cargoVaga);
     add('Observação', data.mensagem);
-    if (data.origem) { lines.push(''); lines.push(`(Interesse: ${data.origem})`); }
     return lines.join('\n');
   }
 
