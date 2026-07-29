@@ -70,7 +70,11 @@
   <div class="wrap" id="wrap">
     <div class="top">
       <h1>Leads capturados</h1>
-      <button class="out" onclick="sair()">Sair</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="autoStatus" style="font-size:12px;color:#8c809d;"></span>
+        <button class="out" id="btnAtualizar" onclick="carregar(false)">Atualizar</button>
+        <button class="out" onclick="sair()">Sair</button>
+      </div>
     </div>
     <p class="sub">Todo lead é salvo assim que digita nome ou telefone — mesmo sem finalizar. Os laranja não abriram o WhatsApp: recupere.</p>
     <div class="stats" id="stats"></div>
@@ -84,7 +88,7 @@
   <script>
     var TOKEN = null, LEADS = [], FILTRO = 'todos';
 
-    function sair(){ try{sessionStorage.removeItem('leads_tok');}catch(e){} location.reload(); }
+    function sair(){ if(AUTO_TIMER){ clearInterval(AUTO_TIMER); AUTO_TIMER=null; } try{sessionStorage.removeItem('leads_tok');}catch(e){} location.reload(); }
 
     document.getElementById('auth-form').addEventListener('submit', function(e){
       e.preventDefault();
@@ -105,6 +109,8 @@
     function soDigitos(t){ return String(t||'').replace(/\D/g,''); }
     function waNum(t){ var d=soDigitos(t); if(!d) return ''; if(d.length<=11 && d.indexOf('55')!==0) d='55'+d; return d; }
 
+    var AUTO_TIMER = null;
+
     async function carregar(fromForm){
       try{
         var r = await fetch('/api/leads?token='+encodeURIComponent(TOKEN));
@@ -118,9 +124,25 @@
         document.getElementById('auth').style.display='none';
         document.getElementById('wrap').style.display='block';
         render();
+        marcarAtualizado();
+        iniciarAutoAtualizar();
       }catch(e){
         if(fromForm){ document.getElementById('auth-err').style.display='block'; document.getElementById('auth-err').textContent='Erro de conexão.'; }
       }
+    }
+
+    function marcarAtualizado(){
+      var el = document.getElementById('autoStatus');
+      if(el) el.textContent = 'Atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    }
+
+    // Atualiza sozinho a cada 30s, mas só enquanto a aba está visível (evita
+    // gastar requisição à toa quando o painel fica minimizado/em outra aba).
+    function iniciarAutoAtualizar(){
+      if(AUTO_TIMER) return;
+      AUTO_TIMER = setInterval(function(){
+        if(document.visibilityState === 'visible') carregar(false);
+      }, 30000);
     }
 
     function setFiltro(f, btn){
