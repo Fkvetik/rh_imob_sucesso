@@ -47,7 +47,7 @@
         "@type": "ListItem",
         "position": 1,
         "name": "Plataforma Corretores",
-        "description": "Banco de 52 mil+ corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. 360 cidades disponíveis.",
+        "description": "Banco de <span data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil+</span> corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. 360 cidades disponíveis.",
         "url": "https://www.rhimob.com.br/corretores.html"
       },
       {
@@ -228,7 +228,7 @@
               <p class="plat-subtitle">Acesso ao banco de corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. Abordagem estruturada via WhatsApp feita pela equipe RH IMOB.</p>
             </div>
             <div class="plat-card-stats">
-              <div class="plat-stat"><strong>52 mil+</strong><span>Corretores mapeados</span></div>
+              <div class="plat-stat"><strong data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil+</strong><span>Corretores mapeados</span></div>
               <div class="plat-stat"><strong>360</strong><span>Cidades disponíveis</span></div>
               <div class="plat-stat"><strong>7 dias</strong><span>Setup completo</span></div>
             </div>
@@ -257,7 +257,7 @@
               <p class="plat-subtitle">Banco de candidatos em início de carreira interessados em atuar no mercado imobiliário. Perfis pré-selecionados com interesse declarado em formação e desenvolvimento profissional.</p>
             </div>
             <div class="plat-card-stats">
-              <div class="plat-stat"><strong>8 mil+</strong><span>Novos talentos</span></div>
+              <div class="plat-stat"><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">8 mil+</strong><span>Novos talentos</span></div>
               <div class="plat-stat"><strong>180+</strong><span>Cidades</span></div>
               <div class="plat-stat"><strong>Pré-</strong><span>Selecionados</span></div>
             </div>
@@ -312,8 +312,8 @@
               </tr>
               <tr>
                 <td><strong>Volume disponível</strong></td>
-                <td>52 mil+ em 360 cidades</td>
-                <td>8 mil+ em 180+ cidades</td>
+                <td><span data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil+</span> em 360 cidades</td>
+                <td><span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">8 mil+</span> em 180+ cidades</td>
               </tr>
               <tr>
                 <td><strong>Exige treinamento interno</strong></td>
@@ -477,6 +477,7 @@
   </footer>
 
   <a class="floating-wa js-whatsapp" href="#" aria-label="Falar com a RH IMOB" data-type="empresa" data-message="Olá, Mariana. Vim pela página de Plataformas da RH IMOB e quero saber como funciona o acesso.">Falar com a Mariana</a>
+  <script src="/supabase-config.js?v=20260730livecount"></script>
   <script src="/supabase-config-novos-talentos.js?v=20260721leadengine"></script>
   <script src="/script.js?v=20260721leadengine"></script>
 </body>
