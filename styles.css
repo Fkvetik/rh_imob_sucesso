@@ -2332,6 +2332,13 @@ textarea { resize: vertical; min-height: 100px; }
 .ssbtn-copy.ok{background:#25d366;color:#fff;border-color:#25d366}
 .ssbtn-art{background:linear-gradient(135deg,#ff7a1a,#ff9d4d);width:auto!important;padding:0 14px;border-radius:19px;font-size:11px;font-weight:800;gap:6px;letter-spacing:.02em;display:inline-flex;align-items:center}
 .ssbtn-art:disabled{opacity:.6;cursor:wait}
+/* ── Faixa "Soluções por segmento" (padrão site-wide) ───────────────── */
+.seg-band{background:var(--off,#f7f5fb);border-top:1px solid var(--line);padding:28px 0}
+.seg-band .container{display:flex;align-items:center;justify-content:center;gap:12px 20px;flex-wrap:wrap}
+.seg-band-label{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2,#8c809d)}
+.seg-band-links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.seg-band-links a{display:inline-block;background:#fff;border:1px solid var(--line);color:var(--purple-800);font-size:13.5px;font-weight:700;padding:8px 15px;border-radius:999px;text-decoration:none;transition:background .15s,color .15s,border-color .15s}
+.seg-band-links a:hover{background:var(--purple-700);color:#fff;border-color:var(--purple-700)}
 .home-news{background:#fff}
 .home-news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:28px}
 .home-news-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease}
