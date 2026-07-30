@@ -70,8 +70,11 @@
   <div class="wrap" id="wrap">
     <div class="top">
       <h1>Leads capturados</h1>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div style="display:flex;gap:10px;align-items:center;">
         <span id="autoStatus" style="font-size:12px;color:#8c809d;"></span>
+        <label style="font-size:12px;color:#8c809d;display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none;">
+          <input type="checkbox" id="chkSom" style="margin:0;" /> 🔔 Som
+        </label>
         <button class="out" id="btnAtualizar" onclick="carregar(false)">Atualizar</button>
         <button class="out" onclick="sair()">Sair</button>
       </div>
@@ -86,12 +89,52 @@
   </div>
 
   <script>
-    var TOKEN = null, LEADS = [], FILTRO = 'todos';
+    var TOKEN = null, LEADS = [], FILTRO = 'todos', KNOWN_KEYS = null;
 
     function sair(){ if(AUTO_TIMER){ clearInterval(AUTO_TIMER); AUTO_TIMER=null; } try{sessionStorage.removeItem('leads_tok');}catch(e){} location.reload(); }
 
+    // ── Som de novo lead ───────────────────────────────────────────
+    // Autoplay de áudio só é permitido após um gesto do usuário (clique/submit).
+    // Por isso criamos o AudioContext no primeiro clique na página e reaproveitamos.
+    var AUDIO_CTX = null;
+    function ensureAudioCtx(){
+      if(!AUDIO_CTX){ try{ AUDIO_CTX = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+      return AUDIO_CTX;
+    }
+    document.addEventListener('click', function(){ var c=ensureAudioCtx(); if(c && c.state==='suspended') c.resume().catch(function(){}); }, { once:true });
+
+    (function(){
+      var chk = document.getElementById('chkSom');
+      try{ chk.checked = localStorage.getItem('rh_leads_som') !== '0'; }catch(e){ chk.checked = true; }
+      chk.addEventListener('change', function(){ try{ localStorage.setItem('rh_leads_som', chk.checked?'1':'0'); }catch(e){} });
+    })();
+
+    function tocarBeep(freq, atraso){
+      var ctx = ensureAudioCtx();
+      if(!ctx) return;
+      setTimeout(function(){
+        if(ctx.state==='suspended') ctx.resume().catch(function(){});
+        var o=ctx.createOscillator(), g=ctx.createGain();
+        o.type='sine'; o.frequency.value=freq;
+        g.gain.value=0.0001;
+        o.connect(g); g.connect(ctx.destination);
+        var now=ctx.currentTime;
+        g.gain.exponentialRampToValueAtTime(0.3, now+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+0.28);
+        o.start(now); o.stop(now+0.3);
+      }, atraso||0);
+    }
+    function tocarSomNovoLead(){
+      var chk = document.getElementById('chkSom');
+      if(chk && !chk.checked) return;
+      tocarBeep(880, 0);
+      tocarBeep(1046, 150);
+    }
+    function leadKey(l){ return l.session_id || ('id:'+l.id); }
+
     document.getElementById('auth-form').addEventListener('submit', function(e){
       e.preventDefault();
+      ensureAudioCtx();
       TOKEN = document.getElementById('tok').value.trim();
       carregar(true);
     });
@@ -121,6 +164,12 @@
         }
         try{ sessionStorage.setItem('leads_tok', TOKEN); }catch(e){}
         LEADS = j.leads || [];
+        var keysAgora = LEADS.map(leadKey);
+        if(KNOWN_KEYS){
+          var temNovo = keysAgora.some(function(k){ return KNOWN_KEYS.indexOf(k) === -1; });
+          if(temNovo) tocarSomNovoLead();
+        }
+        KNOWN_KEYS = keysAgora;
         document.getElementById('auth').style.display='none';
         document.getElementById('wrap').style.display='block';
         render();
