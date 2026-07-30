@@ -75,6 +75,7 @@
         <label style="font-size:12px;color:#8c809d;display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none;">
           <input type="checkbox" id="chkSom" style="margin:0;" /> 🔔 Som
         </label>
+        <button class="out" id="btnNotif" onclick="pedirPermissaoNotif()" style="display:none;">📲 Ativar notificações</button>
         <button class="out" id="btnAtualizar" onclick="carregar(false)">Atualizar</button>
         <button class="out" onclick="sair()">Sair</button>
       </div>
@@ -132,6 +133,36 @@
     }
     function leadKey(l){ return l.session_id || ('id:'+l.id); }
 
+    // ── Notificação de tela (Notification API) ─────────────────────
+    // Funciona com a aba aberta (em primeiro ou segundo plano). Não é push
+    // de verdade — se o navegador for fechado, não chega nada. Para
+    // notificação com o navegador fechado seria necessário um app/PWA
+    // instalado com Service Worker + servidor de push, o que é um projeto à parte.
+    function atualizarBotaoNotif(){
+      var btn = document.getElementById('btnNotif');
+      if(!btn) return;
+      if(!('Notification' in window)){ btn.style.display='none'; return; }
+      if(Notification.permission === 'granted'){ btn.style.display='none'; }
+      else if(Notification.permission === 'denied'){ btn.style.display='none'; }
+      else { btn.style.display=''; }
+    }
+    function pedirPermissaoNotif(){
+      if(!('Notification' in window)) return;
+      Notification.requestPermission().then(function(){ atualizarBotaoNotif(); });
+    }
+    function notificarNovoLead(qtd){
+      if(!('Notification' in window) || Notification.permission !== 'granted') return;
+      try{
+        var n = new Notification('Novo lead na RH IMOB', {
+          body: qtd > 1 ? qtd + ' novos leads capturados' : '1 novo lead capturado — clique para ver',
+          icon: '/assets/rhimob-logo.jpg',
+          tag: 'rh-lead-novo'
+        });
+        n.onclick = function(){ window.focus(); n.close(); };
+      }catch(e){}
+    }
+    atualizarBotaoNotif();
+
     document.getElementById('auth-form').addEventListener('submit', function(e){
       e.preventDefault();
       ensureAudioCtx();
@@ -166,8 +197,8 @@
         LEADS = j.leads || [];
         var keysAgora = LEADS.map(leadKey);
         if(KNOWN_KEYS){
-          var temNovo = keysAgora.some(function(k){ return KNOWN_KEYS.indexOf(k) === -1; });
-          if(temNovo) tocarSomNovoLead();
+          var novos = keysAgora.filter(function(k){ return KNOWN_KEYS.indexOf(k) === -1; });
+          if(novos.length){ tocarSomNovoLead(); notificarNovoLead(novos.length); }
         }
         KNOWN_KEYS = keysAgora;
         document.getElementById('auth').style.display='none';
