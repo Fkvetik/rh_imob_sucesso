@@ -9,6 +9,17 @@
   <url><loc>https://www.rhimob.com.br/plataformas</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.rhimob.com.br/mercado-corretores</loc><lastmod>2026-07-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
 
+  <!-- Leilões (apoio a corretores parceiros) -->
+  <url><loc>https://www.rhimob.com.br/leiloes</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.65</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-box-de-garagem-n-v-17-25-13-m-centro</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-apartamento-121-88-m-barra-funda</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-direitos-sobre-apartamento-68-99-m-jardim-praiano</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-vaga-de-garagem-8-56-m-pitangueiras</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-lote-de-terreno-n-03-balneario-praia-do-pernambuco</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-lote-21-mini-quadra-f-2-240-m-vicente-de-carvalho</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-apartamento-81-07-m-joao-batista-juliao</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://www.rhimob.com.br/leilao-apartamento-231-04-m-vila-luis-antonio</loc><lastmod>2026-08-01</lastmod><changefreq>monthly</changefreq><priority>0.60</priority></url>
+
   <!-- Soluções por segmento (empregador) -->
   <url><loc>https://www.rhimob.com.br/recrutamento-para-imobiliarias</loc><lastmod>2026-07-30</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
   <url><loc>https://www.rhimob.com.br/recrutamento-para-incorporadoras</loc><lastmod>2026-07-30</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
