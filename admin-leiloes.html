@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leilões — Admin RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --laranja:#ff7a1a; --linha:#e8e4f2 }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:#2b124d}
+    button{font-family:inherit}
+    .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:44px 38px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:52px;height:52px;border-radius:50%;margin-bottom:18px}
+    .auth-card h1{font-size:20px;font-weight:900;margin:0 0 6px}
+    .auth-card p{color:#888;font-size:13px;margin:0 0 24px}
+    .auth-card input{width:100%;padding:13px 15px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:12px;outline:none}
+    .auth-card button{width:100%;padding:13px;background:var(--roxo);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
+    .auth-err{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+
+    .wrap{display:none;max-width:1100px;margin:0 auto;padding:28px 18px 90px}
+    .top h1{font-size:24px;font-weight:900;margin:0}
+    .sub{color:#6f6283;font-size:14px;margin:0 0 18px}
+    .barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+    .barra input{flex:1;min-width:200px;border:1.5px solid var(--linha);border-radius:10px;padding:10px 13px;font-size:14px;outline:none}
+    .contador{font-size:12px;color:#8c809d;font-weight:700}
+
+    .item{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+    .item-info{min-width:0;flex:1 1 260px}
+    .item-titulo{font-size:14.5px;font-weight:800;margin:0}
+    .item-meta{font-size:12px;color:#8c809d;margin-top:3px}
+    .item-resp{flex:1 1 280px;background:#faf9ff;border:1px solid var(--linha);border-radius:10px;padding:10px 13px}
+    .resp-nome{font-size:13px;font-weight:800;color:var(--roxo)}
+    .resp-linha{font-size:12.5px;color:#4a4258;margin-top:3px;display:flex;gap:6px;align-items:center}
+    .resp-linha a{color:var(--roxo2);text-decoration:none}
+    .resp-linha a:hover{text-decoration:underline}
+    .resp-vazio{font-size:12px;color:#b0a6bd;font-style:italic}
+    .badge-fone{background:#dcfce7;color:#166534;font-size:10px;font-weight:900;padding:2px 7px;border-radius:20px}
+    .badge-sem-fone{background:#fee2e2;color:#991b1b;font-size:10px;font-weight:900;padding:2px 7px;border-radius:20px}
+    .empty{color:#8c809d;text-align:center;padding:40px 0}
+    .loading{color:#8c809d;padding:20px 0}
+    .aviso{background:#fff8f0;border:1px solid #fde8ca;border-radius:12px;padding:14px 18px;font-size:13px;color:#7a4b1a;margin-bottom:18px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="auth" id="auth">
+    <div class="auth-card">
+      <img src="/assets/rhimob-logo.jpg" alt="" />
+      <h1>Leilões — RH IMOB</h1>
+      <p>Acesso restrito</p>
+      <form id="auth-form">
+        <input type="password" id="tok" placeholder="Token de acesso" autocomplete="off" />
+        <button type="submit">Entrar</button>
+        <p class="auth-err" id="auth-err">Token inválido.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap" id="wrap">
+    <div class="top">
+      <h1>Imóveis de leilão — responsáveis</h1>
+      <p class="sub">Os 40 imóveis publicados em <a href="/leiloes" target="_blank" rel="noopener">/leiloes</a>, com o leiloeiro/site responsável por trás de cada um. Uso interno — as páginas públicas não mostram esse contato de propósito.</p>
+    </div>
+    <div class="aviso">📌 Contato do responsável cruzado por domínio contra uma base de ~6 mil imobiliárias/leiloeiros (Google Maps). Nem todo leiloeiro tem telefone cadastrado nessa base — quando falta, use o site ou o Instagram.</div>
+    <div class="barra">
+      <input id="busca" type="search" placeholder="Buscar por imóvel ou responsável…" oninput="render()">
+      <span class="contador" id="contador"></span>
+    </div>
+    <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+
+  <script>
+    var TOKEN=null, ITENS=[];
+
+    (function(){
+      try{
+        var p=localStorage.getItem('rh_painel_ok');
+        if(p){ TOKEN=p; carregar(false); return; }
+        var t=sessionStorage.getItem('leiloes_tok'); if(t){ TOKEN=t; carregar(false); }
+      }catch(e){}
+    })();
+    document.getElementById('auth-form').addEventListener('submit',function(e){ e.preventDefault(); TOKEN=document.getElementById('tok').value.trim(); carregar(true); });
+
+    async function carregar(fromForm){
+      try{
+        var r=await fetch('/api/leiloes-admin?token='+encodeURIComponent(TOKEN));
+        var j=await r.json();
+        if(!r.ok||j.error){ if(fromForm){ var el=document.getElementById('auth-err'); el.style.display='block'; el.textContent=j.message||'Token inválido.'; } return; }
+        try{ sessionStorage.setItem('leiloes_tok',TOKEN); }catch(e){}
+        ITENS=j.itens||[];
+        document.getElementById('auth').style.display='none';
+        document.getElementById('wrap').style.display='block';
+        render();
+      }catch(e){ if(fromForm){ var el=document.getElementById('auth-err'); el.style.display='block'; el.textContent='Erro de conexão.'; } }
+    }
+
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+    function fmtFone(f){
+      if(!f) return null;
+      var d=String(f).replace(/\D/g,'');
+      if(d.length===11) return '('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7);
+      if(d.length===10) return '('+d.slice(0,2)+') '+d.slice(2,6)+'-'+d.slice(6);
+      return f;
+    }
+    function fmtData(iso){
+      if(!iso) return '—';
+      var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0];
+    }
+
+    function render(){
+      var q=(document.getElementById('busca').value||'').toLowerCase().trim();
+      var arr=ITENS.filter(function(v){
+        if(!q) return true;
+        return [v.titulo, v.contato&&v.contato.nome].join(' ').toLowerCase().indexOf(q)>=0;
+      });
+      var comFone=ITENS.filter(function(v){return v.contato&&v.contato.fone;}).length;
+      document.getElementById('contador').textContent=ITENS.length+' imóveis · '+comFone+' com telefone do responsável';
+      if(!arr.length){ document.getElementById('lista').innerHTML='<div class="empty">Nenhum imóvel para “'+esc(q)+'”.</div>'; return; }
+      document.getElementById('lista').innerHTML=arr.map(function(v){
+        var c=v.contato||{};
+        var fone=fmtFone(c.fone);
+        var respHtml = c.nome ? (
+          '<div class="resp-nome">'+esc(c.nome)+' '+(fone?'<span class="badge-fone">tem telefone</span>':'<span class="badge-sem-fone">sem telefone</span>')+'</div>'+
+          (fone?'<div class="resp-linha">📞 <a href="tel:'+esc(c.fone)+'">'+esc(fone)+'</a></div>':'')+
+          (c.site?'<div class="resp-linha">🌐 <a href="'+esc(c.site)+'" target="_blank" rel="noopener">'+esc(c.site.replace(/^https?:\/\//,'').replace(/\/$/,''))+'</a></div>':'')+
+          (c.instagram?'<div class="resp-linha">📷 <a href="'+esc(c.instagram)+'" target="_blank" rel="noopener">Instagram</a></div>':'')+
+          (c.endereco?'<div class="resp-linha" style="color:#8c809d">📍 '+esc(c.endereco)+'</div>':'')
+        ) : '<div class="resp-vazio">Responsável não identificado</div>';
+        return '<div class="item">'+
+          '<div class="item-info">'+
+            '<p class="item-titulo">'+esc(v.titulo||'(sem título)')+'</p>'+
+            '<p class="item-meta">Encerramento: '+fmtData(v.dataEncerramento)+(v.valor?' · Lance mínimo: '+esc(v.valor):'')+'</p>'+
+            '<p class="item-meta"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">Ver página →</a></p>'+
+          '</div>'+
+          '<div class="item-resp">'+respHtml+'</div>'+
+        '</div>';
+      }).join('');
+    }
+  </script>
+</body>
+</html>
