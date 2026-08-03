@@ -12,10 +12,16 @@ const URL = `${BASE}/mercado-corretores`;
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function escJs(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, ' '); }
 
-// Mesmo padrão de compartilhar de api/artigo.js, api/vaga.js e api/incorporadora.js.
-function shareWidget(url, title) {
+// Mesmo padrão de compartilhar de api/artigo.js, api/vaga.js e api/incorporadora.js,
+// incluindo "Baixar arte" (gerador de imagem via /assets/share-art.js) — padrão
+// obrigatório em toda página compartilhável do site (ver CLAUDE.md / memória).
+function shareWidget(url, title, art) {
   const enc = encodeURIComponent(url);
   const textEnc = encodeURIComponent(title);
+  const a = art || {};
+  const kicker = escJs(a.kicker || 'MERCADO · RH IMOB');
+  const sub = escJs(a.sub || 'Benchmark de mercado para contratar corretores — RH IMOB');
+  const ctaText = escJs(a.ctaText || 'Ver o painel completo');
   return `<div class="mc-share">
     <span class="mc-share-label">Compartilhar</span>
     <a class="ssbtn ssbtn-wa" href="https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' — ' + url)}" target="_blank" rel="noopener" title="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></a>
@@ -23,6 +29,7 @@ function shareWidget(url, title) {
     <a class="ssbtn ssbtn-x" href="https://twitter.com/intent/tweet?text=${textEnc}&url=${enc}" target="_blank" rel="noopener" title="X (Twitter)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     <a class="ssbtn ssbtn-li" href="https://www.linkedin.com/sharing/share-offsite/?url=${enc}" target="_blank" rel="noopener" title="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
     <button type="button" class="ssbtn ssbtn-copy" title="Copiar link" onclick="navigator.clipboard.writeText('${escJs(url)}').then(()=>{this.classList.add('ok');setTimeout(()=>this.classList.remove('ok'),1800)})"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button>
+    <button type="button" class="ssbtn ssbtn-art" title="Baixar arte para Status / Story / Instagram" onclick="gerarArteRHIMOB({kicker:'${kicker}',title:'${escJs(title)}',sub:'${sub}',ctaText:'${ctaText}',ctaColor:'#ff7a1a',url:'${escJs(url)}',filename:'mercado-corretores-rhimob.png'},this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg> Baixar arte</button>
   </div>`;
 }
 function has(v) { return v && String(v).trim() && String(v).trim() !== '—'; }
@@ -166,6 +173,8 @@ function render() {
     .ssbtn-wa{background:#25d366}.ssbtn-fb{background:#1877f2}.ssbtn-x{background:#000}.ssbtn-li{background:#0077b5}
     .ssbtn-copy{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35)}
     .ssbtn-copy.ok{background:#25d366;border-color:#25d366}
+    .ssbtn-art{background:linear-gradient(135deg,#ff7a1a,#ff9d4d);width:auto!important;padding:0 16px;border-radius:19px;font-size:12px;font-weight:800;gap:7px;letter-spacing:.02em;display:inline-flex;align-items:center}
+    .ssbtn-art:disabled{opacity:.6;cursor:wait}
   </style></head><body>
   <header class="site-header"><div class="container header-inner">
     <a class="brand" href="/"><img src="/assets/rhimob-logo.jpg" alt="" class="brand-mark"/><span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span></a>
@@ -227,6 +236,7 @@ function render() {
   </div></footer>
   <script src="/supabase-config-novos-talentos.js?v=20260721leadengine"></script>
   <script src="/script.js?v=20260721leadengine"></script>
+  <script src="/assets/share-art.js"></script>
   <script>
     document.getElementById('mcHeaderCta').addEventListener('click', function(e){ e.preventDefault(); if(window.RHLead) window.RHLead.open('empresa', this); });
     document.querySelectorAll('.mc-tabbtn').forEach(function(btn){
