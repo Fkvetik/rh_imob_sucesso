@@ -1,0 +1,242 @@
+[
+  {
+    "url": "/leilao-apartamento-121-88-m-barra-funda",
+    "titulo": "Apartamento 121,88 m² — Cond. Ed. Ilana, Barra Funda",
+    "dataEncerramento": "2026-07-06",
+    "valor": "R$ 257.918,85"
+  },
+  {
+    "url": "/leilao-apartamento-231-04-m-vila-luis-antonio",
+    "titulo": "Apartamento 231,04 m² — Cond. Ed. Smeralda, Vila Luís Antônio",
+    "dataEncerramento": "2026-08-05",
+    "valor": "R$ 1.723.939,42"
+  },
+  {
+    "url": "/leilao-apartamento-81-07-m-joao-batista-juliao",
+    "titulo": "Apartamento 81,07 m² — Cond. Ed. Hermon, João Batista Julião",
+    "dataEncerramento": "2026-08-05",
+    "valor": "R$ 351.653,21"
+  },
+  {
+    "url": "/leilao-box-de-garagem-n-v-17-25-13-m-centro",
+    "titulo": "Box de garagem nº V-17, 25,13 m² — Cond. Guarujá Center",
+    "dataEncerramento": "2026-07-06",
+    "valor": "R$ 35.801,77"
+  },
+  {
+    "url": "/leilao-direitos-sobre-apartamento-68-99-m-jardim-praiano",
+    "titulo": "Direitos sobre apartamento 68,99 m² — Cond. Ed. Alicante, Jardim Praiano",
+    "dataEncerramento": "2026-07-06",
+    "valor": "R$ 293.835,22"
+  },
+  {
+    "url": "/leilao-lote-21-mini-quadra-f-2-240-m-vicente-de-carvalho",
+    "titulo": "Lote 21, Mini Quadra F-2 (~240 m²) — Vicente de Carvalho",
+    "dataEncerramento": "2026-08-05",
+    "valor": "R$ 381.964,54"
+  },
+  {
+    "url": "/leilao-lote-de-terreno-n-03-balneario-praia-do-pernambuco",
+    "titulo": "Lote de terreno nº 03 — Jardim Pernambuco I, Balneário Praia do Pernambuco",
+    "dataEncerramento": "2026-08-05",
+    "valor": "R$ 757.462,52"
+  },
+  {
+    "url": "/leilao-vaga-de-garagem-8-56-m-pitangueiras",
+    "titulo": "Vaga de garagem 8,56 m² — Cond. Ed. Orla Park, Pitangueiras",
+    "dataEncerramento": "2026-07-06",
+    "valor": "R$ 46.617,52"
+  },
+  {
+    "url": "/leilao2-apartamento-jaragua-0",
+    "titulo": "Apartamento — 43.93 m² — Jaragua, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 137.953,75"
+  },
+  {
+    "url": "/leilao2-sobreloja-penha-de-franca-1",
+    "titulo": "Sobreloja — 170.96 m² — Penha de França, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 469.445,20"
+  },
+  {
+    "url": "/leilao2-sala-comercial-santa-efigenia-2",
+    "titulo": "Sala comercial — 19.56 m² — Santa Efigênia, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 93.542,23"
+  },
+  {
+    "url": "/leilao2-casa-terceira-divisao-de-interlagos-3",
+    "titulo": "Casa — 480.36 m² — Terceira Divisão de Interlagos, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 892.421,19"
+  },
+  {
+    "url": "/leilao2-casa-jardim-santa-cruz-4",
+    "titulo": "Casa — 180.00 m² — Jardim Santa Cruz, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 663.402,78"
+  },
+  {
+    "url": "/leilao2-casa-parque-dos-bancarios-5",
+    "titulo": "Casa — 69.20 m² — Parque dos Bancarios, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 174.311,93"
+  },
+  {
+    "url": "/leilao2-casa-cidade-ademar-6",
+    "titulo": "Casa — 216.00 m² — Cidade Ademar, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 349.427,88"
+  },
+  {
+    "url": "/leilao2-apartamento-jardim-alzira-7",
+    "titulo": "Apartamento — 42.76 m² — Jardim Alzira, São Paulo/SP",
+    "dataEncerramento": "2026-08-25",
+    "valor": "R$ 143.946,14"
+  },
+  {
+    "url": "/leilao2-terreno-viradouro-8",
+    "titulo": "Terreno — Viradouro/SP",
+    "dataEncerramento": "2026-08-27",
+    "valor": null
+  },
+  {
+    "url": "/leilao2-apartamento-sitio-oratorio-9",
+    "titulo": "Apartamento — 49.32 m² — Sitio Oratorio, São Paulo/SP",
+    "dataEncerramento": "2026-11-23",
+    "valor": "R$ 114.095,55"
+  },
+  {
+    "url": "/leilao2-sobrado-vila-mendes-10",
+    "titulo": "Sobrado — 317.00 m² — Vila Mendes, São Paulo/SP",
+    "dataEncerramento": "2026-11-23",
+    "valor": "R$ 525.966,51"
+  },
+  {
+    "url": "/leilao2-sala-comercial-consolacao-11",
+    "titulo": "Sala comercial — 75.10 m² — Consolação, São Paulo/SP",
+    "dataEncerramento": "2026-11-23",
+    "valor": "R$ 203.373,72"
+  },
+  {
+    "url": "/leilao2-casa-vila-pirituba-12",
+    "titulo": "Casa — 143.50 m² — Vila Pirituba, São Paulo/SP",
+    "dataEncerramento": "2026-11-23",
+    "valor": "R$ 184.183,40"
+  },
+  {
+    "url": "/leilao2-apartamento-morumbi-13",
+    "titulo": "Apartamento — 61.26 m² — Morumbi, São Paulo/SP",
+    "dataEncerramento": "2026-11-23",
+    "valor": "R$ 274.018,80"
+  },
+  {
+    "url": "/leilao2-terreno-vila-reg-feijo-14",
+    "titulo": "Terreno — 271.00 m² — Vila Reg. Feijó, São Paulo/SP",
+    "dataEncerramento": "2026-10-21",
+    "valor": "R$ 1.386.911,49"
+  },
+  {
+    "url": "/leilao2-apartamento-jardim-boa-vista-15",
+    "titulo": "Apartamento — 38.72 m² — Jardim Boa Vista, São Paulo/SP",
+    "dataEncerramento": "2026-10-21",
+    "valor": "R$ 134.047,43"
+  },
+  {
+    "url": "/leilao2-apartamento-vila-remo-16",
+    "titulo": "Apartamento — 44.18 m² — Vila Remo, São Paulo/SP",
+    "dataEncerramento": "2026-10-21",
+    "valor": "R$ 139.652,09"
+  },
+  {
+    "url": "/leilao2-vaga-de-garagem-vila-andrade-17",
+    "titulo": "Vaga de garagem — 13.04 m² — Vila Andrade, São Paulo/SP",
+    "dataEncerramento": "2026-10-21",
+    "valor": "R$ 33.864,81"
+  },
+  {
+    "url": "/leilao2-apartamento-jardim-wanda-18",
+    "titulo": "Apartamento — Jardim Wanda, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 167.521,91"
+  },
+  {
+    "url": "/leilao2-imovel-vila-carrao-19",
+    "titulo": "Imóvel — 330.00 m² — Vila Carrão, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 1.035.870,98"
+  },
+  {
+    "url": "/leilao2-vaga-de-garagem-vila-madalena-20",
+    "titulo": "Vaga de garagem — Vila Madalena, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 93.289,19"
+  },
+  {
+    "url": "/leilao2-casa-osasco-21",
+    "titulo": "Casa — 46.01 m² — Osasco, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 48.205,47"
+  },
+  {
+    "url": "/leilao2-imovel-jardim-miriam-22",
+    "titulo": "Imóvel — 359.00 m² — Jardim Miriam, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 471.994,01"
+  },
+  {
+    "url": "/leilao2-casa-jardim-donaria-23",
+    "titulo": "Casa — 125.00 m² — Jardim Donaria, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 184.280,16"
+  },
+  {
+    "url": "/leilao2-casa-indianopolis-24",
+    "titulo": "Casa — 320.00 m² — Indianópolis, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 1.528.928,87"
+  },
+  {
+    "url": "/leilao2-vaga-de-garagem-tatuape-25",
+    "titulo": "Vaga de garagem — Tatuapé, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 24.709,84"
+  },
+  {
+    "url": "/leilao2-apartamento-jardim-celeste-26",
+    "titulo": "Apartamento — 51.25 m² — Jardim Celeste, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 137.877,98"
+  },
+  {
+    "url": "/leilao2-casa-vila-santa-catarina-27",
+    "titulo": "Casa — 230.00 m² — Vila Santa Catarina, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 358.688,72"
+  },
+  {
+    "url": "/leilao2-casa-parque-continental-28",
+    "titulo": "Casa — 150.00 m² — Parque Continental, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 855.199,13"
+  },
+  {
+    "url": "/leilao2-terreno-vila-nova-york-29",
+    "titulo": "Terreno — 395.00 m² — Vila Nova York, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 725.837,18"
+  },
+  {
+    "url": "/leilao2-apartamento-jardim-analia-franco-30",
+    "titulo": "Apartamento — 52.91 m² — Jardim Anália Franco, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 444.525,56"
+  },
+  {
+    "url": "/leilao2-casa-jardim-maringa-31",
+    "titulo": "Casa — 122.50 m² — Jardim Maringa, São Paulo/SP",
+    "dataEncerramento": "2026-09-23",
+    "valor": "R$ 174.716,55"
+  }
+]
