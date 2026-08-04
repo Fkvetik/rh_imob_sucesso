@@ -429,67 +429,6 @@
     </div>
   </div>
 
-  <div class="modal" id="companyLeadModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="companyLeadModalTitle">
-    <div class="modal-backdrop" data-close-company-lead-modal></div>
-    <div class="modal-panel" role="document">
-      <button class="modal-close" type="button" data-close-company-lead-modal aria-label="Fechar">×</button>
-      <div class="modal-head">
-        <span class="section-kicker">Preciso contratar</span>
-        <h2 id="companyLeadModalTitle">Envie sua demanda de contratação.</h2>
-        <p>Preencha as informações da sua demanda para que a RH IMOB entenda o cenário, avalie o melhor formato de apoio e retorne com uma orientação mais precisa.</p>
-      </div>
-      <form id="companyLeadForm" class="job-form company-lead-form js-company-lead-form">
-        <input type="hidden" name="origem" value="Site RH IMOB" />
-        <label>Nome
-          <input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required />
-        </label>
-        <label>Empresa
-          <input type="text" name="empresa" autocomplete="organization" placeholder="Nome da imobiliária ou empresa" required />
-        </label>
-        <label>WhatsApp
-          <input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required />
-        </label>
-        <label>Cidade/Estado
-          <input type="text" name="cidade" placeholder="Ex.: Curitiba/PR" required />
-        </label>
-        <label>Tipo de demanda
-          <select name="demanda" required>
-            <option value="">Selecione</option>
-            <option>Corretores e novos talentos</option>
-            <option>Corretores com CRECI ativo</option>
-            <option>Novos talentos para formação</option>
-            <option>Liderança comercial</option>
-            <option>SDR e atendimento</option>
-            <option>Locação / terceiros / alto padrão</option>
-            <option>Crédito imobiliário</option>
-            <option>Projeto de alto volume</option>
-            <option>Acesso à plataforma RH IMOB</option>
-            <option>Ainda preciso alinhar o perfil</option>
-          </select>
-        </label>
-        <label>Quantidade aproximada
-          <input type="text" name="quantidade" placeholder="Ex.: 2, 6, 20 profissionais" />
-        </label>
-        <label>Urgência/prazo
-          <select name="urgencia">
-            <option value="">Selecione, se souber</option>
-            <option>Imediata</option>
-            <option>Até 15 dias</option>
-            <option>Até 30 dias</option>
-            <option>Até 60 dias</option>
-            <option>Operação contínua</option>
-            <option>Estou avaliando para os próximos meses</option>
-          </select>
-        </label>
-        <label>Mensagem breve
-          <textarea name="mensagem" rows="4" placeholder="Ex.: cidade da operação, perfil desejado, modelo de atuação, volume e prazo esperado"></textarea>
-        </label>
-        <button class="btn btn-primary btn-full" type="submit">Enviar minha demanda para análise</button>
-        <p class="form-helper">A mensagem chega estruturada para acelerar o atendimento e evitar uma conversa sem contexto.</p>
-      </form>
-    </div>
-  </div>
-
   <div class="modal" id="jobModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-backdrop" data-close-modal></div>
     <div class="modal-panel" role="document">
