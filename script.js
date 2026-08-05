@@ -574,11 +574,17 @@
     const add = (label, val) => { if (val) lines.push(`${label}: ${val}`); };
     lines.push('');
     add('Nome', data.nome);
+    add('Empresa', data.empresa);
     add('WhatsApp', data.whatsapp);
     add('Cidade/Estado', data.cidade);
+    add('Tipo de demanda', data.demanda);
     add('O que precisa contratar', data.cargoVaga);
     add('Quantidade', data.quantidade);
     add('Urgência/prazo', data.urgencia);
+    add('Formato de contratação', data.formatoContratacao);
+    add('Remuneração oferecida', data.remuneracao);
+    add('Benefícios', data.beneficios);
+    add('Exigências da vaga', data.exigencias);
     add('Mensagem', data.mensagem);
     return lines.join('\n');
   }
@@ -654,12 +660,20 @@
         event.preventDefault();
         const data = {
           nome: normalize(form.elements.nome?.value),
+          empresa: normalize(form.elements.empresa?.value),
           whatsapp: normalize(form.elements.whatsapp?.value),
           cidade: normalize(form.elements.cidade?.value),
           cargoVaga: normalize(form.elements.cargoVaga?.value),
           perfilCandidato: normalize(form.elements.perfilCandidato?.value),
           quantidade: normalize(form.elements.quantidade?.value),
           urgencia: normalize(form.elements.urgencia?.value),
+          // demanda não tem coluna própria no site_leads (não sai daqui pro banco,
+          // só entra na mensagem) — ver saveLeadEmpresa/nota 2026-08-04.
+          demanda: normalize(form.elements.demanda?.value),
+          formatoContratacao: normalize(form.elements.formatoContratacao?.value),
+          remuneracao: normalize(form.elements.remuneracao?.value),
+          beneficios: normalize(form.elements.beneficios?.value),
+          exigencias: normalize(form.elements.exigencias?.value),
           origem: normalize(form.elements.origem?.value),
           mensagem: normalize(form.elements.mensagem?.value)
         };
