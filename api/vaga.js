@@ -195,6 +195,17 @@ function renderVaga(v, slug) {
     .vg-back{display:inline-flex;align-items:center;gap:7px;color:#7c3aed;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px}
     .vg-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b124d;color:#fff;padding:13px 24px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(43,18,77,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:999}
     .vg-toast.show{opacity:1}
+    .vg-form-alt{margin-top:14px}
+    .vg-form-toggle{all:unset;cursor:pointer;font-size:13.5px;font-weight:700;color:#c4b5fd;text-decoration:underline}
+    .vg-form-toggle:hover{color:#fff}
+    .vg-form{display:none;flex-direction:column;gap:10px;margin-top:14px;max-width:380px}
+    .vg-form.open{display:flex}
+    .vg-form label{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.7)}
+    .vg-form input,.vg-form textarea{width:100%;box-sizing:border-box;margin-top:5px;padding:11px 13px;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;font-size:14px;font-family:inherit;background:rgba(255,255,255,.06);color:#fff;outline:none}
+    .vg-form input::placeholder,.vg-form textarea::placeholder{color:rgba(255,255,255,.4)}
+    .vg-form input:focus,.vg-form textarea:focus{border-color:#7c3aed}
+    .vg-form textarea{resize:vertical;min-height:56px}
+    .vg-form button{margin-top:2px}
   </style>
 </head>
 <body>
@@ -226,6 +237,17 @@ function renderVaga(v, slug) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
             Candidatar-se pelo WhatsApp
           </a>
+        </div>
+        <div class="vg-form-alt">
+          <button type="button" class="vg-form-toggle" onclick="document.getElementById('vgform').classList.toggle('open');this.querySelector('span').textContent=document.getElementById('vgform').classList.contains('open')?'Fechar formulário ▲':'Prefiro preencher um formulário ▼'">
+            <span>Prefiro preencher um formulário ▼</span>
+          </button>
+          <form class="vg-form" id="vgform" onsubmit="return enviarCandidaturaForm(event, this)">
+            <label>Nome<input type="text" name="nome" required placeholder="Seu nome" /></label>
+            <label>WhatsApp<input type="tel" name="telefone" required placeholder="(11) 99999-9999" /></label>
+            <label>Mensagem (opcional)<textarea name="mensagem" rows="2" placeholder="Algo que queira adiantar"></textarea></label>
+            <button type="submit" class="btn btn-cta btn-full">Enviar e abrir WhatsApp →</button>
+          </form>
         </div>
         <div class="vg-share">
           <span class="vg-share-label">Compartilhar</span>
@@ -360,6 +382,47 @@ function renderVaga(v, slug) {
           keepalive: true
         }).catch(function(){});
       }catch(e){}
+    }
+
+    // Formulário alternativo: candidato prefere digitar nome/telefone em vez de
+    // clicar direto no WhatsApp. Salva o lead JÁ com nome/telefone reais (ao
+    // contrário de capturarInteresseVaga, que manda vazio) e abre o WhatsApp
+    // com uma mensagem pronta.
+    function enviarCandidaturaForm(ev, form){
+      ev.preventDefault();
+      var nome = form.nome.value.trim();
+      var tel = form.telefone.value.trim();
+      var msg = form.mensagem.value.trim();
+      if(!nome || !tel){ alert('Preencha nome e WhatsApp para continuar.'); return false; }
+      __capturado = true; // evita que capturarInteresseVaga grave uma segunda linha vazia
+      try{
+        var sid = 'vaga-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        fetch('https://pufxvskozfdvfscqnays.supabase.co/rest/v1/site_leads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: 'sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj',
+            Authorization: 'Bearer sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj',
+            Prefer: 'return=minimal'
+          },
+          body: JSON.stringify({
+            session_id: sid,
+            nome: nome,
+            whatsapp: tel,
+            cidade: '${escJs(local)}',
+            cargo_vaga: '${escJs(titulo)}',
+            tipo: 'candidato',
+            mensagem: msg,
+            origem: 'Candidatura direta (formulário) — vaga/${escJs(slug)}',
+            pagina: '${escJs(url)}',
+            enviou_whatsapp: true
+          }),
+          keepalive: true
+        }).catch(function(){});
+      }catch(e){}
+      var texto = 'Olá, ${escJs(respNome)}! Meu nome é ' + nome + ' (' + tel + '). Vim pelo site da RH IMOB e tenho interesse na vaga: ${escJs(titulo)}${local ? ' (' + escJs(local) + ')' : ''}.' + (msg ? (' Mensagem: ' + msg) : '') + '\\n${escJs(url)}';
+      window.open('https://api.whatsapp.com/send?phone=${respWa}&text=' + encodeURIComponent(texto), '_blank');
+      return false;
     }
   </script>
 </body>
