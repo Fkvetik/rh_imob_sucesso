@@ -85,6 +85,22 @@
     @media (max-width: 780px) {
       .sim-box { grid-template-columns: 1fr; }
     }
+    .gv-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      background: #faf9ff;
+      border: 1.5px solid rgba(36,16,63,.1);
+      border-radius: 18px;
+      padding: 28px 32px;
+    }
+    .gv-card strong { display: block; font-size: 17px; color: var(--purple-900); margin-bottom: 6px; }
+    .gv-card p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0; max-width: 560px; }
+    .gv-card .btn { flex-shrink: 0; white-space: nowrap; }
+    @media (max-width: 720px) {
+      .gv-card { flex-direction: column; align-items: flex-start; }
+    }
 
     /* ── FAQ ─────────────────────────────────────── */
     .faq-section { background: var(--purple-950); }
@@ -706,6 +722,19 @@
           </div>
         </div>
         <p class="sim-footnote">Geramos entrevistas com o perfil ajustado ao interesse da empresa — a decisão final de contratação é sempre da empresa.</p>
+      </div>
+    </section>
+
+    <!-- GERENTE DE VENDAS -->
+    <section class="section-pad" id="gerente-vendas">
+      <div class="container">
+        <div class="gv-card reveal">
+          <div>
+            <strong>Precisa de um Gerente de Vendas?</strong>
+            <p>Serviço de liberação sob consulta, com valor médio entre R$ 1.400 e R$ 2.000 conforme o grau de dificuldade da vaga. Pagamento: 50% no ato do contrato + 50% em 15 dias.</p>
+          </div>
+          <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um Gerente de Vendas.">Falar com a Mariana sobre isso →</a>
+        </div>
       </div>
     </section>
 
