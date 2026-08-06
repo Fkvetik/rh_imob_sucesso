@@ -84,6 +84,12 @@
     .sim-parcela { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.75); margin: 0 0 4px; }
     .sim-trafego-linha { font-size: 14px; font-weight: 700; color: var(--orange-400); margin: 0 0 12px; }
     .sim-disclaimer { font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.55); margin: 14px 0 18px; }
+    .sim-form { display: flex; flex-direction: column; gap: 12px; }
+    .sim-form label { font-size: 12.5px; font-weight: 800; color: rgba(255,255,255,.7); display: flex; flex-direction: column; gap: 5px; text-transform: uppercase; letter-spacing: .03em; }
+    .sim-form input[type="text"], .sim-form input[type="tel"] {
+      font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink);
+      padding: 11px 12px; border-radius: 10px; border: none; background: #fff;
+    }
     .sim-footnote { font-size: 13.5px; color: var(--muted); text-align: center; margin-top: 24px; max-width: 620px; margin-left: auto; margin-right: auto; }
     @media (max-width: 780px) {
       .sim-box { grid-template-columns: 1fr; }
@@ -755,7 +761,22 @@
             <p id="simParcela" class="sim-parcela"></p>
             <p id="simTrafegoLinha" class="sim-trafego-linha" style="display:none;"></p>
             <p class="sim-disclaimer">Valor de referência para a operação de recrutamento. Condições especiais para volumes maiores ou parcerias contínuas são negociadas diretamente com a Mariana.</p>
-            <a class="btn btn-cta btn-full" href="#proposta">Quero essa proposta →</a>
+            <form id="simForm" class="job-form company-lead-form js-company-lead-form sim-form">
+              <input type="hidden" name="origem" value="Simulador de investimento" />
+              <input type="hidden" name="tipo" value="empresa" />
+              <input type="hidden" name="cidade" id="simFieldCidade" />
+              <input type="hidden" name="cargoVaga" id="simFieldCargo" />
+              <input type="hidden" name="quantidade" id="simFieldQtd" />
+              <input type="hidden" name="urgencia" id="simFieldPrazo" />
+              <input type="hidden" name="mensagem" id="simFieldMensagem" />
+              <label>Nome
+                <input type="text" name="nome" placeholder="Seu nome" required />
+              </label>
+              <label>WhatsApp
+                <input type="tel" name="whatsapp" placeholder="(11) 99999-9999" required />
+              </label>
+              <button class="btn btn-cta btn-full" type="submit">Enviar simulação para a Mariana →</button>
+            </form>
           </div>
         </div>
 
@@ -1005,6 +1026,11 @@
       var elTotal = document.getElementById('simTotal');
       var elParcela = document.getElementById('simParcela');
       var elTrafegoLinha = document.getElementById('simTrafegoLinha');
+      var elFieldCidade = document.getElementById('simFieldCidade');
+      var elFieldCargo = document.getElementById('simFieldCargo');
+      var elFieldQtd = document.getElementById('simFieldQtd');
+      var elFieldPrazo = document.getElementById('simFieldPrazo');
+      var elFieldMensagem = document.getElementById('simFieldMensagem');
       if (!elCidade || !elQtd || !elPrazo || !elTotal) return;
 
       function fmtBRL(v) {
@@ -1044,6 +1070,18 @@
           elTrafegoLinha.textContent = '+ ' + fmtBRL(trafego) + ' de tráfego pago (Meta/Google Ads) para acelerar';
         } else {
           elTrafegoLinha.style.display = 'none';
+        }
+
+        // Mantém o mini-formulário sempre com a simulação atual embutida,
+        // pra abrir o WhatsApp já com o orçamento calculado (sem reperguntar tudo).
+        if (elFieldCidade) elFieldCidade.value = elCidade.value === 'grande' ? 'Cidade com mais de 500 mil habitantes' : 'Cidade com até 500 mil habitantes';
+        if (elFieldCargo) elFieldCargo.value = 'Simulador de investimento — recrutamento de profissionais';
+        if (elFieldQtd) elFieldQtd.value = qtd + ' profissional(is)/mês';
+        if (elFieldPrazo) elFieldPrazo.value = prazo + (prazo > 1 ? ' meses' : ' mês');
+        if (elFieldMensagem) {
+          var msg = 'Valor mensal: ' + fmtBRL(mensal) + (prazo > 1 ? (' × ' + prazo + ' meses') : '') + ' — Total estimado: ' + fmtBRL(total);
+          if (trafego > 0) msg += ' — Tráfego pago extra: ' + fmtBRL(trafego);
+          elFieldMensagem.value = msg;
         }
       }
 
