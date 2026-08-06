@@ -26,6 +26,60 @@
   <link rel="stylesheet" href="styles.css?v=20260626contratar" />
 
   <style>
+    /* ── SIMULADOR DE INVESTIMENTO ──────────────────── */
+    .sim-box {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 0;
+      margin-top: 40px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1.5px solid rgba(36,16,63,.1);
+    }
+    .sim-controls {
+      background: #fff;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .sim-controls label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--purple-900);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sim-controls select,
+    .sim-controls input {
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(36,16,63,.18);
+      background: #fff;
+    }
+    .sim-result {
+      background: var(--purple-950);
+      color: #fff;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .sim-result-label { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--orange-400); margin: 0 0 6px; }
+    .sim-result strong { display: block; font-size: 36px; font-weight: 950; letter-spacing: -.02em; margin-bottom: 4px; }
+    .sim-parcela { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.75); margin: 0 0 4px; }
+    .sim-trafego-linha { font-size: 14px; font-weight: 700; color: var(--orange-400); margin: 0 0 12px; }
+    .sim-disclaimer { font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.55); margin: 14px 0 18px; }
+    .sim-footnote { font-size: 13.5px; color: var(--muted); text-align: center; margin-top: 24px; max-width: 620px; margin-left: auto; margin-right: auto; }
+    @media (max-width: 780px) {
+      .sim-box { grid-template-columns: 1fr; }
+    }
+
     /* ── FAQ ─────────────────────────────────────── */
     .faq-section { background: var(--purple-950); }
     .faq-section .section-kicker { color: var(--orange-400); }
@@ -562,6 +616,78 @@
     </section>
 
     <!-- 7. FORMULÁRIO -->
+    <!-- SIMULADOR DE INVESTIMENTO -->
+    <section class="section-pad sim-section" id="simulador">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Simule seu investimento</span>
+          <h2>Tenha uma noção de valor antes de falar com a Mariana.</h2>
+          <p>Ajuste os campos abaixo para uma estimativa de referência. A proposta final é sempre fechada com a Mariana, considerando o detalhe da sua operação.</p>
+        </div>
+
+        <div class="sim-box reveal">
+          <div class="sim-controls">
+            <label>Porte da cidade da operação
+              <select id="simCidade">
+                <option value="pequena">Até 500 mil habitantes</option>
+                <option value="grande">Mais de 500 mil habitantes</option>
+              </select>
+            </label>
+            <label>Quantos profissionais por mês
+              <input type="number" id="simQtd" min="1" step="1" value="5" />
+            </label>
+            <label>Prazo do projeto
+              <select id="simPrazo">
+                <option value="1">1 mês</option>
+                <option value="2">2 meses</option>
+                <option value="3">3 meses</option>
+              </select>
+            </label>
+            <label>Tráfego pago extra p/ acelerar <span class="optional-label">opcional</span>
+              <input type="text" id="simTrafego" placeholder="Ex.: R$ 1.000 em Meta/Google Ads" />
+            </label>
+          </div>
+
+          <div class="sim-result">
+            <p class="sim-result-label">Investimento estimado</p>
+            <strong id="simTotal">R$ 2.800</strong>
+            <p id="simParcela" class="sim-parcela"></p>
+            <p id="simTrafegoLinha" class="sim-trafego-linha" style="display:none;"></p>
+            <p class="sim-disclaimer">Valor de referência para a operação de recrutamento. Condições especiais para volumes maiores ou parcerias contínuas são negociadas diretamente com a Mariana.</p>
+            <a class="btn btn-cta btn-full" href="#proposta">Quero essa proposta →</a>
+          </div>
+        </div>
+
+        <div class="incluso-box reveal" style="margin-top: 32px;">
+          <p class="incluso-label">Toda simulação já inclui</p>
+          <div class="incluso-grid">
+            <div class="incluso-item">
+              <span>👩‍💼</span>
+              <div>
+                <strong>Assistente dedicada</strong>
+                <small>Mais de 10 anos de experiência comprovada no mercado imobiliário conduzindo o processo</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>💼</span>
+              <div>
+                <strong>Acesso a plataformas de vagas</strong>
+                <small>Catho, Pandapé e demais plataformas do mercado usadas ativamente na captação</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>🔎</span>
+              <div>
+                <strong>Ferramenta própria de CRECI ativo</strong>
+                <small>Localização de corretores com CRECI ativo em qualquer cidade do estado de São Paulo</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="sim-footnote">Geramos entrevistas com o perfil ajustado ao interesse da empresa — a decisão final de contratação é sempre da empresa.</p>
+      </div>
+    </section>
+
     <section class="section-pad proposta-section" id="proposta">
       <div class="container">
         <div class="section-head reveal" style="margin-bottom: 40px;">
@@ -733,6 +859,60 @@
   <script src="google-ads-events.js?v=20260511copy"></script>
 
   <script>
+    // Simulador de investimento
+    (function () {
+      var elCidade = document.getElementById('simCidade');
+      var elQtd = document.getElementById('simQtd');
+      var elPrazo = document.getElementById('simPrazo');
+      var elTrafego = document.getElementById('simTrafego');
+      var elTotal = document.getElementById('simTotal');
+      var elParcela = document.getElementById('simParcela');
+      var elTrafegoLinha = document.getElementById('simTrafegoLinha');
+      if (!elCidade || !elQtd || !elPrazo || !elTotal) return;
+
+      function fmtBRL(v) {
+        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+      }
+
+      function parseTrafego(v) {
+        var n = parseFloat(String(v).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.'));
+        return isFinite(n) && n > 0 ? n : 0;
+      }
+
+      function calcular() {
+        var base = elCidade.value === 'grande' ? 3490 : 2800;
+        var qtd = Math.max(1, parseInt(elQtd.value, 10) || 1);
+        var prazo = Math.max(1, parseInt(elPrazo.value, 10) || 1);
+
+        var total;
+        if (qtd <= 5) total = base;
+        else if (qtd <= 10) total = base * 2;
+        else total = Math.round((base / 5) * qtd);
+
+        elTotal.textContent = fmtBRL(total);
+
+        if (prazo > 1) {
+          elParcela.textContent = 'Equivalente a ' + fmtBRL(total / prazo) + '/mês em ' + prazo + ' meses';
+        } else {
+          elParcela.textContent = 'Cobrado em até 1 mês';
+        }
+
+        var trafego = parseTrafego(elTrafego.value);
+        if (trafego > 0) {
+          elTrafegoLinha.style.display = '';
+          elTrafegoLinha.textContent = '+ ' + fmtBRL(trafego) + ' de tráfego pago (Meta/Google Ads) para acelerar';
+        } else {
+          elTrafegoLinha.style.display = 'none';
+        }
+      }
+
+      [elCidade, elQtd, elPrazo, elTrafego].forEach(function (el) {
+        el.addEventListener('input', calcular);
+        el.addEventListener('change', calcular);
+      });
+      calcular();
+    })();
+
     // FAQ accordion
     document.querySelectorAll('.faq-q').forEach(function(btn) {
       btn.addEventListener('click', function() {
