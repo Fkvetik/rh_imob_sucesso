@@ -884,15 +884,19 @@
         var qtd = Math.max(1, parseInt(elQtd.value, 10) || 1);
         var prazo = Math.max(1, parseInt(elPrazo.value, 10) || 1);
 
-        var total;
-        if (qtd <= 5) total = base;
-        else if (qtd <= 10) total = base * 2;
-        else total = Math.round((base / 5) * qtd);
+        // Valor mensal mínimo por faixa — o mínimo não é divisível entre meses,
+        // ele se repete a cada mês de operação.
+        var mensal;
+        if (qtd <= 5) mensal = base;
+        else if (qtd <= 10) mensal = base * 2;
+        else mensal = Math.round((base / 5) * qtd);
+
+        var total = mensal * prazo;
 
         elTotal.textContent = fmtBRL(total);
 
         if (prazo > 1) {
-          elParcela.textContent = 'Equivalente a ' + fmtBRL(total / prazo) + '/mês em ' + prazo + ' meses';
+          elParcela.textContent = fmtBRL(mensal) + '/mês × ' + prazo + ' meses';
         } else {
           elParcela.textContent = 'Cobrado em até 1 mês';
         }
