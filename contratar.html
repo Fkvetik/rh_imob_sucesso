@@ -72,6 +72,7 @@
     }
     .sim-result-label { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--orange-400); margin: 0 0 6px; }
     .sim-result strong { display: block; font-size: 36px; font-weight: 950; letter-spacing: -.02em; margin-bottom: 4px; }
+    .sim-tier-label { font-size: 12.5px; font-weight: 700; color: var(--orange-400); margin: 0 0 8px; }
     .sim-parcela { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.75); margin: 0 0 4px; }
     .sim-trafego-linha { font-size: 14px; font-weight: 700; color: var(--orange-400); margin: 0 0 12px; }
     .sim-disclaimer { font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.55); margin: 14px 0 18px; }
@@ -673,6 +674,7 @@
           <div class="sim-result">
             <p class="sim-result-label">Investimento estimado</p>
             <strong id="simTotal">R$ 2.800</strong>
+            <p id="simTierLabel" class="sim-tier-label"></p>
             <p id="simParcela" class="sim-parcela"></p>
             <p id="simTrafegoLinha" class="sim-trafego-linha" style="display:none;"></p>
             <p class="sim-disclaimer">Valor de referência para a operação de recrutamento. Condições especiais para volumes maiores ou parcerias contínuas são negociadas diretamente com a Mariana.</p>
@@ -916,6 +918,7 @@
       var elPrazo = document.getElementById('simPrazo');
       var elTrafego = document.getElementById('simTrafego');
       var elTotal = document.getElementById('simTotal');
+      var elTierLabel = document.getElementById('simTierLabel');
       var elParcela = document.getElementById('simParcela');
       var elTrafegoLinha = document.getElementById('simTrafegoLinha');
       var elFieldCidade = document.getElementById('simFieldCidade');
@@ -949,6 +952,11 @@
         var total = mensal * prazo;
 
         elTotal.textContent = fmtBRL(total);
+        if (elTierLabel) {
+          if (qtd <= 5) elTierLabel.textContent = 'Pacote cobre até 5 corretores/mês — mesmo valor dentro dessa faixa';
+          else if (qtd <= 10) elTierLabel.textContent = 'Pacote cobre até 10 corretores/mês — mesmo valor dentro dessa faixa';
+          else elTierLabel.textContent = 'Calculado para ' + qtd + ' corretores/mês';
+        }
 
         if (prazo > 1) {
           elParcela.textContent = fmtBRL(mensal) + '/mês × ' + prazo + ' meses';
