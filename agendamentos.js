@@ -70,16 +70,74 @@ function render() {
   $("empty").classList.toggle("hide", list.length > 0);
   $("tbody").innerHTML = list.map(a => `
     <tr>
-      <td>${esc(fmtData(a.data_agendamento))}</td>
-      <td><b>${esc(a.nome_candidato||"—")}</b></td>
+      <td>
+        ${esc(fmtData(a.data_agendamento))}
+        ${a.data_reagendamento ? `<br><small style="color:#e65100">Reagendado: ${esc(fmtData(a.data_reagendamento))}</small>` : ""}
+      </td>
+      <td><b>${esc(a.nome_candidato||"—")}</b><br><small>${esc(a.extensao||"")}</small></td>
       <td>${esc(a.telefone||"—")}</td>
       <td>${esc(a.empresa||"—")}</td>
       <td>${esc(a.nome_operador||a.login||"—")}</td>
-      <td><span class="badge">${esc(a.extensao||"—")}</span></td>
-      <td><small>${esc(a.observacao||"")}</small></td>
+      <td><span class="badge ${a.confirmado ? "" : "pendente"}">${a.confirmado ? "✅ Sim" : "⏳ Pendente"}</span></td>
+      <td>
+        ${a.entrevista_online === true ? "💻 Online" : a.entrevista_online === false ? "🏢 Presencial" : "—"}
+        ${a.entrevistador ? `<br><small>${esc(a.entrevistador)}</small>` : ""}
+      </td>
+      <td><button class="editBtn" data-id="${a.id}">Editar</button></td>
     </tr>
   `).join("");
+
+  $("tbody").querySelectorAll(".editBtn").forEach(btn => {
+    btn.addEventListener("click", () => openEditModal(parseInt(btn.dataset.id, 10)));
+  });
 }
+
+let editingId = null;
+function openEditModal(id) {
+  const a = agendamentos.find(x => x.id === id);
+  if (!a) return;
+  editingId = id;
+  $("mConfirmado").checked = !!a.confirmado;
+  $("mDataFinal").value = toDatetimeLocal(a.data_final_primeiro);
+  $("mDataReag").value = toDatetimeLocal(a.data_reagendamento);
+  $("mOnline").checked = a.entrevista_online === true;
+  $("mEntrevistador").value = a.entrevistador || "";
+  $("mObsEntrevista").value = a.obs_entrevista || "";
+  $("editModal").classList.add("open");
+}
+
+function toDatetimeLocal(s) {
+  if (!s) return "";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return "";
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+$("mCancelar").addEventListener("click", () => { $("editModal").classList.remove("open"); editingId = null; });
+$("editModal").addEventListener("click", (e) => { if (e.target.id === "editModal") { $("editModal").classList.remove("open"); editingId = null; } });
+
+$("mSalvar").addEventListener("click", async () => {
+  if (!editingId) return;
+  try {
+    const resp = await rpc("rpc_admin_update_agendamento", {
+      p_admin_password: ADMIN_PASS,
+      p_id: editingId,
+      p_confirmado: $("mConfirmado").checked,
+      p_data_final_primeiro: $("mDataFinal").value || null,
+      p_data_reagendamento: $("mDataReag").value || null,
+      p_entrevista_online: $("mOnline").checked,
+      p_entrevistador: $("mEntrevistador").value.trim() || null,
+      p_obs_entrevista: $("mObsEntrevista").value.trim() || null
+    });
+    if (!resp.ok) { alert("❌ " + resp.error); return; }
+    $("editModal").classList.remove("open");
+    editingId = null;
+    loadAgendamentos();
+  } catch (e) {
+    alert("❌ " + e.message);
+  }
+});
 
 function fmtData(s){
   if (!s) return "—";
