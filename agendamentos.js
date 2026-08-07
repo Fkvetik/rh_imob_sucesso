@@ -84,7 +84,8 @@ function filtered() {
     (a.nome_candidato||"").toLowerCase().includes(searchQuery) ||
     (a.telefone||"").includes(searchQuery) ||
     (a.empresa||"").toLowerCase().includes(searchQuery) ||
-    (a.nome_operador||"").toLowerCase().includes(searchQuery)
+    (a.nome_operador||"").toLowerCase().includes(searchQuery) ||
+    (a.login||"").toLowerCase().includes(searchQuery)
   );
 }
 
