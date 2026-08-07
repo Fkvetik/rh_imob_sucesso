@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Agendamentos — RH Imob</title>
+<style>
+  body{font-family:system-ui,Arial;margin:0;background:#f0f2f5;color:#111}
+  header{background:#111;color:#fff;padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;flex:1}
+  header input{padding:8px 12px;border-radius:8px;border:0;min-width:200px}
+  header button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer;font-size:12px;background:rgba(255,255,255,.15);color:#fff}
+  main{max-width:1000px;margin:20px auto;padding:0 16px}
+  .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px;margin-bottom:16px}
+  label{font-weight:600;font-size:12px;color:#333;display:block;margin-top:10px}
+  input{width:100%;box-sizing:border-box;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:8px;font-size:13px}
+  button.primary{padding:9px 14px;border-radius:8px;border:0;background:#111;color:#fff;cursor:pointer;font-size:13px}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #eee;vertical-align:top}
+  th{color:#666;font-size:11px;text-transform:uppercase}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#e8f5e9;color:#1b5e20}
+  .hide{display:none !important}
+  small{color:#666}
+  .empty{text-align:center;color:#999;padding:40px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗓 Agendamentos — RH Imob</h1>
+  <input id="searchInput" placeholder="Buscar por nome, telefone, empresa ou operador...">
+</header>
+<main>
+
+  <div class="card" id="loginCard">
+    <label>Senha de admin</label>
+    <input id="adminPass" type="password" placeholder="••••••••">
+    <div style="margin-top:10px"><button class="primary" id="btnEntrar">Entrar</button></div>
+    <div id="loginMsg" style="font-size:12px;margin-top:8px"></div>
+  </div>
+
+  <div id="appArea" class="hide">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span id="statTotal" style="font-size:12px;color:#666">0 agendamentos</span>
+        <button class="primary" id="btnRefresh">↻ Atualizar</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Data/Hora</th><th>Candidato</th><th>Telefone</th><th>Empresa</th><th>Operador</th><th>Extensão</th><th>Obs.</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="empty" class="empty hide">Nenhum agendamento ainda.</div>
+    </div>
+  </div>
+
+</main>
+<script src="agendamentos.js"></script>
+</body>
+</html>
