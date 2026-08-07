@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Admin — Catho Coletor</title>
+<style>
+  body{font-family:system-ui,Arial;margin:0;background:#f0f2f5;color:#111}
+  header{background:#111;color:#fff;padding:16px 24px}
+  header h1{font-size:16px;margin:0}
+  main{max-width:720px;margin:24px auto;padding:0 16px}
+  .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px;margin-bottom:16px}
+  label{font-weight:600;font-size:12px;color:#333;display:block;margin-top:10px}
+  input,select{width:100%;box-sizing:border-box;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:8px;font-size:13px}
+  button{padding:9px 14px;border-radius:8px;border:0;background:#111;color:#fff;cursor:pointer;font-size:13px}
+  button.secondary{background:#0b3b6f}
+  button.danger{background:#7a0000}
+  button.ghost{background:#eee;color:#333}
+  .btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #eee}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#e8f5e9;color:#1b5e20}
+  .badge.bloqueado{background:#fdecea;color:#7a0000}
+  .msg{font-size:12px;margin-top:8px}
+  .hide{display:none !important}
+  small{color:#666}
+</style>
+</head>
+<body>
+<header><h1>🔐 Admin — Catho Coletor</h1></header>
+<main>
+
+  <div class="card" id="loginCard">
+    <label>Senha de admin</label>
+    <input id="adminPass" type="password" placeholder="••••••••">
+    <div class="btns"><button id="btnEntrar">Entrar</button></div>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <div id="appArea" class="hide">
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">Adicionar / editar operador</h3>
+      <label>Login</label>
+      <input id="fLogin" placeholder="joao">
+      <label>Senha (deixe em branco pra manter a atual, se já existir)</label>
+      <input id="fSenha" type="text" placeholder="senha123">
+      <label>Nome</label>
+      <input id="fNome" placeholder="João Silva">
+      <label>Status</label>
+      <select id="fAtivo">
+        <option value="true">Ativo</option>
+        <option value="false">Bloqueado</option>
+      </select>
+      <div class="btns">
+        <button id="btnSalvarUsuario">💾 Salvar</button>
+        <button id="btnLimparForm" class="ghost">Limpar</button>
+      </div>
+      <div id="formMsg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">Operadores cadastrados</h3>
+      <div class="btns"><button id="btnRefresh" class="secondary">↻ Atualizar lista</button></div>
+      <table>
+        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th></th></tr></thead>
+        <tbody id="listaUsuarios"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+<script src="admin-catho-coletor.js"></script>
+</body>
+</html>
