@@ -35,65 +35,34 @@
   <link rel="stylesheet" href="styles.css?v=20260713evolucao" />
 
   <style>
-    /* ── SIMULADOR DE INVESTIMENTO ──────────────────── */
-    .sim-box {
+    /* ── PLANOS E VALORES ──────────────────── */
+    .plan-grid {
       display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 0;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
       margin-top: 40px;
-      border-radius: 20px;
-      overflow: hidden;
+    }
+    .plan-card {
+      background: #fff;
       border: 1.5px solid rgba(36,16,63,.1);
-    }
-    .sim-controls {
-      background: #fff;
-      padding: 32px;
+      border-radius: 20px;
+      padding: 28px 24px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
     }
-    .sim-controls label {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--purple-900);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .sim-controls select,
-    .sim-controls input {
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ink);
-      padding: 11px 12px;
-      border-radius: 10px;
-      border: 1.5px solid rgba(36,16,63,.18);
-      background: #fff;
-    }
-    .sim-result {
-      background: var(--purple-950);
-      color: #fff;
-      padding: 32px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .sim-result-label { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--orange-400); margin: 0 0 6px; }
-    .sim-result strong { display: block; font-size: 36px; font-weight: 950; letter-spacing: -.02em; margin-bottom: 4px; }
-    .sim-tier-label { font-size: 12.5px; font-weight: 700; color: var(--orange-400); margin: 0 0 8px; }
-    .sim-parcela { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.75); margin: 0 0 4px; }
-    .sim-trafego-linha { font-size: 14px; font-weight: 700; color: var(--orange-400); margin: 0 0 12px; }
-    .sim-disclaimer { font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.55); margin: 14px 0 18px; }
-    .sim-form { display: flex; flex-direction: column; gap: 12px; }
-    .sim-form label { font-size: 12.5px; font-weight: 800; color: rgba(255,255,255,.7); display: flex; flex-direction: column; gap: 5px; text-transform: uppercase; letter-spacing: .03em; }
-    .sim-form input[type="text"], .sim-form input[type="tel"] {
-      font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink);
-      padding: 11px 12px; border-radius: 10px; border: none; background: #fff;
-    }
-    .sim-footnote { font-size: 13.5px; color: var(--muted); text-align: center; margin-top: 24px; max-width: 620px; margin-left: auto; margin-right: auto; }
-    @media (max-width: 780px) {
-      .sim-box { grid-template-columns: 1fr; }
+    .plan-card--custom { background: var(--purple-950); border-color: var(--purple-950); }
+    .plan-badge { font-size: 12.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; color: var(--orange-500); }
+    .plan-card--custom .plan-badge { color: var(--orange-400); }
+    .plan-price-row { display: flex; flex-direction: column; gap: 10px; }
+    .plan-price-row small { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+    .plan-card--custom .plan-price-row small { color: rgba(255,255,255,.6); }
+    .plan-price-row strong { display: block; font-size: 24px; font-weight: 950; color: var(--purple-900); letter-spacing: -.02em; }
+    .plan-card--custom .plan-price-row strong { color: #fff; }
+    .plan-note { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.65); margin: 0; }
+    .plan-footnote { font-size: 13.5px; color: var(--muted); text-align: center; margin-top: 24px; max-width: 620px; margin-left: auto; margin-right: auto; }
+    @media (max-width: 860px) {
+      .plan-grid { grid-template-columns: 1fr; }
     }
     .gv-card {
       display: flex;
@@ -740,63 +709,42 @@
       </div>
     </section>
 
-    <!-- SIMULADOR DE INVESTIMENTO -->
+    <!-- PLANOS E VALORES -->
     <section class="section-pad sim-section" id="simulador">
       <div class="container">
         <div class="section-head reveal">
-          <span class="section-kicker">Simule seu investimento</span>
+          <span class="section-kicker">Planos e valores</span>
           <h2>Tenha uma noção de valor antes de falar com a Mariana.</h2>
-          <p>Ajuste os campos abaixo para uma estimativa de referência. A proposta final é sempre fechada com a Mariana, considerando o detalhe da sua operação.</p>
+          <p>Veja a faixa de investimento por volume de contratação. A proposta final é sempre fechada com a Mariana, considerando o detalhe da sua operação.</p>
         </div>
 
-        <div class="sim-box reveal">
-          <div class="sim-controls">
-            <label>Porte da cidade da operação
-              <select id="simCidade">
-                <option value="pequena">Até 500 mil habitantes</option>
-                <option value="grande">Mais de 500 mil habitantes</option>
-              </select>
-            </label>
-            <label>Quantos profissionais por mês
-              <input type="number" id="simQtd" min="1" step="1" value="5" />
-            </label>
-            <label>Prazo do projeto
-              <select id="simPrazo">
-                <option value="1">1 mês</option>
-                <option value="2">2 meses</option>
-                <option value="3">3 meses</option>
-              </select>
-            </label>
-            <label>Tráfego pago extra p/ acelerar <span class="optional-label">opcional</span>
-              <input type="text" id="simTrafego" placeholder="Ex.: R$ 1.000 em Meta/Google Ads" />
-            </label>
+        <div class="plan-grid reveal">
+          <div class="plan-card">
+            <span class="plan-badge">Até 5 corretores/mês</span>
+            <div class="plan-price-row">
+              <div><small>Cidades até 500 mil hab.</small><strong>R$ 2.800/mês</strong></div>
+              <div><small>Cidades acima de 500 mil hab.</small><strong>R$ 3.490/mês</strong></div>
+            </div>
+            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender o plano de até 5 corretores/mês.">Quero esse plano →</a>
           </div>
-
-          <div class="sim-result">
-            <p class="sim-result-label">Investimento estimado</p>
-            <strong id="simTotal">R$ 2.800</strong>
-            <p id="simTierLabel" class="sim-tier-label"></p>
-            <p id="simParcela" class="sim-parcela"></p>
-            <p id="simTrafegoLinha" class="sim-trafego-linha" style="display:none;"></p>
-            <p class="sim-disclaimer">Valor de referência para a operação de recrutamento. Condições especiais para volumes maiores ou parcerias contínuas são negociadas diretamente com a Mariana.</p>
-            <form id="simForm" class="job-form company-lead-form js-company-lead-form sim-form">
-              <input type="hidden" name="origem" value="Simulador de investimento" />
-              <input type="hidden" name="tipo" value="empresa" />
-              <input type="hidden" name="cidade" id="simFieldCidade" />
-              <input type="hidden" name="cargoVaga" id="simFieldCargo" />
-              <input type="hidden" name="quantidade" id="simFieldQtd" />
-              <input type="hidden" name="urgencia" id="simFieldPrazo" />
-              <input type="hidden" name="mensagem" id="simFieldMensagem" />
-              <label>Nome
-                <input type="text" name="nome" placeholder="Seu nome" required />
-              </label>
-              <label>WhatsApp
-                <input type="tel" name="whatsapp" placeholder="(11) 99999-9999" required />
-              </label>
-              <button class="btn btn-cta btn-full" type="submit">Enviar simulação para a Mariana →</button>
-            </form>
+          <div class="plan-card">
+            <span class="plan-badge">5 a 10 corretores/mês</span>
+            <div class="plan-price-row">
+              <div><small>Cidades até 500 mil hab.</small><strong>R$ 5.600/mês</strong></div>
+              <div><small>Cidades acima de 500 mil hab.</small><strong>R$ 6.980/mês</strong></div>
+            </div>
+            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender o plano de 5 a 10 corretores/mês.">Quero esse plano →</a>
+          </div>
+          <div class="plan-card plan-card--custom">
+            <span class="plan-badge">Mais de 10/mês</span>
+            <div class="plan-price-row">
+              <div><small>Projeto de alto volume</small><strong>Sob consulta</strong></div>
+            </div>
+            <p class="plan-note">Volumes maiores têm condições próprias, calculadas conforme a demanda.</p>
+            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um volume maior que 10 corretores/mês.">Falar sobre volume maior →</a>
           </div>
         </div>
+        <p class="plan-footnote">Prazo mínimo de operação: 2 meses. Para urgência, é possível somar tráfego pago (Meta/Google Ads) à operação — fale com a Mariana para incluir.</p>
 
         <div class="incluso-box reveal" style="margin-top: 32px;">
           <p class="incluso-label">Toda simulação já inclui</p>
@@ -824,7 +772,7 @@
             </div>
           </div>
         </div>
-        <p class="sim-footnote">Geramos entrevistas com o perfil ajustado ao interesse da empresa — a decisão final de contratação é sempre da empresa.</p>
+        <p class="plan-footnote">Geramos entrevistas com o perfil ajustado ao interesse da empresa — a decisão final de contratação é sempre da empresa.</p>
       </div>
     </section>
 
@@ -1048,87 +996,6 @@
   <script src="google-ads-events.js?v=20260511copy"></script>
 
   <script>
-    // Simulador de investimento
-    (function () {
-      var elCidade = document.getElementById('simCidade');
-      var elQtd = document.getElementById('simQtd');
-      var elPrazo = document.getElementById('simPrazo');
-      var elTrafego = document.getElementById('simTrafego');
-      var elTotal = document.getElementById('simTotal');
-      var elTierLabel = document.getElementById('simTierLabel');
-      var elParcela = document.getElementById('simParcela');
-      var elTrafegoLinha = document.getElementById('simTrafegoLinha');
-      var elFieldCidade = document.getElementById('simFieldCidade');
-      var elFieldCargo = document.getElementById('simFieldCargo');
-      var elFieldQtd = document.getElementById('simFieldQtd');
-      var elFieldPrazo = document.getElementById('simFieldPrazo');
-      var elFieldMensagem = document.getElementById('simFieldMensagem');
-      if (!elCidade || !elQtd || !elPrazo || !elTotal) return;
-
-      function fmtBRL(v) {
-        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-      }
-
-      function parseTrafego(v) {
-        var n = parseFloat(String(v).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.'));
-        return isFinite(n) && n > 0 ? n : 0;
-      }
-
-      function calcular() {
-        var base = elCidade.value === 'grande' ? 3490 : 2800;
-        var qtd = Math.max(1, parseInt(elQtd.value, 10) || 1);
-        var prazo = Math.max(1, parseInt(elPrazo.value, 10) || 1);
-
-        // Valor mensal mínimo por faixa — o mínimo não é divisível entre meses,
-        // ele se repete a cada mês de operação.
-        var mensal;
-        if (qtd <= 5) mensal = base;
-        else if (qtd <= 10) mensal = base * 2;
-        else mensal = Math.round((base / 5) * qtd);
-
-        var total = mensal * prazo;
-
-        elTotal.textContent = fmtBRL(total);
-        if (elTierLabel) {
-          if (qtd <= 5) elTierLabel.textContent = 'Pacote cobre até 5 corretores/mês — mesmo valor dentro dessa faixa';
-          else if (qtd <= 10) elTierLabel.textContent = 'Pacote cobre até 10 corretores/mês — mesmo valor dentro dessa faixa';
-          else elTierLabel.textContent = 'Calculado para ' + qtd + ' corretores/mês';
-        }
-
-        if (prazo > 1) {
-          elParcela.textContent = fmtBRL(mensal) + '/mês × ' + prazo + ' meses';
-        } else {
-          elParcela.textContent = 'Cobrado em até 1 mês';
-        }
-
-        var trafego = parseTrafego(elTrafego.value);
-        if (trafego > 0) {
-          elTrafegoLinha.style.display = '';
-          elTrafegoLinha.textContent = '+ ' + fmtBRL(trafego) + ' de tráfego pago (Meta/Google Ads) para acelerar';
-        } else {
-          elTrafegoLinha.style.display = 'none';
-        }
-
-        // Mantém o mini-formulário sempre com a simulação atual embutida,
-        // pra abrir o WhatsApp já com o orçamento calculado (sem reperguntar tudo).
-        if (elFieldCidade) elFieldCidade.value = elCidade.value === 'grande' ? 'Cidade com mais de 500 mil habitantes' : 'Cidade com até 500 mil habitantes';
-        if (elFieldCargo) elFieldCargo.value = 'Simulador de investimento — recrutamento de profissionais';
-        if (elFieldQtd) elFieldQtd.value = qtd + ' profissional(is)/mês';
-        if (elFieldPrazo) elFieldPrazo.value = prazo + (prazo > 1 ? ' meses' : ' mês');
-        if (elFieldMensagem) {
-          var msg = 'Valor mensal: ' + fmtBRL(mensal) + (prazo > 1 ? (' × ' + prazo + ' meses') : '') + ' — Total estimado: ' + fmtBRL(total);
-          if (trafego > 0) msg += ' — Tráfego pago extra: ' + fmtBRL(trafego);
-          elFieldMensagem.value = msg;
-        }
-      }
-
-      [elCidade, elQtd, elPrazo, elTrafego].forEach(function (el) {
-        el.addEventListener('input', calcular);
-        el.addEventListener('change', calcular);
-      });
-      calcular();
-    })();
-
     document.querySelectorAll('.faq-q').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var item = this.closest('.faq-item');
