@@ -23,6 +23,7 @@ function showApp() {
   $("loginCard").classList.add("hide");
   $("appArea").classList.remove("hide");
   loadUsuarios();
+  loadAdmins();
 }
 
 $("btnEntrar").addEventListener("click", async () => {
@@ -122,6 +123,87 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
     loadUsuarios();
   } catch (e) {
     $("formMsg").textContent = "❌ " + e.message;
+  }
+});
+
+// ===== Administradores =====
+async function loadAdmins() {
+  try {
+    const resp = await rpc("rpc_admin_list_admins", { p_admin_password: ADMIN_PASS });
+    if (!resp.ok) return;
+    renderAdmins(resp.admins || []);
+  } catch (e) { /* silencioso */ }
+}
+
+function renderAdmins(list) {
+  const tbody = $("listaAdmins");
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(a => `
+    <tr>
+      <td>${esc(a.login)}</td>
+      <td>${esc(a.nome)}</td>
+      <td><span class="badge ${a.ativo ? '' : 'bloqueado'}">${a.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
+      <td>
+        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(a.login)}" data-ativo="${a.ativo}" class="${a.ativo ? 'danger' : 'secondary'} admToggleBtn" style="padding:4px 8px;font-size:11px">${a.ativo ? 'Bloquear' : 'Reativar'}</button>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll(".admEditBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("admLogin").value = btn.dataset.login;
+      $("admLogin").disabled = true;
+      $("admSenha").value = "";
+      $("admNome").value = btn.dataset.nome;
+      $("admAtivo").value = btn.dataset.ativo;
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    });
+  });
+
+  tbody.querySelectorAll(".admToggleBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const novoAtivo = btn.dataset.ativo !== "true";
+      if (!confirm(`${novoAtivo ? "Reativar" : "Bloquear"} o admin "${btn.dataset.login}"?`)) return;
+      try {
+        const resp = await rpc("rpc_admin_set_admin_ativo", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_ativo: novoAtivo });
+        if (!resp.ok) { alert("❌ " + resp.error); return; }
+        loadAdmins();
+      } catch (e) {
+        alert("❌ " + e.message);
+      }
+    });
+  });
+}
+
+$("btnLimparAdminForm").addEventListener("click", () => {
+  $("admLogin").value = "";
+  $("admLogin").disabled = false;
+  $("admSenha").value = "";
+  $("admNome").value = "";
+  $("admAtivo").value = "true";
+  $("admFormMsg").textContent = "";
+});
+
+$("btnSalvarAdmin").addEventListener("click", async () => {
+  const login = $("admLogin").value.trim();
+  const senha = $("admSenha").value;
+  const nome = $("admNome").value.trim();
+  const ativo = $("admAtivo").value === "true";
+  if (!login) { $("admFormMsg").textContent = "❌ Login é obrigatório."; return; }
+
+  $("admFormMsg").textContent = "Salvando...";
+  try {
+    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo });
+    if (!resp.ok) { $("admFormMsg").textContent = "❌ " + resp.error; return; }
+    $("admFormMsg").textContent = "✅ Salvo.";
+    $("btnLimparAdminForm").click();
+    loadAdmins();
+  } catch (e) {
+    $("admFormMsg").textContent = "❌ " + e.message;
   }
 });
 

@@ -65,6 +65,31 @@
         <tbody id="listaUsuarios"></tbody>
       </table>
     </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">🔐 Administradores (acesso a este painel e a /agendamentos)</h3>
+      <label>Login</label>
+      <input id="admLogin" placeholder="admin2">
+      <label>Senha (deixe em branco pra manter a atual, se já existir)</label>
+      <input id="admSenha" type="text" placeholder="senha123">
+      <label>Nome</label>
+      <input id="admNome" placeholder="Nome do admin">
+      <label>Status</label>
+      <select id="admAtivo">
+        <option value="true">Ativo</option>
+        <option value="false">Bloqueado</option>
+      </select>
+      <div class="btns">
+        <button id="btnSalvarAdmin">💾 Salvar admin</button>
+        <button id="btnLimparAdminForm" class="ghost">Limpar</button>
+      </div>
+      <div id="admFormMsg" class="msg"></div>
+
+      <table>
+        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th></th></tr></thead>
+        <tbody id="listaAdmins"></tbody>
+      </table>
+    </div>
   </div>
 
 </main>
