@@ -258,12 +258,12 @@ function renderBar30Dias(rows) {
     const barH = (d.total / max) * (h - padBottom - 10);
     const y = h - padBottom - barH;
     const showLabel = i % 5 === 0; // rótulo a cada 5 dias — evita poluir o eixo
-    return `<rect class="bar-rect" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(barH,1).toFixed(1)}" rx="3" fill="var(--seq-blue-450)" data-label="${d.label}" data-total="${d.total}"></rect>
+    return `<rect class="bar-rect" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(barH,1).toFixed(1)}" rx="3" fill="var(--seq-blue-450)" data-label="${d.label}" data-total="${d.total}" data-iso="${d.iso}"></rect>
             ${showLabel ? `<text x="${(x+barW/2).toFixed(1)}" y="${h-6}" text-anchor="middle" font-size="9" fill="var(--text-muted)">${d.label}</text>` : ""}`;
   }).join("");
 
   card.innerHTML = `
-    <h4>Agendamentos — últimos 30 dias</h4>
+    <h4>Agendamentos — últimos 30 dias <small style="font-weight:400;color:var(--text-muted)">(clique num dia pra ver quem está agendado)</small></h4>
     <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
       <line x1="0" y1="${h-padBottom}" x2="${w}" y2="${h-padBottom}" stroke="var(--baseline)" stroke-width="1"/>
       ${bars}
@@ -272,6 +272,7 @@ function renderBar30Dias(rows) {
   card.querySelectorAll(".bar-rect").forEach(bar => {
     bar.addEventListener("mousemove", (e) => showTooltip(e, `<b>${bar.dataset.label}</b><br>${bar.dataset.total} agendamento(s)`));
     bar.addEventListener("mouseleave", hideTooltip);
+    bar.addEventListener("click", () => openDayModal(bar.dataset.iso, bar.dataset.label));
   });
 }
 
@@ -291,7 +292,7 @@ function renderBoard() {
   }).join("");
 
   document.querySelectorAll(".agcard").forEach(el => {
-    el.addEventListener("click", () => openEditModal(parseInt(el.dataset.id, 10)));
+    el.addEventListener("click", (e) => { if (e.target.closest(".wa-stop")) return; openEditModal(parseInt(el.dataset.id, 10)); });
     el.addEventListener("dragstart", () => { dragId = parseInt(el.dataset.id, 10); el.classList.add("dragging"); });
     el.addEventListener("dragend", () => el.classList.remove("dragging"));
   });
@@ -310,17 +311,59 @@ function renderBoard() {
   });
 }
 
+// Link universal — abre o app do WhatsApp se tiver instalado, senão o Web/Desktop.
+function waLink(phone) {
+  const digits = String(phone||"").replace(/\D+/g,"");
+  if (!digits) return "";
+  return `https://wa.me/${digits.startsWith("55") ? digits : "55"+digits}`;
+}
+
 function renderCard(a) {
   const reag = a.vezes_reagendado > 0 ? `<span class="badge2">🔁 ${a.vezes_reagendado}x reagendado</span>` : "";
+  const wa = waLink(a.telefone);
   return `
     <div class="agcard" draggable="true" data-id="${a.id}">
-      <div class="nome">${esc(a.nome_candidato||"—")}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+        <div class="nome">${esc(a.nome_candidato||"—")}</div>
+        ${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}
+      </div>
       <div class="sub">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
       ${reag}
     </div>`;
 }
+
+// ===== Modal "agendamentos do dia" (clique numa barra do gráfico de 30 dias) =====
+function openDayModal(iso, label) {
+  if (!iso) return
+  const doDia = agendamentos.filter(a => {
+    if (!a.data_agendamento) return false
+    const d = new Date(a.data_agendamento)
+    if (isNaN(d.getTime())) return false
+    const dIso = d.toISOString().slice(0, 10)
+    return dIso === iso
+  })
+
+  $("dayModalTitle").textContent = `Agendamentos de ${label || iso}`
+  $("dayModalList").innerHTML = doDia.length
+    ? doDia.map(a => {
+        const wa = waLink(a.telefone)
+        return `
+        <div class="day-item">
+          <div class="info">
+            <div class="nome">${esc(a.nome_candidato||"—")}</div>
+            <div class="sub">${esc(a.telefone||"—")} • ${esc(a.empresa||"—")} • ${esc(fmtData(a.data_agendamento))}</div>
+          </div>
+          ${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm" title="Abrir WhatsApp">💬</a>` : ""}
+        </div>`
+      }).join("")
+    : '<div class="chart-empty">Nenhum agendamento nesse dia</div>'
+
+  $("dayModal").classList.add("open")
+}
+$("btnFecharDay").addEventListener("click", () => $("dayModal").classList.remove("open"))
+$("dayModal").addEventListener("click", (e) => { if (e.target.id === "dayModal") $("dayModal").classList.remove("open") })
 
 // ===== Modal de edição =====
 function openEditModal(id) {
@@ -329,6 +372,10 @@ function openEditModal(id) {
   editingId = id;
   $("mNomeCandidato").textContent = a.nome_candidato || "Agendamento";
   $("mSubInfo").textContent = `${a.telefone||"—"} • ${a.empresa||"—"} • operador: ${a.nome_operador||a.login||"—"}`;
+  const wa = waLink(a.telefone);
+  $("mWaLink").href = wa || "#";
+  $("mWaLink").style.pointerEvents = wa ? "" : "none";
+  $("mWaLink").style.opacity = wa ? "" : ".4";
   $("mStatus").innerHTML = COLUMNS.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join("");
   $("mStatus").value = a.status || (COLUMNS[0]?.id || "AGENDADO");
   $("mData").value = toDatetimeLocal(a.data_agendamento);
