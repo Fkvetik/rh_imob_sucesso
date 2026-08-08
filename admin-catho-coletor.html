@@ -86,13 +86,18 @@
     </div>
 
     <div class="card">
-      <h3 style="margin-top:0;font-size:14px">🔐 Administradores (acesso a este painel e a /agendamentos)</h3>
+      <h3 style="margin-top:0;font-size:14px">🔐 Administradores</h3>
       <label>Login</label>
       <input id="admLogin" placeholder="admin2">
       <label>Senha (deixe em branco pra manter a atual, se já existir)</label>
       <input id="admSenha" type="text" placeholder="senha123">
       <label>Nome</label>
       <input id="admNome" placeholder="Nome do admin">
+      <label>Nível de acesso</label>
+      <select id="admNivel">
+        <option value="completo">Completo — este painel + /agendamentos</option>
+        <option value="agendamentos">Só agendamentos — apenas o Kanban/CRM (ex: responsável pelas reuniões)</option>
+      </select>
       <label>Status</label>
       <select id="admAtivo">
         <option value="true">Ativo</option>
@@ -105,7 +110,7 @@
       <div id="admFormMsg" class="msg"></div>
 
       <table>
-        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th>Nível</th><th></th></tr></thead>
         <tbody id="listaAdmins"></tbody>
       </table>
     </div>

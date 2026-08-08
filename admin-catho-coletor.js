@@ -142,7 +142,7 @@ async function loadAdmins() {
 function renderAdmins(list) {
   const tbody = $("listaAdmins");
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="4"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
     return;
   }
   tbody.innerHTML = list.map(a => `
@@ -150,8 +150,9 @@ function renderAdmins(list) {
       <td>${esc(a.login)}</td>
       <td>${esc(a.nome)}</td>
       <td><span class="badge ${a.ativo ? '' : 'bloqueado'}">${a.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
+      <td>${a.nivel === 'agendamentos' ? 'Só agendamentos' : 'Completo'}</td>
       <td>
-        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" data-nivel="${esc(a.nivel||'completo')}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(a.login)}" data-ativo="${a.ativo}" class="${a.ativo ? 'danger' : 'secondary'} admToggleBtn" style="padding:4px 8px;font-size:11px">${a.ativo ? 'Bloquear' : 'Reativar'}</button>
       </td>
     </tr>
@@ -164,6 +165,7 @@ function renderAdmins(list) {
       $("admSenha").value = "";
       $("admNome").value = btn.dataset.nome;
       $("admAtivo").value = btn.dataset.ativo;
+      $("admNivel").value = btn.dataset.nivel || "completo";
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     });
   });
@@ -189,6 +191,7 @@ $("btnLimparAdminForm").addEventListener("click", () => {
   $("admSenha").value = "";
   $("admNome").value = "";
   $("admAtivo").value = "true";
+  $("admNivel").value = "completo";
   $("admFormMsg").textContent = "";
 });
 
@@ -197,11 +200,12 @@ $("btnSalvarAdmin").addEventListener("click", async () => {
   const senha = $("admSenha").value;
   const nome = $("admNome").value.trim();
   const ativo = $("admAtivo").value === "true";
+  const nivel = $("admNivel").value;
   if (!login) { $("admFormMsg").textContent = "❌ Login é obrigatório."; return; }
 
   $("admFormMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo });
+    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_nivel: nivel });
     if (!resp.ok) { $("admFormMsg").textContent = "❌ " + resp.error; return; }
     $("admFormMsg").textContent = "✅ Salvo.";
     $("btnLimparAdminForm").click();
