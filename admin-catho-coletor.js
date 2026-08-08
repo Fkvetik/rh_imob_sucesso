@@ -63,8 +63,9 @@ function renderUsuarios(list) {
       <td>${esc(u.login)}</td>
       <td>${esc(u.nome_operador)}</td>
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
+      <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
       <td>
-        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
       </td>
     </tr>
@@ -77,6 +78,7 @@ function renderUsuarios(list) {
       $("fSenha").value = "";
       $("fNome").value = btn.dataset.nome;
       $("fAtivo").value = btn.dataset.ativo;
+      $("fHorario").value = btn.dataset.horario || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
@@ -104,6 +106,7 @@ $("btnLimparForm").addEventListener("click", () => {
   $("fSenha").value = "";
   $("fNome").value = "";
   $("fAtivo").value = "true";
+  $("fHorario").value = "";
   $("formMsg").textContent = "";
 });
 
@@ -112,11 +115,12 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
   const senha = $("fSenha").value;
   const nome = $("fNome").value.trim();
   const ativo = $("fAtivo").value === "true";
+  const horario = $("fHorario").value || "";
   if (!login) { $("formMsg").textContent = "❌ Login é obrigatório."; return; }
 
   $("formMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_usuario", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo });
+    const resp = await rpc("rpc_admin_upsert_usuario", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_horario_coleta: horario });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
     $("formMsg").textContent = "✅ Salvo.";
     $("btnLimparForm").click();

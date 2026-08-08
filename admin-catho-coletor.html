@@ -50,6 +50,9 @@
         <option value="true">Ativo</option>
         <option value="false">Bloqueado</option>
       </select>
+      <label>Horário da coleta automática diária (deixe em branco pra desativar)</label>
+      <input id="fHorario" type="time" placeholder="06:30">
+      <small>Escalone os horários entre operadores (ex: 06:00, 06:30, 07:00...) pra não acessar a Catho todos no mesmo minuto. O botão "Rodar coleta agora" continua disponível pra cada operador, independente desse horário.</small>
       <div class="btns">
         <button id="btnSalvarUsuario">💾 Salvar</button>
         <button id="btnLimparForm" class="ghost">Limpar</button>
@@ -61,7 +64,7 @@
       <h3 style="margin-top:0;font-size:14px">Operadores cadastrados</h3>
       <div class="btns"><button id="btnRefresh" class="secondary">↻ Atualizar lista</button></div>
       <table>
-        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th>Coleta auto.</th><th></th></tr></thead>
         <tbody id="listaUsuarios"></tbody>
       </table>
     </div>
