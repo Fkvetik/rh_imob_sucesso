@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual do Operador — Catho Coletor | RH Imob</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+  :root{
+    --bg:#faf8fc; --surface:#ffffff; --surface-2:#f4effa;
+    --ink:#1f1330; --ink-muted:#675e76; --ink-faint:#9b90ab;
+    --purple:#5b21b6; --purple-dark:#3b0764; --purple-light:#ede9fe;
+    --orange:#f97316; --orange-dark:#c2410c; --orange-light:#fff1e6;
+    --line:#e4dcf0;
+    --good:#0f7a4a; --good-bg:#e7f6ee;
+    --warn:#b45309; --warn-bg:#fef3e0;
+    --radius:14px;
+    --serif: ui-serif, Iowan Old Style, Palatino Linotype, Palatino, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#140b21; --surface:#1c1130; --surface-2:#241a38;
+      --ink:#f1ecf9; --ink-muted:#b3a6c4; --ink-faint:#7c7190;
+      --purple:#b494f5; --purple-dark:#8a5cf0; --purple-light:#2c1f47;
+      --orange:#fb923c; --orange-dark:#fdba74; --orange-light:#3a2513;
+      --line:#332648;
+      --good:#4fd695; --good-bg:#123527;
+      --warn:#f2b155; --warn-bg:#3a2a10;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#140b21; --surface:#1c1130; --surface-2:#241a38;
+    --ink:#f1ecf9; --ink-muted:#b3a6c4; --ink-faint:#7c7190;
+    --purple:#b494f5; --purple-dark:#8a5cf0; --purple-light:#2c1f47;
+    --orange:#fb923c; --orange-dark:#fdba74; --orange-light:#3a2513;
+    --line:#332648;
+    --good:#4fd695; --good-bg:#123527;
+    --warn:#f2b155; --warn-bg:#3a2a10;
+  }
+  :root[data-theme="light"]{
+    --bg:#faf8fc; --surface:#ffffff; --surface-2:#f4effa;
+    --ink:#1f1330; --ink-muted:#675e76; --ink-faint:#9b90ab;
+    --purple:#5b21b6; --purple-dark:#3b0764; --purple-light:#ede9fe;
+    --orange:#f97316; --orange-dark:#c2410c; --orange-light:#fff1e6;
+    --line:#e4dcf0;
+    --good:#0f7a4a; --good-bg:#e7f6ee;
+    --warn:#b45309; --warn-bg:#fef3e0;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--purple-light); color:var(--purple-dark)}
+
+  a{color:var(--purple)}
+  :focus-visible{outline:2px solid var(--orange); outline-offset:2px}
+
+  h1,h2,h3{font-family:var(--serif); font-weight:600; text-wrap:balance; color:var(--ink)}
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--orange-dark); font-weight:600;
+  }
+
+  /* ── Cabeçalho fixo ─────────────────────────────────────── */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; gap:12px;
+    padding:12px 20px; background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar img.mark{
+    width:34px; height:34px; border-radius:9px; flex-shrink:0;
+    object-fit:cover; background:#fff; border:1px solid var(--line);
+  }
+  .topbar strong{font-size:14px}
+  .topbar span{font-size:12px; color:var(--ink-muted)}
+  .topbar .navtoggle{
+    margin-left:auto; display:none;
+    border:1px solid var(--line); background:var(--surface-2); color:var(--ink);
+    border-radius:8px; padding:7px 11px; font-size:12px; cursor:pointer; font-family:var(--sans);
+  }
+
+  /* ── Layout de página: nav lateral + conteúdo ──────────── */
+  .shell{ max-width:1180px; margin:0 auto; display:grid; grid-template-columns:220px minmax(0,1fr); gap:0 48px; padding:0 20px; }
+  nav.toc{
+    position:sticky; top:61px; align-self:start;
+    padding:28px 0 40px; font-size:13px;
+  }
+  nav.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+  nav.toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--ink-muted);
+    text-decoration:none; border-left:2px solid transparent;
+  }
+  nav.toc a:hover{background:var(--surface-2); color:var(--ink)}
+  nav.toc a.active{color:var(--purple-dark); border-left-color:var(--orange); background:var(--surface-2); font-weight:600}
+
+  main{padding:36px 0 90px; min-width:0}
+
+  /* ── Hero curto (utilitário, não gigante) ──────────────── */
+  .intro{ padding-bottom:28px; border-bottom:1px solid var(--line); margin-bottom:36px }
+  .intro h1{font-size:clamp(26px,3.4vw,34px); margin:10px 0 12px; line-height:1.15}
+  .intro p.lede{font-size:16px; color:var(--ink-muted); max-width:62ch; margin:0 0 18px}
+  .stat-row{display:flex; gap:10px; flex-wrap:wrap}
+  .stat{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:10px 14px; min-width:140px;
+  }
+  .stat b{display:block; font-family:var(--serif); font-size:20px; color:var(--purple-dark)}
+  .stat span{font-size:11.5px; color:var(--ink-muted)}
+
+  /* ── Seções ─────────────────────────────────────────────── */
+  section{scroll-margin-top:76px; margin-bottom:56px; max-width:74ch}
+  section h2{font-size:22px; margin:0 0 6px; display:flex; align-items:center; gap:10px}
+  section h2 .num{
+    font-family:var(--mono); font-size:12px; color:var(--purple);
+    background:var(--purple-light); border-radius:6px; padding:3px 7px;
+  }
+  section > .dek{color:var(--ink-muted); font-size:14.5px; margin:0 0 20px}
+  section h3{font-size:16px; margin:26px 0 8px}
+  section p{margin:0 0 14px; font-size:15px}
+  section ul, section ol{margin:0 0 16px; padding-left:22px; font-size:15px}
+  section li{margin-bottom:6px}
+  section strong{color:var(--ink)}
+
+  kbd{
+    font-family:var(--mono); font-size:12.5px; background:var(--surface-2);
+    border:1px solid var(--line); border-radius:6px; padding:1px 7px;
+  }
+
+  /* ── Cartões de destaque ────────────────────────────────── */
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 20px; margin:18px 0;
+  }
+  .card.tip{border-left:3px solid var(--good); background:var(--good-bg)}
+  .card.tip .tag{color:var(--good)}
+  .card.warn{border-left:3px solid var(--warn); background:var(--warn-bg)}
+  .card.warn .tag{color:var(--warn)}
+  .card .tag{
+    font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+    font-weight:700; display:block; margin-bottom:6px;
+  }
+  .card p:last-child{margin-bottom:0}
+
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:18px 0}
+  @media (max-width:640px){ .grid-2{grid-template-columns:1fr} }
+  .feature{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .feature .icon{font-size:20px}
+  .feature h4{margin:8px 0 4px; font-size:14.5px; font-family:var(--sans); font-weight:700}
+  .feature p{font-size:13.5px; color:var(--ink-muted); margin:0}
+
+  table{width:100%; border-collapse:collapse; font-size:14px; margin:16px 0}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line)}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); font-weight:600}
+  .tblwrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px}
+  .tblwrap table{margin:0}
+  .tblwrap tr:last-child td{border-bottom:none}
+
+  .badge{
+    display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600;
+    padding:3px 9px; border-radius:999px; font-family:var(--sans);
+  }
+  .badge.purple{background:var(--purple-light); color:var(--purple-dark)}
+  .badge.orange{background:var(--orange-light); color:var(--orange-dark)}
+
+  /* ── Passo a passo ──────────────────────────────────────── */
+  .steps{counter-reset:step; list-style:none; padding:0; margin:16px 0}
+  .steps li{
+    counter-increment:step; position:relative; padding:2px 0 18px 38px; font-size:15px;
+  }
+  .steps li::before{
+    content:counter(step); position:absolute; left:0; top:0;
+    width:26px; height:26px; border-radius:50%; background:var(--purple);
+    color:#fff; font-family:var(--mono); font-size:12.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .steps li:not(:last-child)::after{
+    content:""; position:absolute; left:13px; top:26px; bottom:0; width:1px; background:var(--line);
+  }
+
+  /* ── FAQ ────────────────────────────────────────────────── */
+  details{
+    border:1px solid var(--line); border-radius:10px; padding:0; margin-bottom:8px;
+    background:var(--surface); overflow:hidden;
+  }
+  summary{
+    padding:13px 16px; cursor:pointer; font-weight:600; font-size:14.5px;
+    list-style:none; display:flex; justify-content:space-between; align-items:center;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+"; font-family:var(--mono); color:var(--purple); font-size:18px}
+  details[open] summary::after{content:"–"}
+  details p{padding:0 16px 15px; margin:0; font-size:14px; color:var(--ink-muted)}
+
+  footer{
+    border-top:1px solid var(--line); padding:28px 0 60px; color:var(--ink-faint); font-size:12.5px;
+  }
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr}
+    nav.toc{
+      position:fixed; top:57px; left:0; right:0; bottom:0; z-index:30;
+      background:var(--bg); padding:18px 20px; overflow-y:auto;
+      transform:translateY(-110%); transition:transform .2s ease;
+    }
+    nav.toc.open{transform:translateY(0)}
+    .topbar .navtoggle{display:inline-block}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img class="mark" src="assets/rhimob-logo.jpg" alt="RH Imob">
+  <div>
+    <strong>Catho Coletor</strong><br>
+    <span>Cartilha de uso — RH Imob</span>
+  </div>
+  <button class="navtoggle" id="navToggle" aria-expanded="false">Sumário</button>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <ol>
+      <li><a href="#intro">Visão geral</a></li>
+      <li><a href="#login">1. Entrando na extensão</a></li>
+      <li><a href="#coleta">2. Coleta de currículos</a></li>
+      <li><a href="#envio">3. Envio automático</a></li>
+      <li><a href="#flutuante">4. Painel no WhatsApp</a></li>
+      <li><a href="#crm">5. Agendamentos e CRM</a></li>
+      <li><a href="#seguranca">6. Boas práticas</a></li>
+      <li><a href="#faq">Perguntas frequentes</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section class="intro" id="intro">
+      <span class="eyebrow">Manual do operador</span>
+      <h1>Uma ferramenta que trabalha enquanto você não está olhando</h1>
+      <p class="lede">O Catho Coletor busca candidatos na Catho, guarda tudo organizado, aborda cada um no WhatsApp com uma mensagem diferente, e avisa quando alguém precisa da sua atenção — sem planilha, sem copiar e colar, sem depender de alguém lembrar de fazer manualmente.</p>
+      <div class="stat-row">
+        <div class="stat"><b>24h</b><span>coleta roda sozinha, todo dia</span></div>
+        <div class="stat"><b>3</b><span>abordagens diferentes por candidato</span></div>
+        <div class="stat"><b>0</b><span>planilhas pra manter atualizadas</span></div>
+      </div>
+    </section>
+
+    <section id="login">
+      <h2><span class="num">01</span> Entrando na extensão</h2>
+      <p class="dek">O ponto de partida de tudo — o ícone da extensão fica fixo na barra do Chrome.</p>
+      <ol class="steps">
+        <li>Clique no ícone <strong>Catho Coletor</strong> na barra de extensões do Chrome.</li>
+        <li>Digite seu <strong>usuário</strong> e <strong>senha</strong> (cadastrados pelo administrador).</li>
+        <li>Clique <strong>Entrar</strong>. A partir daqui, tudo que você coletar e enviar fica registrado no seu nome.</li>
+      </ol>
+      <div class="card tip">
+        <span class="tag">Vantagem</span>
+        <p>Cada operador só vê e mexe nos próprios candidatos. Ninguém apaga ou reenvia mensagem pra um lead que já é seu.</p>
+      </div>
+    </section>
+
+    <section id="coleta">
+      <h2><span class="num">02</span> Coleta de currículos</h2>
+      <p class="dek">A parte que antes era manual — abrir a Catho, copiar nome e telefone um por um — agora roda sozinha.</p>
+
+      <h3>Como funciona</h3>
+      <p>Na aba <strong>Coleta</strong>, você cola o link de uma busca de currículos da Catho (o filtro que você já usa — cargo, região, etc.) e define quantas páginas de resultado ela deve percorrer. A extensão abre cada perfil, lê nome, telefone, profissão, cidade e mais uma dezena de dados, e guarda tudo automaticamente.</p>
+
+      <div class="grid-2">
+        <div class="feature">
+          <div class="icon">🌅</div>
+          <h4>Automática</h4>
+          <p>Roda sozinha todo dia, no horário definido pelo administrador — não precisa lembrar de abrir o computador de manhã.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">▶️</div>
+          <h4>Manual</h4>
+          <p>Botão <strong>Rodar coleta agora</strong> continua disponível a qualquer momento — pra testar um filtro novo ou reforçar no meio do dia.</p>
+        </div>
+      </div>
+
+      <h3>Upload de base própria</h3>
+      <p>Se você já tem uma lista de contatos (nome + telefone) fora da Catho, a aba <strong>Upload</strong> aceita uma planilha CSV — baixe o modelo, preencha, suba, e os contatos entram no mesmo funil de envio.</p>
+
+      <div class="card tip">
+        <span class="tag">Vantagem</span>
+        <p>A extensão nunca coleta o mesmo currículo duas vezes pro mesmo operador — se um perfil já está na sua base, ele é atualizado, não duplicado.</p>
+      </div>
+    </section>
+
+    <section id="envio">
+      <h2><span class="num">03</span> Envio automático de mensagens</h2>
+      <p class="dek">O elo mais importante: assim que a coleta termina, o disparo já começa sozinho.</p>
+
+      <p>Na aba <strong>Envio</strong>, você cadastra até <strong>3 abordagens diferentes</strong> de mensagem — a extensão sorteia uma pra cada candidato, então ninguém recebe um texto idêntico ao do vizinho. Use <kbd>{nome}</kbd> pro primeiro nome do lead e <kbd>{saudacao}</kbd> pro "bom dia/boa tarde/boa noite" ajustado à hora real do envio.</p>
+
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Intervalo</th><th>Quando usar</th></tr></thead>
+          <tbody>
+            <tr><td>6–10 min</td><td><span class="badge orange">Agressiva</span> envio mais rápido, mais risco de bloqueio</td></tr>
+            <tr><td>10–15 min</td><td><span class="badge purple">Segura</span> recomendada no dia a dia</td></tr>
+            <tr><td>12–20 min</td><td>Aquecimento — depois de um bloqueio ou com número novo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>O que a extensão faz sozinha</h3>
+      <ul>
+        <li>Assim que termina uma coleta, ela verifica se há candidatos novos e <strong>já começa a enviar</strong> — sem precisar clicar em nada.</li>
+        <li>Respeita um horário de trabalho e uma pausa de almoço sorteados a cada dia (varia o padrão, reduz risco de bloqueio).</li>
+        <li>Se o computador reiniciar no meio do envio, ela retoma sozinha de onde parou.</li>
+      </ul>
+
+      <div class="card warn">
+        <span class="tag">Importante</span>
+        <p>Se você clicar em <strong>Pausar</strong> ou <strong>Encerrar</strong>, a extensão respeita — ela não volta a enviar sozinha até você clicar em <strong>Iniciar</strong> de novo. E nada disso funciona com o computador desligado ou o Chrome fechado.</p>
+      </div>
+    </section>
+
+    <section id="flutuante">
+      <h2><span class="num">04</span> Painel flutuante no WhatsApp Web</h2>
+      <p class="dek">Um painel fixo no canto da tela, sempre que você está no WhatsApp Web — pra nunca precisar sair da conversa.</p>
+
+      <div class="grid-2">
+        <div class="feature">
+          <div class="icon">💬</div>
+          <h4>Respostas rápidas</h4>
+          <p>Modelos de resposta pré-configurados, personalizados com o nome do candidato — um clique insere o texto pronto na conversa.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">🗓</div>
+          <h4>Agendar</h4>
+          <p>Marca a entrevista do candidato aberto na conversa sem sair do WhatsApp — telefone e nome já vêm preenchidos automaticamente.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">📋</div>
+          <h4>Meus Agendamentos</h4>
+          <p>Sua lista de agendamentos, com um número vermelho na aba avisando quantos ainda estão em aberto. Some quando não há pendência.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">⚠️</div>
+          <h4>Aviso de duplicidade</h4>
+          <p>Se o contato aberto já tem agendamento — mesmo que feito por outro operador — o painel avisa antes de você marcar de novo.</p>
+        </div>
+      </div>
+
+      <div class="card tip">
+        <span class="tag">Vantagem</span>
+        <p>Evita o cenário clássico: dois operadores ligando pro mesmo candidato pra confirmar a mesma entrevista sem saber.</p>
+      </div>
+    </section>
+
+    <section id="crm">
+      <h2><span class="num">05</span> Agendamentos e CRM</h2>
+      <p class="dek">A visão completa — pra quem acompanha o processo de ponta a ponta, não só os próprios candidatos.</p>
+
+      <p>O <strong>Kanban de Agendamentos</strong> mostra todo candidato agendado, de todos os operadores, organizado por etapa: Agendado → Confirmado → Realizado → Contratado (ou Reagendado/Desistiu/Cancelado). Arraste o card pra mudar a etapa, ou clique pra ver o histórico completo de mudanças.</p>
+
+      <p>A aba <strong>Visão Geral</strong> traz gráficos — quantos agendamentos por etapa, produção de cada operador, padrão de agendamento por dia da semana e nos últimos 30 dias.</p>
+
+      <div class="card tip">
+        <span class="tag">Acesso</span>
+        <p>Esse painel é restrito — só quem tem senha de administrador (completo ou "só agendamentos") consegue entrar. Um operador comum não vê o Kanban geral, só os próprios agendamentos no flutuante.</p>
+      </div>
+    </section>
+
+    <section id="seguranca">
+      <h2><span class="num">06</span> Boas práticas</h2>
+      <ul>
+        <li><strong>Não force o envio no modo Agressivo</strong> o tempo todo — reserve pra quando realmente precisar de volume rápido.</li>
+        <li><strong>Depois de um bloqueio do WhatsApp</strong>, use o intervalo de Aquecimento por alguns dias antes de voltar ao normal.</li>
+        <li><strong>Revise a aba Leads</strong> antes de iniciar o envio — remova quem não deveria receber mensagem (ex: contato errado, duplicado).</li>
+        <li><strong>Mantenha o computador ligado</strong> no horário configurado de coleta — sem isso, ela só roda quando o Chrome for aberto de novo.</li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <h2>Perguntas frequentes</h2>
+      <details>
+        <summary>Preciso clicar em algo todo dia pra a coleta funcionar?</summary>
+        <p>Não, se o administrador configurou um horário pra você. Ela roda sozinha, desde que o computador esteja ligado com o Chrome aberto naquele horário.</p>
+      </details>
+      <details>
+        <summary>E se eu quiser coletar num horário diferente do configurado?</summary>
+        <p>Use o botão <strong>Rodar coleta agora</strong>, na aba Coleta — funciona a qualquer momento, além da rotina automática.</p>
+      </details>
+      <details>
+        <summary>O envio começa sozinho depois da coleta automática?</summary>
+        <p>Sim — assim que a coleta (automática ou manual) termina e encontra candidatos novos, o envio já é iniciado, contanto que você tenha frases de abordagem salvas na aba Envio.</p>
+      </details>
+      <details>
+        <summary>Posso ver os agendamentos de outro operador?</summary>
+        <p>No painel flutuante, não — cada operador só vê os próprios. O Kanban completo (todos os operadores) é restrito a quem tem acesso de administrador.</p>
+      </details>
+      <details>
+        <summary>O que acontece se eu pausar o envio no meio do dia?</summary>
+        <p>Ele fica pausado até você clicar em Iniciar de novo — a extensão não reativa sozinha depois de uma pausa manual, mesmo que rode uma coleta nova nesse meio tempo.</p>
+      </details>
+    </section>
+
+    <footer>
+      Catho Coletor · RH Imob — documento interno, uso da equipe operacional.
+    </footer>
+  </main>
+</div>
+
+<script>
+  const toggle = document.getElementById('navToggle');
+  const toc = document.getElementById('toc');
+  toggle.addEventListener('click', () => {
+    const open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  toc.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    toc.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+  }));
+
+  const links = Array.from(document.querySelectorAll('nav.toc a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting){
+        const id = '#' + e.target.id;
+        links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+</body>
+</html>
