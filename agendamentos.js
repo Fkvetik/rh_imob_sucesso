@@ -8,15 +8,16 @@ let searchQuery = "";
 let dragId = null;
 let editingId = null;
 
-// Cores alinhadas à paleta validada (dataviz) — mesma ordem usada no gráfico de pizza.
-const COLUMNS = [
-  { id:"AGENDADO",   label:"📨 Agendado",   color:"#2a78d6" },
-  { id:"CONFIRMADO", label:"✅ Confirmado", color:"#1baf7a" },
-  { id:"REALIZADO",  label:"🎯 Realizado",  color:"#008300" },
-  { id:"REAGENDADO", label:"🔁 Reagendado", color:"#eda100" },
-  { id:"DESISTIU",   label:"🚫 Desistiu",   color:"#e34948" },
-  { id:"CANCELADO",  label:"⛔ Cancelado",  color:"#999999" },
-];
+// Colunas do Kanban agora são dados (tabela kanban_colunas) — qualquer admin
+// pode adicionar/renomear/reordenar/remover pelo botão "⚙️ Colunas".
+let COLUMNS = [];
+
+async function loadColunas() {
+  try {
+    const resp = await rpc("rpc_admin_list_colunas", { p_admin_password: ADMIN_PASS });
+    if (resp.ok) COLUMNS = (resp.colunas || []).map(c => ({ id: c.id, label: c.label, color: c.cor }));
+  } catch (e) { /* mantém o que já tinha carregado */ }
+}
 
 async function rpc(name, body) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
@@ -45,6 +46,7 @@ $("btnEntrar").addEventListener("click", async () => {
     ADMIN_PASS = pass;
     sessionStorage.setItem("catho_admin_pass", pass);
     agendamentos = resp.agendamentos || [];
+    await loadColunas();
     renderBoard();
     showApp();
   } catch (e) {
@@ -53,7 +55,7 @@ $("btnEntrar").addEventListener("click", async () => {
 });
 
 async function loadAll() {
-  await Promise.all([loadAgendamentos(), loadDashboard()]);
+  await Promise.all([loadAgendamentos(), loadDashboard(), loadColunas().then(renderBoard)]);
 }
 
 async function loadAgendamentos() {
@@ -92,6 +94,7 @@ function filtered() {
 // ===== Dashboard =====
 function renderDashboard(d) {
   const opStats = (d.leads_por_operador||[]).map(o => `<li><span>${esc(o.login)}</span><span>${o.total} (${o.enviados} enviados)</span></li>`).join("");
+  const agStats = (d.agendamentos_por_operador||[]).map(o => `<li><span>${esc(o.nome_operador||o.login)}</span><span>${o.total} (${o.confirmados} confirmados+)</span></li>`).join("") || '<li style="color:#aaa">Nenhum ainda</li>';
   const entrevistadores = (d.entrevistadores||[]).slice(0,8).map(e => `<li><span>${esc(e.entrevistador)}</span><span>${e.total}</span></li>`).join("") || '<li style="color:#aaa">Nenhum ainda</li>';
   const porStatus = {};
   (d.agendamentos_por_status||[]).forEach(s => porStatus[s.status] = s.total);
@@ -102,6 +105,7 @@ function renderDashboard(d) {
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div></div>
     <div class="stat"><div class="num">${porStatus.CONFIRMADO||0}</div><div class="label">Confirmados</div></div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Leads por operador</div><ul>${opStats || '<li style="color:#aaa">Sem dados</li>'}</ul></div>
+    <div class="stat wide"><div class="label" style="margin-bottom:4px">Agendamentos por operador (produção individual)</div><ul>${agStats}</ul></div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Entrevistas por entrevistador</div><ul>${entrevistadores}</ul></div>
   `;
 
@@ -322,7 +326,8 @@ function openEditModal(id) {
   editingId = id;
   $("mNomeCandidato").textContent = a.nome_candidato || "Agendamento";
   $("mSubInfo").textContent = `${a.telefone||"—"} • ${a.empresa||"—"} • operador: ${a.nome_operador||a.login||"—"}`;
-  $("mStatus").value = a.status || "AGENDADO";
+  $("mStatus").innerHTML = COLUMNS.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join("");
+  $("mStatus").value = a.status || (COLUMNS[0]?.id || "AGENDADO");
   $("mData").value = toDatetimeLocal(a.data_agendamento);
   $("mOnline").value = a.entrevista_online === true ? "true" : a.entrevista_online === false ? "false" : "";
   $("mEntrevistador").value = a.entrevistador || "";
@@ -387,10 +392,111 @@ function updateAgendamento(id, fields, onOk) {
     .catch(e => alert("❌ " + e.message));
 }
 
+// ===== Gerenciar colunas do Kanban =====
+let colunasEditando = [];
+let colunasRemovidas = [];
+let dragColIdx = null;
+
+$("btnColunas").addEventListener("click", () => {
+  colunasEditando = COLUMNS.map(c => ({ ...c }));
+  colunasRemovidas = [];
+  $("colunasMsg").textContent = "";
+  renderColunasList();
+  $("colunasModal").classList.add("open");
+});
+$("btnFecharColunas").addEventListener("click", () => $("colunasModal").classList.remove("open"));
+$("colunasModal").addEventListener("click", (e) => { if (e.target.id === "colunasModal") $("colunasModal").classList.remove("open"); });
+
+function renderColunasList() {
+  $("colunasList").innerHTML = colunasEditando.map((c, i) => `
+    <div class="col-row" draggable="true" data-i="${i}">
+      <span class="col-drag-handle">⠿</span>
+      <input type="text" data-i="${i}" class="colLabelInput" value="${esc(c.label)}" placeholder="Nome da coluna">
+      <input type="color" data-i="${i}" class="colColorInput" value="${normalizeHex(c.color)}">
+      ${colunasEditando.length > 1 ? `<button class="rm-col-btn" data-i="${i}">🗑</button>` : '<span style="width:36px"></span>'}
+    </div>
+  `).join("");
+
+  $("colunasList").querySelectorAll(".colLabelInput").forEach(inp => {
+    inp.addEventListener("input", () => { colunasEditando[parseInt(inp.dataset.i,10)].label = inp.value; });
+  });
+  $("colunasList").querySelectorAll(".colColorInput").forEach(inp => {
+    inp.addEventListener("input", () => { colunasEditando[parseInt(inp.dataset.i,10)].color = inp.value; });
+  });
+  $("colunasList").querySelectorAll(".rm-col-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = parseInt(btn.dataset.i, 10);
+      const removida = colunasEditando.splice(i, 1)[0];
+      if (removida && !String(removida.id).startsWith("_novo_")) colunasRemovidas.push(removida.id);
+      renderColunasList();
+    });
+  });
+
+  $("colunasList").querySelectorAll(".col-row").forEach(row => {
+    row.addEventListener("dragstart", () => { dragColIdx = parseInt(row.dataset.i, 10); });
+    row.addEventListener("dragover", (e) => { e.preventDefault(); row.classList.add("drag-over"); });
+    row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+    row.addEventListener("drop", (e) => {
+      e.preventDefault();
+      row.classList.remove("drag-over");
+      const targetI = parseInt(row.dataset.i, 10);
+      if (dragColIdx === null || dragColIdx === targetI) return;
+      const moved = colunasEditando.splice(dragColIdx, 1)[0];
+      colunasEditando.splice(targetI, 0, moved);
+      dragColIdx = null;
+      renderColunasList();
+    });
+  });
+}
+
+function normalizeHex(c) {
+  if (!c) return "#999999";
+  return /^#[0-9a-fA-F]{6}$/.test(c) ? c : "#999999";
+}
+
+$("btnAddColuna").addEventListener("click", () => {
+  const label = prompt("Nome da nova coluna:", "Nova etapa");
+  if (!label || !label.trim()) return;
+  colunasEditando.push({ id: "_novo_" + Date.now(), label: label.trim(), color: "#95a5a6" });
+  renderColunasList();
+});
+
+$("btnSalvarColunas").addEventListener("click", async () => {
+  if (!colunasEditando.length) { $("colunasMsg").textContent = "❌ Precisa ter pelo menos 1 coluna."; return; }
+  $("colunasMsg").textContent = "Salvando...";
+  try {
+    // remove as colunas marcadas (backend recusa se ainda tiver agendamento usando)
+    for (const id of colunasRemovidas) {
+      const resp = await rpc("rpc_admin_delete_coluna", { p_admin_password: ADMIN_PASS, p_id: id });
+      if (!resp.ok) { $("colunasMsg").textContent = "❌ " + resp.error; return; }
+    }
+    // salva ordem + label + cor de cada coluna (cria as novas automaticamente)
+    for (let i = 0; i < colunasEditando.length; i++) {
+      const c = colunasEditando[i];
+      const idFinal = String(c.id).startsWith("_novo_") ? c.label : c.id;
+      const resp = await rpc("rpc_admin_upsert_coluna", { p_admin_password: ADMIN_PASS, p_id: idFinal, p_label: c.label, p_cor: c.color, p_ordem: i+1 });
+      if (!resp.ok) { $("colunasMsg").textContent = "❌ " + resp.error; return; }
+    }
+    $("colunasMsg").textContent = "✅ Colunas salvas.";
+    await loadColunas();
+    renderBoard();
+    setTimeout(() => $("colunasModal").classList.remove("open"), 500);
+  } catch (e) {
+    $("colunasMsg").textContent = "❌ " + e.message;
+  }
+});
+
 function esc(s) { return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 if (ADMIN_PASS) {
   rpc("rpc_admin_list_agendamentos", { p_admin_password: ADMIN_PASS })
-    .then(resp => { if (resp.ok) { agendamentos = resp.agendamentos || []; renderBoard(); showApp(); loadDashboard(); } })
+    .then(async resp => {
+      if (!resp.ok) return;
+      agendamentos = resp.agendamentos || [];
+      await loadColunas();
+      renderBoard();
+      showApp();
+      loadDashboard();
+    })
     .catch(() => {});
 }
