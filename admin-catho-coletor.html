@@ -3,32 +3,45 @@
 <head>
 <meta charset="utf-8">
 <title>Admin — Catho Coletor</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <style>
-  body{font-family:system-ui,Arial;margin:0;background:#f0f2f5;color:#111}
-  header{background:#111;color:#fff;padding:16px 24px}
+  :root{
+    --rh-purple:#5b21b6; --rh-purple-dark:#3b0764; --rh-purple-light:#ede9fe;
+    --rh-orange:#f97316; --rh-orange-dark:#c2410c;
+  }
+  body{font-family:system-ui,Arial;margin:0;background:#f5f3fa;color:#111}
+  header{background:linear-gradient(135deg,var(--rh-purple-dark),var(--rh-purple));color:#fff;padding:16px 24px}
   header h1{font-size:16px;margin:0}
+  header img.logo{height:32px;border-radius:6px;background:#fff;padding:2px}
   main{max-width:720px;margin:24px auto;padding:0 16px}
   .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px;margin-bottom:16px}
   label{font-weight:600;font-size:12px;color:#333;display:block;margin-top:10px}
   input,select{width:100%;box-sizing:border-box;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:8px;font-size:13px}
-  button{padding:9px 14px;border-radius:8px;border:0;background:#111;color:#fff;cursor:pointer;font-size:13px}
-  button.secondary{background:#0b3b6f}
+  input:focus,select:focus{outline:2px solid var(--rh-purple-light);border-color:var(--rh-purple)}
+  button{padding:9px 14px;border-radius:8px;border:0;background:var(--rh-purple);color:#fff;cursor:pointer;font-size:13px}
+  button:hover{background:var(--rh-purple-dark)}
+  button.secondary{background:var(--rh-orange)}
+  button.secondary:hover{background:var(--rh-orange-dark)}
   button.danger{background:#7a0000}
   button.ghost{background:#eee;color:#333}
   .btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
   th,td{text-align:left;padding:8px;border-bottom:1px solid #eee}
-  .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#e8f5e9;color:#1b5e20}
-  .badge.bloqueado{background:#fdecea;color:#7a0000}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#ede9fe;color:var(--rh-purple-dark)}
+  .badge.bloqueado{background:#fff1e6;color:var(--rh-orange-dark)}
   .msg{font-size:12px;margin-top:8px}
   .hide{display:none !important}
   small{color:#666}
+  h3{color:var(--rh-purple-dark)}
 </style>
 </head>
 <body>
 <header style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+  <img class="logo" src="assets/rhimob-logo.jpg" alt="RH Imob">
   <h1 style="flex:1">🔐 Admin — Catho Coletor</h1>
-  <a href="agendamentos.html" target="_blank" style="background:rgba(255,255,255,.15);color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600">🗓 Abrir CRM Agendamentos</a>
+  <a href="agendamentos.html" target="_blank" style="background:var(--rh-orange);color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600">🗓 Abrir CRM Agendamentos</a>
 </header>
 <main>
 

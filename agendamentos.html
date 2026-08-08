@@ -3,28 +3,37 @@
 <head>
 <meta charset="utf-8">
 <title>CRM Agendamentos — RH Imob</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <style>
   :root{
     --wa-green:#25D366; --wa-dark:#075E54;
-    /* paleta validada (dataviz) */
+    --rh-purple:#5b21b6; --rh-purple-dark:#3b0764; --rh-purple-light:#ede9fe;
+    --rh-orange:#f97316; --rh-orange-dark:#c2410c;
+    /* paleta validada (dataviz) — não mexer, é a que garante contraste/CVD-safe nos gráficos */
     --surface-1:#fcfcfb; --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
     --gridline:#e1e0d9; --baseline:#c3c2b7;
     --series-1:#2a78d6; --series-2:#1baf7a; --series-3:#eda100; --series-4:#008300; --series-5:#4a3aa7; --series-6:#e34948;
     --seq-blue-300:#6da7ec; --seq-blue-450:#2a78d6; --seq-blue-600:#184f95;
   }
   *{box-sizing:border-box}
-  body{font-family:system-ui,Arial;margin:0;background:#f0f2f5;color:#111}
-  header{background:#111;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  body{font-family:system-ui,Arial;margin:0;background:#f5f3fa;color:#111}
+  header{background:linear-gradient(135deg,var(--rh-purple-dark),var(--rh-purple));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header img.logo{height:30px;border-radius:6px;background:#fff;padding:2px;flex-shrink:0}
   header h1{font-size:16px;margin:0;flex:1}
   header input{padding:8px 12px;border-radius:8px;border:0;min-width:220px}
   header select{padding:8px 12px;border-radius:8px;border:0;font-size:12px}
   header button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer;font-size:12px;background:rgba(255,255,255,.15);color:#fff}
+  header button:hover{background:rgba(255,255,255,.28)}
   header button.primary{background:var(--wa-green);color:#fff;font-weight:700}
+  header #btnExportCsv{background:var(--rh-orange);font-weight:700}
+  header #btnExportCsv:hover{background:var(--rh-orange-dark)}
   .hide{display:none !important}
 
   .tabs{display:flex;gap:6px;padding:14px 20px 0}
   .tab-btn{padding:9px 16px;border-radius:10px 10px 0 0;border:1px solid #dde1e7;border-bottom:none;background:#e4e7eb;color:#555;cursor:pointer;font-size:13px;font-weight:600}
-  .tab-btn.active{background:#f0f2f5;color:#111}
+  .tab-btn.active{background:#f0f2f5;color:var(--rh-purple-dark);border-bottom:2px solid var(--rh-orange)}
   .tab-panel{display:none}
   .tab-panel.active{display:block}
 
@@ -80,7 +89,8 @@
   .modal h3{margin-top:0;font-size:15px}
   .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
   button.ghost{background:#eee;color:#333;padding:9px 14px;border-radius:8px;border:0;cursor:pointer;font-size:13px}
-  button.primary2{background:#111;color:#fff;padding:9px 14px;border-radius:8px;border:0;cursor:pointer;font-size:13px}
+  button.primary2{background:var(--rh-purple);color:#fff;padding:9px 14px;border-radius:8px;border:0;cursor:pointer;font-size:13px}
+  button.primary2:hover{background:var(--rh-purple-dark)}
   .hist-item{border-left:2px solid #ddd;padding:4px 0 4px 10px;font-size:11px;color:#555;margin-bottom:4px}
   .btns{display:flex;gap:8px;flex-wrap:wrap}
   .wa-btn{display:inline-flex;align-items:center;gap:5px;background:#e6f9ee;color:#128c4a;text-decoration:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700}
@@ -103,6 +113,7 @@
 </head>
 <body>
 <header>
+  <img class="logo" src="assets/rhimob-logo.jpg" alt="RH Imob">
   <h1>🗓 CRM Agendamentos — RH Imob</h1>
   <input id="searchInput" placeholder="Buscar por nome, telefone, empresa ou operador..." autocomplete="off" readonly>
   <select id="filtroOperador"><option value="">Todos os operadores</option></select>
