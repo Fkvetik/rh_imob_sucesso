@@ -5,6 +5,9 @@ const $ = (id) => document.getElementById(id);
 let ADMIN_PASS = sessionStorage.getItem("catho_admin_pass") || "";
 let agendamentos = [];
 let searchQuery = "";
+// alguns navegadores restauram o valor digitado no reload sem disparar o evento
+// "input" — força o campo a começar sempre vazio, sem filtro escondido.
+if (document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
 let dragId = null;
 let editingId = null;
 
