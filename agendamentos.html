@@ -17,9 +17,19 @@
   header{background:#111;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   header h1{font-size:16px;margin:0;flex:1}
   header input{padding:8px 12px;border-radius:8px;border:0;min-width:220px}
+  header select{padding:8px 12px;border-radius:8px;border:0;font-size:12px}
   header button{padding:8px 14px;border-radius:8px;border:0;cursor:pointer;font-size:12px;background:rgba(255,255,255,.15);color:#fff}
   header button.primary{background:var(--wa-green);color:#fff;font-weight:700}
   .hide{display:none !important}
+
+  .tabs{display:flex;gap:6px;padding:14px 20px 0}
+  .tab-btn{padding:9px 16px;border-radius:10px 10px 0 0;border:1px solid #dde1e7;border-bottom:none;background:#e4e7eb;color:#555;cursor:pointer;font-size:13px;font-weight:600}
+  .tab-btn.active{background:#f0f2f5;color:#111}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  .agcard.atrasado{border:1.5px solid #e34948;box-shadow:0 0 0 1px rgba(227,73,72,.15)}
+  .badge-atrasado{display:inline-block;font-size:10px;background:#fdecea;color:#c0392b;border-radius:999px;padding:1px 6px;margin-top:4px;font-weight:700}
 
   .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px}
   #loginArea{max-width:360px;margin:60px auto}
@@ -95,6 +105,8 @@
 <header>
   <h1>🗓 CRM Agendamentos — RH Imob</h1>
   <input id="searchInput" placeholder="Buscar por nome, telefone, empresa ou operador..." autocomplete="off" readonly>
+  <select id="filtroOperador"><option value="">Todos os operadores</option></select>
+  <button id="btnExportCsv">⬇️ Exportar CSV</button>
   <button id="btnColunas">⚙️ Colunas</button>
   <button id="btnRefresh">↻ Atualizar</button>
 </header>
@@ -109,9 +121,17 @@
 </div>
 
 <div id="appArea" class="hide">
-  <div id="dashboard"></div>
-  <div id="charts"></div>
-  <div id="board"></div>
+  <div class="tabs">
+    <button class="tab-btn" id="tabBtnKanban">🗓 Kanban</button>
+    <button class="tab-btn" id="tabBtnVisaoGeral">📊 Visão Geral</button>
+  </div>
+  <div id="tabKanban" class="tab-panel">
+    <div id="board"></div>
+  </div>
+  <div id="tabVisaoGeral" class="tab-panel">
+    <div id="dashboard"></div>
+    <div id="charts"></div>
+  </div>
   <div class="chart-tooltip" id="chartTooltip"></div>
 </div>
 

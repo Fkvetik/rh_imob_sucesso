@@ -5,8 +5,23 @@ const $ = (id) => document.getElementById(id);
 let ADMIN_PASS = sessionStorage.getItem("catho_admin_pass") || "";
 let agendamentos = [];
 let searchQuery = "";
+let operadorFiltro = "";
 let dragId = null;
 let editingId = null;
+
+// Status considerados "em aberto" — um AGENDADO com data passada e ninguém
+// confirmou/cancelou é o caso que precisa de atenção (atrasado).
+const STATUS_ABERTOS = ["AGENDADO"];
+
+$("tabBtnKanban").addEventListener("click", () => switchTab("Kanban"));
+$("tabBtnVisaoGeral").addEventListener("click", () => switchTab("VisaoGeral"));
+function switchTab(tab) {
+  $("tabBtnKanban").classList.toggle("active", tab === "Kanban");
+  $("tabBtnVisaoGeral").classList.toggle("active", tab === "VisaoGeral");
+  $("tabKanban").classList.toggle("active", tab === "Kanban");
+  $("tabVisaoGeral").classList.toggle("active", tab === "VisaoGeral");
+}
+switchTab("Kanban");
 
 // O Chrome às vezes restaura o texto digitado antes (mesmo com o campo readonly
 // e autocomplete=off) — limpa de novo em todo carregamento, incluindo quando a
@@ -97,10 +112,31 @@ $("searchInput").addEventListener("focus", (e) => {
   }
 }, { once: true });
 $("searchInput").addEventListener("input", (e) => { searchQuery = e.target.value.toLowerCase().trim(); renderBoard(); });
+$("filtroOperador").addEventListener("change", (e) => { operadorFiltro = e.target.value; renderBoard(); });
+
+function renderFiltroOperador() {
+  const sel = $("filtroOperador");
+  const atual = sel.value;
+  const ops = [...new Set(agendamentos.map(a => a.login).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todos os operadores</option>' + ops.map(login => {
+    const nome = agendamentos.find(a => a.login === login)?.nome_operador || login;
+    return `<option value="${esc(login)}">${esc(nome)}</option>`;
+  }).join("");
+  if (ops.includes(atual)) sel.value = atual;
+}
+
+function isAtrasado(a) {
+  if (!STATUS_ABERTOS.includes(a.status || "AGENDADO")) return false;
+  if (!a.data_agendamento) return false;
+  const d = new Date(a.data_agendamento);
+  return !isNaN(d.getTime()) && d.getTime() < Date.now();
+}
 
 function filtered() {
-  if (!searchQuery) return agendamentos;
-  return agendamentos.filter(a =>
+  let list = agendamentos;
+  if (operadorFiltro) list = list.filter(a => a.login === operadorFiltro);
+  if (!searchQuery) return list;
+  return list.filter(a =>
     (a.nome_candidato||"").toLowerCase().includes(searchQuery) ||
     (a.telefone||"").includes(searchQuery) ||
     (a.empresa||"").toLowerCase().includes(searchQuery) ||
@@ -108,6 +144,30 @@ function filtered() {
     (a.login||"").toLowerCase().includes(searchQuery)
   );
 }
+
+// ===== Exportar CSV =====
+function csvEscape(v) {
+  const s = String(v == null ? "" : v);
+  return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+$("btnExportCsv").addEventListener("click", () => {
+  const rows = filtered();
+  const header = ["Nome candidato","Telefone","Empresa","Etapa","Data agendamento","Operador","Entrevistador","Atrasado"];
+  const body = rows.map(a => [
+    a.nome_candidato||"", a.telefone||"", a.empresa||"",
+    (COLUMNS.find(c => c.id === a.status)?.label) || a.status || "",
+    fmtData(a.data_agendamento), a.nome_operador||a.login||"", a.entrevistador||"",
+    isAtrasado(a) ? "SIM" : "NAO"
+  ].map(csvEscape).join(";"));
+  const csv = "﻿" + [header.join(";"), ...body].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `agendamentos_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+});
 
 // ===== Dashboard =====
 function renderDashboard(d) {
@@ -293,6 +353,7 @@ function renderBar30Dias(rows) {
 
 // ===== Kanban =====
 function renderBoard() {
+  renderFiltroOperador();
   const list = filtered();
   $("board").innerHTML = COLUMNS.map(col => {
     const colItems = list.filter(a => (a.status||"AGENDADO") === col.id);
@@ -335,9 +396,11 @@ function waLink(phone) {
 
 function renderCard(a) {
   const reag = a.vezes_reagendado > 0 ? `<span class="badge2">🔁 ${a.vezes_reagendado}x reagendado</span>` : "";
+  const atrasado = isAtrasado(a);
+  const badgeAtrasado = atrasado ? `<span class="badge-atrasado">⚠️ Atrasado</span>` : "";
   const wa = waLink(a.telefone);
   return `
-    <div class="agcard" draggable="true" data-id="${a.id}">
+    <div class="agcard${atrasado ? " atrasado" : ""}" draggable="true" data-id="${a.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
         <div class="nome">${esc(a.nome_candidato||"—")}</div>
         ${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}
@@ -345,7 +408,7 @@ function renderCard(a) {
       <div class="sub">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
-      ${reag}
+      ${reag}${badgeAtrasado}
     </div>`;
 }
 
