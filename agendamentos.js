@@ -5,11 +5,18 @@ const $ = (id) => document.getElementById(id);
 let ADMIN_PASS = sessionStorage.getItem("catho_admin_pass") || "";
 let agendamentos = [];
 let searchQuery = "";
-// alguns navegadores restauram o valor digitado no reload sem disparar o evento
-// "input" — força o campo a começar sempre vazio, sem filtro escondido.
-if (document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
 let dragId = null;
 let editingId = null;
+
+// O Chrome às vezes restaura o texto digitado antes (mesmo com o campo readonly
+// e autocomplete=off) — limpa de novo em todo carregamento, incluindo quando a
+// página volta do cache do navegador (botão voltar).
+function forceClearSearch() {
+  const el = document.getElementById("searchInput");
+  if (el && el.hasAttribute("readonly")) el.value = "";
+}
+forceClearSearch();
+window.addEventListener("pageshow", forceClearSearch);
 
 // Colunas do Kanban agora são dados (tabela kanban_colunas) — qualquer admin
 // pode adicionar/renomear/reordenar/remover pelo botão "⚙️ Colunas".
@@ -81,6 +88,14 @@ async function loadDashboard() {
 }
 
 $("btnRefresh").addEventListener("click", loadAll);
+// Campo começa "readonly" (bloqueia autofill do navegador) e só libera pra digitar
+// no primeiro clique/foco — nesse momento também garante que está vazio de verdade.
+$("searchInput").addEventListener("focus", (e) => {
+  if (e.target.hasAttribute("readonly")) {
+    e.target.removeAttribute("readonly");
+    e.target.value = "";
+  }
+}, { once: true });
 $("searchInput").addEventListener("input", (e) => { searchQuery = e.target.value.toLowerCase().trim(); renderBoard(); });
 
 function filtered() {
