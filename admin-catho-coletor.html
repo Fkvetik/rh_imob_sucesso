@@ -99,9 +99,43 @@
     </div>
 
     <div class="card">
-      <h3 style="margin-top:0;font-size:14px">📊 Limites de envio por empresa</h3>
+      <h3 style="margin-top:0;font-size:14px">📊 Empresas e limites de envio</h3>
       <small>Quanto cada empresa pode liberar de contatos no banco de talentos. O consumo é debitado toda vez que um operador libera o telefone de um candidato.</small>
-      <div class="btns"><button id="btnRefreshContas" class="secondary">↻ Atualizar</button></div>
+      <div class="btns">
+        <button id="btnNovaEmpresa">+ Nova empresa</button>
+        <button id="btnRefreshContas" class="secondary">↻ Atualizar</button>
+      </div>
+
+      <div id="formNovaEmpresa" class="hide" style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <label>Nome da empresa</label>
+        <input id="ncNome" placeholder="Ex.: Imobiliária Silva">
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:150px">
+            <label>Plano</label>
+            <select id="ncPlano">
+              <option value="EMPRESARIAL">Empresarial</option>
+              <option value="INDIVIDUAL">Individual</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:150px">
+            <label>Modo</label>
+            <select id="ncModo">
+              <option value="RHIMOB_FORNECE">RH IMOB fornece a base</option>
+              <option value="CLIENTE_PROPRIO">Cliente usa base própria</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:120px"><label>Limite total</label><input id="ncLimTotal" type="number" min="0" value="1000"></div>
+          <div style="flex:1;min-width:120px"><label>Limite por usuário</label><input id="ncLimUser" type="number" min="0" value="500"></div>
+          <div style="flex:1;min-width:120px"><label>Usuários contratados</label><input id="ncUsuarios" type="number" min="1" value="2"></div>
+        </div>
+        <div class="btns">
+          <button id="btnSalvarEmpresa">💾 Criar empresa</button>
+          <button id="btnCancelarEmpresa" class="ghost">Cancelar</button>
+        </div>
+        <div id="novaEmpresaMsg" class="msg"></div>
+      </div>
       <table>
         <thead><tr><th>Empresa</th><th>Status</th><th>Consumo</th><th>Limite total</th><th>Limite/usuário</th><th></th></tr></thead>
         <tbody id="listaContas"></tbody>

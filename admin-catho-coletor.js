@@ -88,7 +88,7 @@ function renderContas() {
     return;
   }
   tbody.innerHTML = CONTAS_CACHE.map(c => {
-    const consumido = c.consumido ?? c.consumo ?? 0;
+    const consumido = c.consumidos ?? 0; // nome do campo vem de /api/contas
     const limite = c.limite_total ?? 0;
     const perto = limite && consumido / limite >= 0.8;
     return `
@@ -123,6 +123,37 @@ function renderContas() {
 }
 
 $("btnRefreshContas")?.addEventListener("click", loadContasPlataforma);
+
+// ===== Nova empresa (conta na plataforma) =====
+$("btnNovaEmpresa")?.addEventListener("click", () => {
+  $("formNovaEmpresa").classList.toggle("hide");
+});
+$("btnCancelarEmpresa")?.addEventListener("click", () => {
+  $("formNovaEmpresa").classList.add("hide");
+  $("novaEmpresaMsg").textContent = "";
+});
+$("btnSalvarEmpresa")?.addEventListener("click", async () => {
+  const nome = $("ncNome").value.trim();
+  if (!nome) { $("novaEmpresaMsg").textContent = "❌ Informe o nome da empresa."; return; }
+  $("novaEmpresaMsg").textContent = "Criando...";
+  try {
+    await apiContas({
+      acao: "criar_conta",
+      nome_conta: nome,
+      plano_tipo: $("ncPlano").value,
+      modo_integracao: $("ncModo").value,
+      limite_total: $("ncLimTotal").value,
+      limite_por_usuario: $("ncLimUser").value,
+      usuarios_contratados: $("ncUsuarios").value,
+      status: "ATIVA"
+    });
+    $("novaEmpresaMsg").textContent = "✅ Empresa criada. Agora crie os acessos dos operadores nela.";
+    $("ncNome").value = "";
+    await loadContasPlataforma();
+  } catch (e) {
+    $("novaEmpresaMsg").textContent = "❌ " + e.message;
+  }
+});
 
 // Cria o login na plataforma para um operador que ainda não tem, e já grava
 // o vínculo aqui no Coletor. Uma ação só, em vez de dois cadastros manuais.
