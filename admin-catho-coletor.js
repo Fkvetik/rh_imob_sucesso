@@ -24,7 +24,7 @@ function showApp() {
   $("appArea").classList.remove("hide");
   loadUsuarios();
   loadAdmins();
-  loadContasPlataforma();
+  loadContasPlataforma().then(loadUsuariosPlataforma);
 }
 
 // ===== Contas da Plataforma (Novos Talentos) =====
@@ -123,6 +123,168 @@ function renderContas() {
 }
 
 $("btnRefreshContas")?.addEventListener("click", loadContasPlataforma);
+
+// ===== Usuários da plataforma (CRUD completo, sem sair deste painel) =====
+let USUARIOS_PLAT_CACHE = [];
+
+function preencherSelectContas(sel, valorAtual) {
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— escolha —</option>' +
+    CONTAS_CACHE.map(c => `<option value="${esc(c.conta_id)}">${esc(c.nome_conta || c.conta_id)}</option>`).join("");
+  if (valorAtual) sel.value = valorAtual;
+}
+
+async function loadUsuariosPlataforma() {
+  const tbody = $("listaUsuariosPlataforma");
+  if (!tbody) return;
+  try {
+    const data = await apiContas(null);
+    CONTAS_CACHE = data.contas || CONTAS_CACHE;
+    USUARIOS_PLAT_CACHE = data.usuarios || [];
+    preencherSelectContas($("puConta"), $("puConta")?.value);
+    renderUsuariosPlataforma();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6"><small>❌ ${esc(e.message)}</small></td></tr>`;
+  }
+}
+
+function nomeDaConta(contaId) {
+  const c = CONTAS_CACHE.find(x => x.conta_id === contaId);
+  return c ? (c.nome_conta || c.conta_id) : (contaId || "—");
+}
+
+function renderUsuariosPlataforma() {
+  const tbody = $("listaUsuariosPlataforma");
+  if (!tbody) return;
+  if (!USUARIOS_PLAT_CACHE.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum usuário cadastrado na plataforma ainda.</small></td></tr>';
+    return;
+  }
+  tbody.innerHTML = USUARIOS_PLAT_CACHE.map(u => {
+    const ativo = String(u.status || "").toUpperCase() === "ATIVO";
+    return `
+    <tr>
+      <td>${esc(u.nome || "—")}</td>
+      <td><small>${esc(u.email_login || "—")}</small></td>
+      <td><small>${esc(nomeDaConta(u.conta_id))}</small></td>
+      <td><small>${esc(u.perfil || "—")}</small></td>
+      <td><span class="badge ${ativo ? "" : "bloqueado"}">${ativo ? "Ativo" : "Inativo"}</span></td>
+      <td style="white-space:nowrap">
+        <button data-id="${esc(u.usuario_id)}" class="ghost puEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-id="${esc(u.usuario_id)}" data-ativo="${ativo}" class="${ativo ? "danger" : "secondary"} puToggleBtn" style="padding:4px 8px;font-size:11px">${ativo ? "Desativar" : "Ativar"}</button>
+        <button data-id="${esc(u.usuario_id)}" class="ghost puSenhaBtn" style="padding:4px 8px;font-size:11px">Senha</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tbody.querySelectorAll(".puEditBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const u = USUARIOS_PLAT_CACHE.find(x => String(x.usuario_id) === btn.dataset.id);
+      if (!u) return;
+      $("puUsuarioId").value = u.usuario_id;
+      $("puNome").value = u.nome || "";
+      $("puEmail").value = u.email_login || "";
+      $("puEmail").disabled = true; // e-mail é o login no Auth — não muda por aqui
+      preencherSelectContas($("puConta"), u.conta_id);
+      $("puConta").disabled = true;  // trocar de empresa exige recriar o vínculo
+      $("puPerfil").value = u.perfil || "OPERADOR";
+      $("puStatus").value = String(u.status || "ATIVO").toUpperCase();
+      $("puSenha").value = "";
+      $("puSenhaLabel").textContent = "Senha (deixe em branco pra manter)";
+      $("puMsg").textContent = "Editando: " + (u.nome || u.email_login);
+      $("puNome").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+
+  tbody.querySelectorAll(".puToggleBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const novoStatus = btn.dataset.ativo === "true" ? "INATIVO" : "ATIVO";
+      if (!confirm(`Mudar status para ${novoStatus}?`)) return;
+      btn.disabled = true;
+      try {
+        await apiContas({ acao: "alterar_status_usuario", usuario_id: btn.dataset.id, status: novoStatus });
+        await loadUsuariosPlataforma();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
+  tbody.querySelectorAll(".puSenhaBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const nova = prompt("Nova senha (mínimo 6 caracteres):", Math.random().toString(36).slice(2, 10) + "A1");
+      if (!nova) return;
+      if (nova.length < 6) { alert("Senha muito curta."); return; }
+      try {
+        await apiContas({ acao: "resetar_senha_usuario", usuario_id: btn.dataset.id, senha: nova });
+        alert("✅ Senha redefinida: " + nova + "\n\nSe este usuário também é operador da extensão, atualize o campo \"Senha da plataforma\" no cadastro dele — senão o acesso automático ao pool para de funcionar.");
+      } catch (e) {
+        alert("❌ " + e.message);
+      }
+    });
+  });
+}
+
+$("btnGerarSenhaPu")?.addEventListener("click", () => {
+  $("puSenha").value = Math.random().toString(36).slice(2, 10) + "A1";
+});
+
+$("btnLimparUsuarioPlataforma")?.addEventListener("click", () => {
+  $("puUsuarioId").value = "";
+  $("puNome").value = "";
+  $("puEmail").value = "";
+  $("puEmail").disabled = false;
+  $("puConta").disabled = false;
+  preencherSelectContas($("puConta"), "");
+  $("puPerfil").value = "OPERADOR";
+  $("puStatus").value = "ATIVO";
+  $("puSenha").value = "";
+  $("puSenhaLabel").textContent = "Senha inicial";
+  $("puMsg").textContent = "";
+});
+
+$("btnSalvarUsuarioPlataforma")?.addEventListener("click", async () => {
+  const id = $("puUsuarioId").value;
+  const nome = $("puNome").value.trim();
+  const email = $("puEmail").value.trim().toLowerCase();
+  const conta = $("puConta").value;
+  const perfil = $("puPerfil").value;
+  const status = $("puStatus").value;
+  const senha = $("puSenha").value.trim();
+  const msg = $("puMsg");
+
+  if (!nome) { msg.textContent = "❌ Informe o nome."; return; }
+
+  msg.textContent = "Salvando...";
+  try {
+    if (id) {
+      await apiContas({ acao: "editar_usuario", usuario_id: id, nome, perfil, status });
+      if (senha) {
+        if (senha.length < 6) { msg.textContent = "❌ Senha deve ter ao menos 6 caracteres."; return; }
+        await apiContas({ acao: "resetar_senha_usuario", usuario_id: id, senha });
+      }
+      msg.textContent = "✅ Usuário atualizado.";
+    } else {
+      if (!conta) { msg.textContent = "❌ Escolha a empresa."; return; }
+      if (!email) { msg.textContent = "❌ Informe o e-mail."; return; }
+      if (senha.length < 6) { msg.textContent = "❌ Senha deve ter ao menos 6 caracteres."; return; }
+      await apiContas({ acao: "criar_usuario", conta_id: conta, nome, email_login: email, senha, perfil });
+      if (status !== "ATIVO") {
+        await loadUsuariosPlataforma();
+        const novo = USUARIOS_PLAT_CACHE.find(u => (u.email_login || "").toLowerCase() === email);
+        if (novo) await apiContas({ acao: "alterar_status_usuario", usuario_id: novo.usuario_id, status });
+      }
+      msg.textContent = "✅ Usuário criado. Senha: " + senha;
+    }
+    $("btnLimparUsuarioPlataforma").click();
+    await loadUsuariosPlataforma();
+  } catch (e) {
+    msg.textContent = "❌ " + e.message;
+  }
+});
+
+$("btnRefreshUsuariosPlataforma")?.addEventListener("click", loadUsuariosPlataforma);
 
 // ===== Nova empresa (conta na plataforma) =====
 $("btnNovaEmpresa")?.addEventListener("click", () => {

@@ -157,6 +157,55 @@
     </div>
 
     <div class="card">
+      <h3 style="margin-top:0;font-size:14px">👥 Usuários da plataforma</h3>
+      <small>Quem tem acesso ao banco de talentos. Cadastre aqui e o login já é criado na plataforma — não precisa abrir outro painel.</small>
+
+      <div style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <input type="hidden" id="puUsuarioId">
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:2;min-width:180px"><label>Nome</label><input id="puNome" placeholder="Nome completo"></div>
+          <div style="flex:2;min-width:200px"><label>E-mail (login)</label><input id="puEmail" type="email" placeholder="pessoa@empresa.com"></div>
+        </div>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:2;min-width:180px"><label>Empresa</label><select id="puConta"></select></div>
+          <div style="flex:1;min-width:130px">
+            <label>Perfil</label>
+            <select id="puPerfil">
+              <option value="OPERADOR">Operador</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MASTER">Master</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px">
+            <label>Status</label>
+            <select id="puStatus">
+              <option value="ATIVO">Ativo</option>
+              <option value="INATIVO">Inativo</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:2;min-width:200px">
+            <label id="puSenhaLabel">Senha inicial</label>
+            <input id="puSenha" type="text" placeholder="mínimo 6 caracteres">
+          </div>
+          <div><button id="btnGerarSenhaPu" class="ghost" type="button">🎲 Gerar</button></div>
+        </div>
+        <div class="btns">
+          <button id="btnSalvarUsuarioPlataforma">💾 Salvar usuário</button>
+          <button id="btnLimparUsuarioPlataforma" class="ghost">Limpar</button>
+        </div>
+        <div id="puMsg" class="msg"></div>
+      </div>
+
+      <div class="btns"><button id="btnRefreshUsuariosPlataforma" class="secondary">↻ Atualizar lista</button></div>
+      <table>
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Empresa</th><th>Perfil</th><th>Status</th><th></th></tr></thead>
+        <tbody id="listaUsuariosPlataforma"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
       <h3 style="margin-top:0;font-size:14px">🔐 Administradores</h3>
       <label>Login</label>
       <input id="admLogin" placeholder="admin2">
