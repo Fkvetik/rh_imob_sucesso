@@ -24,6 +24,38 @@ function showApp() {
   $("appArea").classList.remove("hide");
   loadUsuarios();
   loadAdmins();
+  loadContasPlataforma();
+}
+
+// ===== Contas da Plataforma (Novos Talentos) =====
+// Lidas via /api/contas (server-side, service_role). O token fica só na sessão
+// do navegador — nunca embutido no código.
+let CONTAS_TOKEN = sessionStorage.getItem("contas_tok") || "";
+async function loadContasPlataforma() {
+  const sel = $("fContaPlataforma");
+  const msg = $("contasMsg");
+  if (!sel) return;
+
+  if (!CONTAS_TOKEN) {
+    const t = prompt("Token de administração da plataforma (para listar as contas de Novos Talentos).\nDeixe em branco para pular — o vínculo pode ser preenchido depois.");
+    if (!t) { msg.textContent = "Sem token: escolha a conta manualmente digitando o conta_id."; sel.innerHTML = '<option value="">— sem vínculo —</option>'; return; }
+    CONTAS_TOKEN = t.trim();
+    sessionStorage.setItem("contas_tok", CONTAS_TOKEN);
+  }
+
+  try {
+    const r = await fetch("/api/contas?token=" + encodeURIComponent(CONTAS_TOKEN));
+    const data = await r.json();
+    if (!r.ok) throw new Error(data?.message || "Falha ao listar contas");
+    const contas = data.contas || [];
+    sel.innerHTML = '<option value="">— sem vínculo —</option>' +
+      contas.map(c => `<option value="${esc(c.conta_id)}">${esc(c.nome_conta || c.conta_id)} — limite ${c.limite_total ?? "-"}</option>`).join("");
+    msg.textContent = contas.length + " conta(s) carregada(s).";
+  } catch (e) {
+    sessionStorage.removeItem("contas_tok");
+    CONTAS_TOKEN = "";
+    msg.textContent = "❌ " + e.message + " (recarregue para tentar outro token)";
+  }
 }
 
 $("btnEntrar").addEventListener("click", async () => {
@@ -64,8 +96,11 @@ function renderUsuarios(list) {
       <td>${esc(u.nome_operador)}</td>
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
+      <td>${u.email_plataforma
+            ? `<small>🔗 ${esc(u.email_plataforma)}<br><span style="color:#888">${esc(u.conta_id_plataforma || 'sem conta')}</span></small>`
+            : '<small style="color:#c2410c">sem acesso ao pool</small>'}</td>
       <td>
-        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
       </td>
     </tr>
@@ -79,6 +114,8 @@ function renderUsuarios(list) {
       $("fNome").value = btn.dataset.nome;
       $("fAtivo").value = btn.dataset.ativo;
       $("fHorario").value = btn.dataset.horario || "";
+      $("fEmailPlataforma").value = btn.dataset.email || "";
+      $("fContaPlataforma").value = btn.dataset.conta || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
@@ -107,6 +144,8 @@ $("btnLimparForm").addEventListener("click", () => {
   $("fNome").value = "";
   $("fAtivo").value = "true";
   $("fHorario").value = "";
+  $("fEmailPlataforma").value = "";
+  $("fContaPlataforma").value = "";
   $("formMsg").textContent = "";
 });
 
@@ -116,11 +155,14 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
   const nome = $("fNome").value.trim();
   const ativo = $("fAtivo").value === "true";
   const horario = $("fHorario").value || "";
+  const emailPlataforma = $("fEmailPlataforma").value.trim();
+  const contaPlataforma = $("fContaPlataforma").value;
   if (!login) { $("formMsg").textContent = "❌ Login é obrigatório."; return; }
+  if (emailPlataforma && !contaPlataforma) { $("formMsg").textContent = "❌ Escolha a conta da plataforma junto com o e-mail."; return; }
 
   $("formMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_usuario", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_horario_coleta: horario });
+    const resp = await rpc("rpc_admin_upsert_usuario", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_horario_coleta: horario, p_email_plataforma: emailPlataforma, p_conta_id_plataforma: contaPlataforma });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
     $("formMsg").textContent = "✅ Salvo.";
     $("btnLimparForm").click();
