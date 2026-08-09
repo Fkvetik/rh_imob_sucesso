@@ -186,10 +186,11 @@ async function criarAcessoPlataforma(login, nome) {
     const resp = await rpc("rpc_admin_upsert_usuario", {
       p_admin_password: ADMIN_PASS, p_login: login, p_senha: "", p_nome: nome || login,
       p_ativo: true, p_horario_coleta: "",
-      p_email_plataforma: email, p_conta_id_plataforma: conta.conta_id
+      p_email_plataforma: email, p_conta_id_plataforma: conta.conta_id,
+      p_senha_plataforma: senha, p_limite_pool: ""
     });
     if (!resp.ok) { alert("❌ " + resp.error); return; }
-    alert(`✅ Acesso criado.\n\nE-mail: ${email}\nSenha: ${senha}\nEmpresa: ${conta.nome_conta || conta.conta_id}\n\nAnote a senha — ela não fica visível depois.`);
+    alert(`✅ Acesso criado.\n\nEmpresa: ${conta.nome_conta || conta.conta_id}\n\nO operador NÃO precisa dessa senha — ele entra na extensão com o login de sempre e o acesso ao pool vem junto.\n\n(Guardado para uso interno: ${email} / ${senha})`);
     loadUsuarios();
   } catch (e) {
     alert("❌ " + e.message);
@@ -235,10 +236,14 @@ function renderUsuarios(list) {
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
       <td>${u.email_plataforma
-            ? `<small>🔗 ${esc(u.email_plataforma)}<br><span style="color:#888">${esc(u.conta_id_plataforma || 'sem conta')}</span></small>`
+            ? `<small>${u.tem_senha_plataforma ? '🔗' : '⚠️'} ${esc(u.email_plataforma)}<br>
+                 <span style="color:#888">${esc(u.conta_id_plataforma || 'sem conta')}</span><br>
+                 <span style="color:${u.limite_pool != null ? '#5b21b6' : '#999'}">teto: ${u.limite_pool != null ? u.limite_pool : 'só o da empresa'}</span>
+                 ${u.tem_senha_plataforma ? '' : '<br><span style="color:#c2410c">sem senha salva — não entra no pool</span>'}
+               </small>`
             : `<button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||'')}" class="secondary criarAcessoBtn" style="padding:4px 8px;font-size:11px">+ Criar acesso</button>`}</td>
       <td>
-        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
       </td>
     </tr>
@@ -254,6 +259,8 @@ function renderUsuarios(list) {
       $("fHorario").value = btn.dataset.horario || "";
       $("fEmailPlataforma").value = btn.dataset.email || "";
       $("fContaPlataforma").value = btn.dataset.conta || "";
+      $("fSenhaPlataforma").value = "";
+      $("fLimitePool").value = btn.dataset.limite || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
@@ -288,6 +295,8 @@ $("btnLimparForm").addEventListener("click", () => {
   $("fHorario").value = "";
   $("fEmailPlataforma").value = "";
   $("fContaPlataforma").value = "";
+  $("fSenhaPlataforma").value = "";
+  $("fLimitePool").value = "";
   $("formMsg").textContent = "";
 });
 
@@ -304,7 +313,13 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
 
   $("formMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_usuario", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_horario_coleta: horario, p_email_plataforma: emailPlataforma, p_conta_id_plataforma: contaPlataforma });
+    const resp = await rpc("rpc_admin_upsert_usuario", {
+      p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome,
+      p_ativo: ativo, p_horario_coleta: horario,
+      p_email_plataforma: emailPlataforma, p_conta_id_plataforma: contaPlataforma,
+      p_senha_plataforma: $("fSenhaPlataforma").value.trim(),
+      p_limite_pool: $("fLimitePool").value
+    });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
     $("formMsg").textContent = "✅ Salvo.";
     $("btnLimparForm").click();

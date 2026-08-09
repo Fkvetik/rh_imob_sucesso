@@ -82,6 +82,19 @@
       </select>
       <small id="contasMsg" style="display:block;margin-top:4px"></small>
 
+      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <label>Senha da plataforma</label>
+          <input id="fSenhaPlataforma" type="text" placeholder="deixe em branco pra manter a atual">
+          <small>Guardada para o operador entrar uma vez só — ele não digita isso.</small>
+        </div>
+        <div style="flex:1;min-width:150px">
+          <label>Limite de contatos do pool</label>
+          <input id="fLimitePool" type="number" min="0" placeholder="em branco = sem teto próprio">
+          <small>Teto só deste operador. Vazio: vale apenas o limite da empresa.</small>
+        </div>
+      </div>
+
       <div class="btns">
         <button id="btnSalvarUsuario">💾 Salvar</button>
         <button id="btnLimparForm" class="ghost">Limpar</button>
