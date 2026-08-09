@@ -98,7 +98,10 @@ function renderContas() {
       <td${perto ? ' style="color:#c2410c;font-weight:700"' : ''}>${consumido}${limite ? ' / ' + limite : ''}</td>
       <td><input class="limTotal" data-conta="${esc(c.conta_id)}" type="number" min="0" value="${limite}" style="width:90px;margin:0"></td>
       <td><input class="limUser" data-conta="${esc(c.conta_id)}" type="number" min="0" value="${c.limite_por_usuario ?? 0}" style="width:90px;margin:0"></td>
-      <td><button class="salvarLimBtn" data-conta="${esc(c.conta_id)}" style="padding:4px 8px;font-size:11px">Salvar</button></td>
+      <td style="white-space:nowrap">
+        <button class="salvarLimBtn" data-conta="${esc(c.conta_id)}" style="padding:4px 8px;font-size:11px">Salvar</button>
+        <button class="${c.status === 'ATIVA' ? 'danger' : 'secondary'} statusContaBtn" data-conta="${esc(c.conta_id)}" data-status="${esc(c.status||'')}" data-nome="${esc(c.nome_conta||c.conta_id)}" style="padding:4px 8px;font-size:11px">${c.status === 'ATIVA' ? 'Desativar' : 'Ativar'}</button>
+      </td>
     </tr>`;
   }).join("");
 
@@ -173,9 +176,24 @@ function renderUsuariosPlataforma() {
         <button data-id="${esc(u.usuario_id)}" class="ghost puEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-id="${esc(u.usuario_id)}" data-ativo="${ativo}" class="${ativo ? "danger" : "secondary"} puToggleBtn" style="padding:4px 8px;font-size:11px">${ativo ? "Desativar" : "Ativar"}</button>
         <button data-id="${esc(u.usuario_id)}" class="ghost puSenhaBtn" style="padding:4px 8px;font-size:11px">Senha</button>
+        <button data-id="${esc(u.usuario_id)}" data-nome="${esc(u.nome || u.email_login || "")}" class="danger puExcluirBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
       </td>
     </tr>`;
   }).join("");
+
+  tbody.querySelectorAll(".puExcluirBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm(`Excluir "${btn.dataset.nome}" da plataforma?\n\nIsso apaga o login e o vínculo com a empresa. O histórico de contatos já consumidos por essa pessoa continua registrado.\n\nSe ela também é operadora da extensão, desvincule o acesso no cadastro dela depois.`)) return;
+      btn.disabled = true;
+      try {
+        await apiContas({ acao: "excluir_usuario", usuario_id: btn.dataset.id });
+        await loadUsuariosPlataforma();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
 
   tbody.querySelectorAll(".puEditBtn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -414,6 +432,7 @@ function renderUsuarios(list) {
                  <span style="color:#888">${esc(u.conta_id_plataforma || 'sem conta')}</span><br>
                  <span style="color:${u.limite_pool != null ? '#5b21b6' : '#999'}">teto: ${u.limite_pool != null ? u.limite_pool : 'só o da empresa'}</span>
                  ${u.tem_senha_plataforma ? '' : '<br><span style="color:#c2410c">sem senha salva — não entra no pool</span>'}
+                 <br><button data-login="${esc(u.login)}" class="ghost desvincularBtn" style="padding:3px 7px;font-size:10px;margin-top:4px">Desvincular</button>
                </small>`
             : `<button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||'')}" class="secondary criarAcessoBtn" style="padding:4px 8px;font-size:11px">+ Criar acesso</button>`}</td>
       <td>
@@ -449,6 +468,21 @@ function renderUsuarios(list) {
 
   tbody.querySelectorAll(".criarAcessoBtn").forEach(btn => {
     btn.addEventListener("click", () => criarAcessoPlataforma(btn.dataset.login, btn.dataset.nome));
+  });
+
+  tbody.querySelectorAll(".desvincularBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm(`Desvincular "${btn.dataset.login}" da plataforma?\n\nEle continua coletando normalmente, mas perde o acesso ao banco de talentos.\n\nO login na plataforma NÃO é apagado — pra isso use Excluir em "Usuários da plataforma".`)) return;
+      btn.disabled = true;
+      try {
+        const resp = await rpc("rpc_admin_desvincular_plataforma", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login });
+        if (!resp.ok) { alert("❌ " + resp.error); btn.disabled = false; return; }
+        loadUsuarios();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
   });
 
   tbody.querySelectorAll(".toggleBtn").forEach(btn => {
@@ -495,6 +529,19 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
 
   $("formMsg").textContent = "Salvando...";
   try {
+    // A senha da plataforma vive em dois lugares: no login do Supabase Auth
+    // (é com ela que a extensão entra) e aqui, guardada pra usar sozinha. Se
+    // gravássemos só aqui, ficaria uma senha que o login não reconhece — foi
+    // exatamente o que deixou o pool vazio. Então aplica nos dois de uma vez.
+    const novaSenhaPlat = $("fSenhaPlataforma").value.trim();
+    if (novaSenhaPlat && emailPlataforma) {
+      if (novaSenhaPlat.length < 6) { $("formMsg").textContent = "❌ Senha da plataforma precisa ter ao menos 6 caracteres."; return; }
+      const data = await apiContas(null);
+      const alvo = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === emailPlataforma.toLowerCase());
+      if (!alvo) { $("formMsg").textContent = "❌ Esse e-mail não existe na plataforma. Cadastre em 'Usuários da plataforma' primeiro."; return; }
+      await apiContas({ acao: "resetar_senha_usuario", usuario_id: alvo.usuario_id, senha: novaSenhaPlat });
+    }
+
     const resp = await rpc("rpc_admin_upsert_usuario", {
       p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome,
       p_ativo: ativo, p_horario_coleta: horario,
