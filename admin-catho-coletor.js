@@ -579,12 +579,20 @@ async function sincronizarSenhaComPlataforma(login, emailPlataforma, senha) {
   const data = await apiContas(null);
   const alvo = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === emailPlataforma.toLowerCase());
   if (!alvo) throw new Error("Esse e-mail não existe na plataforma. Cadastre em 'Usuários da plataforma' primeiro.");
-  await apiContas({ acao: "resetar_senha_usuario", usuario_id: alvo.usuario_id, senha });
-  await rpc("rpc_admin_upsert_usuario", {
+
+  const rSenha = await apiContas({ acao: "resetar_senha_usuario", usuario_id: alvo.usuario_id, senha });
+  if (rSenha && rSenha.ok === false) throw new Error(rSenha.message || rSenha.error || "Falha ao redefinir a senha na plataforma.");
+
+  // rpc_admin_upsert_usuario sempre responde HTTP 200 mesmo quando falha por
+  // regra de negócio (ex: 0 linhas afetadas) — precisa checar o campo .ok do
+  // corpo, não só o status HTTP. Foi essa checagem que faltava antes: o botão
+  // dizia "sincronizado" mesmo quando nada tinha sido gravado.
+  const rUpsert = await rpc("rpc_admin_upsert_usuario", {
     p_admin_password: ADMIN_PASS, p_login: login, p_senha: "", p_nome: "",
     p_ativo: true, p_horario_coleta: null,
     p_senha_plataforma: senha
   });
+  if (!rUpsert.ok) throw new Error("Senha atualizada na plataforma, mas falhou ao gravar no Coletor: " + rUpsert.error);
 }
 
 $("btnSalvarUsuario").addEventListener("click", async () => {
