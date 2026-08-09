@@ -341,7 +341,19 @@ async function criarAcessoPlataforma(login, nome) {
     });
   } catch (e) {
     if (!/já existe/i.test(e.message)) { alert("❌ " + e.message); return; }
-    if (!confirm("Já existe login com esse e-mail na plataforma. Vincular mesmo assim?")) return;
+    if (!confirm("Já existe login com esse e-mail na plataforma.\n\nVou redefinir a senha dele para a nova senha gerada — só assim o acesso automático ao pool funciona.\n\nContinuar?")) return;
+
+    // Sem isso, salvaríamos aqui uma senha que o login da plataforma não
+    // reconhece, e a extensão nunca conseguiria entrar no pool.
+    try {
+      const data = await apiContas(null);
+      const existente = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === email.toLowerCase());
+      if (!existente) { alert("❌ Não localizei esse usuário na plataforma para redefinir a senha."); return; }
+      await apiContas({ acao: "resetar_senha_usuario", usuario_id: existente.usuario_id, senha });
+    } catch (err) {
+      alert("❌ Não consegui redefinir a senha: " + err.message);
+      return;
+    }
   }
 
   try {
@@ -420,7 +432,15 @@ function renderUsuarios(list) {
       $("fAtivo").value = btn.dataset.ativo;
       $("fHorario").value = btn.dataset.horario || "";
       $("fEmailPlataforma").value = btn.dataset.email || "";
-      $("fContaPlataforma").value = btn.dataset.conta || "";
+      // Se as contas ainda não carregaram (sem token, ou API lenta), o select
+      // não tem a opção e o valor não "cola" — aí o salvar reclamava que faltava
+      // a conta. Cria a opção na hora para preservar o vínculo que já existe.
+      const selConta = $("fContaPlataforma");
+      const contaAtual = btn.dataset.conta || "";
+      if (contaAtual && !Array.from(selConta.options).some(o => o.value === contaAtual)) {
+        selConta.insertAdjacentHTML("beforeend", `<option value="${esc(contaAtual)}">${esc(contaAtual)}</option>`);
+      }
+      selConta.value = contaAtual;
       $("fSenhaPlataforma").value = "";
       $("fLimitePool").value = btn.dataset.limite || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
