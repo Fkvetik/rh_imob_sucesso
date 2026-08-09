@@ -123,6 +123,28 @@ function renderContas() {
       }
     });
   });
+
+  // Empresa não tem "excluir" de verdade — apagar quebraria o histórico de
+  // consumo (nt_talento_consumos referencia a conta) e os usuários vinculados.
+  // Desativar é o equivalente seguro: some das opções de vínculo, mas nada
+  // se perde e dá pra reverter.
+  tbody.querySelectorAll(".statusContaBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const vaiDesativar = btn.dataset.status === "ATIVA";
+      const msg = vaiDesativar
+        ? `Desativar "${btn.dataset.nome}"?\n\nOs usuários dela deixam de conseguir abrir o pool. Nada é apagado — o histórico de consumo continua, e dá pra reativar depois.`
+        : `Reativar "${btn.dataset.nome}"?`;
+      if (!confirm(msg)) return;
+      btn.disabled = true;
+      try {
+        await apiContas({ acao: "editar_conta", conta_id: btn.dataset.conta, status: vaiDesativar ? "INATIVA" : "ATIVA" });
+        await loadContasPlataforma();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
 }
 
 $("btnRefreshContas")?.addEventListener("click", loadContasPlataforma);
@@ -349,8 +371,11 @@ async function criarAcessoPlataforma(login, nome) {
   const conta = CONTAS_CACHE[parseInt(escolha, 10) - 1];
   if (!conta) { alert("Opção inválida."); return; }
 
-  const senha = prompt("Senha inicial (mínimo 6 caracteres):", Math.random().toString(36).slice(2, 10) + "A1");
-  if (!senha || senha.length < 6) { alert("Senha precisa ter ao menos 6 caracteres."); return; }
+  // Princípio de senha única: usa a MESMA senha que o operador já digita pra
+  // entrar na extensão — não inventa uma segunda senha que ele nunca vê.
+  const atual = await rpc("rpc_admin_get_senha", { p_admin_password: ADMIN_PASS, p_login: login });
+  if (!atual.ok) { alert("❌ " + atual.error); return; }
+  const senha = atual.senha;
 
   try {
     await apiContas({
@@ -359,10 +384,8 @@ async function criarAcessoPlataforma(login, nome) {
     });
   } catch (e) {
     if (!/já existe/i.test(e.message)) { alert("❌ " + e.message); return; }
-    if (!confirm("Já existe login com esse e-mail na plataforma.\n\nVou redefinir a senha dele para a nova senha gerada — só assim o acesso automático ao pool funciona.\n\nContinuar?")) return;
+    if (!confirm("Já existe login com esse e-mail na plataforma.\n\nVou redefinir a senha dele para a senha atual desse operador na extensão — só assim o acesso automático ao pool funciona.\n\nContinuar?")) return;
 
-    // Sem isso, salvaríamos aqui uma senha que o login da plataforma não
-    // reconhece, e a extensão nunca conseguiria entrar no pool.
     try {
       const data = await apiContas(null);
       const existente = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === email.toLowerCase());
@@ -432,15 +455,33 @@ function renderUsuarios(list) {
                  <span style="color:#888">${esc(u.conta_id_plataforma || 'sem conta')}</span><br>
                  <span style="color:${u.limite_pool != null ? '#5b21b6' : '#999'}">teto: ${u.limite_pool != null ? u.limite_pool : 'só o da empresa'}</span>
                  ${u.tem_senha_plataforma ? '' : '<br><span style="color:#c2410c">sem senha salva — não entra no pool</span>'}
-                 <br><button data-login="${esc(u.login)}" class="ghost desvincularBtn" style="padding:3px 7px;font-size:10px;margin-top:4px">Desvincular</button>
+                 <br>
+                 <button data-login="${esc(u.login)}" data-email="${esc(u.email_plataforma)}" class="secondary sincronizarBtn" style="padding:3px 7px;font-size:10px;margin-top:4px">🔄 Sincronizar</button>
+                 <button data-login="${esc(u.login)}" class="ghost desvincularBtn" style="padding:3px 7px;font-size:10px;margin-top:4px">Desvincular</button>
                </small>`
             : `<button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||'')}" class="secondary criarAcessoBtn" style="padding:4px 8px;font-size:11px">+ Criar acesso</button>`}</td>
       <td>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
       </td>
     </tr>
   `).join('');
+
+  tbody.querySelectorAll(".excluirOperadorBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm(`Excluir o operador "${btn.dataset.nome}" (${btn.dataset.login})?\n\nSó funciona se ele ainda não coletou nenhum lead — se já coletou, use "Bloquear" em vez de excluir.\n\nIsso NÃO apaga o login dele na plataforma Novos Talentos (se tiver); pra isso use Excluir em "Usuários da plataforma".`)) return;
+      btn.disabled = true;
+      try {
+        const resp = await rpc("rpc_admin_excluir_usuario", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login });
+        if (!resp.ok) { alert("❌ " + resp.error); btn.disabled = false; return; }
+        loadUsuarios();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
 
   tbody.querySelectorAll(".editBtn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -460,7 +501,6 @@ function renderUsuarios(list) {
         selConta.insertAdjacentHTML("beforeend", `<option value="${esc(contaAtual)}">${esc(contaAtual)}</option>`);
       }
       selConta.value = contaAtual;
-      $("fSenhaPlataforma").value = "";
       $("fLimitePool").value = btn.dataset.limite || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -468,6 +508,24 @@ function renderUsuarios(list) {
 
   tbody.querySelectorAll(".criarAcessoBtn").forEach(btn => {
     btn.addEventListener("click", () => criarAcessoPlataforma(btn.dataset.login, btn.dataset.nome));
+  });
+
+  tbody.querySelectorAll(".sincronizarBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "Sincronizando...";
+      try {
+        const atual = await rpc("rpc_admin_get_senha", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login });
+        if (!atual.ok) throw new Error(atual.error);
+        await sincronizarSenhaComPlataforma(btn.dataset.login, btn.dataset.email, atual.senha);
+        alert("✅ Senha sincronizada. O operador já pode sair e entrar de novo na extensão pra abrir o pool.");
+        loadUsuarios();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+        btn.textContent = "🔄 Sincronizar";
+      }
+    });
   });
 
   tbody.querySelectorAll(".desvincularBtn").forEach(btn => {
@@ -511,10 +569,23 @@ $("btnLimparForm").addEventListener("click", () => {
   $("fHorario").value = "";
   $("fEmailPlataforma").value = "";
   $("fContaPlataforma").value = "";
-  $("fSenhaPlataforma").value = "";
   $("fLimitePool").value = "";
   $("formMsg").textContent = "";
 });
+
+// Aplica UMA senha nos dois lugares: login da extensão (tabela usuarios) e
+// login da plataforma (Supabase Auth). É o que garante que nunca divirjam.
+async function sincronizarSenhaComPlataforma(login, emailPlataforma, senha) {
+  const data = await apiContas(null);
+  const alvo = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === emailPlataforma.toLowerCase());
+  if (!alvo) throw new Error("Esse e-mail não existe na plataforma. Cadastre em 'Usuários da plataforma' primeiro.");
+  await apiContas({ acao: "resetar_senha_usuario", usuario_id: alvo.usuario_id, senha });
+  await rpc("rpc_admin_upsert_usuario", {
+    p_admin_password: ADMIN_PASS, p_login: login, p_senha: "", p_nome: "",
+    p_ativo: true, p_horario_coleta: null,
+    p_senha_plataforma: senha
+  });
+}
 
 $("btnSalvarUsuario").addEventListener("click", async () => {
   const login = $("fLogin").value.trim();
@@ -529,27 +600,22 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
 
   $("formMsg").textContent = "Salvando...";
   try {
-    // A senha da plataforma vive em dois lugares: no login do Supabase Auth
-    // (é com ela que a extensão entra) e aqui, guardada pra usar sozinha. Se
-    // gravássemos só aqui, ficaria uma senha que o login não reconhece — foi
-    // exatamente o que deixou o pool vazio. Então aplica nos dois de uma vez.
-    const novaSenhaPlat = $("fSenhaPlataforma").value.trim();
-    if (novaSenhaPlat && emailPlataforma) {
-      if (novaSenhaPlat.length < 6) { $("formMsg").textContent = "❌ Senha da plataforma precisa ter ao menos 6 caracteres."; return; }
-      const data = await apiContas(null);
-      const alvo = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === emailPlataforma.toLowerCase());
-      if (!alvo) { $("formMsg").textContent = "❌ Esse e-mail não existe na plataforma. Cadastre em 'Usuários da plataforma' primeiro."; return; }
-      await apiContas({ acao: "resetar_senha_usuario", usuario_id: alvo.usuario_id, senha: novaSenhaPlat });
-    }
-
     const resp = await rpc("rpc_admin_upsert_usuario", {
       p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome,
       p_ativo: ativo, p_horario_coleta: horario,
       p_email_plataforma: emailPlataforma, p_conta_id_plataforma: contaPlataforma,
-      p_senha_plataforma: $("fSenhaPlataforma").value.trim(),
+      // A senha da plataforma só é mexida aqui se o admin digitou uma senha
+      // NOVA de extensão nesta tela — daí ela vira a mesma dos dois lados.
+      p_senha_plataforma: (senha && emailPlataforma) ? senha : null,
       p_limite_pool: $("fLimitePool").value
     });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
+
+    if (senha && emailPlataforma) {
+      $("formMsg").textContent = "Sincronizando com a plataforma...";
+      await sincronizarSenhaComPlataforma(login, emailPlataforma, senha);
+    }
+
     $("formMsg").textContent = "✅ Salvo.";
     $("btnLimparForm").click();
     loadUsuarios();

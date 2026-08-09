@@ -82,18 +82,12 @@
       </select>
       <small id="contasMsg" style="display:block;margin-top:4px"></small>
 
-      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:180px">
-          <label>Senha da plataforma</label>
-          <input id="fSenhaPlataforma" type="text" placeholder="deixe em branco pra manter a atual">
-          <small>Guardada para o operador entrar uma vez só — ele não digita isso.</small>
-        </div>
-        <div style="flex:1;min-width:150px">
-          <label>Limite de contatos do pool</label>
-          <input id="fLimitePool" type="number" min="0" placeholder="em branco = sem teto próprio">
-          <small>Teto só deste operador. Vazio: vale apenas o limite da empresa.</small>
-        </div>
-      </div>
+      <small style="display:block;background:#f5f3fa;border-radius:8px;padding:8px 10px;margin-top:6px">
+        🔑 <b>Não existe senha separada da plataforma.</b> A senha que o operador usa pra entrar na extensão (campo "Senha" no topo deste formulário) é a mesma usada para abrir o pool. Se ele já consegue logar na extensão, já devia estar tudo liberado — se não estiver, use o botão <b>🔄 Sincronizar</b> na lista abaixo.
+      </small>
+      <label>Limite de contatos do pool</label>
+      <input id="fLimitePool" type="number" min="0" placeholder="em branco = sem teto próprio">
+      <small>Teto só deste operador. Vazio: vale apenas o limite da empresa.</small>
 
       <div class="btns">
         <button id="btnSalvarUsuario">💾 Salvar</button>
