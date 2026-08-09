@@ -99,6 +99,17 @@
     </div>
 
     <div class="card">
+      <h3 style="margin-top:0;font-size:14px">📊 Limites de envio por empresa</h3>
+      <small>Quanto cada empresa pode liberar de contatos no banco de talentos. O consumo é debitado toda vez que um operador libera o telefone de um candidato.</small>
+      <div class="btns"><button id="btnRefreshContas" class="secondary">↻ Atualizar</button></div>
+      <table>
+        <thead><tr><th>Empresa</th><th>Status</th><th>Consumo</th><th>Limite total</th><th>Limite/usuário</th><th></th></tr></thead>
+        <tbody id="listaContas"></tbody>
+      </table>
+      <div id="contasEditMsg" class="msg"></div>
+    </div>
+
+    <div class="card">
       <h3 style="margin-top:0;font-size:14px">🔐 Administradores</h3>
       <label>Login</label>
       <input id="admLogin" placeholder="admin2">
