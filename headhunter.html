@@ -62,6 +62,52 @@
   .socials .lnk .ico{width:34px; height:34px}
   .socials .lnk .txt{font-size:12.5px}
   footer{padding:0 24px 26px; text-align:center; font-size:12px; color:var(--muted)}
+
+  .lnk.cta{
+    background:linear-gradient(135deg, var(--orange-500), var(--orange-600));
+    border-color:var(--orange-600); color:#fff; cursor:pointer; width:100%;
+    font-family:inherit; text-align:left;
+  }
+  .lnk.cta small{color:rgba(255,255,255,.85)}
+  .lnk.cta .ico{background:rgba(255,255,255,.18); color:#fff}
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,8,38,.55); backdrop-filter:blur(2px);
+    display:none; align-items:flex-end; justify-content:center; z-index:50; padding:0;
+  }
+  .overlay.open{display:flex}
+  @media (min-width:520px){ .overlay{align-items:center; padding:20px} }
+
+  .sheet{
+    width:100%; max-width:460px; max-height:92vh; overflow-y:auto;
+    background:var(--white); color:var(--ink);
+    border-radius:24px 24px 0 0; box-shadow:0 -20px 60px rgba(20,8,38,.35);
+  }
+  @media (min-width:520px){ .sheet{border-radius:24px} }
+
+  .sheet-head{
+    padding:22px 24px 14px; position:sticky; top:0; background:var(--white);
+    border-bottom:1px solid var(--purple-100);
+  }
+  .sheet-head h2{margin:0 0 4px; font-size:19px; font-weight:900; letter-spacing:-.01em}
+  .sheet-head p{margin:0; font-size:13px; color:var(--muted); line-height:1.4}
+
+  .form{padding:18px 24px 24px; display:flex; flex-direction:column; gap:14px}
+  .field label{display:block; font-size:12px; font-weight:800; color:var(--purple-900); margin-bottom:6px}
+  .field input, .field textarea{
+    width:100%; border:1.5px solid var(--purple-100); background:var(--purple-50);
+    border-radius:12px; padding:11px 13px; font:inherit; font-size:14.5px; color:var(--ink);
+    resize:vertical;
+  }
+  .field textarea{min-height:56px}
+  .field input:focus, .field textarea:focus{outline:2px solid var(--purple-400); border-color:var(--purple-400)}
+  .form-actions{display:flex; gap:10px; margin-top:4px}
+  .btn-cancel, .btn-submit{
+    flex:1; border:0; border-radius:12px; padding:13px; font:inherit; font-weight:800; font-size:14.5px; cursor:pointer;
+  }
+  .btn-cancel{background:var(--purple-50); color:var(--purple-900)}
+  .btn-submit{background:#25d366; color:#fff}
+  .btn-submit:disabled{opacity:.55; cursor:default}
 </style>
 </head>
 <body>
@@ -74,6 +120,10 @@
       <div class="sub">Especialista em recrutamento e seleção para o mercado imobiliário. Escolha por onde quer continuar:</div>
     </div>
     <div class="links">
+      <button type="button" class="lnk cta" id="btnOpenForm">
+        <span class="ico">➕</span>
+        <span class="txt">Acrescentar ao network<small>Deixe seus dados com a Mariana</small></span>
+      </button>
       <a class="lnk primary" href="https://www.rhimob.com.br" target="_blank" rel="noopener">
         <span class="ico">🏠</span>
         <span class="txt">Site RH IMOB<small>Conheça nossos serviços</small></span>
@@ -109,5 +159,74 @@
     </div>
     <footer>RH IMOB · Recrutamento imobiliário</footer>
   </div>
+
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Acrescentar ao network</h2>
+        <p>Preencha seus dados — ao enviar, abre o WhatsApp com uma mensagem pronta para a Mariana.</p>
+      </div>
+      <form class="form" id="networkForm">
+        <div class="field">
+          <label for="fNome">Nome</label>
+          <input id="fNome" name="nome" type="text" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="fTelefone">Telefone / WhatsApp</label>
+          <input id="fTelefone" name="telefone" type="tel" autocomplete="tel" placeholder="(11) 99999-9999" required>
+        </div>
+        <div class="field">
+          <label for="fProfissao">Profissão</label>
+          <input id="fProfissao" name="profissao" type="text" placeholder="Ex: Corretor de imóveis" required>
+        </div>
+        <div class="field">
+          <label for="fInteresse">O que você tem interesse</label>
+          <textarea id="fInteresse" name="interesse" placeholder="Ex: vagas de corretor, parcerias, indicações..."></textarea>
+        </div>
+        <div class="field">
+          <label for="fOferece">O que você pode oferecer</label>
+          <textarea id="fOferece" name="oferece" placeholder="Ex: experiência, carteira de clientes, indicações..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="btnCancelForm">Cancelar</button>
+          <button type="submit" class="btn-submit">Enviar no WhatsApp</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const WA_NUMBER = '5511953973268';
+    const overlay = document.getElementById('overlay');
+    const openBtn = document.getElementById('btnOpenForm');
+    const cancelBtn = document.getElementById('btnCancelForm');
+    const form = document.getElementById('networkForm');
+
+    function openForm(){ overlay.classList.add('open'); document.getElementById('fNome').focus(); }
+    function closeForm(){ overlay.classList.remove('open'); }
+
+    openBtn.addEventListener('click', openForm);
+    cancelBtn.addEventListener('click', closeForm);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeForm(); });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const v = (id) => document.getElementById(id).value.trim();
+      const nome = v('fNome'), telefone = v('fTelefone'), profissao = v('fProfissao'),
+            interesse = v('fInteresse'), oferece = v('fOferece');
+
+      let msg = `Olá, Mariana! Nos conhecemos e quero fazer parte do seu network.\n\n`;
+      msg += `*Nome:* ${nome}\n`;
+      msg += `*Telefone:* ${telefone}\n`;
+      msg += `*Profissão:* ${profissao}\n`;
+      if (interesse) msg += `*Tenho interesse em:* ${interesse}\n`;
+      if (oferece) msg += `*Posso oferecer:* ${oferece}\n`;
+
+      const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank', 'noopener');
+      closeForm();
+      form.reset();
+    });
+  </script>
 </body>
 </html>
