@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RH IMOB — Conecte-se com a gente</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --purple-950:#190827; --purple-900:#24103f; --purple-800:#33165f; --purple-700:#4b178b;
+    --purple-600:#6d2df2; --purple-400:#9b59f5; --purple-100:#efe8ff; --purple-50:#f8f4ff;
+    --orange-600:#ff7a1a; --orange-500:#ff8f3d;
+    --ink:#21172d; --muted:#6f6283; --white:#fff;
+    --shadow:0 24px 80px rgba(43,18,77,.14); --shadow-soft:0 14px 38px rgba(43,18,77,.10);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:radial-gradient(circle at 20% -10%, var(--purple-700), var(--purple-950) 55%);
+    color:var(--white); display:flex; align-items:center; justify-content:center; padding:32px 18px;
+  }
+  .card{
+    width:100%; max-width:460px; background:var(--white); color:var(--ink);
+    border-radius:28px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .hero{
+    padding:30px 28px 26px; text-align:center;
+    background:linear-gradient(160deg, var(--purple-800), var(--purple-950));
+    color:#fff;
+  }
+  .wordmark{display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; font-weight:900; letter-spacing:.14em; opacity:.85; text-transform:uppercase}
+  .wordmark img{height:16px; width:auto; border-radius:3px}
+  .avatar{
+    width:104px; height:104px; border-radius:50%; object-fit:cover; margin:18px auto 14px;
+    display:block; border:3px solid rgba(255,255,255,.85); box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .headline{font-size:22px; font-weight:900; letter-spacing:-.02em; margin:0 0 2px}
+  .role{font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--orange-400,#ffab40); margin-bottom:10px}
+  .sub{font-size:14px; line-height:1.5; opacity:.9; max-width:320px; margin:0 auto}
+  .links{padding:26px 24px 30px; display:flex; flex-direction:column; gap:12px}
+  .lnk{
+    display:flex; align-items:center; gap:14px; padding:15px 18px; border-radius:16px;
+    text-decoration:none; font-weight:800; font-size:15px; border:1.5px solid var(--purple-100);
+    background:var(--purple-50); color:var(--purple-900); transition:transform .15s, box-shadow .15s;
+  }
+  .lnk:active{transform:scale(.98)}
+  .lnk .ico{
+    width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto; font-size:18px; background:var(--purple-100); color:var(--purple-700);
+  }
+  .lnk .txt{flex:1; min-width:0}
+  .lnk small{display:block; font-weight:600; color:var(--muted); font-size:12px; margin-top:1px}
+  .lnk.primary{background:var(--purple-900); border-color:var(--purple-900); color:#fff}
+  .lnk.primary small{color:rgba(255,255,255,.65)}
+  .lnk.primary .ico{background:rgba(255,255,255,.14); color:#fff}
+  .lnk.wa{background:#e9fbf1; border-color:#bdf0d3; color:#0f6b3f}
+  .lnk.wa small{color:#3f8563}
+  .lnk.wa .ico{background:#25d366; color:#fff}
+  .divider{margin:6px 0 2px; text-align:center; font-size:11.5px; font-weight:800; letter-spacing:.08em; color:var(--muted); text-transform:uppercase}
+  .socials{display:flex; gap:10px}
+  .socials .lnk{flex:1; flex-direction:column; text-align:center; gap:8px; padding:16px 8px}
+  .socials .lnk .ico{width:34px; height:34px}
+  .socials .lnk .txt{font-size:12.5px}
+  footer{padding:0 24px 26px; text-align:center; font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="hero">
+      <div class="wordmark"><img src="/assets/rhimob-logo.jpg" alt=""> RH IMOB</div>
+      <img class="avatar" src="/assets/mariana-v3.jpg" alt="Mariana Santos">
+      <div class="headline">Mariana Santos</div>
+      <div class="role">Headhunter · RH IMOB</div>
+      <div class="sub">Especialista em recrutamento e seleção para o mercado imobiliário. Escolha por onde quer continuar:</div>
+    </div>
+    <div class="links">
+      <a class="lnk primary" href="https://www.rhimob.com.br" target="_blank" rel="noopener">
+        <span class="ico">🏠</span>
+        <span class="txt">Site RH IMOB<small>Conheça nossos serviços</small></span>
+      </a>
+      <a class="lnk" href="https://www.rhimob.com.br/corretores.html" target="_blank" rel="noopener">
+        <span class="ico">🧑‍💼</span>
+        <span class="txt">Plataforma Corretores<small>Cadastro para corretores ativos</small></span>
+      </a>
+      <a class="lnk" href="https://www.rhimob.com.br/novos-talentos.html" target="_blank" rel="noopener">
+        <span class="ico">🔎</span>
+        <span class="txt">Novos Talentos<small>Banco de talentos para empresas</small></span>
+      </a>
+      <a class="lnk wa" href="https://wa.me/5511953973268?text=Ol%C3%A1%2C%20Mariana!%20Te%20conheci%20no%20evento%20e%20quero%20saber%20mais%20sobre%20a%20RH%20IMOB." target="_blank" rel="noopener">
+        <span class="ico">💬</span>
+        <span class="txt">Falar no WhatsApp<small>Direto com a Mariana</small></span>
+      </a>
+
+      <div class="divider">Redes sociais</div>
+      <div class="socials">
+        <a class="lnk" href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">
+          <span class="ico">📷</span>
+          <span class="txt">Instagram</span>
+        </a>
+        <a class="lnk" href="https://www.linkedin.com/in/marianarhimob/" target="_blank" rel="noopener">
+          <span class="ico">💼</span>
+          <span class="txt">LinkedIn</span>
+        </a>
+        <a class="lnk" href="https://www.facebook.com/recursoshumanosimob/" target="_blank" rel="noopener">
+          <span class="ico">👍</span>
+          <span class="txt">Facebook</span>
+        </a>
+      </div>
+    </div>
+    <footer>RH IMOB · Recrutamento imobiliário</footer>
+  </div>
+</body>
+</html>
