@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade — Catho Coletor | RH IMOB</title>
+<meta name="description" content="Política de privacidade da extensão Catho Coletor, desenvolvida pela RH IMOB para uso interno da equipe de recrutamento.">
+<style>
+  :root{
+    --purple-950:#190827; --purple-900:#24103f; --purple-800:#33165f; --purple-700:#4b178b;
+    --purple-600:#6d2df2; --purple-400:#9b59f5; --purple-100:#efe8ff; --purple-50:#f8f4ff;
+    --orange-500:#ff8f3d;
+    --ink:#21172d; --muted:#6f6283; --line:rgba(43,18,77,.12); --white:#fff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--ink); background:var(--white); line-height:1.65;
+  }
+  header{
+    background:linear-gradient(160deg, var(--purple-800), var(--purple-950));
+    color:#fff; padding:40px 20px 34px;
+  }
+  header .wrap{max-width:720px; margin:0 auto}
+  .eyebrow{font-size:12.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; opacity:.75}
+  h1{font-size:26px; font-weight:900; letter-spacing:-.01em; margin:10px 0 6px}
+  .updated{font-size:13px; opacity:.7}
+  main{max-width:720px; margin:0 auto; padding:36px 20px 60px}
+  h2{font-size:18px; font-weight:900; margin:34px 0 10px; color:var(--purple-900)}
+  p{margin:0 0 14px; font-size:15px; color:var(--ink)}
+  ul{margin:0 0 14px; padding-left:20px}
+  li{margin-bottom:6px; font-size:15px}
+  .card{
+    background:var(--purple-50); border:1px solid var(--line); border-radius:16px;
+    padding:18px 20px; margin:18px 0;
+  }
+  .card p{margin:0}
+  a{color:var(--purple-700); font-weight:700}
+  .contact{
+    margin-top:30px; padding-top:22px; border-top:1px solid var(--line);
+  }
+  footer{padding:24px 20px; text-align:center; font-size:12.5px; color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">RH IMOB</div>
+    <h1>Política de Privacidade — Catho Coletor</h1>
+    <div class="updated">Última atualização: 10 de agosto de 2026</div>
+  </div>
+</header>
+
+<main>
+  <p>O <strong>Catho Coletor</strong> é uma extensão de navegador desenvolvida pela RH IMOB para uso interno da própria equipe de recrutamento. Esta página explica quais dados a extensão acessa, para que servem e como são tratados.</p>
+
+  <h2>Quem opera a extensão</h2>
+  <p>A extensão é de uso restrito aos operadores autorizados da RH IMOB (rhimob.com.br), empresa especializada em recrutamento e seleção para o mercado imobiliário. Não é distribuída para uso do público em geral.</p>
+
+  <h2>Quais dados a extensão coleta</h2>
+  <p>Ao rodar em páginas de resultado de busca da Catho (catho.com.br), a extensão extrai os dados de currículo exibidos publicamente na própria página, tais como:</p>
+  <ul>
+    <li>Nome</li>
+    <li>Telefone</li>
+    <li>E-mail</li>
+    <li>Cidade, bairro e CEP informados</li>
+    <li>Cargo pretendido, experiência e demais informações do currículo exibidas na busca</li>
+  </ul>
+  <p>Esses dados são inseridos pelo próprio candidato na Catho ao publicar seu currículo, dentro dos termos de uso daquela plataforma.</p>
+
+  <h2>Para que os dados são usados</h2>
+  <ul>
+    <li>Organizar os candidatos coletados por operador, evitando contato duplicado</li>
+    <li>Permitir o envio de mensagem de abordagem de recrutamento via WhatsApp Web</li>
+    <li>Acompanhar o andamento do contato em um painel de gestão (Kanban)</li>
+  </ul>
+  <div class="card">
+    <p><strong>A extensão não usa esses dados para nenhuma outra finalidade</strong> além do processo de recrutamento imobiliário — não são usados para pontuação de crédito, concessão de empréstimo, publicidade ou qualquer outro fim.</p>
+  </div>
+
+  <h2>Onde os dados ficam armazenados</h2>
+  <ul>
+    <li><strong>Banco de dados privado (Supabase):</strong> os currículos coletados e os dados operacionais (login do operador, fila de envio, andamento do funil) ficam armazenados em um banco de dados de acesso restrito da RH IMOB.</li>
+    <li><strong>Planilha Google (Google Sheets, via Apps Script):</strong> uma cópia dos dados coletados também é enviada para uma planilha interna, para facilitar a consulta pela equipe sem precisar acessar o banco diretamente.</li>
+  </ul>
+  <p>Nenhum dado é enviado para servidores ou serviços fora dos listados acima.</p>
+
+  <h2>Envio de mensagens no WhatsApp</h2>
+  <p>A extensão automatiza o envio de mensagens de abordagem através da sessão do WhatsApp Web já autenticada no próprio navegador do operador — a extensão não tem acesso a credenciais do WhatsApp e não envia mensagens fora do WhatsApp Web.</p>
+
+  <h2>Compartilhamento com terceiros</h2>
+  <div class="card">
+    <p>A RH IMOB <strong>não vende, aluga nem compartilha</strong> os dados coletados com terceiros. O acesso é restrito aos operadores autorizados da própria empresa.</p>
+  </div>
+
+  <h2>Retenção e exclusão de dados</h2>
+  <p>Os dados coletados ficam armazenados enquanto forem relevantes para o processo de recrutamento em andamento. Qualquer candidato pode solicitar a remoção de seus dados a qualquer momento pelo contato abaixo.</p>
+
+  <h2>Permissões técnicas utilizadas</h2>
+  <ul>
+    <li><strong>storage:</strong> guarda localmente a sessão do operador logado e as configurações de coleta</li>
+    <li><strong>tabs:</strong> abre e gerencia as abas da Catho, WhatsApp Web e do painel de acompanhamento</li>
+    <li><strong>scripting:</strong> executa o script de extração de dados na página de resultados da Catho</li>
+    <li><strong>alarms:</strong> agenda a coleta automática no horário configurado pelo operador</li>
+  </ul>
+
+  <div class="contact">
+    <h2>Contato</h2>
+    <p>Dúvidas sobre esta política ou solicitações relacionadas aos seus dados podem ser enviadas para <a href="mailto:contato@rhimob.com.br">contato@rhimob.com.br</a> ou pelo <a href="https://wa.me/5511953973268" target="_blank" rel="noopener">WhatsApp da RH IMOB</a>.</p>
+  </div>
+</main>
+
+<footer>RH IMOB · Recrutamento imobiliário · <a href="https://www.rhimob.com.br">rhimob.com.br</a></footer>
+</body>
+</html>
