@@ -228,6 +228,19 @@
         <tbody id="listaAdmins"></tbody>
       </table>
     </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">📜 Log de auditoria (todos os operadores)</h3>
+      <small>Eventos de leads registrados por todos os operadores — criação, mudança de status, agendamento, resultado final, falha de envio, encerramento de campanha.</small>
+      <div class="btns">
+        <input id="filtroLoginAudit" placeholder="Filtrar por login (opcional)" style="max-width:260px">
+        <button id="btnAtualizarAudit" class="secondary">↻ Atualizar</button>
+      </div>
+      <table>
+        <thead><tr><th>Quando</th><th>Operador</th><th>Lead</th><th>Evento</th><th>De → Para</th><th>Detalhe</th></tr></thead>
+        <tbody id="listaAudit"></tbody>
+      </table>
+    </div>
   </div>
 
 </main>

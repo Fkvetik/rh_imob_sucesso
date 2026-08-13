@@ -25,7 +25,36 @@ function showApp() {
   loadUsuarios();
   loadAdmins();
   loadContasPlataforma().then(loadUsuariosPlataforma);
+  loadAuditLog();
 }
+
+// ===== Log de auditoria (Fase 12) =====
+async function loadAuditLog() {
+  const tbody = $("listaAudit");
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6"><small>Carregando...</small></td></tr>';
+  const loginFiltro = $("filtroLoginAudit").value.trim() || null;
+  try {
+    const resp = await rpc("rpc_admin_lead_events", { p_admin_password: ADMIN_PASS, p_limit: 100, p_login_filtro: loginFiltro });
+    if (!resp.ok) { tbody.innerHTML = `<tr><td colspan="6">❌ ${esc(resp.error)}</td></tr>`; return; }
+    const eventos = resp.eventos || [];
+    if (!eventos.length) { tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum evento registrado ainda.</small></td></tr>'; return; }
+    tbody.innerHTML = eventos.map(e => `
+      <tr>
+        <td><small>${esc(new Date(e.criado_em).toLocaleString('pt-BR'))}</small></td>
+        <td>${esc(e.login)}</td>
+        <td>${esc(e.lead_nome || ('#' + e.lead_id))}</td>
+        <td>${esc(e.tipo)}</td>
+        <td><small>${esc(e.status_anterior || '—')} → ${esc(e.status_novo || '—')}</small></td>
+        <td><small>${esc(e.detalhe || '')}</small></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6">❌ ${esc(e.message)}</td></tr>`;
+  }
+}
+
+$("btnAtualizarAudit")?.addEventListener("click", loadAuditLog);
 
 // ===== Contas da Plataforma (Novos Talentos) =====
 // Lidas via /api/contas (server-side, service_role). O token fica só na sessão
