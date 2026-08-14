@@ -102,6 +102,13 @@ async function loadContasPlataforma() {
     CONTAS_CACHE = data.contas || [];
     sel.innerHTML = '<option value="">— sem vínculo —</option>' +
       CONTAS_CACHE.map(c => `<option value="${esc(c.conta_id)}">${esc(c.nome_conta || c.conta_id)}</option>`).join("");
+    // Fase 10.4: mesma lista de empresas também alimenta o formulário de Admin
+    // (define se o admin fica restrito a uma empresa ou é super-admin).
+    const selAdm = $("admConta");
+    if (selAdm) {
+      selAdm.innerHTML = '<option value="">— nenhuma (super-admin, vê e gerencia todas as empresas) —</option>' +
+        CONTAS_CACHE.map(c => `<option value="${esc(c.conta_id)}">${esc(c.nome_conta || c.conta_id)}</option>`).join("");
+    }
     msg.textContent = CONTAS_CACHE.length + " conta(s) carregada(s).";
     renderContas();
   } catch (e) {
@@ -673,7 +680,7 @@ async function loadAdmins() {
 function renderAdmins(list) {
   const tbody = $("listaAdmins");
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="5"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
     return;
   }
   tbody.innerHTML = list.map(a => `
@@ -682,8 +689,9 @@ function renderAdmins(list) {
       <td>${esc(a.nome)}</td>
       <td><span class="badge ${a.ativo ? '' : 'bloqueado'}">${a.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${a.nivel === 'agendamentos' ? 'Só agendamentos' : 'Completo'}</td>
+      <td>${a.conta_id_plataforma ? `<small>${esc(nomeDaConta(a.conta_id_plataforma))}</small>` : '<small style="color:#999">— super-admin —</small>'}</td>
       <td>
-        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" data-nivel="${esc(a.nivel||'completo')}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" data-nivel="${esc(a.nivel||'completo')}" data-conta="${esc(a.conta_id_plataforma||'')}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(a.login)}" data-ativo="${a.ativo}" class="${a.ativo ? 'danger' : 'secondary'} admToggleBtn" style="padding:4px 8px;font-size:11px">${a.ativo ? 'Bloquear' : 'Reativar'}</button>
       </td>
     </tr>
@@ -697,6 +705,14 @@ function renderAdmins(list) {
       $("admNome").value = btn.dataset.nome;
       $("admAtivo").value = btn.dataset.ativo;
       $("admNivel").value = btn.dataset.nivel || "completo";
+      const selConta = $("admConta");
+      const contaAtual = btn.dataset.conta || "";
+      if (selConta) {
+        if (contaAtual && !Array.from(selConta.options).some(o => o.value === contaAtual)) {
+          selConta.insertAdjacentHTML("beforeend", `<option value="${esc(contaAtual)}">${esc(contaAtual)}</option>`);
+        }
+        selConta.value = contaAtual;
+      }
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     });
   });
@@ -723,6 +739,7 @@ $("btnLimparAdminForm").addEventListener("click", () => {
   $("admNome").value = "";
   $("admAtivo").value = "true";
   $("admNivel").value = "completo";
+  if ($("admConta")) $("admConta").value = "";
   $("admFormMsg").textContent = "";
 });
 
@@ -732,11 +749,12 @@ $("btnSalvarAdmin").addEventListener("click", async () => {
   const nome = $("admNome").value.trim();
   const ativo = $("admAtivo").value === "true";
   const nivel = $("admNivel").value;
+  const contaIdPlataforma = $("admConta") ? $("admConta").value : "";
   if (!login) { $("admFormMsg").textContent = "❌ Login é obrigatório."; return; }
 
   $("admFormMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_nivel: nivel });
+    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_nivel: nivel, p_conta_id_plataforma: contaIdPlataforma || null });
     if (!resp.ok) { $("admFormMsg").textContent = "❌ " + resp.error; return; }
     $("admFormMsg").textContent = "✅ Salvo.";
     $("btnLimparAdminForm").click();
