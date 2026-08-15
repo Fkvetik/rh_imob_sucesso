@@ -25,26 +25,8 @@ function showApp() {
   loadUsuarios();
   loadAdmins();
   loadAuditLog();
-  // Fase: as contas da plataforma (e a lista de usuários dela) só carregam
-  // se já houver um token salvo nesta sessão — não pede mais o prompt
-  // automaticamente ao abrir o painel, só quando o usuário clicar em
-  // "Conectar contas da plataforma".
-  if (CONTAS_TOKEN) {
-    ativarSecaoContas();
-    loadContasPlataforma().then(loadUsuariosPlataforma);
-  }
-}
-
-function ativarSecaoContas() {
-  $("contasConectarBox")?.classList.add("hide");
-  $("contasAcoesBox")?.classList.remove("hide");
-}
-
-$("btnConectarContas")?.addEventListener("click", () => {
-  if (!pedirTokenContas()) return;
-  ativarSecaoContas();
   loadContasPlataforma().then(loadUsuariosPlataforma);
-});
+}
 
 // ===== Log de auditoria (Fase 12) =====
 async function loadAuditLog() {
@@ -75,32 +57,18 @@ async function loadAuditLog() {
 $("btnAtualizarAudit")?.addEventListener("click", loadAuditLog);
 
 // ===== Contas da Plataforma (Novos Talentos) =====
-// Lidas via /api/contas (server-side, service_role). O token fica só na sessão
-// do navegador — nunca embutido no código.
-let CONTAS_TOKEN = sessionStorage.getItem("contas_tok") || "";
+// Lidas via /api/contas (server-side, service_role), autenticado com a
+// MESMA senha de admin já usada pra entrar neste painel — não existe mais
+// um segundo token separado que precisasse ser pedido/guardado à parte.
 let CONTAS_CACHE = [];
 
-function pedirTokenContas() {
-  const t = prompt("Token de administração da plataforma (Novos Talentos).\nNecessário para listar contas, criar acessos e ajustar limites.");
-  if (!t) return false;
-  CONTAS_TOKEN = t.trim();
-  sessionStorage.setItem("contas_tok", CONTAS_TOKEN);
-  return true;
-}
-
 async function apiContas(payload) {
-  if (!CONTAS_TOKEN && !pedirTokenContas()) throw new Error("Token não informado");
-  const url = "/api/contas?token=" + encodeURIComponent(CONTAS_TOKEN);
+  const url = "/api/contas?token=" + encodeURIComponent(ADMIN_PASS);
   const opts = payload
     ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
     : undefined;
   const r = await fetch(url, opts);
   const data = await r.json().catch(() => ({}));
-  if (r.status === 401) {
-    sessionStorage.removeItem("contas_tok");
-    CONTAS_TOKEN = "";
-    throw new Error("Token inválido — recarregue e informe novamente");
-  }
   if (!r.ok) throw new Error(data?.message || "Falha na API de contas");
   return data;
 }
@@ -109,11 +77,6 @@ async function loadContasPlataforma() {
   const sel = $("fContaPlataforma");
   const msg = $("contasMsg");
   if (!sel) return;
-
-  if (!CONTAS_TOKEN) {
-    msg.textContent = "Clique em \"Conectar contas da plataforma\" pra liberar vínculo e limites.";
-    return;
-  }
 
   try {
     const data = await apiContas(null);

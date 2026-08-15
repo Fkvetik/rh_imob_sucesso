@@ -1,6 +1,9 @@
 // Vercel Function — administração completa de contas/planos/usuários da
 // Plataforma Novos Talentos (nt_contas, nt_planos, nt_usuarios_conta).
-// Protegido por token: /api/contas?token=SEU_TOKEN
+// Protegido pela MESMA senha de admin do painel admin-catho-coletor.html
+// (verificada contra o Coletor, via rpc_admin_verificar_senha) — não existe
+// mais um token separado (LEADS_ADMIN_TOKEN) que o admin precisasse guardar.
+// Chamar como: /api/contas?token=SENHA_DE_ADMIN
 //
 // GET  → { ok, contas, planos, usuarios }  (contas já com consumo/saldo mesclado)
 // POST { acao, ... } → operações de escrita:
@@ -12,19 +15,39 @@
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const PRODUTO = 'NOVOS_TALENTOS';
 
+// Projeto Coletor — só pra validar a senha de admin (rpc_admin_verificar_senha
+// já é SECURITY DEFINER e liberada só pra devolver true/false, sem vazar nada).
+const COLETOR_URL = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
+const COLETOR_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
+
+async function senhaDeAdminValida(senha) {
+  if (!senha) return false;
+  try {
+    const r = await fetch(`${COLETOR_URL}/rest/v1/rpc/rpc_admin_verificar_senha`, {
+      method: 'POST',
+      headers: { apikey: COLETOR_ANON_KEY, Authorization: `Bearer ${COLETOR_ANON_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_admin_password: senha })
+    });
+    if (!r.ok) return false;
+    const data = await r.json();
+    return data && data.ok === true;
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   const token = req.query.token || '';
-  const ADMIN_TOKEN = process.env.LEADS_ADMIN_TOKEN;
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-  if (!ADMIN_TOKEN || !SERVICE_KEY) {
-    return send(res, 500, { error: 'config', message: 'Faltam variáveis de ambiente na Vercel.' });
+  if (!SERVICE_KEY) {
+    return send(res, 500, { error: 'config', message: 'Falta SUPABASE_SERVICE_KEY na Vercel.' });
   }
-  if (token !== ADMIN_TOKEN) {
-    return send(res, 401, { error: 'auth', message: 'Token inválido.' });
+  if (!(await senhaDeAdminValida(token))) {
+    return send(res, 401, { error: 'auth', message: 'Senha de admin incorreta.' });
   }
 
   const headers = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
