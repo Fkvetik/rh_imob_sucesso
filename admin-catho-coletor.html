@@ -108,7 +108,11 @@
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">📊 Empresas e limites de envio</h3>
       <small>Quanto cada empresa pode liberar de contatos no banco de talentos. O consumo é debitado toda vez que um operador libera o telefone de um candidato.</small>
-      <div class="btns">
+      <div id="contasConectarBox" class="btns" style="align-items:center">
+        <button id="btnConectarContas" class="secondary">🔗 Conectar contas da plataforma</button>
+        <small style="margin:0">Precisa do token de administração (Vercel: <code>LEADS_ADMIN_TOKEN</code>) — só é pedido quando você clicar aqui.</small>
+      </div>
+      <div id="contasAcoesBox" class="btns hide">
         <button id="btnNovaEmpresa">+ Nova empresa</button>
         <button id="btnRefreshContas" class="secondary">↻ Atualizar</button>
       </div>

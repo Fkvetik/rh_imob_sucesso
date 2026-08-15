@@ -24,9 +24,27 @@ function showApp() {
   $("appArea").classList.remove("hide");
   loadUsuarios();
   loadAdmins();
-  loadContasPlataforma().then(loadUsuariosPlataforma);
   loadAuditLog();
+  // Fase: as contas da plataforma (e a lista de usuários dela) só carregam
+  // se já houver um token salvo nesta sessão — não pede mais o prompt
+  // automaticamente ao abrir o painel, só quando o usuário clicar em
+  // "Conectar contas da plataforma".
+  if (CONTAS_TOKEN) {
+    ativarSecaoContas();
+    loadContasPlataforma().then(loadUsuariosPlataforma);
+  }
 }
+
+function ativarSecaoContas() {
+  $("contasConectarBox")?.classList.add("hide");
+  $("contasAcoesBox")?.classList.remove("hide");
+}
+
+$("btnConectarContas")?.addEventListener("click", () => {
+  if (!pedirTokenContas()) return;
+  ativarSecaoContas();
+  loadContasPlataforma().then(loadUsuariosPlataforma);
+});
 
 // ===== Log de auditoria (Fase 12) =====
 async function loadAuditLog() {
@@ -92,8 +110,8 @@ async function loadContasPlataforma() {
   const msg = $("contasMsg");
   if (!sel) return;
 
-  if (!CONTAS_TOKEN && !pedirTokenContas()) {
-    msg.textContent = "Sem token: vínculo e limites ficam indisponíveis nesta sessão.";
+  if (!CONTAS_TOKEN) {
+    msg.textContent = "Clique em \"Conectar contas da plataforma\" pra liberar vínculo e limites.";
     return;
   }
 
