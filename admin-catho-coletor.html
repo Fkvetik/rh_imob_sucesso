@@ -222,6 +222,9 @@
         <option value="">— nenhuma (super-admin, vê e gerencia todas as empresas) —</option>
       </select>
       <small style="display:block;margin:-2px 0 6px;color:#888">Escolhendo uma empresa, esse admin passa a ver e gerenciar só os operadores, agendamentos e dados dessa empresa — nunca de outra.</small>
+      <label>Vincular ao login do operador (opcional)</label>
+      <input id="admOperadorLogin" placeholder="login que essa pessoa usa pra entrar na extensão">
+      <small style="display:block;margin:-2px 0 6px;color:#888">Se preenchido, quando essa pessoa entrar na extensão com esse login, aparece um atalho no popup pra abrir este painel — sem precisar digitar a senha de admin ali.</small>
       <div class="btns">
         <button id="btnSalvarAdmin">💾 Salvar admin</button>
         <button id="btnLimparAdminForm" class="ghost">Limpar</button>
@@ -229,7 +232,7 @@
       <div id="admFormMsg" class="msg"></div>
 
       <table>
-        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th>Nível</th><th>Empresa</th><th></th></tr></thead>
+        <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th>Nível</th><th>Empresa</th><th>Login na extensão</th><th></th></tr></thead>
         <tbody id="listaAdmins"></tbody>
       </table>
     </div>

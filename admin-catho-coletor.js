@@ -680,7 +680,7 @@ async function loadAdmins() {
 function renderAdmins(list) {
   const tbody = $("listaAdmins");
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><small>Nenhum admin cadastrado ainda.</small></td></tr>';
     return;
   }
   tbody.innerHTML = list.map(a => `
@@ -690,8 +690,9 @@ function renderAdmins(list) {
       <td><span class="badge ${a.ativo ? '' : 'bloqueado'}">${a.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${a.nivel === 'agendamentos' ? 'Só agendamentos' : 'Completo'}</td>
       <td>${a.conta_id_plataforma ? `<small>${esc(nomeDaConta(a.conta_id_plataforma))}</small>` : '<small style="color:#999">— super-admin —</small>'}</td>
+      <td>${a.operador_login ? `<small>${esc(a.operador_login)}</small>` : '<small style="color:#999">—</small>'}</td>
       <td>
-        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" data-nivel="${esc(a.nivel||'completo')}" data-conta="${esc(a.conta_id_plataforma||'')}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" data-nivel="${esc(a.nivel||'completo')}" data-conta="${esc(a.conta_id_plataforma||'')}" data-operador="${esc(a.operador_login||'')}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(a.login)}" data-ativo="${a.ativo}" class="${a.ativo ? 'danger' : 'secondary'} admToggleBtn" style="padding:4px 8px;font-size:11px">${a.ativo ? 'Bloquear' : 'Reativar'}</button>
       </td>
     </tr>
@@ -713,6 +714,7 @@ function renderAdmins(list) {
         }
         selConta.value = contaAtual;
       }
+      if ($("admOperadorLogin")) $("admOperadorLogin").value = btn.dataset.operador || "";
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     });
   });
@@ -740,6 +742,7 @@ $("btnLimparAdminForm").addEventListener("click", () => {
   $("admAtivo").value = "true";
   $("admNivel").value = "completo";
   if ($("admConta")) $("admConta").value = "";
+  if ($("admOperadorLogin")) $("admOperadorLogin").value = "";
   $("admFormMsg").textContent = "";
 });
 
@@ -750,11 +753,12 @@ $("btnSalvarAdmin").addEventListener("click", async () => {
   const ativo = $("admAtivo").value === "true";
   const nivel = $("admNivel").value;
   const contaIdPlataforma = $("admConta") ? $("admConta").value : "";
+  const operadorLogin = $("admOperadorLogin") ? $("admOperadorLogin").value.trim() : "";
   if (!login) { $("admFormMsg").textContent = "❌ Login é obrigatório."; return; }
 
   $("admFormMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_nivel: nivel, p_conta_id_plataforma: contaIdPlataforma || null });
+    const resp = await rpc("rpc_admin_upsert_admin", { p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome, p_ativo: ativo, p_nivel: nivel, p_conta_id_plataforma: contaIdPlataforma || null, p_operador_login: operadorLogin || null });
     if (!resp.ok) { $("admFormMsg").textContent = "❌ " + resp.error; return; }
     $("admFormMsg").textContent = "✅ Salvo.";
     $("btnLimparAdminForm").click();
