@@ -715,7 +715,10 @@ function renderAdmins(list) {
         selConta.value = contaAtual;
       }
       if ($("admOperadorLogin")) $("admOperadorLogin").value = btn.dataset.operador || "";
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      // Rolar até o fim da página parava de funcionar quando o Log de
+      // auditoria (Fase 12) passou a existir depois desta seção — agora
+      // rola direto até o campo Login do formulário de admin.
+      $("admLogin").scrollIntoView({ behavior: "smooth", block: "center" });
     });
   });
 
