@@ -25,7 +25,7 @@ function showApp() {
   loadUsuarios();
   loadAdmins();
   loadAuditLog();
-  loadContasPlataforma().then(loadUsuariosPlataforma);
+  loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
 }
 
 // ===== Log de auditoria (Fase 12) =====
@@ -429,17 +429,51 @@ async function criarAcessoPlataforma(login, nome) {
   }
 }
 
+// Quem está logado agora — pra sempre dar pra saber, olhando a barra do
+// topo, sem precisar adivinhar ou perguntar.
+let CURRENT_ADMIN = null;
+
+async function pegarIpPublico() {
+  try {
+    const r = await fetch("https://api.ipify.org?format=json");
+    const d = await r.json();
+    return d.ip || null;
+  } catch {
+    return null; // rede bloqueada/lenta — segue sem IP, não trava o login
+  }
+}
+
+function renderWhoInfo() {
+  const el = $("whoInfo");
+  if (!el || !CURRENT_ADMIN) return;
+  const a = CURRENT_ADMIN;
+  const empresaLabel = a.conta_id_plataforma ? esc(nomeDaConta(a.conta_id_plataforma)) : "super-admin";
+  const anterior = a.login_anterior_em
+    ? `último acesso anterior: ${esc(new Date(a.login_anterior_em).toLocaleString('pt-BR'))}${a.login_anterior_ip ? ' · IP ' + esc(a.login_anterior_ip) : ''}`
+    : "primeiro acesso registrado";
+  el.innerHTML = `👤 <b>${esc(a.nome || a.login)}</b> (${esc(a.login)}) · ${empresaLabel}<br><span style="opacity:.8">${anterior}</span>`;
+  el.classList.remove("hide");
+}
+
+async function fazerLogin(pass) {
+  const ip = await pegarIpPublico();
+  const resp = await rpc("rpc_admin_login", { p_admin_password: pass, p_ip: ip });
+  if (!resp.ok) return resp;
+  ADMIN_PASS = pass;
+  sessionStorage.setItem("catho_admin_pass", pass);
+  CURRENT_ADMIN = resp;
+  showApp();
+  renderWhoInfo(); // primeira tentativa — reforçada de novo quando as contas carregarem (pro nome da empresa aparecer)
+  return resp;
+}
+
 $("btnEntrar").addEventListener("click", async () => {
   const pass = $("adminPass").value;
   if (!pass) { $("loginMsg").textContent = "Digite a senha."; return; }
   $("loginMsg").textContent = "Verificando...";
   try {
-    const resp = await rpc("rpc_admin_list_usuarios", { p_admin_password: pass });
+    const resp = await fazerLogin(pass);
     if (!resp.ok) { $("loginMsg").textContent = "❌ " + resp.error; return; }
-    ADMIN_PASS = pass;
-    sessionStorage.setItem("catho_admin_pass", pass);
-    renderUsuarios(resp.usuarios || []);
-    showApp();
   } catch (e) {
     $("loginMsg").textContent = "❌ " + e.message;
   }
@@ -791,9 +825,7 @@ enterSubmete(["ncNome", "ncLimTotal", "ncLimUser", "ncUsuarios"], "btnSalvarEmpr
 enterSubmete(["puNome", "puEmail", "puSenha"], "btnSalvarUsuarioPlataforma");
 enterSubmete(["admLogin", "admSenha", "admNome", "admOperadorLogin"], "btnSalvarAdmin");
 
-// Se já tinha sessão de admin aberta (mesma aba), pula o login.
+// Se já tinha sessão de admin aberta (mesma aba), pula a tela de login.
 if (ADMIN_PASS) {
-  rpc("rpc_admin_list_usuarios", { p_admin_password: ADMIN_PASS })
-    .then(resp => { if (resp.ok) { renderUsuarios(resp.usuarios || []); showApp(); } })
-    .catch(() => {});
+  fazerLogin(ADMIN_PASS).catch(() => {});
 }
