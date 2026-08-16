@@ -675,6 +675,7 @@ function renderAdmins(list) {
       <td>
         <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" data-ativo="${a.ativo}" data-nivel="${esc(a.nivel||'completo')}" data-conta="${esc(a.conta_id_plataforma||'')}" data-operador="${esc(a.operador_login||'')}" class="ghost admEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(a.login)}" data-ativo="${a.ativo}" class="${a.ativo ? 'danger' : 'secondary'} admToggleBtn" style="padding:4px 8px;font-size:11px">${a.ativo ? 'Bloquear' : 'Reativar'}</button>
+        <button data-login="${esc(a.login)}" data-nome="${esc(a.nome)}" class="danger admExcluirBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
       </td>
     </tr>
   `).join('');
@@ -713,6 +714,21 @@ function renderAdmins(list) {
         loadAdmins();
       } catch (e) {
         alert("❌ " + e.message);
+      }
+    });
+  });
+
+  tbody.querySelectorAll(".admExcluirBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm(`Excluir o admin "${btn.dataset.nome}" (${btn.dataset.login})? Essa ação não pode ser desfeita.`)) return;
+      btn.disabled = true;
+      try {
+        const resp = await rpc("rpc_admin_excluir_admin", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login });
+        if (!resp.ok) { alert("❌ " + resp.error); btn.disabled = false; return; }
+        loadAdmins();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
       }
     });
   });
