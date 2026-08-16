@@ -20,9 +20,10 @@ const PRODUTO = 'NOVOS_TALENTOS';
 const COLETOR_URL = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
 const COLETOR_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
 
-// Retorna { valida, motivo } em vez de só true/false — senão um problema de
-// rede/config vira "senha incorreta" na cara do usuário, o que é enganoso
-// e impossível de diagnosticar de fora.
+// Retorna { valida, motivo, contaId }. contaId null = super-admin (vê
+// tudo); preenchido = admin restrito a uma empresa — usado pra filtrar
+// Empresas/Usuários da plataforma abaixo, senão um admin restrito
+// enxergava e mexia nos dados de QUALQUER empresa por aqui.
 async function senhaDeAdminValida(senha) {
   if (!senha) return { valida: false, motivo: 'Senha não informada.' };
   try {
@@ -36,7 +37,7 @@ async function senhaDeAdminValida(senha) {
       return { valida: false, motivo: `Falha ao verificar senha (HTTP ${r.status} do Coletor): ${t.slice(0, 200)}` };
     }
     const data = await r.json();
-    if (data && data.ok === true) return { valida: true };
+    if (data && data.ok === true) return { valida: true, contaId: data.conta_id_plataforma || null };
     return { valida: false, motivo: 'Senha de admin incorreta.' };
   } catch (e) {
     return { valida: false, motivo: 'Falha de rede ao verificar senha: ' + String(e && e.message || e) };
@@ -57,6 +58,7 @@ export default async function handler(req, res) {
   if (!check.valida) {
     return send(res, 401, { error: 'auth', message: check.motivo });
   }
+  const contaId = check.contaId || null; // null = super-admin, vê/gerencia tudo
 
   const headers = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
@@ -64,14 +66,14 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
       switch (body.acao) {
-        case 'criar_conta':            return await criarConta(res, headers, body);
-        case 'editar_conta':           return await editarConta(res, headers, body);
-        case 'criar_usuario':          return await criarUsuario(res, headers, SERVICE_KEY, body);
-        case 'editar_usuario':         return await editarUsuario(res, headers, body);
-        case 'alterar_status_usuario': return await alterarStatusUsuario(res, headers, body);
-        case 'resetar_senha_usuario':  return await resetarSenhaUsuario(res, headers, SERVICE_KEY, body);
-        case 'excluir_usuario':        return await excluirUsuario(res, headers, SERVICE_KEY, body);
-        case 'editar_plano':           return await editarPlano(res, headers, body);
+        case 'criar_conta':            return await criarConta(res, headers, body, contaId);
+        case 'editar_conta':           return await editarConta(res, headers, body, contaId);
+        case 'criar_usuario':          return await criarUsuario(res, headers, SERVICE_KEY, body, contaId);
+        case 'editar_usuario':         return await editarUsuario(res, headers, body, contaId);
+        case 'alterar_status_usuario': return await alterarStatusUsuario(res, headers, body, contaId);
+        case 'resetar_senha_usuario':  return await resetarSenhaUsuario(res, headers, SERVICE_KEY, body, contaId);
+        case 'excluir_usuario':        return await excluirUsuario(res, headers, SERVICE_KEY, body, contaId);
+        case 'editar_plano':           return await editarPlano(res, headers, body, contaId);
         default:                       return send(res, 400, { error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao });
       }
     }
@@ -91,15 +93,22 @@ export default async function handler(req, res) {
     const relatorio = await rRelatorio.json();
     const contasRaw = await rContas.json();
     const planos = await rPlanos.json();
-    const usuarios = await rUsuarios.json();
+    let usuarios = await rUsuarios.json();
 
     // mescla consumo/saldo (vem da view) nas contas completas (têm todas as colunas editáveis)
     const consumoPorConta = {};
     (Array.isArray(relatorio) ? relatorio : []).forEach(r => { consumoPorConta[r.conta_id] = r; });
-    const contas = (Array.isArray(contasRaw) ? contasRaw : []).map(c => {
+    let contas = (Array.isArray(contasRaw) ? contasRaw : []).map(c => {
       const rel = consumoPorConta[c.conta_id] || {};
       return { ...c, consumidos: rel.consumidos || 0, saldo: (rel.saldo != null ? rel.saldo : (c.limite_total || 0)) };
     });
+
+    // Admin restrito a uma empresa só vê a própria empresa e os próprios
+    // usuários da plataforma — antes isso vazava tudo pra qualquer admin.
+    if (contaId) {
+      contas = contas.filter(c => c.conta_id === contaId);
+      usuarios = (Array.isArray(usuarios) ? usuarios : []).filter(u => u.conta_id === contaId);
+    }
 
     return send(res, 200, { ok: true, contas, planos, usuarios });
   } catch (e) {
@@ -109,7 +118,8 @@ export default async function handler(req, res) {
 
 // ───────────────────────── CONTAS ─────────────────────────
 
-async function criarConta(res, headers, body) {
+async function criarConta(res, headers, body, contaId) {
+  if (contaId) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o super-admin pode criar novas empresas.' });
   const nome = (body.nome_conta || '').trim();
   if (!nome) return send(res, 400, { error: 'validacao', message: 'Nome da conta é obrigatório.' });
   if (!body.plano_tipo) return send(res, 400, { error: 'validacao', message: 'Plano é obrigatório.' });
@@ -140,8 +150,9 @@ async function criarConta(res, headers, body) {
   return send(res, 200, { ok: true, conta: Array.isArray(created) ? created[0] : created });
 }
 
-async function editarConta(res, headers, body) {
+async function editarConta(res, headers, body, contaId) {
   if (!body.conta_id) return send(res, 400, { error: 'validacao', message: 'conta_id é obrigatório.' });
+  if (contaId && body.conta_id !== contaId) return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão sobre essa empresa.' });
   const patch = { updated_at: new Date().toISOString() };
   if (body.nome_conta != null) patch.nome_conta = String(body.nome_conta).trim();
   if (body.plano_tipo != null) patch.plano_tipo = body.plano_tipo;
@@ -161,11 +172,12 @@ async function editarConta(res, headers, body) {
 
 // ───────────────────────── USUÁRIOS ─────────────────────────
 
-async function criarUsuario(res, headers, serviceKey, body) {
+async function criarUsuario(res, headers, serviceKey, body, contaId) {
   const nome = (body.nome || '').trim();
   const email = (body.email_login || '').trim().toLowerCase();
   const senha = (body.senha || '').trim();
   if (!body.conta_id) return send(res, 400, { error: 'validacao', message: 'conta_id é obrigatório.' });
+  if (contaId && body.conta_id !== contaId) return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão pra criar usuário nessa empresa.' });
   if (!nome) return send(res, 400, { error: 'validacao', message: 'Nome é obrigatório.' });
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return send(res, 400, { error: 'validacao', message: 'E-mail inválido.' });
   if (senha.length < 6) return send(res, 400, { error: 'validacao', message: 'Senha deve ter ao menos 6 caracteres.' });
@@ -208,8 +220,11 @@ async function criarUsuario(res, headers, serviceKey, body) {
   return send(res, 200, { ok: true, usuario: Array.isArray(created) ? created[0] : created });
 }
 
-async function editarUsuario(res, headers, body) {
+async function editarUsuario(res, headers, body, contaId) {
   if (!body.usuario_id) return send(res, 400, { error: 'validacao', message: 'usuario_id é obrigatório.' });
+  if (contaId && !(await usuarioPertenceConta(headers, body.usuario_id, contaId))) {
+    return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão sobre esse usuário.' });
+  }
   const patch = { updated_at: new Date().toISOString() };
   if (body.nome != null) patch.nome = String(body.nome).trim();
   if (body.perfil != null) patch.perfil = body.perfil;
@@ -223,8 +238,11 @@ async function editarUsuario(res, headers, body) {
   return send(res, 200, { ok: true });
 }
 
-async function alterarStatusUsuario(res, headers, body) {
+async function alterarStatusUsuario(res, headers, body, contaId) {
   if (!body.usuario_id || !body.status) return send(res, 400, { error: 'validacao', message: 'usuario_id e status são obrigatórios.' });
+  if (contaId && !(await usuarioPertenceConta(headers, body.usuario_id, contaId))) {
+    return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão sobre esse usuário.' });
+  }
   // UPDATE direto (a RPC oficial exige sessão de usuário; service_role contorna RLS).
   const r = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?usuario_id=eq.${encodeURIComponent(body.usuario_id)}`, {
     method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
@@ -234,15 +252,18 @@ async function alterarStatusUsuario(res, headers, body) {
   return send(res, 200, { ok: true });
 }
 
-async function resetarSenhaUsuario(res, headers, serviceKey, body) {
+async function resetarSenhaUsuario(res, headers, serviceKey, body, contaId) {
   const senha = (body.senha || '').trim();
   if (!body.usuario_id) return send(res, 400, { error: 'validacao', message: 'usuario_id é obrigatório.' });
   if (senha.length < 6) return send(res, 400, { error: 'validacao', message: 'Senha deve ter ao menos 6 caracteres.' });
 
   // descobre o auth_user_id do usuário
-  const rGet = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?select=auth_user_id&usuario_id=eq.${encodeURIComponent(body.usuario_id)}`, { headers });
+  const rGet = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?select=auth_user_id,conta_id&usuario_id=eq.${encodeURIComponent(body.usuario_id)}`, { headers });
   if (!rGet.ok) return supabaseErr(res, rGet);
   const rows = await rGet.json();
+  if (contaId && !(rows[0] && rows[0].conta_id === contaId)) {
+    return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão sobre esse usuário.' });
+  }
   const authId = rows[0] && rows[0].auth_user_id;
   if (!authId) return send(res, 400, { error: 'sem_auth', message: 'Usuário não tem login vinculado (auth_user_id ausente).' });
 
@@ -262,12 +283,15 @@ async function resetarSenhaUsuario(res, headers, serviceKey, body) {
   return send(res, 200, { ok: true });
 }
 
-async function excluirUsuario(res, headers, serviceKey, body) {
+async function excluirUsuario(res, headers, serviceKey, body, contaId) {
   if (!body.usuario_id) return send(res, 400, { error: 'validacao', message: 'usuario_id é obrigatório.' });
 
-  const rGet = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?select=auth_user_id&usuario_id=eq.${encodeURIComponent(body.usuario_id)}`, { headers });
+  const rGet = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?select=auth_user_id,conta_id&usuario_id=eq.${encodeURIComponent(body.usuario_id)}`, { headers });
   if (!rGet.ok) return supabaseErr(res, rGet);
   const rows = await rGet.json();
+  if (contaId && !(rows[0] && rows[0].conta_id === contaId)) {
+    return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão sobre esse usuário.' });
+  }
   const authId = rows[0] && rows[0].auth_user_id;
 
   // remove o registro da conta
@@ -287,7 +311,8 @@ async function excluirUsuario(res, headers, serviceKey, body) {
 
 // ───────────────────────── PLANOS ─────────────────────────
 
-async function editarPlano(res, headers, body) {
+async function editarPlano(res, headers, body, contaId) {
+  if (contaId) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o super-admin pode editar planos (afeta todas as empresas que usam esse plano).' });
   if (!body.plano_tipo) return send(res, 400, { error: 'validacao', message: 'plano_tipo é obrigatório.' });
   const patch = { updated_at: new Date().toISOString() };
   if (body.preco_mensal !== undefined) {
@@ -309,6 +334,13 @@ async function editarPlano(res, headers, body) {
 }
 
 // ───────────────────────── helpers ─────────────────────────
+
+async function usuarioPertenceConta(headers, usuarioId, contaId) {
+  const r = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?select=conta_id&usuario_id=eq.${encodeURIComponent(usuarioId)}`, { headers });
+  if (!r.ok) return false;
+  const rows = await r.json();
+  return !!(rows[0] && rows[0].conta_id === contaId);
+}
 
 function send(res, status, obj) { res.status(status).send(JSON.stringify(obj)); }
 async function supabaseErr(res, r) {
