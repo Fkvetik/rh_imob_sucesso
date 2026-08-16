@@ -118,18 +118,18 @@ export default async function handler(req, res) {
 
 // ───────────────────────── CONTAS ─────────────────────────
 
-async function criarConta(res, headers, body, contaId) {
-  if (contaId) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o super-admin pode criar novas empresas.' });
+async function criarConta(res, headers, body, contaIdAdmin) {
+  if (contaIdAdmin) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o super-admin pode criar novas empresas.' });
   const nome = (body.nome_conta || '').trim();
   if (!nome) return send(res, 400, { error: 'validacao', message: 'Nome da conta é obrigatório.' });
   if (!body.plano_tipo) return send(res, 400, { error: 'validacao', message: 'Plano é obrigatório.' });
 
-  const contaId = body.conta_id && body.conta_id.trim()
+  const novaContaId = body.conta_id && body.conta_id.trim()
     ? body.conta_id.trim()
     : 'CONTA_' + slug(nome) + '_' + Math.random().toString(36).slice(2, 7).toUpperCase();
 
   const row = {
-    conta_id: contaId,
+    conta_id: novaContaId,
     produto_codigo: PRODUTO,
     nome_conta: nome,
     plano_tipo: body.plano_tipo,
