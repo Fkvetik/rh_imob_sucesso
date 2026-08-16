@@ -24,13 +24,13 @@ const COLETOR_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 // tudo); preenchido = admin restrito a uma empresa — usado pra filtrar
 // Empresas/Usuários da plataforma abaixo, senão um admin restrito
 // enxergava e mexia nos dados de QUALQUER empresa por aqui.
-async function senhaDeAdminValida(senha) {
+async function senhaDeAdminValida(senha, login) {
   if (!senha) return { valida: false, motivo: 'Senha não informada.' };
   try {
     const r = await fetch(`${COLETOR_URL}/rest/v1/rpc/rpc_admin_verificar_senha`, {
       method: 'POST',
       headers: { apikey: COLETOR_ANON_KEY, Authorization: `Bearer ${COLETOR_ANON_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_admin_password: senha })
+      body: JSON.stringify({ p_admin_password: senha, p_login: login || null })
     });
     if (!r.ok) {
       const t = await r.text().catch(() => '');
@@ -49,12 +49,13 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   const token = req.query.token || '';
+  const login = req.query.login || '';
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
   if (!SERVICE_KEY) {
     return send(res, 500, { error: 'config', message: 'Falta SUPABASE_SERVICE_KEY na Vercel.' });
   }
-  const check = await senhaDeAdminValida(token);
+  const check = await senhaDeAdminValida(token, login);
   if (!check.valida) {
     return send(res, 401, { error: 'auth', message: check.motivo });
   }

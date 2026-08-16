@@ -63,7 +63,8 @@ $("btnAtualizarAudit")?.addEventListener("click", loadAuditLog);
 let CONTAS_CACHE = [];
 
 async function apiContas(payload) {
-  const url = "/api/contas?token=" + encodeURIComponent(ADMIN_PASS);
+  const login = (CURRENT_ADMIN && CURRENT_ADMIN.login) || "";
+  const url = "/api/contas?token=" + encodeURIComponent(ADMIN_PASS) + "&login=" + encodeURIComponent(login);
   const opts = payload
     ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
     : undefined;
