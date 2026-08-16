@@ -20,19 +20,26 @@ const PRODUTO = 'NOVOS_TALENTOS';
 const COLETOR_URL = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
 const COLETOR_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
 
+// Retorna { valida, motivo } em vez de só true/false — senão um problema de
+// rede/config vira "senha incorreta" na cara do usuário, o que é enganoso
+// e impossível de diagnosticar de fora.
 async function senhaDeAdminValida(senha) {
-  if (!senha) return false;
+  if (!senha) return { valida: false, motivo: 'Senha não informada.' };
   try {
     const r = await fetch(`${COLETOR_URL}/rest/v1/rpc/rpc_admin_verificar_senha`, {
       method: 'POST',
       headers: { apikey: COLETOR_ANON_KEY, Authorization: `Bearer ${COLETOR_ANON_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_admin_password: senha })
     });
-    if (!r.ok) return false;
+    if (!r.ok) {
+      const t = await r.text().catch(() => '');
+      return { valida: false, motivo: `Falha ao verificar senha (HTTP ${r.status} do Coletor): ${t.slice(0, 200)}` };
+    }
     const data = await r.json();
-    return data && data.ok === true;
-  } catch {
-    return false;
+    if (data && data.ok === true) return { valida: true };
+    return { valida: false, motivo: 'Senha de admin incorreta.' };
+  } catch (e) {
+    return { valida: false, motivo: 'Falha de rede ao verificar senha: ' + String(e && e.message || e) };
   }
 }
 
@@ -46,8 +53,9 @@ export default async function handler(req, res) {
   if (!SERVICE_KEY) {
     return send(res, 500, { error: 'config', message: 'Falta SUPABASE_SERVICE_KEY na Vercel.' });
   }
-  if (!(await senhaDeAdminValida(token))) {
-    return send(res, 401, { error: 'auth', message: 'Senha de admin incorreta.' });
+  const check = await senhaDeAdminValida(token);
+  if (!check.valida) {
+    return send(res, 401, { error: 'auth', message: check.motivo });
   }
 
   const headers = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
