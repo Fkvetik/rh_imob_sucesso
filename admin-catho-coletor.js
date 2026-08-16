@@ -770,6 +770,27 @@ $("btnSalvarAdmin").addEventListener("click", async () => {
 
 function esc(s) { return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
+// Olhinho pra ver a senha de login do painel.
+$("btnToggleAdminPass")?.addEventListener("click", () => {
+  const input = $("adminPass");
+  input.type = input.type === "password" ? "text" : "password";
+});
+
+// Enter em qualquer campo de um formulário aciona o botão de salvar dele —
+// em vez de precisar clicar no botão toda vez.
+function enterSubmete(inputIds, botaoId) {
+  inputIds.forEach(id => {
+    $(id)?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); $(botaoId)?.click(); }
+    });
+  });
+}
+enterSubmete(["adminPass"], "btnEntrar");
+enterSubmete(["fLogin", "fSenha", "fNome", "fHorario", "fEmailPlataforma", "fLimitePool"], "btnSalvarUsuario");
+enterSubmete(["ncNome", "ncLimTotal", "ncLimUser", "ncUsuarios"], "btnSalvarEmpresa");
+enterSubmete(["puNome", "puEmail", "puSenha"], "btnSalvarUsuarioPlataforma");
+enterSubmete(["admLogin", "admSenha", "admNome", "admOperadorLogin"], "btnSalvarAdmin");
+
 // Se já tinha sessão de admin aberta (mesma aba), pula o login.
 if (ADMIN_PASS) {
   rpc("rpc_admin_list_usuarios", { p_admin_password: ADMIN_PASS })

@@ -35,6 +35,10 @@
   .hide{display:none !important}
   small{color:#666}
   h3{color:var(--rh-purple-dark)}
+  .pass-wrap{position:relative}
+  .pass-wrap input{padding-right:38px}
+  .pass-eye{position:absolute;right:2px;top:50%;transform:translateY(-50%);height:32px;width:32px;padding:0;background:transparent;color:#888;font-size:15px;line-height:1}
+  .pass-eye:hover{background:#f0eef5}
 </style>
 </head>
 <body>
@@ -48,7 +52,10 @@
 
   <div class="card" id="loginCard">
     <label>Senha de admin</label>
-    <input id="adminPass" type="password" placeholder="••••••••">
+    <div class="pass-wrap">
+      <input id="adminPass" type="password" placeholder="••••••••">
+      <button type="button" id="btnToggleAdminPass" class="pass-eye" title="Mostrar/ocultar senha" aria-label="Mostrar ou ocultar senha">👁</button>
+    </div>
     <div class="btns"><button id="btnEntrar">Entrar</button></div>
     <div id="loginMsg" class="msg"></div>
   </div>
@@ -252,6 +259,6 @@
   </div>
 
 </main>
-<script src="admin-catho-coletor.js?v=20260816reordersecoes"></script>
+<script src="admin-catho-coletor.js?v=20260816eyeenter"></script>
 </body>
 </html>
