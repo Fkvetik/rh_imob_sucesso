@@ -620,7 +620,7 @@
       quantidade: g('quantidade'), urgencia: g('urgencia'),
       formato_contratacao: g('formatoContratacao'), remuneracao: g('remuneracao'),
       beneficios: g('beneficios'), exigencias: g('exigencias'),
-      mensagem: g('mensagem'),
+      mensagem: g('mensagem') || [g('perfilDesejado'), g('detalhes')].filter(Boolean).join(' | '),
       tipo,
       origem: g('origem') || document.title || location.pathname,
       pagina: location.href,
@@ -1184,18 +1184,13 @@
       `Cidade/região: ${data.cidade}`,
       `Quantidade: ${data.quantidade}`,
       `Formato de contratação: ${data.formatoContratacao || 'Não informado'}`,
-      `Modelo de trabalho: ${data.modeloTrabalho || 'Não informado'}`,
-      `Horário: ${data.horario || 'Não informado'}`,
       `Urgência: ${data.urgencia}`,
       '',
-      '— REMUNERAÇÃO E BENEFÍCIOS —',
-      `Remuneração: ${data.remuneracao || 'Não informado'}`,
-      `Benefícios: ${data.beneficios || 'Não informado'}`,
+      '— PERFIL DESEJADO —',
+      data.perfilDesejado || 'Não informado',
       '',
-      '— PERFIL E EXIGÊNCIAS —',
-      `Exigências: ${data.exigencias || 'Não informado'}`,
-      `Perfil desejado: ${data.perfilDesejado || 'Não informado'}`,
-      `Descrição da função: ${data.descricaoFuncao || 'Não informado'}`,
+      '— INFORMAÇÕES DA VAGA —',
+      data.detalhes || 'Não informado',
       '',
       'Aguardo retorno para alinhar os próximos passos.'
     ].join('\n');
@@ -1212,6 +1207,12 @@
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeAdvertiseModal();
     });
+    // captura progressiva: grava no site_leads (painel) ao sair dos campos-chave,
+    // mesmo que a pessoa nunca chegue a apertar "enviar" no WhatsApp depois.
+    ['nome', 'whatsapp', 'empresa', 'cargoVaga'].forEach((n) => {
+      const el = form.elements[n];
+      if (el) el.addEventListener('blur', () => saveLeadEmpresa(form, false));
+    });
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const data = {
@@ -1223,14 +1224,9 @@
         cargoVaga: normalize(form.elements.cargoVaga?.value),
         quantidade: normalize(form.elements.quantidade?.value),
         formatoContratacao: normalize(form.elements.formatoContratacao?.value),
-        modeloTrabalho: normalize(form.elements.modeloTrabalho?.value),
-        horario: normalize(form.elements.horario?.value),
         urgencia: normalize(form.elements.urgencia?.value),
-        remuneracao: normalize(form.elements.remuneracao?.value),
-        beneficios: normalize(form.elements.beneficios?.value),
-        exigencias: normalize(form.elements.exigencias?.value),
         perfilDesejado: normalize(form.elements.perfilDesejado?.value),
-        descricaoFuncao: normalize(form.elements.descricaoFuncao?.value)
+        detalhes: normalize(form.elements.detalhes?.value)
       };
       const missingEl = Array.from(form.querySelectorAll('[required]'))
         .find((el) => el.offsetParent !== null && !normalize(el.value));
@@ -1239,6 +1235,9 @@
         missingEl.reportValidity?.();
         return;
       }
+      // grava no painel ANTES de abrir o WhatsApp — o lead fica registrado mesmo
+      // se a pessoa fechar a aba sem confirmar o envio da mensagem.
+      saveLeadEmpresa(form, true);
       openWhatsApp(EMPRESA_WHATSAPP, buildAdvertiseMessage(data));
     });
   }
