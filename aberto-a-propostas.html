@@ -324,6 +324,8 @@
 
   <div class="ap-toast" id="ap-toast"></div>
 
+  <script src="/supabase-config-novos-talentos.js?v=20260817leadfix"></script>
+  <script src="/script.js?v=20260817leadfix"></script>
   <script src="/assets/share-art.js"></script>
   <script>
     var PAGE_URL='https://www.rhimob.com.br/aberto-a-propostas';
@@ -349,6 +351,36 @@
       filename:'aberto-propostas-rhimob.png'
     },btn);}
 
+    // grava no site_leads (painel) — antes esse form só abria o WhatsApp, sem
+    // persistir nada; se a pessoa não confirmasse o envio lá, o lead sumia.
+    var apSessionId = 'ap-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    function salvarApLead(row, enviou){
+      var cfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || {};
+      if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return;
+      if (!row.nome && !row.whatsapp) return;
+      var url = cfg.url.replace(/\/$/, '') + '/rest/v1/site_leads';
+      var headers = { apikey: cfg.publishableKey, Authorization: 'Bearer ' + cfg.publishableKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' };
+      var body = {
+        session_id: apSessionId + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        nome: row.nome, whatsapp: row.whatsapp, cidade: row.cidade,
+        cargo_vaga: row.perfil, mensagem: row.mensagem,
+        tipo: 'candidato', origem: 'Aberto a propostas (aberto-a-propostas.html)',
+        pagina: location.href, enviou_whatsapp: !!enviou
+      };
+      fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) }).catch(function(){});
+    }
+    ['ap-nome','ap-wpp','ap-cidade'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('blur', function(){
+        salvarApLead({
+          nome: (document.getElementById('ap-nome').value||'').trim(),
+          whatsapp: (document.getElementById('ap-wpp').value||'').trim(),
+          cidade: (document.getElementById('ap-cidade').value||'').trim(),
+          perfil: document.getElementById('ap-perfil').value,
+          mensagem: ''
+        }, false);
+      });
+    });
     document.getElementById('apForm').addEventListener('submit',function(e){
       e.preventDefault();
       var nome=(document.getElementById('ap-nome').value||'').trim();
@@ -372,6 +404,12 @@
         (extra? 'Obs.: '+extra : '')
       ].filter(Boolean);
       var msg=encodeURIComponent(linhas.join('\n'));
+      // grava ANTES de abrir o WhatsApp — o lead fica registrado mesmo se a
+      // pessoa fechar a aba sem confirmar o envio da mensagem.
+      salvarApLead({
+        nome: nome, whatsapp: wpp, cidade: cidade, perfil: perfil,
+        mensagem: [busca.join(', '), oferece, extra].filter(Boolean).join(' | ')
+      }, true);
       if(window.gtag) gtag('event','aberto_propostas_envio',{perfil:perfil});
       window.open('https://api.whatsapp.com/send?phone=5511953973268&text='+msg,'_blank');
     });
