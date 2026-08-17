@@ -1133,8 +1133,8 @@
 
       try {
         await salvarCandidatura(
-          { id: 'perfil', titulo: data.perfil, local: data.regiao, responsavel_whatsapp: VAGAS_WHATSAPP, responsavel_nome: 'Mariana' },
-          { nome: data.nome, whatsapp: data.whatsapp, cidade: data.regiao, disponibilidade: data.mensagem || '' }
+          { id: 'perfil', title: data.perfil, location: data.regiao, responsible: { whatsapp: VAGAS_WHATSAPP, name: 'Mariana' } },
+          { nome: data.nome, whatsapp: data.whatsapp, cidade: data.regiao, inicio: data.mensagem || '' }
         );
       } catch (_) {}
 
