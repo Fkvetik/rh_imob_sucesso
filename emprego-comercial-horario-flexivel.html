@@ -79,6 +79,11 @@
     .vg-cta-section { background: linear-gradient(135deg, var(--purple-900) 0%, var(--purple-700) 100%); color: var(--white); padding: 72px 0; text-align: center; }
     .vg-cta-section h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 800; margin: 0 0 12px; line-height: 1.25; }
     .vg-cta-section p { font-size: 1rem; opacity: .82; max-width: 500px; margin: 0 auto 32px; line-height: 1.7; }
+    .vg-form { display: flex; flex-direction: column; gap: 12px; max-width: 380px; margin: 0 auto; }
+    .vg-form input { padding: 14px 16px; border-radius: 12px; border: none; font-size: .95rem; font-family: inherit; }
+    .vg-form button { background: var(--orange-600); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .18s; }
+    .vg-form button:hover { opacity: .9; }
+    .vg-form-note { font-size: .78rem; opacity: .65; margin-top: 12px; }
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .55s, transform .55s; }
     .reveal.visible { opacity: 1; transform: none; }
   </style>
@@ -161,8 +166,14 @@
     <section class="vg-cta-section" id="contato">
       <div class="container">
         <h2 class="reveal">Quer entender melhor essa rotina?</h2>
-        <p class="reveal">Conta seu momento atual — a Mariana te indica o caminho certo.</p>
-        <a class="btn btn-cta btn-large reveal" href="/vagas#perfil">Quero saber mais →</a>
+        <p class="reveal">Deixa seu contato — a Mariana te chama no WhatsApp com os detalhes.</p>
+        <form id="vgForm" class="vg-form reveal" novalidate>
+          <input type="text" id="vg-nome" placeholder="Seu nome" required />
+          <input type="tel" id="vg-wpp" placeholder="WhatsApp" required />
+          <input type="text" id="vg-cidade" placeholder="Cidade/região" required />
+          <button type="submit">Quero saber mais →</button>
+        </form>
+        <p class="vg-form-note reveal">Seus dados são usados apenas para este contato, de forma confidencial. Você revisa a mensagem no WhatsApp antes de enviar.</p>
       </div>
     </section>
   </main>
@@ -202,6 +213,52 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
     }, { threshold: 0.12 });
     revealEls.forEach(el => io.observe(el));
+
+    // grava no site_leads (painel) e só depois abre o WhatsApp — sem sair
+    // desta página, então o contexto imobiliário só aparece na conversa.
+    (function(){
+      var vgSessionId = 'vg-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      function salvarVgLead(row, enviou){
+        var cfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || {};
+        if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return;
+        if (!row.nome && !row.whatsapp) return;
+        var url = cfg.url.replace(/\/$/, '') + '/rest/v1/site_leads';
+        var headers = { apikey: cfg.publishableKey, Authorization: 'Bearer ' + cfg.publishableKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' };
+        var body = {
+          session_id: vgSessionId + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          nome: row.nome, whatsapp: row.whatsapp, cidade: row.cidade,
+          tipo: 'candidato', origem: 'Emprego comercial horário flexível (emprego-comercial-horario-flexivel.html)',
+          pagina: location.href, enviou_whatsapp: !!enviou
+        };
+        fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) }).catch(function(){});
+      }
+      var form = document.getElementById('vgForm');
+      if (!form) return;
+      ['vg-nome','vg-wpp','vg-cidade'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('blur', function(){
+          salvarVgLead({
+            nome: (document.getElementById('vg-nome').value||'').trim(),
+            whatsapp: (document.getElementById('vg-wpp').value||'').trim(),
+            cidade: (document.getElementById('vg-cidade').value||'').trim()
+          }, false);
+        });
+      });
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var nome = (document.getElementById('vg-nome').value||'').trim();
+        var wpp = (document.getElementById('vg-wpp').value||'').trim();
+        var cidade = (document.getElementById('vg-cidade').value||'').trim();
+        if (!nome || !wpp || !cidade) { alert('Preencha nome, WhatsApp e cidade.'); return; }
+        salvarVgLead({ nome: nome, whatsapp: wpp, cidade: cidade }, true);
+        var msg = encodeURIComponent(
+          'Olá, Mariana! Vim pelo site (emprego comercial horário flexível) e quero saber mais sobre a oportunidade.\n\n' +
+          'Nome: ' + nome + '\nMeu WhatsApp: ' + wpp + '\nCidade/Região: ' + cidade
+        );
+        if (window.gtag) gtag('event', 'vg_lead_envio', { pagina: 'emprego-comercial-horario-flexivel' });
+        window.open('https://api.whatsapp.com/send?phone=5511953973268&text=' + msg, '_blank');
+      });
+    })();
   </script>
   <script src="/supabase-config-novos-talentos.js?v=20260817vagasgen"></script>
   <script src="/script.js?v=20260817vagasgen"></script>
