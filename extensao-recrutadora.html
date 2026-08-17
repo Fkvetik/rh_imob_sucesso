@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Extensão Recrutadora Automática para Imobiliárias — RH IMOB Recrutador</title>
+  <meta name="description" content="Extensão para Chrome que coleta currículos de corretores automaticamente, organiza num CRM Kanban e dispara abordagem no WhatsApp — mesmo quando você não está disponível. Ferramenta da RH IMOB para recrutamento imobiliário." />
+  <meta name="theme-color" content="#2b124d" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.rhimob.com.br/extensao-recrutadora" />
+
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260509anuncie" />
+  <link rel="manifest" href="/site.webmanifest?v=20260509anuncie" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="RH IMOB" />
+  <meta property="og:title" content="Extensão Recrutadora Automática para Imobiliárias — RH IMOB Recrutador" />
+  <meta property="og:description" content="Coleta currículos, organiza em Kanban e dispara WhatsApp automaticamente — trabalhando mesmo quando você não está na frente do computador." />
+  <meta property="og:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.rhimob.com.br/assets/og-rhimob.jpg?v=20260524" />
+
+  <link rel="stylesheet" href="styles.css?v=20260817ext" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "RH IMOB Recrutador",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Chrome",
+    "description": "Extensão para Google Chrome que automatiza a coleta de currículos de corretores de imóveis, organiza os candidatos num painel Kanban e dispara abordagem via WhatsApp de forma automática.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+    "publisher": { "@type": "Organization", "name": "RH IMOB", "sameAs": "https://www.rhimob.com.br" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "A extensão funciona sozinha, sem eu estar no computador?", "acceptedAnswer": { "@type": "Answer", "text": "Sim. Depois de configurada, ela roda em segundo plano e continua coletando currículos e organizando candidatos mesmo quando você está em reunião, atendendo cliente ou fora do horário comercial." } },
+      { "@type": "Question", "name": "De onde vêm os currículos coletados?", "acceptedAnswer": { "@type": "Answer", "text": "Da Catho, a partir de um filtro de busca que você configura uma vez (cargo, região, etc.). A extensão coleta os currículos que aparecem nesse filtro automaticamente." } },
+      { "@type": "Question", "name": "Preciso saber programar ou mexer com sistema?", "acceptedAnswer": { "@type": "Answer", "text": "Não. A instalação é feita pela RH IMOB junto com você, e o uso do dia a dia é só acompanhar o painel Kanban e o WhatsApp." } },
+      { "@type": "Question", "name": "Isso substitui o serviço completo de recrutamento da RH IMOB?", "acceptedAnswer": { "@type": "Answer", "text": "Não — é um complemento. A RH IMOB oferece o serviço de ponta a ponta (triagem, entrevista, indicação), e a extensão é a ferramenta que automatiza a parte de captação e primeiro contato para quem quer ter esse processo internamente." } }
+    ]
+  }
+  </script>
+
+  <style>
+    .ext-hero { padding: 76px 0 56px; text-align: center; }
+    .ext-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.18; color: var(--purple-900); max-width: 820px; margin: 16px auto 20px; }
+    .ext-hero .hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 640px; margin: 0 auto 32px; line-height: 1.7; }
+    .ext-hero .kicker { display: inline-block; background: var(--orange-100); color: var(--orange-600); font-size: .82rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 12px; }
+    .ext-badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+    .ext-badge { background: var(--purple-50); color: var(--purple-700); font-size: .82rem; font-weight: 700; padding: 7px 14px; border-radius: 100px; border: 1px solid var(--purple-100); }
+    .ext-grid4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; margin-top: 44px; max-width: 900px; margin-left: auto; margin-right: auto; }
+    @media (max-width: 720px) { .ext-grid4 { grid-template-columns: 1fr; } }
+    .ext-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 28px 24px; }
+    .ext-card .icon { font-size: 2rem; margin-bottom: 12px; }
+    .ext-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--purple-900); margin: 0 0 8px; }
+    .ext-card p { font-size: .9rem; color: var(--muted); line-height: 1.65; margin: 0; }
+    .ext-processo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 44px; }
+    @media (max-width: 720px) { .ext-processo { grid-template-columns: 1fr; } }
+    .ext-processo-step { text-align: center; padding: 0 20px; }
+    .ext-processo-num { width: 52px; height: 52px; border-radius: 50%; background: var(--purple-700); color: #fff; font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
+    .ext-processo-step h3 { font-size: 1rem; font-weight: 700; color: var(--purple-900); margin: 0 0 8px; }
+    .ext-processo-step p { font-size: .88rem; color: var(--muted); line-height: 1.6; margin: 0; }
+    .ext-faq { max-width: 760px; margin: 0 auto; }
+    .ext-faq details { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 18px 22px; margin-bottom: 12px; }
+    .ext-faq summary { cursor: pointer; font-weight: 700; color: var(--purple-900); font-size: .96rem; }
+    .ext-faq p { font-size: .89rem; color: var(--muted); line-height: 1.65; margin: 10px 0 0; }
+    .ext-cta-section { background: linear-gradient(135deg, var(--purple-900) 0%, var(--purple-700) 100%); color: var(--white); padding: 76px 0; text-align: center; }
+    .ext-cta-section h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 800; margin: 0 0 12px; line-height: 1.25; }
+    .ext-cta-section p { font-size: 1rem; opacity: .82; max-width: 520px; margin: 0 auto 32px; line-height: 1.7; }
+    .ext-form { display: flex; flex-direction: column; gap: 12px; max-width: 380px; margin: 0 auto; }
+    .ext-form input { padding: 14px 16px; border-radius: 12px; border: none; font-size: .95rem; font-family: inherit; }
+    .ext-form button { background: var(--orange-600); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .18s; }
+    .ext-form button:hover { opacity: .9; }
+    .ext-form-note { font-size: .78rem; opacity: .65; margin-top: 12px; }
+    .ext-store-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--white); color: var(--purple-900); border: 1.5px solid var(--purple-100); border-radius: 14px; padding: 13px 22px; font-weight: 700; font-size: .92rem; text-decoration: none; margin-top: 18px; transition: transform .15s, box-shadow .15s; }
+    .ext-store-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .55s, transform .55s; }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xluiu45itd");
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header" id="topo">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="RH IMOB - início">
+        <img src="/assets/rhimob-logo.jpg" alt="" class="brand-mark" />
+        <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-principal">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="main-nav" id="menu-principal" aria-label="Menu principal">
+        <a href="/#contratar">Preciso contratar</a>
+        <a href="/vagas">Vagas</a><a href="/incorporadoras">Incorporadoras</a><a href="/mercado-corretores">Mercado</a>
+        <a href="/carreira">Carreira</a>
+        <a href="/#como-funciona">Como funciona</a>
+        <a href="/#contato">Contato</a>
+      <a href="/blog">Blog</a><a href="/leiloes">Leilões</a></nav>
+      <a class="btn btn-cta btn-header" href="#contato">Quero conhecer</a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <section class="ext-hero">
+      <div class="container">
+        <span class="kicker reveal">Ferramenta RH IMOB · Extensão para Chrome</span>
+        <h1 class="reveal">A recrutadora que continua trabalhando mesmo quando você não está disponível.</h1>
+        <p class="hero-sub reveal">Uma extensão de Chrome que roda em segundo plano no seu computador: coleta currículos de corretores, organiza tudo num painel Kanban e dispara a primeira abordagem pelo WhatsApp — automaticamente, o dia inteiro.</p>
+        <div class="ext-badge-row reveal">
+          <span class="ext-badge">🔄 Roda em segundo plano</span>
+          <span class="ext-badge">📋 Painel Kanban</span>
+          <span class="ext-badge">💬 WhatsApp automático</span>
+          <span class="ext-badge">🖥️ Direto no seu Chrome</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad" id="funcionalidades">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">O que a extensão faz</span>
+          <h2>Automatiza a parte mais repetitiva do recrutamento — sem você precisar acompanhar em tempo real.</h2>
+          <p>Configura uma vez, e ela continua rodando: em reunião, atendendo cliente, fora do horário comercial.</p>
+        </div>
+        <div class="ext-grid4">
+          <div class="ext-card reveal">
+            <div class="icon">🔍</div>
+            <h3>Coleta automática na Catho</h3>
+            <p>A partir de um filtro de busca configurado por você (cargo, região), a extensão coleta os currículos que aparecem — sem precisar copiar e colar manualmente.</p>
+          </div>
+          <div class="ext-card reveal">
+            <div class="icon">📋</div>
+            <h3>Organização em Kanban</h3>
+            <p>Cada candidato entra num painel visual — Novo, Contatado, Agendado, Encerrado — com histórico completo de cada interação.</p>
+          </div>
+          <div class="ext-card reveal">
+            <div class="icon">💬</div>
+            <h3>Abordagem automática via WhatsApp</h3>
+            <p>A primeira mensagem de contato é disparada sozinha, respeitando intervalo entre envios — sem parecer robótico e sem risco de bloqueio.</p>
+          </div>
+          <div class="ext-card reveal">
+            <div class="icon">👥</div>
+            <h3>Múltiplos operadores e supervisão</h3>
+            <p>Cada recrutadora tem seu login; o administrador acompanha quantos contatos foram extraídos, enviados e a evolução de cada operador da equipe.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad" style="background:var(--off);">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Complemento, não substituto</span>
+          <h2>A RH IMOB entrega o serviço completo de RH — e também a ferramenta pra quem quer o processo internamente.</h2>
+          <p>Além do recrutamento de ponta a ponta (triagem, entrevista, indicação), especializado no mercado imobiliário, oferecemos essa extensão pra imobiliárias que já têm equipe de recrutamento e querem viabilizar e agilizar o processo de captação e primeiro contato com novos talentos.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad" id="como-funciona">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Como funciona</span>
+          <h2>Três passos até a extensão estar rodando na sua equipe.</h2>
+        </div>
+        <div class="ext-processo">
+          <div class="ext-processo-step reveal">
+            <div class="ext-processo-num">1</div>
+            <h3>Você fala com a Mariana</h3>
+            <p>Entende sua rotina de recrutamento hoje e como a extensão se encaixa na sua operação.</p>
+          </div>
+          <div class="ext-processo-step reveal">
+            <div class="ext-processo-num">2</div>
+            <h3>Instalação e configuração</h3>
+            <p>A RH IMOB instala a extensão com sua equipe e configura os filtros de busca e mensagens de abordagem.</p>
+          </div>
+          <div class="ext-processo-step reveal">
+            <div class="ext-processo-num">3</div>
+            <h3>Sua equipe acompanha o painel</h3>
+            <p>Candidatos chegam sozinhos no Kanban — sua equipe entra só na hora de conversar com quem já demonstrou interesse.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad" style="background:var(--off);">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Perguntas frequentes</span>
+          <h2>O que você precisa saber antes de conhecer a ferramenta.</h2>
+        </div>
+        <div class="ext-faq">
+          <details class="reveal"><summary>A extensão funciona sozinha, sem eu estar no computador?</summary><p>Sim. Depois de configurada, ela roda em segundo plano e continua coletando currículos e organizando candidatos mesmo quando você está em reunião, atendendo cliente ou fora do horário comercial.</p></details>
+          <details class="reveal"><summary>De onde vêm os currículos coletados?</summary><p>Da Catho, a partir de um filtro de busca que você configura uma vez (cargo, região, etc.). A extensão coleta os currículos que aparecem nesse filtro automaticamente.</p></details>
+          <details class="reveal"><summary>Preciso saber programar ou mexer com sistema?</summary><p>Não. A instalação é feita pela RH IMOB junto com você, e o uso do dia a dia é só acompanhar o painel Kanban e o WhatsApp.</p></details>
+          <details class="reveal"><summary>Isso substitui o serviço completo de recrutamento da RH IMOB?</summary><p>Não — é um complemento. A RH IMOB oferece o serviço de ponta a ponta (triagem, entrevista, indicação), e a extensão é a ferramenta que automatiza a parte de captação e primeiro contato para quem quer ter esse processo internamente.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="ext-cta-section" id="contato">
+      <div class="container">
+        <h2 class="reveal">Quer ver a extensão funcionando na sua imobiliária?</h2>
+        <p class="reveal">Deixa seu contato — a Mariana te chama no WhatsApp e mostra como funciona.</p>
+        <form id="extForm" class="ext-form reveal" novalidate>
+          <input type="text" id="ext-nome" placeholder="Seu nome" required />
+          <input type="text" id="ext-empresa" placeholder="Nome da imobiliária/empresa" required />
+          <input type="tel" id="ext-wpp" placeholder="WhatsApp" required />
+          <button type="submit">Quero conhecer →</button>
+        </form>
+        <p class="ext-form-note reveal">Seus dados são usados apenas para este contato, de forma confidencial.</p>
+        <div class="reveal">
+          <a class="ext-store-btn" href="https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.364c2.917 0 5.42 1.688 6.624 4.14H12v.001-.001H5.05A7.634 7.634 0 0112 4.364zM4.364 12c0-1.174.278-2.283.772-3.266l3.822 6.62A7.628 7.628 0 014.364 12zM12 19.636a7.635 7.635 0 01-6.624-3.847L8.786 12h6.617l2.83-4.902A7.62 7.62 0 0119.636 12c0 4.212-3.424 7.636-7.636 7.636z"/></svg>
+            Ver na Chrome Web Store
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand" href="/" aria-label="RH IMOB">
+        <img src="/assets/rhimob-logo.jpg" alt="" class="brand-mark" />
+        <span><strong>RH IMOB</strong><small>Recrutamento imobiliário</small></span>
+      </a>
+      <nav class="footer-nav" aria-label="Links do rodapé">
+        <a href="/">Início</a>
+        <a href="/vagas">Vagas</a>
+        <a href="/carreira">Carreira</a>
+        <a href="/novos-talentos.html">Novos Talentos</a>
+        <a href="/politica.html">Privacidade</a>
+        <a href="https://www.instagram.com/rh_imob/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.facebook.com/recursoshumanosimob/" target="_blank" rel="noopener">Facebook</a>
+        <a href="https://www.linkedin.com/in/marianarhimob/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+      <p class="footer-copy">© 2026 RH IMOB. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.getElementById('menu-principal');
+    if (toggle && nav) {
+      toggle.addEventListener('click', () => {
+        const open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!open));
+        nav.classList.toggle('is-open', !open);
+      });
+    }
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+
+    // grava no site_leads (painel) e abre o WhatsApp — mesmo padrão das
+    // outras páginas de captação do site.
+    (function(){
+      var extSessionId = 'ext-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      function salvarExtLead(row, enviou){
+        var cfg = window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG || {};
+        if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return;
+        if (!row.nome && !row.whatsapp) return;
+        var url = cfg.url.replace(/\/$/, '') + '/rest/v1/site_leads';
+        var headers = { apikey: cfg.publishableKey, Authorization: 'Bearer ' + cfg.publishableKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' };
+        var body = {
+          session_id: extSessionId + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          nome: row.nome, whatsapp: row.whatsapp, empresa: row.empresa,
+          tipo: 'empresa', origem: 'Extensão Recrutadora (extensao-recrutadora.html)',
+          pagina: location.href, enviou_whatsapp: !!enviou
+        };
+        fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) }).catch(function(){});
+      }
+      var form = document.getElementById('extForm');
+      if (!form) return;
+      ['ext-nome','ext-empresa','ext-wpp'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('blur', function(){
+          salvarExtLead({
+            nome: (document.getElementById('ext-nome').value||'').trim(),
+            empresa: (document.getElementById('ext-empresa').value||'').trim(),
+            whatsapp: (document.getElementById('ext-wpp').value||'').trim()
+          }, false);
+        });
+      });
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var nome = (document.getElementById('ext-nome').value||'').trim();
+        var empresa = (document.getElementById('ext-empresa').value||'').trim();
+        var wpp = (document.getElementById('ext-wpp').value||'').trim();
+        if (!nome || !empresa || !wpp) { alert('Preencha nome, empresa e WhatsApp.'); return; }
+        salvarExtLead({ nome: nome, empresa: empresa, whatsapp: wpp }, true);
+        var msg = encodeURIComponent(
+          'Olá, Mariana! Vim pelo site e quero conhecer a extensão recrutadora da RH IMOB.\n\n' +
+          'Nome: ' + nome + '\nEmpresa: ' + empresa + '\nMeu WhatsApp: ' + wpp
+        );
+        if (window.gtag) gtag('event', 'ext_lead_envio', { pagina: 'extensao-recrutadora' });
+        window.open('https://api.whatsapp.com/send?phone=5511953973268&text=' + msg, '_blank');
+      });
+    })();
+  </script>
+  <script src="/supabase-config-novos-talentos.js?v=20260817ext"></script>
+  <script src="/script.js?v=20260817ext"></script>
+</body>
+</html>
