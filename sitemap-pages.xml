@@ -6,6 +6,12 @@
   <url><loc>https://www.rhimob.com.br/</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://www.rhimob.com.br/vagas</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://www.rhimob.com.br/carreira</loc><lastmod>2026-06-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+
+  <!-- Captação genérica vendas/comercial (funil de transição de área) -->
+  <url><loc>https://www.rhimob.com.br/vaga-vendas-sem-experiencia</loc><lastmod>2026-08-17</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.rhimob.com.br/emprego-comercial-horario-flexivel</loc><lastmod>2026-08-17</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.rhimob.com.br/trabalho-vendas-sem-carteira-assinada</loc><lastmod>2026-08-17</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://www.rhimob.com.br/vaga-vendas-folga-durante-semana</loc><lastmod>2026-08-17</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
   <url><loc>https://www.rhimob.com.br/plataformas</loc><lastmod>2026-06-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.rhimob.com.br/mercado-corretores</loc><lastmod>2026-07-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
 
