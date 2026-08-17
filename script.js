@@ -613,14 +613,23 @@
     // do "#" e funde as linhas da mesma pessoa em 1 lead completo.
     const base = ensureLeadSession();
     const tipo = g('tipo') || 'empresa';
+    // formulários de candidato (ex.: Banco Confidencial de Talentos) usam nomes
+    // de campo próprios — cai pro nome de empresa quando o específico não existe.
+    const extrasTalento = [
+      g('creci') && `CRECI: ${g('creci')}`,
+      g('experiencia') && `Experiência: ${g('experiencia')}`,
+      g('empresaAtual') && `Empresa atual: ${g('empresaAtual')}`,
+      g('interesse') && `O que faria mudar: ${g('interesse')}`,
+      g('observacoes')
+    ].filter(Boolean).join(' | ');
     const row = {
       session_id: base + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       nome, whatsapp,
-      empresa: g('empresa'), cidade: g('cidade'), cargo_vaga: g('cargoVaga'),
+      empresa: g('empresa'), cidade: g('cidade') || g('regiao'), cargo_vaga: g('cargoVaga') || g('funcao'),
       quantidade: g('quantidade'), urgencia: g('urgencia'),
       formato_contratacao: g('formatoContratacao'), remuneracao: g('remuneracao'),
       beneficios: g('beneficios'), exigencias: g('exigencias'),
-      mensagem: g('mensagem') || [g('perfilDesejado'), g('detalhes')].filter(Boolean).join(' | '),
+      mensagem: g('mensagem') || [g('perfilDesejado'), g('detalhes')].filter(Boolean).join(' | ') || extrasTalento,
       tipo,
       origem: g('origem') || document.title || location.pathname,
       pagina: location.href,
@@ -1055,6 +1064,12 @@
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeTalentModal();
     });
+    // captura progressiva: grava no site_leads (painel, uso interno da RH IMOB)
+    // ao sair dos campos-chave, mesmo que a pessoa não confirme o envio no WhatsApp.
+    ['nome', 'whatsapp', 'regiao', 'funcao'].forEach((n) => {
+      const el = form.elements[n];
+      if (el) el.addEventListener('blur', () => saveLeadEmpresa(form, false));
+    });
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const data = {
@@ -1075,6 +1090,7 @@
         alert('Preencha os campos obrigatórios para enviar seu perfil.');
         return;
       }
+      saveLeadEmpresa(form, true);
       openWhatsApp(VAGAS_WHATSAPP, buildTalentMessage(data));
     });
   }

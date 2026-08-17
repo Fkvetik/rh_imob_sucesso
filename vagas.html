@@ -538,6 +538,8 @@
         <p>Preencha os dados principais. A mensagem será aberta no WhatsApp da Mariana para você revisar antes de enviar.</p>
       </div>
       <form id="talentForm" class="job-form talent-form">
+        <input type="hidden" name="tipo" value="candidato" />
+        <input type="hidden" name="origem" value="Banco Confidencial de Talentos (vagas.html)" />
         <label>Nome completo
           <input type="text" name="nome" autocomplete="name" required placeholder="Seu nome" />
         </label>
@@ -592,7 +594,7 @@
           <textarea name="observacoes" rows="3" placeholder="Ex.: região desejada, tipo de operação, melhor horário para contato"></textarea>
         </label>
         <button class="btn btn-primary btn-full" type="submit">Enviar meu perfil para Mariana</button>
-        <p class="form-helper">Seu cadastro não é publicado no site. Ele apenas abre uma mensagem no WhatsApp para você confirmar o envio.</p>
+        <p class="form-helper">Seu cadastro não é publicado no site — fica registrado de forma confidencial só na RH IMOB, e abre uma mensagem no WhatsApp para você confirmar o envio.</p>
       </form>
     </div>
   </div>
