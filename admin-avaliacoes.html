@@ -59,6 +59,39 @@
     .compat b{font-size:13.5px;font-weight:700}
     .empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px}
     .hide{display:none!important}
+
+    .subtabs{display:flex;gap:4px;border-bottom:1px solid var(--linha);margin-bottom:22px}
+    .subtab{padding:11px 18px;font-size:14px;font-weight:800;color:#8c809d;cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent}
+    .subtab.on{color:var(--roxo);border-color:var(--laranja)}
+    .aviso{background:#fff8ec;border:1px solid #ffe0b8;color:#8a5a00;border-radius:13px;padding:14px 16px;font-size:13px;line-height:1.6;margin-bottom:20px}
+    .aviso b{display:block;margin-bottom:4px}
+    .aviso ul{margin:6px 0 0;padding-left:18px}
+    .grp{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--laranja);margin:22px 0 10px}
+    .pg{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:14px 16px;margin-bottom:9px;display:flex;gap:12px;align-items:flex-start}
+    .pg.off{opacity:.5}
+    .pg-txt{flex:1;font-size:14px;line-height:1.5}
+    .pg-tags{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
+    .tg{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.03em}
+    .tg-inv{background:#f4e8ff;color:#6b21a8}
+    .tg-off{background:#eee;color:#666}
+    .tg-resp{background:#e6f4ff;color:#0b5c8a}
+    .pg-acts{display:flex;gap:6px;flex-shrink:0}
+    .mini{border:1px solid var(--linha);background:#fff;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;color:var(--roxo)}
+    .mini:hover{background:#faf8ff}
+    .mini-del{color:#c0392b;border-color:#f5c6c0}
+    .edt{background:#fff;border:2px solid var(--roxo2);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+    .edt label{display:block;font-size:12px;font-weight:800;margin:0 0 5px;color:#3f3350}
+    .edt textarea,.edt select,.edt input[type=number]{width:100%;padding:11px 13px;border:1.5px solid var(--linha);border-radius:10px;font-size:14px;font-family:inherit;outline:none;color:var(--roxo);margin-bottom:12px}
+    .edt textarea{min-height:70px;resize:vertical}
+    .edt-row{display:flex;gap:12px;flex-wrap:wrap}
+    .edt-row>div{flex:1;min-width:130px}
+    .chk{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700;margin-bottom:14px;cursor:pointer}
+    .chk input{width:19px;height:19px;accent-color:var(--roxo2);cursor:pointer;margin:0}
+    .chk small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+    .edt-btns{display:flex;gap:8px}
+    .bsave{background:var(--roxo);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:800;cursor:pointer}
+    .bcanc{background:#f1edf8;color:var(--roxo);border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer}
+    .badd{background:var(--laranja);color:#fff;border:none;border-radius:11px;padding:12px 22px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:18px}
   </style>
 </head>
 <body>
@@ -80,6 +113,12 @@
   <h1 class="tt">Avaliações de Perfil</h1>
   <p class="sub">Questionário de aderência ao perfil comercial imobiliário — triagem de recrutamento.</p>
 
+  <div class="subtabs">
+    <button class="subtab on" data-sub="resultados">📊 Resultados</button>
+    <button class="subtab" data-sub="perguntas">✏️ Perguntas</button>
+  </div>
+
+<div id="sub-resultados">
   <div class="stats" id="stats"></div>
 
   <div class="filtros">
@@ -96,6 +135,23 @@
   </div>
 
   <div id="lista"><p class="empty">Carregando…</p></div>
+</div>
+
+<div id="sub-perguntas" class="hide">
+  <div class="aviso">
+    <b>⚠️ Antes de mexer, leia</b>
+    <ul>
+      <li><b>"Concordar é ruim"</b> é a opção mais importante. Marque quando concordar com a frase for sinal negativo (ex.: <i>"prefiro esperar o cliente chegar"</i>). Se marcar errado, o relatório inverte e mente.</li>
+      <li>Este questionário é <b>o mesmo para todas as empresas</b>. Alterações valem para todos.</li>
+      <li>Pergunta já respondida <b>não pode ser excluída</b> — desative, para não quebrar o histórico.</li>
+      <li>Mudar a <b>quantidade</b> de perguntas faz avaliações antigas e novas deixarem de ser comparáveis entre si.</li>
+    </ul>
+  </div>
+
+  <button class="badd" id="btn-nova">+ Nova pergunta</button>
+  <div id="editor"></div>
+  <div id="perguntas-lista"><p class="empty">Carregando…</p></div>
+</div>
 </div>
 
 <script>
@@ -273,6 +329,125 @@
     }
     return html;
   }
+
+  // ── Sub-abas ───────────────────────────────────────────────
+  var PERGUNTAS = [], DIMLIST = [], perguntasCarregadas = false;
+
+  document.querySelectorAll('.subtab').forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.subtab').forEach(function(x){ x.classList.toggle('on', x === t); });
+      var alvo = t.dataset.sub;
+      document.getElementById('sub-resultados').classList.toggle('hide', alvo !== 'resultados');
+      document.getElementById('sub-perguntas').classList.toggle('hide', alvo !== 'perguntas');
+      if (alvo === 'perguntas' && !perguntasCarregadas) carregarPerguntas();
+    });
+  });
+
+  function carregarPerguntas(){
+    rpc('rpc_admin_perguntas_listar', { p_admin_password: ADMIN_PWD }).then(function(r){
+      if (!r || !r.ok){
+        document.getElementById('perguntas-lista').innerHTML = '<p class="empty">'+esc((r&&r.error)||'Erro ao carregar')+'</p>';
+        document.getElementById('btn-nova').style.display = 'none';
+        return;
+      }
+      perguntasCarregadas = true;
+      DIMLIST = r.dimensoes || [];
+      PERGUNTAS = r.perguntas || [];
+      renderPerguntas();
+    }).catch(function(){
+      document.getElementById('perguntas-lista').innerHTML = '<p class="empty">Falha de conexão.</p>';
+    });
+  }
+
+  function nomeDim(cod){
+    var d = DIMLIST.filter(function(x){ return x.codigo === cod; })[0];
+    return d ? d.nome : cod;
+  }
+
+  function renderPerguntas(){
+    if (!PERGUNTAS.length){ document.getElementById('perguntas-lista').innerHTML = '<p class="empty">Nenhuma pergunta cadastrada.</p>'; return; }
+    var html = '';
+    DIMLIST.forEach(function(d){
+      var doGrupo = PERGUNTAS.filter(function(p){ return p.dimensao === d.codigo; });
+      if (!doGrupo.length) return;
+      html += '<div class="grp">'+esc(d.nome)+' · '+doGrupo.length+' pergunta(s)</div>';
+      html += doGrupo.map(function(p){
+        return '<div class="pg'+(p.ativo ? '' : ' off')+'">' +
+          '<div class="pg-txt">'+esc(p.texto) +
+            '<div class="pg-tags">' +
+              (p.invertida  ? '<span class="tg tg-inv">🔄 Concordar é ruim</span>' : '') +
+              (p.ativo      ? '' : '<span class="tg tg-off">Desativada</span>') +
+              (p.respondida ? '<span class="tg tg-resp">Já respondida</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="pg-acts">' +
+            '<button class="mini" onclick="editarPergunta('+p.id+')">Editar</button>' +
+            (p.respondida ? '' : '<button class="mini mini-del" onclick="excluirPergunta('+p.id+')">Excluir</button>') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    });
+    document.getElementById('perguntas-lista').innerHTML = html;
+  }
+
+  document.getElementById('btn-nova').addEventListener('click', function(){ abrirEditor(null); });
+  window.editarPergunta = function(id){ abrirEditor(PERGUNTAS.filter(function(p){ return p.id === id; })[0]); };
+
+  function abrirEditor(p){
+    var novo = !p;
+    var proxOrdem = PERGUNTAS.reduce(function(m,x){ return Math.max(m, x.ordem||0); }, 0) + 1;
+    document.getElementById('editor').innerHTML =
+      '<div class="edt">' +
+        '<label>Texto da pergunta</label>' +
+        '<textarea id="e-texto" placeholder="Escreva uma afirmação que o candidato vai avaliar de 1 a 5…">'+esc(novo?'':p.texto)+'</textarea>' +
+        '<div class="edt-row">' +
+          '<div><label>Dimensão</label><select id="e-dim">' +
+            DIMLIST.map(function(d){
+              return '<option value="'+d.codigo+'"'+((!novo && p.dimensao===d.codigo)?' selected':'')+'>'+esc(d.nome)+'</option>';
+            }).join('') +
+          '</select></div>' +
+          '<div><label>Ordem no formulário</label><input type="number" id="e-ordem" value="'+(novo?proxOrdem:(p.ordem||0))+'" /></div>' +
+        '</div>' +
+        '<label class="chk"><input type="checkbox" id="e-inv"'+((!novo && p.invertida)?' checked':'')+' />' +
+          '<span>Concordar com esta frase é <b>ruim</b><small>Marque se responder 5 indica um ponto negativo. Ex.: "prefiro esperar o cliente chegar".</small></span></label>' +
+        '<label class="chk"><input type="checkbox" id="e-ativo"'+((novo || p.ativo)?' checked':'')+' />' +
+          '<span>Ativa<small>Desmarque para tirar do formulário sem apagar o histórico.</small></span></label>' +
+        '<div class="edt-btns">' +
+          '<button class="bsave" id="e-salvar">'+(novo?'Criar pergunta':'Salvar alterações')+'</button>' +
+          '<button class="bcanc" id="e-cancelar">Cancelar</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('e-cancelar').onclick = function(){ document.getElementById('editor').innerHTML = ''; };
+    document.getElementById('e-salvar').onclick = function(){
+      var texto = document.getElementById('e-texto').value.trim();
+      if (!texto){ alert('Escreva o texto da pergunta.'); return; }
+      var btn = this; btn.disabled = true; btn.textContent = 'Salvando…';
+      rpc('rpc_admin_pergunta_salvar', {
+        p_admin_password: ADMIN_PWD,
+        p_id: novo ? null : p.id,
+        p_dimensao: document.getElementById('e-dim').value,
+        p_texto: texto,
+        p_invertida: document.getElementById('e-inv').checked,
+        p_ordem: parseInt(document.getElementById('e-ordem').value, 10) || 0,
+        p_ativo: document.getElementById('e-ativo').checked
+      }).then(function(r){
+        if (!r || !r.ok){ btn.disabled = false; btn.textContent = novo?'Criar pergunta':'Salvar alterações'; alert((r&&r.error)||'Erro ao salvar'); return; }
+        document.getElementById('editor').innerHTML = '';
+        perguntasCarregadas = false; carregarPerguntas();
+      }).catch(function(){ btn.disabled = false; btn.textContent = 'Salvar'; alert('Falha de conexão.'); });
+    };
+    document.getElementById('editor').scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  window.excluirPergunta = function(id){
+    var p = PERGUNTAS.filter(function(x){ return x.id === id; })[0];
+    if (!confirm('Excluir esta pergunta?\n\n"'+(p?p.texto:'')+'"\n\nIsso altera a quantidade de itens do questionário — avaliações antigas deixam de ser comparáveis com as novas.')) return;
+    rpc('rpc_admin_pergunta_excluir', { p_admin_password: ADMIN_PWD, p_id: id }).then(function(r){
+      if (!r || !r.ok){ alert((r&&r.error)||'Erro ao excluir'); return; }
+      perguntasCarregadas = false; carregarPerguntas();
+    }).catch(function(){ alert('Falha de conexão.'); });
+  };
 </script>
 </body>
 </html>
