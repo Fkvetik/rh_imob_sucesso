@@ -215,6 +215,15 @@
     }).then(function(r){ return r.json(); });
   }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  // Monta o telefone com DDI 55, sem duplicar se a pessoa já digitou com 55.
+  // Heurística: número brasileiro sem DDI tem 10 ou 11 dígitos (DDD + fixo/celular).
+  // Se já vier com 12 ou 13 dígitos começando em 55, é DDI+DDD+número — não prefixa de novo.
+  function waPhone55(raw){
+    var d = String(raw||'').replace(/\D/g,'');
+    if (d.startsWith('55') && (d.length === 12 || d.length === 13)) return d;
+    return '55' + d;
+  }
+
   function faixa(v){
     if (v >= 80) return { txt:'Alta aderência',      cor:'#1b9e5a' };
     if (v >= 65) return { txt:'Boa aderência',       cor:'#5aa832' };
@@ -349,8 +358,8 @@
       }).join('') + '</div>';
     }
     if (a.candidato_telefone) {
-      var tel = String(a.candidato_telefone).replace(/\D/g,'');
-      html += '<div style="margin-top:16px"><a href="https://api.whatsapp.com/send?phone=55'+tel+'" target="_blank" rel="noopener" ' +
+      var tel = waPhone55(a.candidato_telefone);
+      html += '<div style="margin-top:16px"><a href="https://api.whatsapp.com/send?phone='+tel+'" target="_blank" rel="noopener" ' +
         'style="display:inline-block;background:#25d366;color:#fff;text-decoration:none;padding:11px 20px;border-radius:11px;font-weight:800;font-size:13.5px">💬 Falar com o candidato</a></div>';
     }
     return html;
@@ -495,7 +504,7 @@
         var primeiro = nome.split(' ')[0];
         var msg = 'Oi, '+primeiro+'! Antes da nossa conversa, você pode preencher este questionário rápido? '+
                   'Leva cerca de 4 minutos e ajuda a alinhar a oportunidade certa pro seu perfil:\n\n'+link;
-        var waHref = wpp ? ('https://api.whatsapp.com/send?phone=55'+wpp.replace(/\D/g,'')+'&text='+encodeURIComponent(msg))
+        var waHref = wpp ? ('https://api.whatsapp.com/send?phone='+waPhone55(wpp)+'&text='+encodeURIComponent(msg))
                           : ('https://api.whatsapp.com/send?text='+encodeURIComponent(msg));
         document.getElementById('env-resultado').innerHTML =
           '<div class="link-box">' +
