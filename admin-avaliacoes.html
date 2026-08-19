@@ -92,6 +92,21 @@
     .bsave{background:var(--roxo);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:800;cursor:pointer}
     .bcanc{background:#f1edf8;color:var(--roxo);border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer}
     .badd{background:var(--laranja);color:#fff;border:none;border-radius:11px;padding:12px 22px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:18px}
+
+    .env{background:#fff;border:2px solid var(--roxo2);border-radius:16px;padding:20px 22px;margin-bottom:20px}
+    .env h3{margin:0 0 4px;font-size:16px;font-weight:900}
+    .env .env-sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+    .env label{display:block;font-size:12px;font-weight:800;margin:0 0 5px;color:#3f3350}
+    .env input{width:100%;padding:11px 13px;border:1.5px solid var(--linha);border-radius:10px;font-size:14px;font-family:inherit;outline:none;color:var(--roxo);margin-bottom:12px}
+    .env input:focus{border-color:var(--roxo2)}
+    .link-box{background:#f7f4ff;border:1px solid #ddd2f5;border-radius:12px;padding:14px 16px;margin-top:14px}
+    .link-box .lb-t{font-size:12px;font-weight:800;color:var(--roxo2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+    .link-url{background:#fff;border:1px solid var(--linha);border-radius:9px;padding:10px 12px;font-size:12.5px;word-break:break-all;color:#3f3350;margin-bottom:11px;font-family:ui-monospace,monospace}
+    .lb-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .bwa{background:#25d366;color:#fff;text-decoration:none;border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+    .bcp{background:#f1edf8;color:var(--roxo);border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700;cursor:pointer}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--roxo);color:#fff;padding:13px 24px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(43,18,77,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:999}
+    .toast.show{opacity:1}
   </style>
 </head>
 <body>
@@ -119,6 +134,17 @@
   </div>
 
 <div id="sub-resultados">
+  <div class="env">
+    <h3>📤 Enviar para quem não está na extensão</h3>
+    <p class="env-sub">Indicação, candidato do Instagram, currículo por fora — gera um link avulso, sem depender da coleta da Catho.</p>
+    <label>Nome do candidato</label>
+    <input type="text" id="env-nome" placeholder="Nome completo" />
+    <label>WhatsApp <span style="font-weight:500;color:var(--muted)">(opcional — só pra facilitar o envio)</span></label>
+    <input type="text" id="env-wpp" placeholder="(11) 99999-9999" />
+    <button class="badd" id="env-gerar" style="margin:0">Gerar link</button>
+    <div id="env-resultado"></div>
+  </div>
+
   <div class="stats" id="stats"></div>
 
   <div class="filtros">
@@ -448,6 +474,51 @@
       perguntasCarregadas = false; carregarPerguntas();
     }).catch(function(){ alert('Falha de conexão.'); });
   };
+
+  // ── Envio avulso (candidato fora da extensão) ─────────────────
+  function ccToast(msg){
+    var t = document.getElementById('env-toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  document.getElementById('env-gerar').addEventListener('click', function(){
+    var nome = document.getElementById('env-nome').value.trim();
+    var wpp  = document.getElementById('env-wpp').value.trim();
+    if (!nome){ alert('Informe o nome do candidato.'); return; }
+    var btn = this; btn.disabled = true; btn.textContent = 'Gerando…';
+    rpc('rpc_admin_avaliacao_criar_avulsa', { p_admin_password: ADMIN_PWD, p_nome: nome, p_telefone: wpp || null })
+      .then(function(r){
+        btn.disabled = false; btn.textContent = 'Gerar link';
+        if (!r || !r.ok){ alert((r&&r.error)||'Erro ao gerar link'); return; }
+        var link = 'https://www.rhimob.com.br/avaliacao?t=' + r.token;
+        var primeiro = nome.split(' ')[0];
+        var msg = 'Oi, '+primeiro+'! Antes da nossa conversa, você pode preencher este questionário rápido? '+
+                  'Leva cerca de 4 minutos e ajuda a alinhar a oportunidade certa pro seu perfil:\n\n'+link;
+        var waHref = wpp ? ('https://api.whatsapp.com/send?phone=55'+wpp.replace(/\D/g,'')+'&text='+encodeURIComponent(msg))
+                          : ('https://api.whatsapp.com/send?text='+encodeURIComponent(msg));
+        document.getElementById('env-resultado').innerHTML =
+          '<div class="link-box">' +
+            '<div class="lb-t">✅ Link gerado para '+esc(nome)+'</div>' +
+            '<div class="link-url">'+esc(link)+'</div>' +
+            '<div class="lb-btns">' +
+              '<a class="bwa" href="'+waHref+'" target="_blank" rel="noopener">💬 Abrir WhatsApp</a>' +
+              '<button class="bcp" id="env-copiar">Copiar mensagem</button>' +
+            '</div>' +
+          '</div>';
+        document.getElementById('env-copiar').onclick = function(){
+          navigator.clipboard.writeText(msg).then(function(){ ccToast('Mensagem copiada!'); });
+        };
+        document.getElementById('env-nome').value = '';
+        document.getElementById('env-wpp').value = '';
+        // atualiza a lista local sem esperar novo round-trip: a avaliação
+        // nova entra como PENDENTE até o candidato responder.
+        DADOS.unshift({ candidato_nome: nome, candidato_telefone: wpp, status:'PENDENTE', enviado_em: new Date().toISOString(), nome_operador:'Envio pelo painel' });
+        stats(); render();
+      })
+      .catch(function(){ btn.disabled = false; btn.textContent = 'Gerar link'; alert('Falha de conexão.'); });
+  });
 </script>
+<div class="toast" id="env-toast"></div>
 </body>
 </html>
