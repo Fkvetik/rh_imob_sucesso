@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Questionário de Perfil | RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --laranja:#ff7a1a; --linha:#e8e4f2; --muted:#6f6283; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:var(--roxo);-webkit-font-smoothing:antialiased}
+    .top{background:linear-gradient(135deg,var(--roxo),var(--roxo2));color:#fff;padding:22px 20px}
+    .top img{width:38px;height:38px;border-radius:50%;margin-bottom:10px}
+    .top h1{font-size:19px;font-weight:900;margin:0 0 4px;letter-spacing:-.02em}
+    .top p{margin:0;font-size:13px;opacity:.8;line-height:1.5}
+    .wrap{max-width:640px;margin:0 auto;padding:20px 16px 120px}
+    .intro{background:#fff;border:1px solid var(--linha);border-radius:16px;padding:18px 20px;margin-bottom:18px}
+    .intro p{margin:0 0 8px;font-size:14px;line-height:1.6;color:#3f3350}
+    .intro p:last-child{margin-bottom:0}
+    .intro .nota{font-size:12px;color:var(--muted);border-top:1px solid var(--linha);padding-top:10px;margin-top:12px}
+    .sec-title{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--laranja);margin:26px 0 12px}
+    .q{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 18px;margin-bottom:10px}
+    .q.pend{border-color:#ffd5b0;background:#fffaf5}
+    .q-txt{font-size:14.5px;line-height:1.5;font-weight:600;margin-bottom:14px}
+    .scale{display:flex;gap:6px}
+    .scale button{flex:1;padding:12px 0;border:1.5px solid var(--linha);background:#fff;border-radius:10px;font-size:15px;font-weight:800;color:#9d93ad;cursor:pointer;transition:all .12s}
+    .scale button:active{transform:scale(.95)}
+    .scale button.on{background:var(--roxo2);border-color:var(--roxo2);color:#fff}
+    .scale-lbl{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--muted)}
+    label.fld{display:block;font-size:13px;font-weight:700;margin:0 0 6px;color:#3f3350}
+    select,input[type=text]{width:100%;padding:13px 14px;border:1.5px solid var(--linha);border-radius:11px;font-size:15px;font-family:inherit;background:#fff;outline:none;color:var(--roxo)}
+    select:focus,input:focus{border-color:var(--roxo2)}
+    .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--linha);padding:12px 16px;box-shadow:0 -4px 20px rgba(43,18,77,.08)}
+    .bar-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+    .prog{flex:1}
+    .prog-track{height:7px;background:#efeaf8;border-radius:99px;overflow:hidden}
+    .prog-fill{height:100%;width:0;background:linear-gradient(90deg,var(--laranja),#ffa257);transition:width .25s}
+    .prog-txt{font-size:11.5px;color:var(--muted);margin-top:5px;font-weight:700}
+    .bar button{background:var(--laranja);color:#fff;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:800;cursor:pointer;white-space:nowrap}
+    .bar button:disabled{background:#d8d2e4;cursor:not-allowed}
+    .center{text-align:center;padding:70px 24px}
+    .center .ic{font-size:52px;margin-bottom:14px}
+    .center h2{font-size:21px;font-weight:900;margin:0 0 8px}
+    .center p{color:var(--muted);font-size:14.5px;line-height:1.6;margin:0;max-width:400px;margin-inline:auto}
+    .hide{display:none!important}
+  </style>
+</head>
+<body>
+
+<div id="load" class="center"><div class="ic">⏳</div><p>Carregando…</p></div>
+
+<div id="erro" class="center hide">
+  <div class="ic">🔗</div>
+  <h2 id="erro-t">Link inválido</h2>
+  <p id="erro-p">Confira se você abriu o link completo enviado no WhatsApp.</p>
+</div>
+
+<div id="fim" class="center hide">
+  <div class="ic">✅</div>
+  <h2>Respostas enviadas!</h2>
+  <p>Obrigado por preencher. A equipe da RH IMOB vai analisar suas respostas antes da conversa. Pode fechar esta página.</p>
+</div>
+
+<div id="app" class="hide">
+  <div class="top">
+    <img src="/assets/rhimob-logo.jpg" alt="" />
+    <h1 id="saud">Questionário de perfil</h1>
+    <p>RH IMOB · Recrutamento imobiliário</p>
+  </div>
+
+  <div class="wrap">
+    <div class="intro">
+      <p>Este questionário ajuda a entender <strong>como você trabalha</strong> — para que a conversa seja sobre uma oportunidade que combine de verdade com o seu perfil.</p>
+      <p>Não existe resposta certa ou errada. Responda pensando em como você <strong>realmente age</strong> no dia a dia, não em como acha que deveria agir.</p>
+      <p class="nota">⏱️ Leva cerca de 4 minutos · Suas respostas são confidenciais e usadas apenas neste processo seletivo. Este é um questionário de triagem profissional, não um teste psicológico.</p>
+    </div>
+
+    <div class="sec-title">Sobre o seu jeito de trabalhar</div>
+    <div id="perguntas"></div>
+
+    <div class="sec-title">Informações práticas</div>
+    <div class="q">
+      <label class="fld">Você tem CRECI?</label>
+      <select id="c-creci">
+        <option value="">Selecione</option>
+        <option>CRECI ativo</option>
+        <option>Estou tirando / em processo</option>
+        <option>Não tenho ainda</option>
+      </select>
+    </div>
+    <div class="q">
+      <label class="fld">Disponibilidade para plantão em fim de semana</label>
+      <select id="c-plantao">
+        <option value="">Selecione</option>
+        <option>Sim, sem restrição</option>
+        <option>Alguns fins de semana</option>
+        <option>Não tenho disponibilidade</option>
+      </select>
+    </div>
+    <div class="q">
+      <label class="fld">Veículo próprio</label>
+      <select id="c-veiculo">
+        <option value="">Selecione</option>
+        <option>Carro</option>
+        <option>Moto</option>
+        <option>Não tenho</option>
+      </select>
+    </div>
+    <div class="q">
+      <label class="fld">Região onde pode atuar</label>
+      <input type="text" id="c-regiao" placeholder="Ex.: Zona Sul de SP, ABC, Guarulhos" />
+    </div>
+    <div class="q">
+      <label class="fld">Disponibilidade para começar</label>
+      <select id="c-inicio">
+        <option value="">Selecione</option>
+        <option>Imediata</option>
+        <option>Em até 15 dias</option>
+        <option>Em até 30 dias</option>
+        <option>A combinar</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="bar-in">
+      <div class="prog">
+        <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
+        <div class="prog-txt" id="pt">0 de 0 respondidas</div>
+      </div>
+      <button id="enviar" disabled>Enviar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var SB  = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
+
+  var TOKEN = new URLSearchParams(location.search).get('t') || location.pathname.split('/').filter(Boolean).pop();
+  var PERGUNTAS = [], RESP = {};
+
+  function rpc(fn, body) {
+    return fetch(SB + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(function(r){ return r.json(); });
+  }
+  function show(id){ ['load','erro','fim','app'].forEach(function(x){ document.getElementById(x).classList.toggle('hide', x !== id); }); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  if (!TOKEN || TOKEN === 'avaliacao' || TOKEN === 'avaliacao.html') {
+    show('erro');
+  } else {
+    rpc('rpc_avaliacao_abrir', { p_token: TOKEN }).then(function(r){
+      if (!r || !r.ok) {
+        if (r && r.error === 'respondida') {
+          document.getElementById('erro-t').textContent = 'Já respondido';
+          document.getElementById('erro-p').textContent = r.mensagem || 'Este questionário já foi respondido. Obrigado!';
+        }
+        show('erro'); return;
+      }
+      if (r.nome) document.getElementById('saud').textContent = 'Olá, ' + r.nome + '!';
+      PERGUNTAS = r.perguntas || [];
+      render();
+      show('app');
+    }).catch(function(){ show('erro'); });
+  }
+
+  function render(){
+    document.getElementById('perguntas').innerHTML = PERGUNTAS.map(function(p, i){
+      var btns = [1,2,3,4,5].map(function(v){
+        return '<button type="button" data-q="'+p.id+'" data-v="'+v+'">'+v+'</button>';
+      }).join('');
+      return '<div class="q" id="q-'+p.id+'">' +
+        '<div class="q-txt">'+(i+1)+'. '+esc(p.texto)+'</div>' +
+        '<div class="scale">'+btns+'</div>' +
+        '<div class="scale-lbl"><span>Discordo</span><span>Concordo</span></div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('perguntas').addEventListener('click', function(e){
+      var b = e.target.closest('button[data-q]'); if (!b) return;
+      var q = b.dataset.q;
+      RESP[q] = parseInt(b.dataset.v, 10);
+      document.querySelectorAll('button[data-q="'+q+'"]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      document.getElementById('q-'+q).classList.remove('pend');
+      progresso();
+    });
+    progresso();
+  }
+
+  function progresso(){
+    var n = Object.keys(RESP).length, tot = PERGUNTAS.length;
+    document.getElementById('pf').style.width = tot ? (n/tot*100)+'%' : '0';
+    document.getElementById('pt').textContent = n + ' de ' + tot + ' respondidas';
+    document.getElementById('enviar').disabled = n < tot;
+  }
+
+  document.getElementById('enviar').addEventListener('click', function(){
+    var falta = PERGUNTAS.filter(function(p){ return !RESP[p.id]; });
+    if (falta.length) {
+      falta.forEach(function(p){ document.getElementById('q-'+p.id).classList.add('pend'); });
+      document.getElementById('q-'+falta[0].id).scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    var btn = this; btn.disabled = true; btn.textContent = 'Enviando…';
+    var compat = {
+      creci:   document.getElementById('c-creci').value,
+      plantao: document.getElementById('c-plantao').value,
+      veiculo: document.getElementById('c-veiculo').value,
+      regiao:  document.getElementById('c-regiao').value.trim(),
+      inicio:  document.getElementById('c-inicio').value
+    };
+    rpc('rpc_avaliacao_responder', { p_token: TOKEN, p_respostas: RESP, p_compatibilidade: compat })
+      .then(function(r){
+        if (r && r.ok) { show('fim'); window.scrollTo(0,0); }
+        else { btn.disabled = false; btn.textContent = 'Enviar'; alert((r && r.error) || 'Não foi possível enviar. Tente novamente.'); }
+      })
+      .catch(function(){ btn.disabled = false; btn.textContent = 'Enviar'; alert('Falha de conexão. Tente novamente.'); });
+  });
+</script>
+</body>
+</html>

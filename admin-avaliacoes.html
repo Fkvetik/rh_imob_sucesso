@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Avaliações de Perfil | RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <style>
+    :root{ --roxo:#2b124d; --roxo2:#5a1fd4; --laranja:#ff7a1a; --linha:#e8e4f2; --muted:#6f6283; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8ff;color:var(--roxo)}
+    .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .auth-card{background:#fff;border-radius:24px;padding:48px 40px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(43,18,77,.14);text-align:center}
+    .auth-card img{width:56px;height:56px;border-radius:50%;margin-bottom:20px}
+    .auth-card h1{font-size:22px;font-weight:900;margin:0 0 6px}
+    .auth-card p{color:#888;font-size:14px;margin:0 0 28px}
+    .auth-card input{width:100%;padding:14px 16px;border:1.5px solid #e0dce8;border-radius:12px;font-size:16px;margin-bottom:14px;outline:none}
+    .auth-card button{width:100%;padding:14px;background:var(--roxo);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+    .auth-error{color:#e53e3e;font-size:13px;margin-top:8px;display:none}
+
+    .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 70px}
+    h1.tt{font-size:24px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em}
+    .sub{color:var(--muted);font-size:14px;margin:0 0 24px}
+    .filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .filtros input,.filtros select{padding:10px 13px;border:1.5px solid var(--linha);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:none;color:var(--roxo)}
+    .filtros input{flex:1;min-width:180px}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+    .stat{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 18px}
+    .stat b{display:block;font-size:24px;font-weight:900;line-height:1}
+    .stat span{font-size:12px;color:var(--muted);font-weight:700}
+
+    .card{background:#fff;border:1px solid var(--linha);border-radius:18px;padding:20px 22px;margin-bottom:14px}
+    .card-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;cursor:pointer}
+    .card-nome{font-size:17px;font-weight:800;margin:0 0 3px}
+    .card-meta{font-size:12.5px;color:var(--muted)}
+    .idx{text-align:center;flex-shrink:0}
+    .idx b{display:block;font-size:30px;font-weight:900;line-height:1}
+    .idx span{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .pend{background:#fff6ed;color:#b25b00;font-size:12px;font-weight:800;padding:7px 13px;border-radius:9px}
+    .det{display:none;border-top:1px solid var(--linha);margin-top:18px;padding-top:18px}
+    .det.on{display:block}
+    .dim{margin-bottom:13px}
+    .dim-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+    .dim-top b{font-weight:700}
+    .dim-track{height:9px;background:#f1edf8;border-radius:99px;overflow:hidden}
+    .dim-fill{height:100%;border-radius:99px}
+    .box{border-radius:13px;padding:14px 16px;margin-top:16px;font-size:13.5px;line-height:1.6}
+    .box h4{margin:0 0 8px;font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+    .box ul{margin:0;padding-left:18px}
+    .box li{margin-bottom:5px}
+    .box-ok{background:#effaf3;color:#1b6b3a}
+    .box-at{background:#fff8ec;color:#8a5a00}
+    .box-en{background:#f4f0ff;color:#3f2a72}
+    .box-al{background:#fdecea;color:#8b1a12}
+    .compat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+    .compat div{background:#faf8ff;border:1px solid var(--linha);border-radius:10px;padding:10px 12px}
+    .compat span{display:block;font-size:10.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+    .compat b{font-size:13.5px;font-weight:700}
+    .empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px}
+    .hide{display:none!important}
+  </style>
+</head>
+<body>
+
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <img src="/assets/rhimob-logo.jpg" alt="RH IMOB" />
+    <h1>Avaliações de Perfil</h1>
+    <p>Área restrita · RH IMOB</p>
+    <form id="auth-form">
+      <input type="password" id="auth-pwd" placeholder="Senha de acesso" autocomplete="current-password" />
+      <button type="submit">Entrar →</button>
+      <div class="auth-error" id="auth-error">Senha incorreta. Tente novamente.</div>
+    </form>
+  </div>
+</div>
+
+<div class="wrap hide" id="app">
+  <h1 class="tt">Avaliações de Perfil</h1>
+  <p class="sub">Questionário de aderência ao perfil comercial imobiliário — triagem de recrutamento.</p>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filtros">
+    <input type="text" id="f-busca" placeholder="Buscar por nome do candidato…" />
+    <select id="f-status">
+      <option value="">Todos os status</option>
+      <option value="RESPONDIDA">Respondidas</option>
+      <option value="PENDENTE">Aguardando resposta</option>
+    </select>
+    <select id="f-ordem">
+      <option value="recente">Mais recentes</option>
+      <option value="score">Maior índice</option>
+    </select>
+  </div>
+
+  <div id="lista"><p class="empty">Carregando…</p></div>
+</div>
+
+<script>
+  var SB  = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
+  var ADMIN_PWD = 'rhimob@2026';
+  var DADOS = [];
+  // Rótulos fixos — não vale a pena um round-trip ao banco só pra buscar
+  // texto que praticamente nunca muda. Se editar as dimensões no SQL,
+  // atualize aqui também.
+  var DIMS = {
+    RESILIENCIA:    { nome:'Resiliência a rejeição',      descricao:'Mantém ritmo de trabalho mesmo ouvindo não com frequência.' },
+    PROSPECCAO:     { nome:'Prospecção ativa',            descricao:'Iniciativa para gerar oportunidade em vez de esperar o lead chegar.' },
+    AUTOGESTAO:     { nome:'Autogestão',                  descricao:'Disciplina e organização própria sem depender de cobrança externa.' },
+    FOLLOWUP:       { nome:'Persistência no follow-up',   descricao:'Mantém contato ao longo do ciclo longo de decisão do imóvel.' },
+    RENDA_VARIAVEL: { nome:'Conforto com renda variável', descricao:'Segurança para trabalhar comissionado, sem fixo garantido.' },
+    RELACIONAMENTO: { nome:'Relacionamento e escuta',     descricao:'Cria confiança e entende a necessidade antes de apresentar o produto.' }
+  };
+
+  // Perguntas de entrevista sugeridas quando a dimensão vem baixa — o valor
+  // prático do relatório: a entrevistadora chega sabendo o que investigar.
+  var SONDAGEM = {
+    RESILIENCIA:    'Me conta sobre um período em que você emendou várias negociações perdidas. O que você fez naquelas semanas?',
+    PROSPECCAO:     'Se eu não te desse nenhum lead na primeira semana, o que você faria na segunda-feira de manhã?',
+    AUTOGESTAO:     'Como é a sua rotina hoje, da hora que você acorda até encerrar o dia de trabalho?',
+    FOLLOWUP:       'Qual foi o negócio mais demorado que você já fechou? Quanto tempo levou e como manteve o contato?',
+    RENDA_VARIAVEL: 'Como você se organiza financeiramente num mês em que não fecha nenhuma venda?',
+    RELACIONAMENTO: 'Como você conduz o primeiro atendimento de um cliente que nunca te viu antes?'
+  };
+
+  function rpc(fn, body){
+    return fetch(SB + '/rest/v1/rpc/' + fn, {
+      method:'POST', headers:{ apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json' },
+      body: JSON.stringify(body||{})
+    }).then(function(r){ return r.json(); });
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function faixa(v){
+    if (v >= 80) return { txt:'Alta aderência',      cor:'#1b9e5a' };
+    if (v >= 65) return { txt:'Boa aderência',       cor:'#5aa832' };
+    if (v >= 50) return { txt:'Aderência moderada',  cor:'#e0a12a' };
+    return               { txt:'Baixa aderência',    cor:'#d24b3e' };
+  }
+  function dataBR(s){ if(!s) return '—'; var d=new Date(s); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+
+  function checkAuth(){
+    try { if (localStorage.getItem('rh_painel_ok') === ADMIN_PWD) return true; } catch(e){}
+    return sessionStorage.getItem('av_auth') === '1';
+  }
+  document.getElementById('auth-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    if (document.getElementById('auth-pwd').value === ADMIN_PWD) { sessionStorage.setItem('av_auth','1'); entrar(); }
+    else document.getElementById('auth-error').style.display = 'block';
+  });
+  function entrar(){
+    document.getElementById('auth-screen').classList.add('hide');
+    document.getElementById('app').classList.remove('hide');
+    carregar();
+  }
+  if (checkAuth()) entrar();
+
+  function carregar(){
+    rpc('rpc_admin_avaliacoes', { p_admin_password: ADMIN_PWD })
+      .then(function(r){
+        if (!r || !r.ok) { document.getElementById('lista').innerHTML = '<p class="empty">'+esc((r&&r.error)||'Erro ao carregar')+'</p>'; return; }
+        DADOS = r.avaliacoes || [];
+        stats(); render();
+      })
+      .catch(function(){ document.getElementById('lista').innerHTML = '<p class="empty">Falha de conexão.</p>'; });
+  }
+
+  function stats(){
+    var resp = DADOS.filter(function(a){ return a.status === 'RESPONDIDA'; });
+    var media = resp.length ? Math.round(resp.reduce(function(s,a){ return s + Number(a.indice_geral||0); },0)/resp.length) : 0;
+    var altos = resp.filter(function(a){ return Number(a.indice_geral) >= 65; }).length;
+    document.getElementById('stats').innerHTML =
+      '<div class="stat"><b>'+DADOS.length+'</b><span>Enviadas</span></div>' +
+      '<div class="stat"><b>'+resp.length+'</b><span>Respondidas</span></div>' +
+      '<div class="stat"><b>'+(DADOS.length-resp.length)+'</b><span>Aguardando</span></div>' +
+      '<div class="stat"><b style="color:'+faixa(media).cor+'">'+(resp.length?media:'—')+'</b><span>Índice médio</span></div>' +
+      '<div class="stat"><b style="color:#1b9e5a">'+altos+'</b><span>Boa/alta aderência</span></div>';
+  }
+
+  ['f-busca','f-status','f-ordem'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+
+  function render(){
+    var busca = document.getElementById('f-busca').value.toLowerCase().trim();
+    var st    = document.getElementById('f-status').value;
+    var ord   = document.getElementById('f-ordem').value;
+
+    var lista = DADOS.filter(function(a){
+      if (st && a.status !== st) return false;
+      if (busca && String(a.candidato_nome||'').toLowerCase().indexOf(busca) === -1) return false;
+      return true;
+    });
+    if (ord === 'score') lista.sort(function(a,b){ return Number(b.indice_geral||0) - Number(a.indice_geral||0); });
+
+    if (!lista.length) { document.getElementById('lista').innerHTML = '<p class="empty">Nenhuma avaliação encontrada.</p>'; return; }
+
+    document.getElementById('lista').innerHTML = lista.map(function(a){
+      var pend = a.status !== 'RESPONDIDA';
+      var f = faixa(Number(a.indice_geral||0));
+      return '<div class="card">' +
+        '<div class="card-top" onclick="toggle(\''+a.id+'\')">' +
+          '<div><h3 class="card-nome">'+esc(a.candidato_nome||'Sem nome')+'</h3>' +
+          '<div class="card-meta">'+esc(a.nome_operador||a.login||'—')+' · enviado '+dataBR(a.enviado_em)+
+          (pend ? '' : ' · respondido '+dataBR(a.respondido_em))+'</div></div>' +
+          (pend ? '<div class="pend">⏳ Aguardando resposta</div>'
+                : '<div class="idx"><b style="color:'+f.cor+'">'+Math.round(a.indice_geral)+'</b><span style="color:'+f.cor+'">'+f.txt+'</span></div>') +
+        '</div>' +
+        (pend ? '' : '<div class="det" id="d-'+a.id+'">'+detalhe(a)+'</div>') +
+      '</div>';
+    }).join('');
+  }
+
+  window.toggle = function(id){
+    var el = document.getElementById('d-'+id);
+    if (el) el.classList.toggle('on');
+  };
+
+  function detalhe(a){
+    var sc = a.scores || {};
+    var itens = Object.keys(sc).map(function(k){ return { cod:k, v:Number(sc[k]) }; })
+                             .sort(function(x,y){ return y.v - x.v; });
+
+    var barras = itens.map(function(i){
+      var d = DIMS[i.cod] || { nome:i.cod, descricao:'' };
+      var c = faixa(i.v).cor;
+      return '<div class="dim" title="'+esc(d.descricao)+'">' +
+        '<div class="dim-top"><b>'+esc(d.nome)+'</b><span style="color:'+c+';font-weight:800">'+i.v+'</span></div>' +
+        '<div class="dim-track"><div class="dim-fill" style="width:'+i.v+'%;background:'+c+'"></div></div>' +
+      '</div>';
+    }).join('');
+
+    var fortes  = itens.filter(function(i){ return i.v >= 65; }).slice(0,3);
+    var atencao = itens.filter(function(i){ return i.v < 65;  }).slice(-3).reverse();
+
+    var html = barras;
+
+    if (fortes.length) {
+      html += '<div class="box box-ok"><h4>✅ Pontos fortes</h4><ul>' +
+        fortes.map(function(i){ return '<li><b>'+esc((DIMS[i.cod]||{}).nome||i.cod)+'</b> — '+esc((DIMS[i.cod]||{}).descricao||'')+'</li>'; }).join('') +
+      '</ul></div>';
+    }
+    if (atencao.length) {
+      html += '<div class="box box-at"><h4>⚠️ Pontos de atenção</h4><ul>' +
+        atencao.map(function(i){ return '<li><b>'+esc((DIMS[i.cod]||{}).nome||i.cod)+'</b> ('+i.v+') — '+esc((DIMS[i.cod]||{}).descricao||'')+'</li>'; }).join('') +
+      '</ul></div>';
+
+      var perg = atencao.filter(function(i){ return SONDAGEM[i.cod]; });
+      if (perg.length) {
+        html += '<div class="box box-en"><h4>🎤 Perguntas sugeridas para a entrevista</h4><ul>' +
+          perg.map(function(i){ return '<li>'+esc(SONDAGEM[i.cod])+'</li>'; }).join('') +
+        '</ul></div>';
+      }
+    }
+    if (a.alerta_qualidade) {
+      html += '<div class="box box-al"><h4>🔍 Alerta de qualidade</h4>'+esc(a.alerta_qualidade)+'</div>';
+    }
+
+    var c = a.compatibilidade || {};
+    if (Object.keys(c).length) {
+      var campos = [['CRECI',c.creci],['Plantão fim de semana',c.plantao],['Veículo',c.veiculo],['Região',c.regiao],['Início',c.inicio]];
+      html += '<div class="compat">' + campos.filter(function(x){ return x[1]; }).map(function(x){
+        return '<div><span>'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>';
+      }).join('') + '</div>';
+    }
+    if (a.candidato_telefone) {
+      var tel = String(a.candidato_telefone).replace(/\D/g,'');
+      html += '<div style="margin-top:16px"><a href="https://api.whatsapp.com/send?phone=55'+tel+'" target="_blank" rel="noopener" ' +
+        'style="display:inline-block;background:#25d366;color:#fff;text-decoration:none;padding:11px 20px;border-radius:11px;font-weight:800;font-size:13.5px">💬 Falar com o candidato</a></div>';
+    }
+    return html;
+  }
+</script>
+</body>
+</html>
