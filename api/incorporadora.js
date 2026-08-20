@@ -194,8 +194,17 @@ function ctaBtn(journey, origem, cls, label) {
 
 function renderCompany(c) {
   const url = `${BASE}/incorporadoras/${c.slug}`;
-  const title = `Vagas e Como Trabalhar na ${c.empresa} (Corretor) | RH IMOB`;
-  const desc = `${c.empresa}: ${[c.segmento, c.presenca].filter(has).join(' · ') || 'incorporadora em São Paulo'}. Como atuar como corretor, o que a empresa divulga e oportunidades. Dados auditados pela RH IMOB.`;
+  // Hook concreto pra CTR: iniciante-friendly e/ou volume de corretores da house,
+  // quando a fonte divulga — título genérico sem gancho tende a perder pra sites
+  // oficiais da própria incorporadora na SERP.
+  const numCorretores = (c.demanda || '').match(/(mais de|\+)\s*([\d.,]+)\s*corretor/i);
+  // Só 1 gancho (o mais forte) — título com 2+ ganchos passa de 60 caracteres
+  // e o Google corta exatamente a parte que deveria puxar o clique.
+  const hook = sim(c.aceitaIniciantes) ? ' — Aceita Iniciantes'
+    : numCorretores ? ` — House com ${numCorretores[2]}+ Corretores`
+    : '';
+  const title = `${c.empresa}: Vagas para Corretor${hook} | RH IMOB`;
+  const desc = `${c.empresa}: ${[c.segmento, c.presenca].filter(has).join(' · ') || 'incorporadora em São Paulo'}. Como atuar como corretor, o que a empresa divulga e oportunidades${sim(c.aceitaIniciantes) ? ' (aceita quem está começando)' : ''}. Dados auditados pela RH IMOB.`;
   const origemBase = `Incorporadora: ${c.empresa}`;
 
   const reasons = whyWork(c);
