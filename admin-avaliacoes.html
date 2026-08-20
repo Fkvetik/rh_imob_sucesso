@@ -293,12 +293,13 @@
       var pend = a.status !== 'RESPONDIDA';
       var f = faixa(Number(a.indice_geral||0));
       return '<div class="card">' +
-        '<div class="card-top" onclick="toggle(\''+a.id+'\')">' +
-          '<div><h3 class="card-nome">'+esc(a.candidato_nome||'Sem nome')+'</h3>' +
+        '<div class="card-top">' +
+          '<div style="cursor:pointer;flex:1" onclick="toggle(\''+a.id+'\')"><h3 class="card-nome">'+esc(a.candidato_nome||'Sem nome')+'</h3>' +
           '<div class="card-meta">'+esc(a.nome_operador||a.login||'—')+' · enviado '+dataBR(a.enviado_em)+
           (pend ? '' : ' · respondido '+dataBR(a.respondido_em))+'</div></div>' +
           (pend ? '<div class="pend">⏳ Aguardando resposta</div>'
                 : '<div class="idx"><b style="color:'+f.cor+'">'+Math.round(a.indice_geral)+'</b><span style="color:'+f.cor+'">'+f.txt+'</span></div>') +
+          '<button class="mini mini-del" title="Excluir" onclick="event.stopPropagation();excluirAvaliacao('+a.id+',\''+esc(a.candidato_nome||'Sem nome').replace(/'/g,"\\'")+'\')">🗑</button>' +
         '</div>' +
         (pend ? '' : '<div class="det" id="d-'+a.id+'">'+detalhe(a)+'</div>') +
       '</div>';
@@ -308,6 +309,15 @@
   window.toggle = function(id){
     var el = document.getElementById('d-'+id);
     if (el) el.classList.toggle('on');
+  };
+
+  window.excluirAvaliacao = function(id, nome){
+    if (!confirm('Excluir a avaliação de "'+nome+'"?\n\nIsso remove o registro e as respostas permanentemente. Não dá pra desfazer.')) return;
+    rpc('rpc_admin_avaliacao_excluir', { p_admin_password: ADMIN_PWD, p_id: id }).then(function(r){
+      if (!r || !r.ok){ alert((r && r.error) || 'Erro ao excluir'); return; }
+      DADOS = DADOS.filter(function(a){ return a.id !== id; });
+      stats(); render();
+    }).catch(function(){ alert('Falha de conexão.'); });
   };
 
   function detalhe(a){
@@ -520,10 +530,9 @@
         };
         document.getElementById('env-nome').value = '';
         document.getElementById('env-wpp').value = '';
-        // atualiza a lista local sem esperar novo round-trip: a avaliação
-        // nova entra como PENDENTE até o candidato responder.
-        DADOS.unshift({ candidato_nome: nome, candidato_telefone: wpp, status:'PENDENTE', enviado_em: new Date().toISOString(), nome_operador:'Envio pelo painel' });
-        stats(); render();
+        // Recarrega do servidor (em vez de inserir localmente) pra pegar o
+        // id de verdade — sem ele o botão de excluir não teria o que apagar.
+        carregar();
       })
       .catch(function(){ btn.disabled = false; btn.textContent = 'Gerar link'; alert('Falha de conexão.'); });
   });
