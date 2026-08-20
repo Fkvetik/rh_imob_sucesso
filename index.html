@@ -82,6 +82,46 @@
       .gv-card { flex-direction: column; align-items: flex-start; }
     }
 
+    /* ── QUEM SOMOS ──────────────────────────────── */
+    .equipe-section { background: #faf9ff; }
+    .equipe-grid {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .equipe-foto img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 20px;
+      box-shadow: 0 18px 44px rgba(43,18,77,.16);
+    }
+    .equipe-copy h2 { margin: 10px 0 18px; }
+    .equipe-copy p { font-size: 15.5px; line-height: 1.7; color: var(--muted); margin: 0 0 14px; }
+    .equipe-nums {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin: 26px 0 28px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(36,16,63,.1);
+    }
+    .equipe-nums strong {
+      display: block;
+      font-size: 26px;
+      font-weight: 950;
+      color: var(--purple-900);
+      line-height: 1;
+      letter-spacing: -.02em;
+    }
+    .equipe-nums span { font-size: 13px; color: var(--muted); font-weight: 600; }
+    @media (max-width: 860px) {
+      .equipe-grid { grid-template-columns: 1fr; gap: 30px; }
+      .equipe-foto { max-width: 420px; margin: 0 auto; }
+      .equipe-nums { gap: 22px; }
+    }
+
     /* ── FAQ ─────────────────────────────────────── */
     .faq-section { background: var(--purple-950); }
     .faq-section .section-kicker { color: var(--orange-400); }
@@ -669,6 +709,29 @@
             <div class="wall-stars">★★★★★</div>
             <p>"Quero parabenizar a RH IMOB pelo excelente trabalho e destacar o atendimento da Mariana pela competência e destreza."</p>
             <div class="wall-author"><strong>Anna Cristina</strong><span>@anna_criis2009</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6.5 QUEM SOMOS -->
+    <section class="section-pad equipe-section" id="quem-somos">
+      <div class="container">
+        <div class="equipe-grid reveal">
+          <div class="equipe-foto">
+            <img src="/assets/equipe-rhimob.jpg?v=20260820" alt="Equipe RH IMOB — especialistas em recrutamento imobiliário" loading="lazy" width="900" height="1200" />
+          </div>
+          <div class="equipe-copy">
+            <span class="section-kicker">Quem somos</span>
+            <h2>Você não contrata uma ferramenta. Contrata um time que já fez isso 5.000 vezes.</h2>
+            <p>A RH IMOB é uma operação de especialistas dedicadas exclusivamente ao mercado imobiliário. Cada cliente tem uma assistente responsável pelo processo do início ao fim — do diagnóstico da vaga à entrega dos candidatos em reunião.</p>
+            <p>Não terceirizamos triagem para estagiário e não usamos método genérico de RH. Quem conduz o seu processo conhece a rotina do corretor, entende o que atrai um profissional de CRECI ativo e sabe formatar uma proposta que o mercado aceita.</p>
+            <div class="equipe-nums">
+              <div><strong>10+</strong><span>anos no mercado imobiliário</span></div>
+              <div><strong>+200</strong><span>empresas atendidas</span></div>
+              <div><strong>360</strong><span>cidades cobertas</span></div>
+            </div>
+            <a class="btn btn-cta" href="#proposta" data-lead-wired="1" data-journey="empresa" data-origem="Home — quem somos" onclick="event.preventDefault();window.RHLead&&window.RHLead.open('empresa',this)">Falar com o time →</a>
           </div>
         </div>
       </div>
