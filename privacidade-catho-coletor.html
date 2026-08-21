@@ -67,17 +67,21 @@
   <p>Esta extensão foi desenvolvida para uso exclusivo da equipe RH IMOB (rhimob.com.br). Quando o contato coletado vem da Catho, o uso é restrito a recrutamento imobiliário. Quando o contato vem de uma base própria enviada pelo operador (upload de CSV), o uso pode incluir prospecção comercial de clientes da própria carteira do operador. Os dados coletados ficam armazenados em banco de dados privado da empresa. Não é distribuída para uso do público em geral.</p>
 
   <h2>Quais dados a extensão coleta</h2>
-  <p>Ao rodar em páginas de resultado de busca da Catho (catho.com.br), a extensão extrai os dados de currículo exibidos publicamente na própria página, tais como:</p>
+  <p>Ao rodar em uma página de currículo individual da Catho (catho.com.br) — nunca fora desse domínio — a extensão extrai os dados exibidos publicamente naquela página, incluindo, quando presentes:</p>
   <ul>
-    <li>Nome</li>
-    <li>Telefone</li>
-    <li>E-mail</li>
-    <li>Cidade, bairro e CEP informados</li>
-    <li>Cargo pretendido, experiência e demais informações do currículo exibidas na busca</li>
+    <li>Nome completo</li>
+    <li>Telefone(s) e e-mail</li>
+    <li>Cargo de interesse / profissão</li>
+    <li>Pretensão salarial e último salário informado</li>
+    <li>Data de nascimento, idade, sexo e estado civil</li>
+    <li>CEP, endereço, bairro, cidade e UF informados</li>
+    <li>Resumo do currículo, qualificações, experiência profissional e idiomas</li>
   </ul>
-  <p>Esses dados são inseridos pelo próprio candidato na Catho ao publicar seu currículo, dentro dos termos de uso daquela plataforma.</p>
+  <p>Esses dados são inseridos pelo próprio candidato na Catho ao publicar seu currículo, dentro dos termos de uso daquela plataforma. A extração só ocorre quando um operador autorizado navega até essa página com um filtro de busca configurado por ele — a extensão não roda em segundo plano em outros sites.</p>
 
-  <p>Além da coleta na Catho, operadores autorizados também podem consultar o <strong>Banco de Talentos</strong> — uma base própria da RH IMOB com candidatos já mapeados anteriormente — e importar contatos de uma <strong>base própria do operador</strong> (upload de planilha), quando o operador já possui essa lista.</p>
+  <p>Ao upload de uma <strong>base própria do operador</strong> (CSV), apenas dois campos são lidos e usados: <strong>nome</strong> e <strong>telefone</strong>. Nenhum outro dado é extraído desse arquivo.</p>
+
+  <p>Além disso, operadores autorizados podem consultar o <strong>Banco de Talentos</strong> — uma base compartilhada, mantida em um banco de dados separado (projeto "Novos Talentos"), com candidatos já mapeados anteriormente. Os resultados de busca aparecem com nome/contato mascarados; ao "liberar" um candidato selecionado, o contato completo é revelado e descontado de uma cota mensal contratada pela empresa. Essa base é usada exclusivamente para recrutamento.</p>
 
   <h2>Para que os dados são usados</h2>
   <ul>
@@ -93,18 +97,21 @@
 
   <h2>Onde os dados ficam armazenados</h2>
   <ul>
-    <li><strong>Banco de dados privado (Supabase):</strong> os currículos coletados e os dados operacionais (login do operador, fila de envio, andamento do funil) ficam armazenados em um banco de dados de acesso restrito da RH IMOB.</li>
-    <li><strong>Planilha Google (Google Sheets, via Apps Script):</strong> uma cópia dos dados coletados também é enviada para uma planilha interna, para facilitar a consulta pela equipe sem precisar acessar o banco diretamente.</li>
+    <li><strong>Banco de dados privado da RH IMOB (Supabase):</strong> os contatos coletados/importados e os dados operacionais (login do operador, fila de envio, andamento do funil, agendamentos) ficam em um banco de acesso restrito.</li>
+    <li><strong>Banco de dados do Banco de Talentos (Supabase, projeto separado "Novos Talentos"):</strong> a base compartilhada de candidatos consultada pela função "Banco de Talentos", com controle de acesso e cota próprios.</li>
+    <li><strong>Planilha Google (Google Sheets, via Apps Script):</strong> uma cópia de cada contato coletado/importado também é enviada, em segundo plano, para uma planilha interna, para facilitar a consulta pela equipe sem precisar acessar o banco diretamente. Esse envio é apenas de saída (a planilha não é lida de volta pela extensão).</li>
   </ul>
   <p>Nenhum dado é enviado para servidores ou serviços fora dos listados acima.</p>
 
   <h2>Envio de mensagens no WhatsApp</h2>
-  <p>A extensão automatiza o envio de mensagens de abordagem através da sessão do WhatsApp Web já autenticada no próprio navegador do operador — a extensão não tem acesso a credenciais do WhatsApp e não envia mensagens fora do WhatsApp Web.</p>
+  <p>A extensão automatiza o envio de mensagens de abordagem navegando para o link oficial de composição do próprio WhatsApp Web (<code>web.whatsapp.com/send?phone=...&amp;text=...</code>) e clicando no botão de enviar já existente na interface — não é usada nenhuma API não-oficial do WhatsApp. A extensão não lê o histórico de conversas, não lista os contatos salvos e não acessa credenciais/token de sessão do WhatsApp.</p>
+  <p>Para vincular automaticamente uma conversa aberta ao contato certo no painel de acompanhamento, a extensão identifica apenas o <strong>número de telefone da conversa que já está aberta na tela</strong> (via estrutura interna do próprio WhatsApp Web) — isso não envolve ler mensagens, nem enumerar a lista completa de conversas/contatos do operador.</p>
 
   <h2>Compartilhamento com terceiros</h2>
   <div class="card">
     <p>A RH IMOB <strong>não vende, aluga nem compartilha</strong> os dados coletados com terceiros. O acesso é restrito aos operadores autorizados da própria empresa.</p>
   </div>
+  <p>Por padrão, cada operador só visualiza os contatos que ele mesmo coletou/importou. Uma equipe restrita de administradores da RH IMOB, com login próprio e separado do login de operador, também pode consultar um histórico consolidado de eventos (nome do contato, telefone e mudanças de status) de todos os operadores, para fins de supervisão operacional e suporte.</p>
 
   <h2>Retenção e exclusão de dados</h2>
   <p>Os dados coletados ficam armazenados enquanto forem relevantes para o processo de recrutamento ou de abordagem comercial em andamento. Qualquer candidato ou cliente pode solicitar a remoção de seus dados a qualquer momento pelo contato abaixo.</p>
