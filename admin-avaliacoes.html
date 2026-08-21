@@ -117,10 +117,19 @@
     <h1>Avaliações de Perfil</h1>
     <p>Área restrita · RH IMOB</p>
     <form id="auth-form">
-      <input type="password" id="auth-pwd" placeholder="Senha de acesso" autocomplete="current-password" />
+      <div style="position:relative">
+        <input type="password" id="auth-pwd" placeholder="Senha de acesso" autocomplete="current-password" style="padding-right:38px;width:100%;box-sizing:border-box" />
+        <button type="button" id="auth-pwd-eye" title="Mostrar/ocultar senha" aria-label="Mostrar ou ocultar senha" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);height:32px;width:32px;padding:0;background:transparent;border:none;color:#888;font-size:15px;cursor:pointer">👁</button>
+      </div>
       <button type="submit">Entrar →</button>
       <div class="auth-error" id="auth-error">Senha incorreta. Tente novamente.</div>
     </form>
+    <script>
+      document.getElementById('auth-pwd-eye').addEventListener('click', function(){
+        var inp = document.getElementById('auth-pwd');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    </script>
   </div>
 </div>
 

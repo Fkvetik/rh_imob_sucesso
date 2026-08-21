@@ -51,10 +51,19 @@
       <h1>Leilões — RH IMOB</h1>
       <p>Acesso restrito</p>
       <form id="auth-form">
-        <input type="password" id="tok" placeholder="Token de acesso" autocomplete="off" />
+        <div style="position:relative">
+          <input type="password" id="tok" placeholder="Token de acesso" autocomplete="off" style="padding-right:38px;width:100%;box-sizing:border-box" />
+          <button type="button" id="tok-eye" title="Mostrar/ocultar senha" aria-label="Mostrar ou ocultar senha" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);height:32px;width:32px;padding:0;background:transparent;border:none;color:#888;font-size:15px;cursor:pointer">👁</button>
+        </div>
         <button type="submit">Entrar</button>
         <p class="auth-err" id="auth-err">Token inválido.</p>
       </form>
+      <script>
+        document.getElementById('tok-eye').addEventListener('click', function(){
+          var inp = document.getElementById('tok');
+          inp.type = inp.type === 'password' ? 'text' : 'password';
+        });
+      </script>
     </div>
   </div>
 

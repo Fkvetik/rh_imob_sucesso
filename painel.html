@@ -42,10 +42,19 @@
       <h1>Painel RH IMOB</h1>
       <p>Acesso único — tudo em um lugar</p>
       <form id="auth-form">
-        <input type="password" id="pwd" placeholder="Senha" autocomplete="off" />
+        <div style="position:relative">
+          <input type="password" id="pwd" placeholder="Senha" autocomplete="off" style="padding-right:38px;width:100%;box-sizing:border-box" />
+          <button type="button" id="pwd-eye" title="Mostrar/ocultar senha" aria-label="Mostrar ou ocultar senha" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);height:32px;width:32px;padding:0;background:transparent;border:none;color:#888;font-size:15px;cursor:pointer">👁</button>
+        </div>
         <button type="submit">Entrar</button>
         <p class="auth-err" id="auth-err">Senha incorreta.</p>
       </form>
+      <script>
+        document.getElementById('pwd-eye').addEventListener('click', function(){
+          var inp = document.getElementById('pwd');
+          inp.type = inp.type === 'password' ? 'text' : 'password';
+        });
+      </script>
     </div>
   </div>
 
