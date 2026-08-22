@@ -91,11 +91,21 @@ function renderVaga(v, slug) {
   const waShare = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${titulo} — ${local}\n${url}`)}`;
 
   // JSON-LD JobPosting
+  const datePosted = (v.updated_at || v.created_at || '').slice(0, 10);
+  // Sem coluna de prazo no banco — usa uma janela rolante de 60 dias a partir da
+  // publicação. Vagas encerradas já saem do ar (status != ATIVA -> 404), então
+  // isso só evita o aviso do Search Console de "validThrough não encontrado".
+  const validThrough = (() => {
+    const base = datePosted ? new Date(`${datePosted}T00:00:00Z`) : new Date();
+    base.setUTCDate(base.getUTCDate() + 60);
+    return base.toISOString().slice(0, 10);
+  })();
   const jobLD = JSON.stringify({
     '@context': 'https://schema.org/', '@type': 'JobPosting',
     title: titulo,
     description: [v.resumo, ...atividades, ...requisitos].filter(Boolean).join('. '),
-    datePosted: (v.updated_at || v.created_at || '').slice(0, 10),
+    datePosted,
+    validThrough,
     employmentType: /clt/i.test(modal) ? 'FULL_TIME' : /pj|autôn|autonom/i.test(modal) ? 'CONTRACTOR' : 'OTHER',
     hiringOrganization: { '@type': 'Organization', name: 'RH IMOB', sameAs: BASE },
     jobLocation: { '@type': 'Place', address: {
