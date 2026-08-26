@@ -78,7 +78,9 @@ export default async function handler(req, res) {
     ]);
 
     if (!rContas.ok || !rUsuarios.ok || !rConsumos.ok) {
-      return send(res, 502, { error: 'supabase', message: 'Falha ao consultar Supabase.' });
+      const falha = !rContas.ok ? { nome: 'contas', r: rContas } : !rUsuarios.ok ? { nome: 'usuarios_conta', r: rUsuarios } : { nome: 'lead_consumos', r: rConsumos };
+      const t = await falha.r.text().catch(() => '');
+      return send(res, 502, { error: 'supabase', message: `Falha ao consultar "${falha.nome}" (HTTP ${falha.r.status}): ${t.slice(0, 300)}` });
     }
 
     const contasRaw = await rContas.json();
