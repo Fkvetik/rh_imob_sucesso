@@ -544,6 +544,8 @@ function renderUsuarios(list) {
       $("fAtivo").value = btn.dataset.ativo;
       $("fHorario").value = btn.dataset.horario || "";
       $("fEmailPlataforma").value = btn.dataset.email || "";
+      $("fEmailRhi").value = "";
+      $("fSenhaRhi").value = "";
       // Se as contas ainda não carregaram (sem token, ou API lenta), o select
       // não tem a opção e o valor não "cola" — aí o salvar reclamava que faltava
       // a conta. Cria a opção na hora para preservar o vínculo que já existe.
@@ -622,6 +624,8 @@ $("btnLimparForm").addEventListener("click", () => {
   $("fEmailPlataforma").value = "";
   $("fContaPlataforma").value = "";
   $("fLimitePool").value = "";
+  $("fEmailRhi").value = "";
+  $("fSenhaRhi").value = "";
   $("formMsg").textContent = "";
 });
 
@@ -655,6 +659,8 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
   const horario = $("fHorario").value || "";
   const emailPlataforma = $("fEmailPlataforma").value.trim();
   const contaPlataforma = $("fContaPlataforma").value;
+  const emailRhi = $("fEmailRhi").value.trim();
+  const senhaRhi = $("fSenhaRhi").value;
   if (!login) { $("formMsg").textContent = "❌ Login é obrigatório."; return; }
   if (emailPlataforma && !contaPlataforma) { $("formMsg").textContent = "❌ Escolha a conta da plataforma junto com o e-mail."; return; }
 
@@ -667,7 +673,11 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
       // A senha da plataforma só é mexida aqui se o admin digitou uma senha
       // NOVA de extensão nesta tela — daí ela vira a mesma dos dois lados.
       p_senha_plataforma: (senha && emailPlataforma) ? senha : null,
-      p_limite_pool: $("fLimitePool").value
+      p_limite_pool: $("fLimitePool").value,
+      // Corretores CRECI: login real e independente, digitado (não copiado
+      // da senha da extensão) — é o mesmo em todos os operadores.
+      p_email_rhi: emailRhi || null,
+      p_senha_rhi: senhaRhi || null
     });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
 
@@ -821,7 +831,7 @@ function enterSubmete(inputIds, botaoId) {
   });
 }
 enterSubmete(["adminPass"], "btnEntrar");
-enterSubmete(["fLogin", "fSenha", "fNome", "fHorario", "fEmailPlataforma", "fLimitePool"], "btnSalvarUsuario");
+enterSubmete(["fLogin", "fSenha", "fNome", "fHorario", "fEmailPlataforma", "fLimitePool", "fEmailRhi", "fSenhaRhi"], "btnSalvarUsuario");
 enterSubmete(["ncNome", "ncLimTotal", "ncLimUser", "ncUsuarios"], "btnSalvarEmpresa");
 enterSubmete(["puNome", "puEmail", "puSenha"], "btnSalvarUsuarioPlataforma");
 enterSubmete(["admLogin", "admSenha", "admNome", "admOperadorLogin"], "btnSalvarAdmin");
