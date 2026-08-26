@@ -159,6 +159,84 @@
     </div>
 
     <div class="card">
+      <h3 style="margin-top:0;font-size:14px">🏘️ Empresas do Banco de Corretores CRECI</h3>
+      <small>Quanto cada empresa pode liberar de corretores. O consumo é debitado toda vez que alguém libera o contato de um corretor.</small>
+      <div class="btns">
+        <button id="btnNovaEmpresaRhi">+ Nova empresa</button>
+        <button id="btnRefreshContasRhi" class="secondary">↻ Atualizar</button>
+      </div>
+
+      <div id="formNovaEmpresaRhi" class="hide" style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <label>Nome da empresa</label>
+        <input id="rncNome" placeholder="Ex.: RH IMOB">
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:150px"><label>Telefone</label><input id="rncTelefone" placeholder="(11) 99999-9999"></div>
+          <div style="flex:1;min-width:120px"><label>Limite de leads</label><input id="rncLimLeads" type="number" min="0" value="5000"></div>
+          <div style="flex:1;min-width:120px"><label>Usuários contratados</label><input id="rncUsuarios" type="number" min="1" value="4"></div>
+        </div>
+        <div class="btns">
+          <button id="btnSalvarEmpresaRhi">💾 Criar empresa</button>
+          <button id="btnCancelarEmpresaRhi" class="ghost">Cancelar</button>
+        </div>
+        <div id="novaEmpresaRhiMsg" class="msg"></div>
+      </div>
+      <table>
+        <thead><tr><th>Empresa</th><th>Status</th><th>Consumo</th><th>Limite de leads</th><th></th></tr></thead>
+        <tbody id="listaContasRhi"></tbody>
+      </table>
+      <div id="contasRhiEditMsg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">👥 Usuários do Banco de Corretores CRECI</h3>
+      <small>Quem tem login de verdade nesse banco. Cadastre aqui e o login já é criado no Supabase — não precisa abrir outro painel. Pra vincular esse acesso a um operador da extensão, preencha "E-mail/Senha do banco de Corretores CRECI" no cadastro dele, mais abaixo.</small>
+
+      <div style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <input type="hidden" id="ruUsuarioId">
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:2;min-width:180px"><label>Nome</label><input id="ruNome" placeholder="Nome completo"></div>
+          <div style="flex:2;min-width:200px"><label>E-mail (login)</label><input id="ruEmail" type="email" placeholder="acesso@rhimob.com.br"></div>
+        </div>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:2;min-width:180px"><label>Empresa</label><select id="ruConta"></select></div>
+          <div style="flex:1;min-width:130px">
+            <label>Perfil</label>
+            <select id="ruPerfil">
+              <option value="OPERADOR">Operador</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MASTER">Master</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px">
+            <label>Status</label>
+            <select id="ruStatus">
+              <option value="ATIVO">Ativo</option>
+              <option value="INATIVO">Inativo</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:2;min-width:200px">
+            <label id="ruSenhaLabel">Senha inicial</label>
+            <input id="ruSenha" type="text" placeholder="mínimo 6 caracteres">
+          </div>
+          <div><button id="btnGerarSenhaRu" class="ghost" type="button">🎲 Gerar</button></div>
+        </div>
+        <div class="btns">
+          <button id="btnSalvarUsuarioRhi">💾 Salvar usuário</button>
+          <button id="btnLimparUsuarioRhi" class="ghost">Limpar</button>
+        </div>
+        <div id="ruMsg" class="msg"></div>
+      </div>
+
+      <div class="btns"><button id="btnRefreshUsuariosRhi" class="secondary">↻ Atualizar lista</button></div>
+      <table>
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Empresa</th><th>Perfil</th><th>Status</th><th></th></tr></thead>
+        <tbody id="listaUsuariosRhi"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
       <h3 style="margin-top:0;font-size:14px">Adicionar / editar operador</h3>
       <label>Login</label>
       <input id="fLogin" placeholder="joao">

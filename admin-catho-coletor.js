@@ -26,6 +26,7 @@ function showApp() {
   loadAdmins();
   loadAuditLog();
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
+  loadContasRhi().then(() => { loadUsuariosRhi(); });
 }
 
 // ===== Log de auditoria (Fase 12) =====
@@ -343,6 +344,303 @@ $("btnSalvarUsuarioPlataforma")?.addEventListener("click", async () => {
 });
 
 $("btnRefreshUsuariosPlataforma")?.addEventListener("click", loadUsuariosPlataforma);
+
+// ===== Banco de Corretores CRECI (projeto RHI) — mesmo padrão do bloco
+// acima (Novos Talentos), só que chamando /api/contas-rhi. Mais simples:
+// esse projeto não tem conceito de "plano" nem produto_codigo (é dedicado
+// só a isso), e o CRUD de conta/usuário é mais enxuto por causa disso.
+let CONTAS_RHI_CACHE = [];
+let USUARIOS_RHI_CACHE = [];
+
+async function apiContasRhi(payload) {
+  const url = "/api/contas-rhi?token=" + encodeURIComponent(ADMIN_PASS);
+  const opts = payload
+    ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
+    : undefined;
+  const r = await fetch(url, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || "Falha na API de contas do Corretores CRECI");
+  return data;
+}
+
+async function loadContasRhi() {
+  const tbody = $("listaContasRhi");
+  if (!tbody) return;
+  try {
+    const data = await apiContasRhi(null);
+    CONTAS_RHI_CACHE = data.contas || [];
+    USUARIOS_RHI_CACHE = data.usuarios || CONTAS_RHI_CACHE.usuarios || [];
+    renderContasRhi();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5"><small>❌ ${esc(e.message)}</small></td></tr>`;
+  }
+}
+
+function renderContasRhi() {
+  const tbody = $("listaContasRhi");
+  if (!tbody) return;
+  if (!CONTAS_RHI_CACHE.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><small>Nenhuma empresa cadastrada ainda.</small></td></tr>';
+    return;
+  }
+  tbody.innerHTML = CONTAS_RHI_CACHE.map(c => {
+    const consumido = c.consumidos ?? 0;
+    const limite = c.limite_leads ?? 0;
+    const perto = limite && consumido / limite >= 0.8;
+    const ativa = String(c.status || "").toUpperCase() === "ATIVA";
+    return `
+    <tr>
+      <td>${esc(c.nome_empresa || c.id)}<br><small style="color:#999">${esc(c.id)}</small></td>
+      <td><span class="badge ${ativa ? '' : 'bloqueado'}">${esc(c.status || '-')}</span></td>
+      <td${perto ? ' style="color:#c2410c;font-weight:700"' : ''}>${consumido}${limite ? ' / ' + limite : ''}</td>
+      <td><input class="limLeadsRhi" data-conta="${esc(c.id)}" type="number" min="0" value="${limite}" style="width:100px;margin:0"></td>
+      <td style="white-space:nowrap">
+        <button class="salvarLimRhiBtn" data-conta="${esc(c.id)}" style="padding:4px 8px;font-size:11px">Salvar</button>
+        <button class="${ativa ? 'danger' : 'secondary'} statusContaRhiBtn" data-conta="${esc(c.id)}" data-status="${esc(c.status||'')}" data-nome="${esc(c.nome_empresa||c.id)}" style="padding:4px 8px;font-size:11px">${ativa ? 'Desativar' : 'Ativar'}</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tbody.querySelectorAll(".salvarLimRhiBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const conta = btn.dataset.conta;
+      const limite = tbody.querySelector(`.limLeadsRhi[data-conta="${CSS.escape(conta)}"]`).value;
+      btn.disabled = true;
+      $("contasRhiEditMsg").textContent = "Salvando...";
+      try {
+        await apiContasRhi({ acao: "editar_conta", conta_id: conta, limite_leads: limite });
+        $("contasRhiEditMsg").textContent = "✅ Limite atualizado.";
+        await loadContasRhi();
+      } catch (e) {
+        $("contasRhiEditMsg").textContent = "❌ " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  tbody.querySelectorAll(".statusContaRhiBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const vaiDesativar = btn.dataset.status === "ATIVA";
+      const msg = vaiDesativar
+        ? `Desativar "${btn.dataset.nome}"?\n\nOs usuários dela deixam de conseguir liberar corretores. Nada é apagado — dá pra reativar depois.`
+        : `Reativar "${btn.dataset.nome}"?`;
+      if (!confirm(msg)) return;
+      btn.disabled = true;
+      try {
+        await apiContasRhi({ acao: "editar_conta", conta_id: btn.dataset.conta, status: vaiDesativar ? "INATIVA" : "ATIVA" });
+        await loadContasRhi();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+$("btnRefreshContasRhi")?.addEventListener("click", loadContasRhi);
+
+$("btnNovaEmpresaRhi")?.addEventListener("click", () => {
+  $("formNovaEmpresaRhi").classList.toggle("hide");
+});
+$("btnCancelarEmpresaRhi")?.addEventListener("click", () => {
+  $("formNovaEmpresaRhi").classList.add("hide");
+  $("novaEmpresaRhiMsg").textContent = "";
+});
+$("btnSalvarEmpresaRhi")?.addEventListener("click", async () => {
+  const nome = $("rncNome").value.trim();
+  if (!nome) { $("novaEmpresaRhiMsg").textContent = "❌ Informe o nome da empresa."; return; }
+  $("novaEmpresaRhiMsg").textContent = "Criando...";
+  try {
+    await apiContasRhi({
+      acao: "criar_conta",
+      nome_empresa: nome,
+      telefone: $("rncTelefone").value.trim(),
+      limite_leads: $("rncLimLeads").value,
+      usuarios_contratados: $("rncUsuarios").value,
+      status: "ATIVA"
+    });
+    $("novaEmpresaRhiMsg").textContent = "✅ Empresa criada.";
+    $("rncNome").value = "";
+    await loadContasRhi();
+  } catch (e) {
+    $("novaEmpresaRhiMsg").textContent = "❌ " + e.message;
+  }
+});
+
+function preencherSelectContasRhi(sel, valorAtual) {
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— escolha —</option>' +
+    CONTAS_RHI_CACHE.map(c => `<option value="${esc(c.id)}">${esc(c.nome_empresa || c.id)}</option>`).join("");
+  if (valorAtual) sel.value = valorAtual;
+}
+
+async function loadUsuariosRhi() {
+  const tbody = $("listaUsuariosRhi");
+  if (!tbody) return;
+  try {
+    const data = await apiContasRhi(null);
+    CONTAS_RHI_CACHE = data.contas || CONTAS_RHI_CACHE;
+    USUARIOS_RHI_CACHE = data.usuarios || [];
+    preencherSelectContasRhi($("ruConta"), $("ruConta")?.value);
+    renderUsuariosRhi();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6"><small>❌ ${esc(e.message)}</small></td></tr>`;
+  }
+}
+
+function nomeDaContaRhi(contaId) {
+  const c = CONTAS_RHI_CACHE.find(x => x.id === contaId);
+  return c ? (c.nome_empresa || c.id) : (contaId || "—");
+}
+
+function renderUsuariosRhi() {
+  const tbody = $("listaUsuariosRhi");
+  if (!tbody) return;
+  if (!USUARIOS_RHI_CACHE.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum usuário cadastrado ainda.</small></td></tr>';
+    return;
+  }
+  tbody.innerHTML = USUARIOS_RHI_CACHE.map(u => {
+    const ativo = String(u.status || "").toUpperCase() === "ATIVO";
+    return `
+    <tr>
+      <td>${esc(u.nome || "—")}</td>
+      <td><small>${esc(u.email || "—")}</small></td>
+      <td><small>${esc(nomeDaContaRhi(u.conta_id))}</small></td>
+      <td><small>${esc(u.perfil || "—")}</small></td>
+      <td><span class="badge ${ativo ? "" : "bloqueado"}">${ativo ? "Ativo" : "Inativo"}</span></td>
+      <td style="white-space:nowrap">
+        <button data-id="${esc(u.id)}" class="ghost ruEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-id="${esc(u.id)}" data-ativo="${ativo}" class="${ativo ? "danger" : "secondary"} ruToggleBtn" style="padding:4px 8px;font-size:11px">${ativo ? "Desativar" : "Ativar"}</button>
+        <button data-id="${esc(u.id)}" class="ghost ruSenhaBtn" style="padding:4px 8px;font-size:11px">Senha</button>
+        <button data-id="${esc(u.id)}" data-nome="${esc(u.nome || u.email || "")}" class="danger ruExcluirBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tbody.querySelectorAll(".ruExcluirBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm(`Excluir "${btn.dataset.nome}" do Banco de Corretores CRECI?\n\nIsso apaga o login e o vínculo com a empresa.`)) return;
+      btn.disabled = true;
+      try {
+        await apiContasRhi({ acao: "excluir_usuario", usuario_id: btn.dataset.id });
+        await loadUsuariosRhi();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
+  tbody.querySelectorAll(".ruEditBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const u = USUARIOS_RHI_CACHE.find(x => String(x.id) === btn.dataset.id);
+      if (!u) return;
+      $("ruUsuarioId").value = u.id;
+      $("ruNome").value = u.nome || "";
+      $("ruEmail").value = u.email || "";
+      $("ruEmail").disabled = true; // e-mail é o login no Auth — não muda por aqui
+      preencherSelectContasRhi($("ruConta"), u.conta_id);
+      $("ruConta").disabled = true; // trocar de empresa exige recriar o vínculo
+      $("ruPerfil").value = u.perfil || "OPERADOR";
+      $("ruStatus").value = String(u.status || "ATIVO").toUpperCase();
+      $("ruSenha").value = "";
+      $("ruSenhaLabel").textContent = "Senha (deixe em branco pra manter)";
+      $("ruMsg").textContent = "Editando: " + (u.nome || u.email);
+      $("ruNome").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+
+  tbody.querySelectorAll(".ruToggleBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const novoStatus = btn.dataset.ativo === "true" ? "INATIVO" : "ATIVO";
+      if (!confirm(`Mudar status para ${novoStatus}?`)) return;
+      btn.disabled = true;
+      try {
+        await apiContasRhi({ acao: "alterar_status_usuario", usuario_id: btn.dataset.id, status: novoStatus });
+        await loadUsuariosRhi();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
+  tbody.querySelectorAll(".ruSenhaBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const nova = prompt("Nova senha (mínimo 6 caracteres):", Math.random().toString(36).slice(2, 10) + "A1");
+      if (!nova) return;
+      if (nova.length < 6) { alert("Senha muito curta."); return; }
+      try {
+        await apiContasRhi({ acao: "resetar_senha_usuario", usuario_id: btn.dataset.id, senha: nova });
+        alert("✅ Senha redefinida: " + nova + "\n\nSe essa pessoa também é operadora da extensão, atualize o campo \"Senha do banco de Corretores CRECI\" no cadastro dela, mais abaixo.");
+      } catch (e) {
+        alert("❌ " + e.message);
+      }
+    });
+  });
+}
+
+$("btnGerarSenhaRu")?.addEventListener("click", () => {
+  $("ruSenha").value = Math.random().toString(36).slice(2, 10) + "A1";
+});
+
+$("btnLimparUsuarioRhi")?.addEventListener("click", () => {
+  $("ruUsuarioId").value = "";
+  $("ruNome").value = "";
+  $("ruEmail").value = "";
+  $("ruEmail").disabled = false;
+  $("ruConta").disabled = false;
+  preencherSelectContasRhi($("ruConta"), "");
+  $("ruPerfil").value = "OPERADOR";
+  $("ruStatus").value = "ATIVO";
+  $("ruSenha").value = "";
+  $("ruSenhaLabel").textContent = "Senha inicial";
+  $("ruMsg").textContent = "";
+});
+
+$("btnSalvarUsuarioRhi")?.addEventListener("click", async () => {
+  const id = $("ruUsuarioId").value;
+  const nome = $("ruNome").value.trim();
+  const email = $("ruEmail").value.trim().toLowerCase();
+  const conta = $("ruConta").value;
+  const perfil = $("ruPerfil").value;
+  const status = $("ruStatus").value;
+  const senha = $("ruSenha").value.trim();
+  const msg = $("ruMsg");
+
+  if (!nome) { msg.textContent = "❌ Informe o nome."; return; }
+
+  msg.textContent = "Salvando...";
+  try {
+    if (id) {
+      await apiContasRhi({ acao: "editar_usuario", usuario_id: id, nome, perfil, status });
+      if (senha) {
+        if (senha.length < 6) { msg.textContent = "❌ Senha deve ter ao menos 6 caracteres."; return; }
+        await apiContasRhi({ acao: "resetar_senha_usuario", usuario_id: id, senha });
+      }
+      msg.textContent = "✅ Usuário atualizado.";
+    } else {
+      if (!conta) { msg.textContent = "❌ Escolha a empresa."; return; }
+      if (!email) { msg.textContent = "❌ Informe o e-mail."; return; }
+      if (senha.length < 6) { msg.textContent = "❌ Senha deve ter ao menos 6 caracteres."; return; }
+      await apiContasRhi({ acao: "criar_usuario", conta_id: conta, nome, email, senha, perfil });
+      if (status !== "ATIVO") {
+        await loadUsuariosRhi();
+        const novo = USUARIOS_RHI_CACHE.find(u => (u.email || "").toLowerCase() === email);
+        if (novo) await apiContasRhi({ acao: "alterar_status_usuario", usuario_id: novo.id, status });
+      }
+      msg.textContent = "✅ Usuário criado. Senha: " + senha;
+    }
+    $("btnLimparUsuarioRhi").click();
+    await loadUsuariosRhi();
+  } catch (e) {
+    msg.textContent = "❌ " + e.message;
+  }
+});
+
+$("btnRefreshUsuariosRhi")?.addEventListener("click", loadUsuariosRhi);
 
 // ===== Nova empresa (conta na plataforma) =====
 $("btnNovaEmpresa")?.addEventListener("click", () => {
