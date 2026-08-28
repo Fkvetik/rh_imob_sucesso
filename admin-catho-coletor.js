@@ -23,6 +23,7 @@ function showApp() {
   $("loginCard").classList.add("hide");
   $("appArea").classList.remove("hide");
   loadUsuarios();
+  refreshStatusColeta();
   loadAdmins();
   loadAuditLog();
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
@@ -796,7 +797,7 @@ function renderUsuarios(list) {
   }
   tbody.innerHTML = list.map(u => `
     <tr>
-      <td>${esc(u.login)}</td>
+      <td>${esc(u.login)}<br><small class="statusColetaBadge" data-login-badge="${esc(u.login)}"></small></td>
       <td>${esc(u.nome_operador)}</td>
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
@@ -823,6 +824,7 @@ function renderUsuarios(list) {
   tbody.querySelectorAll(".filtrosBtn").forEach(btn => {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
   });
+  aplicarBadgesColeta(); // já aplica o que tiver em cache, sem esperar o próximo poll
 
   tbody.querySelectorAll(".excluirOperadorBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -915,6 +917,39 @@ function renderUsuarios(list) {
     });
   });
 }
+
+// ───────────────────────── "Coletando agora?" (status ao vivo) ─────────────────────────
+// Poll simples a cada 20s — mostra 🟢 direto na lista de operadores, sem
+// precisar abrir o painel de filtros de cada um pra saber quem está rodando.
+let STATUS_COLETA_CACHE = {}; // login -> coletando_desde (string ISO) | null
+
+async function refreshStatusColeta() {
+  try {
+    const resp = await rpc("rpc_admin_status_coleta", { p_admin_password: ADMIN_PASS });
+    STATUS_COLETA_CACHE = {};
+    (Array.isArray(resp) ? resp : []).forEach(r => { STATUS_COLETA_CACHE[r.login] = r.coletando_desde; });
+    aplicarBadgesColeta();
+  } catch (e) {
+    // silencioso — não trava o resto do admin por causa disso
+  }
+}
+
+function estaColetandoAgora(login) {
+  const desde = STATUS_COLETA_CACHE[login];
+  if (!desde) return false;
+  const ms = Date.now() - new Date(desde).getTime();
+  // ignora "preso" há mais de 20min — provável crash/fechou o Chrome sem limpar
+  return ms >= 0 && ms < 20 * 60 * 1000;
+}
+
+function aplicarBadgesColeta() {
+  document.querySelectorAll(".statusColetaBadge").forEach(el => {
+    const login = el.dataset.loginBadge;
+    el.innerHTML = estaColetandoAgora(login) ? '<span style="color:#16a34a;font-weight:800">🟢 Coletando agora</span>' : '';
+  });
+}
+
+setInterval(refreshStatusColeta, 20000);
 
 // ───────────────────────── Filtros de coleta (por operador) ─────────────────────────
 // Antes só existiam no navegador de cada operador. Agora moram no banco —
