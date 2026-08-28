@@ -791,7 +791,7 @@ async function loadUsuarios() {
 function renderUsuarios(list) {
   const tbody = $("listaUsuarios");
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="4"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
     return;
   }
   tbody.innerHTML = list.map(u => `
@@ -814,9 +814,15 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
+        <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
       </td>
     </tr>
+    <tr class="filtrosRow hide" data-login-row="${esc(u.login)}"><td colspan="6"><div class="filtrosPainel" data-login="${esc(u.login)}"></div></td></tr>
   `).join('');
+
+  tbody.querySelectorAll(".filtrosBtn").forEach(btn => {
+    btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
+  });
 
   tbody.querySelectorAll(".excluirOperadorBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -905,6 +911,130 @@ function renderUsuarios(list) {
         loadUsuarios();
       } catch (e) {
         alert("❌ " + e.message);
+      }
+    });
+  });
+}
+
+// ───────────────────────── Filtros de coleta (por operador) ─────────────────────────
+// Antes só existiam no navegador de cada operador. Agora moram no banco —
+// o admin edita de longe e ainda consegue mandar "Rodar agora" remotamente
+// (a extensão do operador checa comando pendente a cada ~3min).
+
+async function toggleFiltrosPanel(login) {
+  const row = document.querySelector(`tr.filtrosRow[data-login-row="${CSS.escape(login)}"]`);
+  if (!row) return;
+  const estavaEscondido = row.classList.contains("hide");
+  // fecha qualquer outro painel aberto — evita empilhar vários ao mesmo tempo
+  document.querySelectorAll("tr.filtrosRow").forEach(r => r.classList.add("hide"));
+  if (!estavaEscondido) return; // já estava aberto: o clique só fechou (feito acima)
+  row.classList.remove("hide");
+  await carregarFiltrosOperador(login);
+}
+
+async function carregarFiltrosOperador(login) {
+  const painel = document.querySelector(`.filtrosPainel[data-login="${CSS.escape(login)}"]`);
+  if (!painel) return;
+  painel.innerHTML = "<small>Carregando filtros...</small>";
+  try {
+    const resp = await rpc("rpc_admin_listar_filtros", { p_admin_password: ADMIN_PASS, p_login: login });
+    renderFiltrosOperador(login, Array.isArray(resp) ? resp : []);
+  } catch (e) {
+    painel.innerHTML = `<small style="color:#c2410c">❌ ${esc(e.message)}</small>`;
+  }
+}
+
+function renderFiltrosOperador(login, filtros) {
+  const painel = document.querySelector(`.filtrosPainel[data-login="${CSS.escape(login)}"]`);
+  if (!painel) return;
+
+  const linhas = filtros.map(f => {
+    const ultima = f.ultima_coleta
+      ? new Date(f.ultima_coleta).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+      : "ainda não rodou";
+    return `
+      <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-top:8px;">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap">
+          <div style="min-width:0;flex:1">
+            <a href="${esc(f.link)}" target="_blank" style="font-size:12px;word-break:break-all">${esc(f.link)}</a>
+            <div style="font-size:11px;color:#888;margin-top:2px">Páginas: ${f.paginas} • Coletados: ${f.coletados || 0} • Última coleta: ${ultima}${f.ultimo_erro ? ' • ⚠️ ' + esc(f.ultimo_erro) : ''}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
+            <span class="badge ${f.pausado ? 'pausado' : ''}">${f.pausado ? 'PAUSADO' : 'ATIVO'}</span>
+            <button data-id="${esc(f.id)}" data-pausado="${f.pausado}" class="ghost toggleFiltroAdminBtn" style="padding:3px 8px;font-size:11px">${f.pausado ? '▶' : '⏸'}</button>
+            <button data-id="${esc(f.id)}" class="danger excluirFiltroAdminBtn" style="padding:3px 8px;font-size:11px">✕</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('') || '<small>Nenhum filtro cadastrado ainda.</small>';
+
+  painel.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+      <button type="button" class="secondary rodarAgoraBtn">▶ Rodar agora (coleta + disparo)</button>
+      <small style="color:#888">O computador/Chrome do operador precisa estar aberto — o comando é consumido em até 3min.</small>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input type="text" class="novoFiltroLink" placeholder="Link de busca de currículos da Catho" style="flex:2;min-width:220px">
+      <input type="number" class="novoFiltroPaginas" placeholder="Páginas" value="2" min="1" style="width:80px">
+      <button type="button" class="secondary addFiltroAdminBtn">+ Adicionar</button>
+    </div>
+    ${linhas}
+  `;
+
+  painel.querySelector(".rodarAgoraBtn")?.addEventListener("click", async (ev) => {
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = "Enviando comando...";
+    try {
+      await rpc("rpc_admin_definir_comando", { p_admin_password: ADMIN_PASS, p_login: login, p_comando: { tipo: "RODAR_AGORA" } });
+      alert("✅ Comando enviado. A extensão desse operador roda em até 3 minutos, assim que checar (precisa do Chrome dele aberto).");
+    } catch (e) {
+      alert("❌ " + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+
+  painel.querySelector(".addFiltroAdminBtn")?.addEventListener("click", async (ev) => {
+    const btn = ev.currentTarget;
+    const link = painel.querySelector(".novoFiltroLink").value.trim();
+    const paginas = parseInt(painel.querySelector(".novoFiltroPaginas").value, 10) || 2;
+    if (!/catho\.com\.br\/curriculos\/busca\//i.test(link)) { alert("Link inválido — cole o link de uma busca de currículos da Catho."); return; }
+    btn.disabled = true;
+    try {
+      await rpc("rpc_admin_salvar_filtro", { p_admin_password: ADMIN_PASS, p_login: login, p_link: link, p_paginas: paginas });
+      carregarFiltrosOperador(login);
+    } catch (e) {
+      alert("❌ " + e.message);
+      btn.disabled = false;
+    }
+  });
+
+  painel.querySelectorAll(".toggleFiltroAdminBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        await rpc("rpc_admin_atualizar_filtro", { p_admin_password: ADMIN_PASS, p_login: login, p_id: btn.dataset.id, p_pausado: btn.dataset.pausado !== "true" });
+        carregarFiltrosOperador(login);
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
+  painel.querySelectorAll(".excluirFiltroAdminBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Excluir esse filtro de coleta?")) return;
+      btn.disabled = true;
+      try {
+        await rpc("rpc_admin_excluir_filtro", { p_admin_password: ADMIN_PASS, p_login: login, p_id: btn.dataset.id });
+        carregarFiltrosOperador(login);
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
       }
     });
   });
