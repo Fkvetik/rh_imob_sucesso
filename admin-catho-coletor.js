@@ -217,7 +217,8 @@ function renderUsuariosPlataforma() {
       <td style="white-space:nowrap">
         <button data-id="${esc(u.usuario_id)}" class="ghost puEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-id="${esc(u.usuario_id)}" data-ativo="${ativo}" class="${ativo ? "danger" : "secondary"} puToggleBtn" style="padding:4px 8px;font-size:11px">${ativo ? "Desativar" : "Ativar"}</button>
-        <button data-id="${esc(u.usuario_id)}" class="ghost puSenhaBtn" style="padding:4px 8px;font-size:11px">Senha</button>
+        <button data-id="${esc(u.usuario_id)}" data-senha="${esc(u.senha_temporaria || "")}" class="ghost puVerSenhaBtn" style="padding:4px 8px;font-size:11px">Ver senha</button>
+        <button data-id="${esc(u.usuario_id)}" class="ghost puSenhaBtn" style="padding:4px 8px;font-size:11px">Redefinir senha</button>
         <button data-id="${esc(u.usuario_id)}" data-nome="${esc(u.nome || u.email_login || "")}" class="danger puExcluirBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
       </td>
     </tr>`;
@@ -271,6 +272,17 @@ function renderUsuariosPlataforma() {
     });
   });
 
+  tbody.querySelectorAll(".puVerSenhaBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const senha = btn.dataset.senha;
+      if (senha) {
+        alert("🔑 Senha atual salva: " + senha);
+      } else {
+        alert("⚠️ Essa conta não tem senha salva como referência (foi criada antes desse recurso existir, ou por fora do painel).\n\nUse \"Redefinir senha\" pra definir uma nova — a partir daí ela já fica visível aqui.");
+      }
+    });
+  });
+
   tbody.querySelectorAll(".puSenhaBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const nova = prompt("Nova senha (mínimo 6 caracteres):", Math.random().toString(36).slice(2, 10) + "A1");
@@ -279,6 +291,7 @@ function renderUsuariosPlataforma() {
       try {
         await apiContas({ acao: "resetar_senha_usuario", usuario_id: btn.dataset.id, senha: nova });
         alert("✅ Senha redefinida: " + nova + "\n\nSe este usuário também é operador da extensão, atualize o campo \"Senha da plataforma\" no cadastro dele — senão o acesso automático ao pool para de funcionar.");
+        loadUsuariosPlataforma();
       } catch (e) {
         alert("❌ " + e.message);
       }
