@@ -4,7 +4,7 @@
 // Reutilizado por novos-talentos.html, corretores.html e plataformas.html.
 // O container deve ter: id="planosGrid", data-produto="...", data-prefix="plan"|"plano".
 (function () {
-  var WHATS = '5511953973268';
+  var WHATS = '5511978725515';
 
   var MODOS = {
     CLIENTE_PROPRIO: {
