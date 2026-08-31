@@ -451,16 +451,16 @@
           <input type="hidden" name="tipo" value="empresa" />
           <label>Nome<input type="text" name="nome" autocomplete="name" placeholder="Seu nome" required /></label>
           <label>WhatsApp<input type="tel" name="whatsapp" autocomplete="tel" placeholder="(11) 99999-9999" required /></label>
-          <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP" /></label>
+          <label>Cidade/Estado<input type="text" name="cidade" placeholder="Ex.: São Paulo/SP" required /></label>
           <label id="rhlmCampoWrap"><span id="rhlmCampoLabel">O que você precisa contratar?</span><input type="text" name="cargoVaga" id="rhlmCampo" placeholder="" /></label>
           <label id="rhlmPerfilWrap">Já atua como corretor?<select name="perfilCandidato"><option value="">Selecione</option><option value="Sim, já atua como corretor">Sim, já atua como corretor</option><option value="Não, estou começando agora">Não, estou começando agora</option></select></label>
+          <div class="rhlm-row" id="rhlmEmpresaRow" style="margin:2px 0 14px">
+            <label>Quantidade<input type="text" name="quantidade" id="rhlmQuantidade" placeholder="Ex.: 3" /></label>
+            <label>Urgência<select name="urgencia" id="rhlmUrgencia"><option value="">Selecione</option><option>Imediata</option><option>Até 15 dias</option><option>Até 30 dias</option><option>Sem pressa</option></select></label>
+          </div>
           <details class="rhlm-more" id="rhlmMore">
             <summary>Detalhar (opcional)</summary>
-            <div class="rhlm-row" style="margin-top:10px">
-              <label>Quantidade<input type="text" name="quantidade" placeholder="Ex.: 3" /></label>
-              <label>Urgência<select name="urgencia"><option value="">Selecione</option><option>Imediata</option><option>Até 15 dias</option><option>Até 30 dias</option><option>Sem pressa</option></select></label>
-            </div>
-            <label>Mensagem<textarea name="mensagem" rows="2" placeholder="Algo que a Mariana deva saber"></textarea></label>
+            <label style="margin-top:10px">Mensagem<textarea name="mensagem" rows="2" placeholder="Algo que a Mariana deva saber"></textarea></label>
           </details>
           <button type="submit" class="rhlm-btn" id="rhlmSubmit">Enviar →</button>
           <p class="rhlm-help">A mensagem abre no WhatsApp da Mariana para você revisar. Seus dados seguem a <a href="/politica.html">LGPD</a>.</p>
@@ -482,8 +482,12 @@
     $('#rhlmCampoLabel').textContent = ctx.campoLabel || LEAD_DEFAULT[ctx.journey].campoLabel;
     $('#rhlmCampo').placeholder = ctx.campoPlaceholder || LEAD_DEFAULT[ctx.journey].campoPlaceholder;
     $('#rhlmSubmit').textContent = ctx.cta || LEAD_DEFAULT[ctx.journey].cta;
-    // quantidade/urgência só fazem sentido para empresa; perfil (já é corretor?) só para candidato
-    $('#rhlmMore').style.display = ctx.journey === 'empresa' ? '' : 'none';
+    // quantidade/urgência só fazem sentido para empresa; perfil (já é corretor?) só para candidato.
+    // required é setado via JS (não no HTML) porque campo required + escondido trava o envio do formulário inteiro.
+    const isEmpresa = ctx.journey === 'empresa';
+    $('#rhlmEmpresaRow').style.display = isEmpresa ? '' : 'none';
+    $('#rhlmQuantidade').required = isEmpresa;
+    $('#rhlmUrgencia').required = isEmpresa;
     $('#rhlmPerfilWrap').style.display = ctx.journey === 'candidato' ? '' : 'none';
     if (form.elements.origem) form.elements.origem.value = ctx.origem || 'Site RH IMOB';
     if (form.elements.tipo) form.elements.tipo.value = ctx.journey;
