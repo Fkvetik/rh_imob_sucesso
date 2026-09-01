@@ -69,6 +69,10 @@ function renderVaga(v, slug) {
   const categoria= v.categoria || 'Vaga';
   const respWa   = (v.responsavel_whatsapp || FALLBACK_WA).replace(/\D/g, '') || FALLBACK_WA;
   const respNome = v.responsavel_nome || 'Mariana';
+  // Padrão é a foto da Mariana (responsável de quase toda vaga), mas quando o
+  // responsável é alguém da empresa cliente (ex.: vaga anunciada por terceiro,
+  // sem passar pela Mariana), dá pra apontar pra logo/foto certa por vaga.
+  const respFoto = v.responsavel_foto_url || '/assets/mariana-v3.jpg';
 
   const destaques  = splitList(v.destaques);
   const atividades = splitList(v.detalhes || v.atividades);
@@ -196,7 +200,7 @@ function renderVaga(v, slug) {
     .vg-block li::before{content:'';position:absolute;left:0;top:7px;width:16px;height:16px;border-radius:50%;background:#f0e9ff;border:1.5px solid #7c3aed}
     .vg-block li::after{content:'✓';position:absolute;left:3.5px;top:4px;font-size:11px;font-weight:900;color:#7c3aed}
     .vg-resp{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#faf7ff,#f3eeff);border:1px solid #e8e0ff;border-radius:18px;padding:22px 24px;margin-top:8px}
-    .vg-resp-av{width:56px;height:56px;border-radius:50%;background:url('/assets/mariana-v3.jpg') center/cover;flex-shrink:0;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)}
+    .vg-resp-av{width:56px;height:56px;border-radius:50%;background:#fff center/cover;flex-shrink:0;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)}
     .vg-resp strong{display:block;font-size:16px;color:#2b124d;font-weight:800}
     .vg-resp span{font-size:13px;color:#6f6283}
     .vg-cta{background:linear-gradient(135deg,#2b124d,#5b21b6);border-radius:20px;padding:40px 32px;text-align:center;margin:40px 0}
@@ -295,7 +299,7 @@ function renderVaga(v, slug) {
       <div class="vg-block">
         <h2>Responsável pela vaga</h2>
         <div class="vg-resp">
-          <div class="vg-resp-av" role="img" aria-label="${esc(respNome)}"></div>
+          <div class="vg-resp-av" role="img" aria-label="${esc(respNome)}" style="background-image:url('${esc(respFoto)}')"></div>
           <div>
             <strong>${esc(respNome)}</strong>
             <span>${esc(v.responsavel_cargo || 'Recrutamento imobiliário')} · ${esc(v.responsavel_empresa || 'RH IMOB')}</span>

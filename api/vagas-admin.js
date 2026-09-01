@@ -18,7 +18,7 @@ const CAMPOS = [
   'atividades', 'selo', 'whatsapp_destino',
   'imagem_url', 'video_url', 'instagram_url', 'midia_tipo', 'midia_alt', 'imagem_og',
   'responsavel_nome', 'responsavel_whatsapp', 'responsavel_empresa',
-  'responsavel_cargo', 'responsavel_email', 'slug'
+  'responsavel_cargo', 'responsavel_email', 'responsavel_foto_url', 'slug'
 ];
 
 export default async function handler(req, res) {

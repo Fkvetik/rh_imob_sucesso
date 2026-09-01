@@ -232,6 +232,7 @@
           '<div class="field"><label>Cargo</label>'+f('v-responsavel_cargo',v.responsavel_cargo)+'</div>'+
           '<div class="field"><label>E-mail</label>'+f('v-responsavel_email',v.responsavel_email)+'</div>'+
         '</div>'+
+        '<div class="field"><label>Foto/logo do responsável <span class="dica">(URL — deixe vazio pra usar a foto da Mariana)</span></label>'+f('v-responsavel_foto_url',v.responsavel_foto_url)+'</div>'+
 
         '<div class="grp-title">Mídia (opcional)</div>'+
         '<div class="cols-2">'+
@@ -252,7 +253,7 @@
     }
 
     async function salvar(vagaId){
-      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','instagram_url','imagem_url','imagem_og'];
+      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og'];
       var payload={ acao: vagaId?'editar_vaga':'criar_vaga' };
       if(vagaId) payload.vaga_id=vagaId; else { var vid=val('v-vaga_id'); if(vid) payload.vaga_id=vid; }
       campos.forEach(function(c){ payload[c]=val('v-'+c); });
