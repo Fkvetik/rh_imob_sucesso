@@ -298,7 +298,7 @@ function renderVaga(v, slug) {
           <div class="vg-resp-av" role="img" aria-label="${esc(respNome)}"></div>
           <div>
             <strong>${esc(respNome)}</strong>
-            <span>${esc(v.responsavel_cargo || 'Recrutamento imobiliário')} · RH IMOB</span>
+            <span>${esc(v.responsavel_cargo || 'Recrutamento imobiliário')} · ${esc(v.responsavel_empresa || 'RH IMOB')}</span>
           </div>
         </div>
       </div>
