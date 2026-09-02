@@ -26,6 +26,7 @@ function showApp() {
   refreshStatusColeta();
   loadAdmins();
   loadAuditLog();
+  loadLogsExtensao();
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
   loadContasRhi().then(() => { loadUsuariosRhi(); });
 }
@@ -57,6 +58,65 @@ async function loadAuditLog() {
 }
 
 $("btnAtualizarAudit")?.addEventListener("click", loadAuditLog);
+
+// ===== Log remoto da extensão (warn/error, projeto RHI) =====
+let LOGS_EXTENSAO_CACHE = [];
+
+async function apiLogsExtensao(login, nivel) {
+  const params = new URLSearchParams({ token: ADMIN_PASS, limite: "300" });
+  if (login) params.set("login", login);
+  if (nivel) params.set("nivel", nivel);
+  const r = await fetch("/api/logs-extensao?" + params.toString());
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || "Falha ao carregar logs da extensão");
+  return data;
+}
+
+async function loadLogsExtensao() {
+  const tbody = $("listaLogsExtensao");
+  const msg = $("logsExtensaoMsg");
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6"><small>Carregando...</small></td></tr>';
+  const login = $("filtroLoginLogs")?.value.trim() || null;
+  const nivel = $("filtroNivelLogs")?.value || null;
+  try {
+    const resp = await apiLogsExtensao(login, nivel);
+    LOGS_EXTENSAO_CACHE = resp.logs || [];
+    if (!LOGS_EXTENSAO_CACHE.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum warn/error registrado nos últimos 7 dias.</small></td></tr>';
+      msg.textContent = "";
+      return;
+    }
+    tbody.innerHTML = LOGS_EXTENSAO_CACHE.map(l => `
+      <tr>
+        <td><small>${esc(new Date(l.criado_em).toLocaleString('pt-BR'))}</small></td>
+        <td>${esc(l.login || '—')}</td>
+        <td>${l.nivel === 'error' ? '🔴' : '🟡'} ${esc(l.nivel)}</td>
+        <td>${esc(l.mensagem)}</td>
+        <td><small>${esc(l.detalhe || '')}</small></td>
+        <td><small>${esc(l.versao || '')}</small></td>
+      </tr>
+    `).join('');
+    msg.textContent = LOGS_EXTENSAO_CACHE.length + " registro(s).";
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6">❌ ${esc(e.message)}</td></tr>`;
+  }
+}
+
+function copiarLogsExtensao() {
+  if (!LOGS_EXTENSAO_CACHE.length) return;
+  const texto = LOGS_EXTENSAO_CACHE.map(l =>
+    `[${new Date(l.criado_em).toLocaleString('pt-BR')}] ${l.login || '—'} ${l.nivel.toUpperCase()} — ${l.mensagem}${l.detalhe ? ' | ' + l.detalhe : ''}`
+  ).join('\n');
+  navigator.clipboard.writeText(texto).then(() => {
+    $("logsExtensaoMsg").textContent = "📋 Copiado (" + LOGS_EXTENSAO_CACHE.length + " linha(s)).";
+  }).catch(() => {
+    $("logsExtensaoMsg").textContent = "❌ Não consegui copiar automaticamente — selecione manualmente.";
+  });
+}
+
+$("btnAtualizarLogs")?.addEventListener("click", loadLogsExtensao);
+$("btnCopiarLogs")?.addEventListener("click", copiarLogsExtensao);
 
 // ===== Contas da Plataforma (Novos Talentos) =====
 // Lidas via /api/contas (server-side, service_role), autenticado com a

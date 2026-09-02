@@ -345,6 +345,26 @@
         <tbody id="listaAudit"></tbody>
       </table>
     </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">🐞 Log da extensão (erros e avisos)</h3>
+      <small>Espelho automático de warn/error de todos os operadores — não precisa mais acessar o computador de quem reclamou. Guarda só os últimos 7 dias.</small>
+      <div class="btns">
+        <input id="filtroLoginLogs" placeholder="Filtrar por login (opcional)" style="max-width:260px">
+        <select id="filtroNivelLogs">
+          <option value="">Todos os níveis</option>
+          <option value="error">Só error</option>
+          <option value="warn">Só warn</option>
+        </select>
+        <button id="btnAtualizarLogs" class="secondary">↻ Atualizar</button>
+        <button id="btnCopiarLogs" class="ghost">📋 Copiar tudo</button>
+      </div>
+      <table>
+        <thead><tr><th>Quando</th><th>Operador</th><th>Nível</th><th>Mensagem</th><th>Detalhe</th><th>Versão</th></tr></thead>
+        <tbody id="listaLogsExtensao"></tbody>
+      </table>
+      <div id="logsExtensaoMsg" class="msg"></div>
+    </div>
   </div>
 
 </main>
