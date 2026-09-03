@@ -59,6 +59,22 @@ async function loadAuditLog() {
 
 $("btnAtualizarAudit")?.addEventListener("click", loadAuditLog);
 
+async function limparAuditLog() {
+  const dias = parseInt($("diasLimparAudit")?.value, 10) || 90;
+  if (!confirm(`Apagar todos os eventos de auditoria com mais de ${dias} dia(s)? Não dá pra desfazer.`)) return;
+  const msg = $("limparAuditMsg");
+  msg.textContent = "Apagando...";
+  try {
+    const resp = await rpc("rpc_admin_limpar_auditoria", { p_admin_password: ADMIN_PASS, p_dias: dias });
+    if (!resp.ok) { msg.textContent = "❌ " + resp.error; return; }
+    msg.textContent = `✅ ${resp.apagados} registro(s) apagado(s).`;
+    loadAuditLog();
+  } catch (e) {
+    msg.textContent = "❌ " + e.message;
+  }
+}
+$("btnLimparAudit")?.addEventListener("click", limparAuditLog);
+
 // ===== Log remoto da extensão (warn/error, projeto RHI) =====
 let LOGS_EXTENSAO_CACHE = [];
 

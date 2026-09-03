@@ -344,6 +344,13 @@
         <thead><tr><th>Quando</th><th>Operador</th><th>Lead</th><th>Evento</th><th>De → Para</th><th>Detalhe</th></tr></thead>
         <tbody id="listaAudit"></tbody>
       </table>
+      <div class="btns" style="margin-top:10px">
+        <span>Manter últimos</span>
+        <input id="diasLimparAudit" type="number" value="90" min="1" style="max-width:70px">
+        <span>dias, apagar o resto</span>
+        <button id="btnLimparAudit" class="ghost">🗑 Limpar antigos</button>
+      </div>
+      <div id="limparAuditMsg" class="msg"></div>
     </div>
 
     <div class="card">
