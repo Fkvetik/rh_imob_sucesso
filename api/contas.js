@@ -69,6 +69,7 @@ export default async function handler(req, res) {
       switch (body.acao) {
         case 'criar_conta':            return await criarConta(res, headers, body, contaId);
         case 'editar_conta':           return await editarConta(res, headers, body, contaId);
+        case 'excluir_conta':          return await excluirConta(res, headers, SERVICE_KEY, body, contaId);
         case 'criar_usuario':          return await criarUsuario(res, headers, SERVICE_KEY, body, contaId);
         case 'editar_usuario':         return await editarUsuario(res, headers, body, contaId);
         case 'alterar_status_usuario': return await alterarStatusUsuario(res, headers, body, contaId);
@@ -166,6 +167,34 @@ async function editarConta(res, headers, body, contaId) {
 
   const r = await fetch(`${SB_URL}/rest/v1/nt_contas?conta_id=eq.${encodeURIComponent(body.conta_id)}`, {
     method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
+  });
+  if (!r.ok) return supabaseErr(res, r);
+  return send(res, 200, { ok: true });
+}
+
+async function excluirConta(res, headers, serviceKey, body, contaIdAdmin) {
+  if (contaIdAdmin) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o super-admin pode excluir empresas.' });
+  if (!body.conta_id) return send(res, 400, { error: 'validacao', message: 'conta_id é obrigatório.' });
+
+  // remove primeiro os usuários vinculados (e os logins deles no Auth) pra não
+  // deixar login órfão sem conta — mesma lógica de excluirUsuario, em lote.
+  const rUsu = await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?select=auth_user_id&conta_id=eq.${encodeURIComponent(body.conta_id)}`, { headers });
+  const usuarios = rUsu.ok ? await rUsu.json() : [];
+  for (const u of usuarios) {
+    if (u.auth_user_id) {
+      await fetch(`${SB_URL}/auth/v1/admin/users/${u.auth_user_id}`, {
+        method: 'DELETE', headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
+      }).catch(() => {});
+    }
+  }
+  await fetch(`${SB_URL}/rest/v1/nt_usuarios_conta?conta_id=eq.${encodeURIComponent(body.conta_id)}`, {
+    method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' }
+  }).catch(() => {});
+
+  // se existir consumo histórico referenciando essa conta com FK travada, o
+  // Supabase recusa o DELETE — deixamos o erro subir em vez de mascarar.
+  const r = await fetch(`${SB_URL}/rest/v1/nt_contas?conta_id=eq.${encodeURIComponent(body.conta_id)}`, {
+    method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' }
   });
   if (!r.ok) return supabaseErr(res, r);
   return send(res, 200, { ok: true });

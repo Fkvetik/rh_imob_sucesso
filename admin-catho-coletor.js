@@ -197,6 +197,7 @@ function renderContas() {
       <td style="white-space:nowrap">
         <button class="salvarLimBtn" data-conta="${esc(c.conta_id)}" style="padding:4px 8px;font-size:11px">Salvar</button>
         <button class="${c.status === 'ATIVA' ? 'danger' : 'secondary'} statusContaBtn" data-conta="${esc(c.conta_id)}" data-status="${esc(c.status||'')}" data-nome="${esc(c.nome_conta||c.conta_id)}" style="padding:4px 8px;font-size:11px">${c.status === 'ATIVA' ? 'Desativar' : 'Ativar'}</button>
+        <button class="danger excluirContaBtn" data-conta="${esc(c.conta_id)}" data-nome="${esc(c.nome_conta||c.conta_id)}" style="padding:4px 8px;font-size:11px">🗑 Excluir</button>
       </td>
     </tr>`;
   }).join("");
@@ -220,10 +221,23 @@ function renderContas() {
     });
   });
 
-  // Empresa não tem "excluir" de verdade — apagar quebraria o histórico de
-  // consumo (nt_talento_consumos referencia a conta) e os usuários vinculados.
-  // Desativar é o equivalente seguro: some das opções de vínculo, mas nada
-  // se perde e dá pra reverter.
+  // "Desativar" é o caminho seguro (reversível, preserva histórico). "Excluir"
+  // é definitivo — usar só pra empresa que cancelou/venceu e não vai renovar.
+  tbody.querySelectorAll(".excluirContaBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const nome = btn.dataset.nome;
+      if (!confirm(`Excluir definitivamente "${nome}"?\n\nRemove a empresa e os usuários/logins vinculados a ela. Não dá pra desfazer. Use só se ela cancelou ou não vai renovar — senão prefira "Desativar".`)) return;
+      btn.disabled = true;
+      try {
+        await apiContas({ acao: "excluir_conta", conta_id: btn.dataset.conta });
+        await loadContasPlataforma();
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
   tbody.querySelectorAll(".statusContaBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const vaiDesativar = btn.dataset.status === "ATIVA";
