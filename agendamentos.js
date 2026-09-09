@@ -399,8 +399,11 @@ function renderCard(a) {
   const atrasado = isAtrasado(a);
   const badgeAtrasado = atrasado ? `<span class="badge-atrasado">⚠️ Atrasado</span>` : "";
   const wa = waLink(a.telefone);
-  const meet = a.link_reuniao
+  const meetIcon = a.link_reuniao
     ? `<a href="${esc(a.link_reuniao)}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir link da reunião">🔗</a>`
+    : "";
+  const meetBtn = a.link_reuniao
+    ? `<a href="${esc(a.link_reuniao)}" target="_blank" class="btn-participar" style="display:block;text-align:center;margin-top:6px;padding:6px;border-radius:6px;background:#0b3b6f;color:#fff;font-size:12px;font-weight:700;text-decoration:none" onclick="event.stopPropagation()">🎥 Participar da reunião</a>`
     : "";
   const obs = a.observacao
     ? `<div class="sub" style="font-style:italic">📝 ${esc(a.observacao)}</div>`
@@ -409,11 +412,12 @@ function renderCard(a) {
     <div class="agcard${atrasado ? " atrasado" : ""}" draggable="true" data-id="${a.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
         <div class="nome">${esc(a.nome_candidato||"—")}</div>
-        <div style="display:flex;gap:4px">${meet}${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}</div>
+        <div style="display:flex;gap:4px">${meetIcon}${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}</div>
       </div>
       <div class="sub">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
+      ${meetBtn}
       ${obs}
       ${reag}${badgeAtrasado}
     </div>`;
