@@ -399,15 +399,22 @@ function renderCard(a) {
   const atrasado = isAtrasado(a);
   const badgeAtrasado = atrasado ? `<span class="badge-atrasado">⚠️ Atrasado</span>` : "";
   const wa = waLink(a.telefone);
+  const meet = a.link_reuniao
+    ? `<a href="${esc(a.link_reuniao)}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir link da reunião">🔗</a>`
+    : "";
+  const obs = a.observacao
+    ? `<div class="sub" style="font-style:italic">📝 ${esc(a.observacao)}</div>`
+    : "";
   return `
     <div class="agcard${atrasado ? " atrasado" : ""}" draggable="true" data-id="${a.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
         <div class="nome">${esc(a.nome_candidato||"—")}</div>
-        ${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}
+        <div style="display:flex;gap:4px">${meet}${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}</div>
       </div>
       <div class="sub">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
+      ${obs}
       ${reag}${badgeAtrasado}
     </div>`;
 }
@@ -460,6 +467,8 @@ function openEditModal(id) {
   $("mOnline").value = a.entrevista_online === true ? "true" : a.entrevista_online === false ? "false" : "";
   $("mEntrevistador").value = a.entrevistador || "";
   $("mObsEntrevista").value = a.obs_entrevista || "";
+  $("mObsAgendamento").textContent = a.observacao || "— nenhuma observação registrada no agendamento —";
+  $("mLinkReuniao").value = a.link_reuniao || "";
   $("mMotivo").value = "";
   $("mHistorico").innerHTML = "Carregando...";
   $("editModal").classList.add("open");
@@ -503,7 +512,8 @@ $("mSalvar").addEventListener("click", () => {
     p_entrevistador: $("mEntrevistador").value.trim() || null,
     p_obs_entrevista: $("mObsEntrevista").value.trim() || null,
     p_motivo: $("mMotivo").value.trim() || null,
-    p_autor: "Admin"
+    p_autor: "Admin",
+    p_link_reuniao: $("mLinkReuniao").value.trim() || null
   }, () => {
     $("editModal").classList.remove("open");
     editingId = null;
