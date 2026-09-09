@@ -399,11 +399,12 @@ function renderCard(a) {
   const atrasado = isAtrasado(a);
   const badgeAtrasado = atrasado ? `<span class="badge-atrasado">⚠️ Atrasado</span>` : "";
   const wa = waLink(a.telefone);
-  const meetIcon = a.link_reuniao
-    ? `<a href="${esc(a.link_reuniao)}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir link da reunião">🔗</a>`
+  const linkReuniaoUrl = normalizeUrl(a.link_reuniao);
+  const meetIcon = linkReuniaoUrl
+    ? `<a href="${esc(linkReuniaoUrl)}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir link da reunião">🔗</a>`
     : "";
-  const meetBtn = a.link_reuniao
-    ? `<a href="${esc(a.link_reuniao)}" target="_blank" class="btn-participar" style="display:block;text-align:center;margin-top:6px;padding:6px;border-radius:6px;background:#0b3b6f;color:#fff;font-size:12px;font-weight:700;text-decoration:none" onclick="event.stopPropagation()">🎥 Participar da reunião</a>`
+  const meetBtn = linkReuniaoUrl
+    ? `<a href="${esc(linkReuniaoUrl)}" target="_blank" class="btn-participar" style="display:block;text-align:center;margin-top:6px;padding:6px;border-radius:6px;background:#0b3b6f;color:#fff;font-size:12px;font-weight:700;text-decoration:none" onclick="event.stopPropagation()">🎥 Participar da reunião</a>`
     : "";
   const obs = a.observacao
     ? `<div class="sub" style="font-style:italic">📝 ${esc(a.observacao)}</div>`
@@ -629,6 +630,14 @@ $("btnSalvarColunas").addEventListener("click", async () => {
 });
 
 function esc(s) { return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+// Se o link foi salvo sem protocolo (ex: "meet.google.com/xxx"), o navegador
+// trata como caminho relativo do próprio site em vez de abrir o destino real.
+function normalizeUrl(url) {
+  const v = String(url || "").trim();
+  if (!v) return "";
+  return /^https?:\/\//i.test(v) ? v : "https://" + v;
+}
 
 if (ADMIN_PASS) {
   rpc("rpc_admin_list_agendamentos", { p_admin_password: ADMIN_PASS })
