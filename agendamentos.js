@@ -415,7 +415,7 @@ function renderCard(a) {
         <div class="nome">${esc(a.nome_candidato||"—")}</div>
         <div style="display:flex;gap:4px">${meetIcon}${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}</div>
       </div>
-      <div class="sub">${esc(a.empresa||"—")}</div>
+      <div class="empresa-badge" style="display:inline-block;margin:2px 0;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:${empresaColor(a.empresa)}">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
       ${meetBtn}
@@ -630,6 +630,16 @@ $("btnSalvarColunas").addEventListener("click", async () => {
 });
 
 function esc(s) { return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+// Cor estável por empresa (mesmo hash simples usado no kanban da extensão),
+// pra identificar rápido qual vaga é cada card ao rolar a lista.
+const EMPRESA_COLORS = ['#3498db','#e74c3c','#2ecc71','#9b59b6','#f39c12','#1abc9c','#e67e22','#2980b9','#8e44ad','#16a085'];
+function empresaColor(nome) {
+  const s = String(nome || "—");
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffffffff;
+  return EMPRESA_COLORS[Math.abs(h) % EMPRESA_COLORS.length];
+}
 
 // Se o link foi salvo sem protocolo (ex: "meet.google.com/xxx"), o navegador
 // trata como caminho relativo do próprio site em vez de abrir o destino real.
