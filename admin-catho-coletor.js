@@ -862,6 +862,15 @@ async function fazerLogin(pass) {
   const ip = await pegarIpPublico();
   const resp = await rpc("rpc_admin_login", { p_admin_password: pass, p_ip: ip });
   if (!resp.ok) return resp;
+  // Nível "Só agendamentos" nunca deve ver o painel completo (operadores,
+  // empresas, administradores, etc.) — mesmo que a senha seja válida, o
+  // acesso dela é só o Kanban de agendamentos. Antes disso não era checado
+  // em lugar nenhum: a senha certa sempre abria o painel inteiro.
+  if (resp.nivel === "agendamentos") {
+    sessionStorage.setItem("catho_admin_pass", pass);
+    location.href = "/agendamentos";
+    return resp;
+  }
   ADMIN_PASS = pass;
   sessionStorage.setItem("catho_admin_pass", pass);
   CURRENT_ADMIN = resp;
