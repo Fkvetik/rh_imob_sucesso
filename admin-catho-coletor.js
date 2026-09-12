@@ -23,7 +23,7 @@ function showApp() {
   $("loginCard").classList.add("hide");
   $("appArea").classList.remove("hide");
   loadUsuarios();
-  refreshStatusColeta();
+  iniciarPollingStatusColeta();
   loadAdmins();
   loadAuditLog();
   loadLogsExtensao();
@@ -1034,16 +1034,33 @@ function renderUsuarios(list) {
 // Poll simples a cada 20s — mostra 🟢 direto na lista de operadores, sem
 // precisar abrir o painel de filtros de cada um pra saber quem está rodando.
 let STATUS_COLETA_CACHE = {}; // login -> coletando_desde (string ISO) | null
+let STATUS_COLETA_INTERVAL = null;
+let STATUS_COLETA_FALHAS = 0;
 
 async function refreshStatusColeta() {
+  if (!ADMIN_PASS) return; // sem sessão válida — nem tenta (evita martelar o backend deslogado)
   try {
     const resp = await rpc("rpc_admin_status_coleta", { p_admin_password: ADMIN_PASS });
     STATUS_COLETA_CACHE = {};
     (Array.isArray(resp) ? resp : []).forEach(r => { STATUS_COLETA_CACHE[r.login] = r.coletando_desde; });
     aplicarBadgesColeta();
+    STATUS_COLETA_FALHAS = 0;
   } catch (e) {
-    // silencioso — não trava o resto do admin por causa disso
+    // depois de várias falhas seguidas (ex: senha mudou, sessão velha numa aba
+    // esquecida aberta) para de tentar, em vez de martelar o backend pra sempre
+    STATUS_COLETA_FALHAS++;
+    if (STATUS_COLETA_FALHAS >= 3 && STATUS_COLETA_INTERVAL) {
+      clearInterval(STATUS_COLETA_INTERVAL);
+      STATUS_COLETA_INTERVAL = null;
+    }
   }
+}
+
+function iniciarPollingStatusColeta() {
+  STATUS_COLETA_FALHAS = 0;
+  refreshStatusColeta();
+  if (STATUS_COLETA_INTERVAL) clearInterval(STATUS_COLETA_INTERVAL);
+  STATUS_COLETA_INTERVAL = setInterval(refreshStatusColeta, 20000);
 }
 
 function estaColetandoAgora(login) {
@@ -1060,8 +1077,6 @@ function aplicarBadgesColeta() {
     el.innerHTML = estaColetandoAgora(login) ? '<span style="color:#16a34a;font-weight:800">🟢 Coletando agora</span>' : '';
   });
 }
-
-setInterval(refreshStatusColeta, 20000);
 
 // ───────────────────────── Filtros de coleta (por operador) ─────────────────────────
 // Antes só existiam no navegador de cada operador. Agora moram no banco —
