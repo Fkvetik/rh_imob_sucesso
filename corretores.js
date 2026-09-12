@@ -442,7 +442,7 @@
     return `<article class="lead-card" data-lead-key="${esc(r.lead_key)}">
       <div class="lead-head">
         <span class="badge" ${badgeStyle}>${badgeLabel}</span>
-        <h3>${esc(r.nome_mascarado || 'Profissional selecionado')}</h3>
+        <h3>${esc((logged && r.nome_completo) || r.nome_mascarado || 'Profissional selecionado')}</h3>
         <div>${esc(r.cidade || 'Cidade não informada')}</div>
       </div>
       <div class="lead-body">
