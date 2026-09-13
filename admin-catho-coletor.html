@@ -50,7 +50,30 @@
   <span id="whoInfo" class="who-info hide"></span>
   <a href="manual.html" target="_blank" style="background:rgba(255,255,255,.15);color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600">📘 Manual do Operador</a>
   <a href="agendamentos.html" target="_blank" style="background:var(--rh-orange);color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600">🗓 Abrir CRM Agendamentos</a>
+
+  <div style="position:relative">
+    <button id="menuHamburgerBtn" type="button" aria-label="Mais opções" style="background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:16px;cursor:pointer;line-height:1">☰</button>
+    <div id="menuHamburgerDrop" class="hide" style="position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:220px;padding:6px;z-index:50">
+      <a href="/painel" target="_blank" style="display:block;padding:9px 12px;border-radius:8px;color:#231a30;text-decoration:none;font-size:13px;font-weight:600">🧩 Painel RH IMOB (hub completo)</a>
+    </div>
+  </div>
 </header>
+<script>
+  (function(){
+    var btn = document.getElementById('menuHamburgerBtn');
+    var drop = document.getElementById('menuHamburgerDrop');
+    if (!btn || !drop) return;
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      drop.classList.toggle('hide');
+    });
+    document.addEventListener('click', function(e){
+      if (!drop.classList.contains('hide') && !drop.contains(e.target) && e.target !== btn) {
+        drop.classList.add('hide');
+      }
+    });
+  })();
+</script>
 <main>
 
   <div class="card" id="loginCard">
