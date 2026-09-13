@@ -86,10 +86,16 @@
     return `${formatInteger(number)}+`;
   }
 
+  function formatIntegerPlus(value) {
+    return `${formatInteger(value)}+`;
+  }
+
   function setMetric(name, value) {
     $$(`[data-rhimob-metric="${name}"]`).forEach((el) => {
       const format = el.dataset.format || 'integer';
-      el.textContent = format === 'rounded-mil' ? formatRoundedMil(value) : formatInteger(value);
+      el.textContent = format === 'rounded-mil' ? formatRoundedMil(value)
+        : format === 'integer-plus' ? formatIntegerPlus(value)
+        : formatInteger(value);
       el.dataset.loaded = 'true';
     });
   }
@@ -100,7 +106,7 @@
 
     if (corretoresCfg) {
       Promise.allSettled([
-        countSupabaseRows(corretoresCfg, corretoresCfg.publicTable || 'leads_publicos'),
+        countSupabaseRows(corretoresCfg, corretoresCfg.publicTable || 'leads_publicos', 'ativo=eq.true'),
         countSupabaseRows(corretoresCfg, 'lead_filtros_cidade'),
         countSupabaseRows(corretoresCfg, 'lead_filtros_cidade_ano_cargo')
       ]).then(([total, cidades, combinacoes]) => {
