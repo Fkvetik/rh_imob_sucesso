@@ -82,7 +82,9 @@
   function formatRoundedMil(value) {
     const number = Number(value || 0);
     if (!number) return '57 mil+';
-    if (number >= 1000) return `${Math.ceil(number / 1000)} mil+`;
+    // Math.floor, não ceil: "X mil+" promete "pelo menos X mil" — arredondar
+    // pra cima inflava o número (84.147 virava "85 mil+", que é falso).
+    if (number >= 1000) return `${Math.floor(number / 1000)} mil+`;
     return `${formatInteger(number)}+`;
   }
 
