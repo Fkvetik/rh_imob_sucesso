@@ -223,6 +223,19 @@
       </div>
 
       <div style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <h4 style="margin:0 0 2px;font-size:13px;color:var(--rh-purple-dark)">📇 Exportar contatos (CSV pro Google/celular)</h4>
+        <small>Gera uma planilha pronta pra importar no Google Contatos — nome, telefone com +55 e já agrupado numa label com o nome da cidade.</small>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+          <div style="flex:2;min-width:180px"><label>Cidade</label><select id="ecCidade"><option value="">Carregando...</option></select></div>
+          <div style="flex:1;min-width:140px"><label>Ano de inscrição (opcional)</label><select id="ecAno"><option value="">Todos</option></select></div>
+        </div>
+        <div class="btns">
+          <button id="btnGerarContatosRhi">⬇️ Gerar planilha</button>
+        </div>
+        <div id="exportarContatosMsg" class="msg"></div>
+      </div>
+
+      <div style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
         <input type="hidden" id="ruUsuarioId">
         <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
           <div style="flex:2;min-width:180px"><label>Nome</label><input id="ruNome" placeholder="Nome completo"></div>

@@ -29,6 +29,7 @@ function showApp() {
   loadLogsExtensao();
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
   loadContasRhi().then(() => { loadUsuariosRhi(); });
+  loadCidadesExportarContatos();
 }
 
 // ===== Log de auditoria (Fase 12) =====
@@ -466,6 +467,61 @@ async function apiContasRhi(payload) {
   if (!r.ok) throw new Error(data?.message || "Falha na API de contas do Corretores CRECI");
   return data;
 }
+
+// ===== Exportar contatos (CSV Google Contatos) por cidade/ano — usa as
+// mesmas tabelas de filtro (lead_filtros_cidade/_ano) que a Plataforma de
+// Corretores já mantém atualizadas, então não recalcula nada aqui.
+async function loadCidadesExportarContatos() {
+  const select = $("ecCidade");
+  if (!select) return;
+  try {
+    const url = "/api/exportar-contatos-rhi?token=" + encodeURIComponent(ADMIN_PASS) + "&acao=cidades";
+    const r = await fetch(url);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) throw new Error(data?.message || "Falha ao carregar cidades");
+    const cidades = data.cidades || [];
+    select.innerHTML = cidades.length
+      ? cidades.map(c => `<option value="${esc(c.cidade)}">${esc(c.cidade)} (${c.total})</option>`).join('')
+      : '<option value="">Nenhuma cidade encontrada</option>';
+    if (cidades.length) loadAnosExportarContatos(cidades[0].cidade);
+  } catch (e) {
+    select.innerHTML = `<option value="">❌ ${esc(e.message)}</option>`;
+  }
+}
+
+async function loadAnosExportarContatos(cidade) {
+  const select = $("ecAno");
+  if (!select || !cidade) return;
+  select.innerHTML = '<option value="">Todos</option>';
+  try {
+    const url = "/api/exportar-contatos-rhi?token=" + encodeURIComponent(ADMIN_PASS) + "&acao=anos&cidade=" + encodeURIComponent(cidade);
+    const r = await fetch(url);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) throw new Error(data?.message || "Falha ao carregar anos");
+    (data.anos || []).forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.ano_inscricao;
+      opt.textContent = `${a.ano_inscricao} (${a.total})`;
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    // silencioso — o filtro de ano é opcional, não trava o resto da tela
+  }
+}
+
+$("ecCidade")?.addEventListener("change", (e) => loadAnosExportarContatos(e.target.value));
+
+$("btnGerarContatosRhi")?.addEventListener("click", () => {
+  const cidade = $("ecCidade").value;
+  const ano = $("ecAno").value;
+  const msgEl = $("exportarContatosMsg");
+  if (!cidade) { if (msgEl) msgEl.textContent = "⚠️ Escolha uma cidade."; return; }
+  if (msgEl) msgEl.textContent = "Gerando... o download começa em instantes.";
+  const url = "/api/exportar-contatos-rhi?token=" + encodeURIComponent(ADMIN_PASS) +
+    "&acao=exportar&cidade=" + encodeURIComponent(cidade) +
+    (ano ? "&ano=" + encodeURIComponent(ano) : "");
+  window.location.href = url;
+});
 
 async function loadContasRhi() {
   const tbody = $("listaContasRhi");
