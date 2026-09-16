@@ -59,6 +59,21 @@ function showApp() {
   $("loginArea").classList.add("hide");
   $("appArea").classList.remove("hide");
   loadAll();
+  iniciarAutoRefresh();
+}
+
+// Antes só carregava uma vez no login — quem ficava com a aba aberta nunca
+// via um agendamento novo (WhatsApp/extensão) sem dar F5 na mão. Reforça a
+// cada 45s, mas nunca no meio de um drag (perderia a carta arrastada) nem
+// com o modal de edição aberto (sobrescreveria o que a pessoa está digitando).
+let AUTO_REFRESH_TIMER = null;
+function iniciarAutoRefresh() {
+  if (AUTO_REFRESH_TIMER) return;
+  AUTO_REFRESH_TIMER = setInterval(() => {
+    if (dragId != null) return;
+    if ($("editModal")?.classList.contains("open")) return;
+    loadAll();
+  }, 45000);
 }
 
 $("btnEntrar").addEventListener("click", async () => {
