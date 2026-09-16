@@ -516,7 +516,9 @@ function fmtData(s){
   if (!s) return "—";
   const d = new Date(s);
   if (isNaN(d.getTime())) return s;
-  return d.toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  const diaSemana = d.toLocaleDateString("pt-BR", { weekday:"short" }).replace(".", "");
+  const resto = d.toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  return `${diaSemana}, ${resto}`;
 }
 
 $("mCancelar").addEventListener("click", () => { $("editModal").classList.remove("open"); editingId = null; });
