@@ -1461,6 +1461,15 @@ $("btnSalvarAdmin").addEventListener("click", async () => {
 
 function esc(s) { return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
+// Quem já é super-admin aqui não precisa digitar senha de novo lá —
+// a página de avaliações confia nessa mesma chave de localStorage.
+$("btnAbrirAvaliacoes")?.addEventListener("click", () => {
+  if (CURRENT_ADMIN && !CURRENT_ADMIN.conta_id_plataforma) {
+    localStorage.setItem("rh_painel_ok", "Meldesouza1508$");
+  }
+  window.open("/admin-avaliacoes", "_blank", "noopener");
+});
+
 // Olhinho pra ver a senha de login do painel.
 $("btnToggleAdminPass")?.addEventListener("click", () => {
   const input = $("adminPass");
