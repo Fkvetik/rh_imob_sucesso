@@ -30,6 +30,7 @@ function showApp() {
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
   loadContasRhi().then(() => { loadUsuariosRhi(); });
   loadCidadesExportarContatos();
+  loadUsuariosEnriquecimento();
 }
 
 // ===== Log de auditoria (Fase 12) =====
@@ -1470,14 +1471,111 @@ $("btnAbrirAvaliacoes")?.addEventListener("click", () => {
   window.open("/admin-avaliacoes", "_blank", "noopener");
 });
 
-$("btnCopiarNtSenha")?.addEventListener("click", () => {
-  const txt = $("ntSenhaValor")?.textContent || "";
-  navigator.clipboard.writeText(txt).then(() => {
-    const btn = $("btnCopiarNtSenha");
-    const original = btn.textContent;
-    btn.textContent = "✅ Copiado";
-    setTimeout(() => { btn.textContent = original; }, 1500);
+// ===== Logins da extensão RHIMOB_NT_ENRIQUECIMENTO (Novos Talentos) =====
+let USUARIOS_ENRIQ_CACHE = [];
+
+async function apiEnriquecimentoUsuarios(payload) {
+  const login = (CURRENT_ADMIN && CURRENT_ADMIN.login) || "";
+  const url = "/api/enriquecimento-usuarios?token=" + encodeURIComponent(ADMIN_PASS) + "&login=" + encodeURIComponent(login);
+  const opts = payload
+    ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
+    : undefined;
+  const r = await fetch(url, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || "Falha na API de logins do Enriquecimento");
+  return data;
+}
+
+async function loadUsuariosEnriquecimento() {
+  const tbody = $("listaUsuariosEnriquecimento");
+  if (!tbody) return;
+  try {
+    const data = await apiEnriquecimentoUsuarios(null);
+    USUARIOS_ENRIQ_CACHE = data.usuarios || [];
+    renderUsuariosEnriquecimento();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4"><small>❌ ${esc(e.message)}</small></td></tr>`;
+  }
+}
+
+function renderUsuariosEnriquecimento() {
+  const tbody = $("listaUsuariosEnriquecimento");
+  if (!tbody) return;
+  if (!USUARIOS_ENRIQ_CACHE.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><small>Nenhum login cadastrado ainda.</small></td></tr>';
+    return;
+  }
+  tbody.innerHTML = USUARIOS_ENRIQ_CACHE.map(u => `
+    <tr>
+      <td><small>${esc(u.login)}</small></td>
+      <td><small>${esc(u.nome || "—")}</small></td>
+      <td><span class="badge ${u.ativo ? "" : "bloqueado"}">${u.ativo ? "Ativo" : "Inativo"}</span></td>
+      <td style="white-space:nowrap">
+        <button data-id="${esc(u.id)}" class="ghost euEditBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-id="${esc(u.id)}" data-ativo="${u.ativo}" class="${u.ativo ? "danger" : "secondary"} euToggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? "Desativar" : "Ativar"}</button>
+      </td>
+    </tr>
+  `).join("");
+
+  tbody.querySelectorAll(".euEditBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const u = USUARIOS_ENRIQ_CACHE.find(x => String(x.id) === btn.dataset.id);
+      if (!u) return;
+      $("euId").value = u.id;
+      $("euLogin").value = u.login;
+      $("euNome").value = u.nome || "";
+      $("euSenha").value = "";
+      $("euSenhaLabel").textContent = "Senha (deixe em branco pra manter a atual)";
+      $("euMsg").textContent = "";
+    });
   });
+  tbody.querySelectorAll(".euToggleBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const ativo = btn.dataset.ativo === "true";
+      try {
+        await apiEnriquecimentoUsuarios({ acao: "editar", id: btn.dataset.id, ativo: !ativo });
+        await loadUsuariosEnriquecimento();
+      } catch (e) {
+        alert("❌ " + e.message);
+      }
+    });
+  });
+}
+
+$("btnGerarSenhaEu")?.addEventListener("click", () => {
+  $("euSenha").value = Math.random().toString(36).slice(2, 10) + "A1";
+});
+
+$("btnLimparUsuarioEnriquecimento")?.addEventListener("click", () => {
+  $("euId").value = "";
+  $("euLogin").value = "";
+  $("euNome").value = "";
+  $("euSenha").value = "";
+  $("euSenhaLabel").textContent = "Senha";
+  $("euMsg").textContent = "";
+});
+
+$("btnSalvarUsuarioEnriquecimento")?.addEventListener("click", async () => {
+  const msg = $("euMsg");
+  const id = $("euId").value.trim();
+  const loginVal = $("euLogin").value.trim().toLowerCase();
+  const nome = $("euNome").value.trim();
+  const senha = $("euSenha").value.trim();
+  if (!loginVal) { msg.textContent = "❌ Preencha o login."; return; }
+  if (!id && (!senha || senha.length < 6)) { msg.textContent = "❌ Senha precisa ter pelo menos 6 caracteres."; return; }
+  msg.textContent = "Salvando...";
+  try {
+    if (id) {
+      await apiEnriquecimentoUsuarios({ acao: "editar", id, nome, senha: senha || undefined });
+    } else {
+      await apiEnriquecimentoUsuarios({ acao: "criar", login: loginVal, nome, senha });
+    }
+    msg.textContent = "✅ Salvo.";
+    $("btnLimparUsuarioEnriquecimento").click();
+    await loadUsuariosEnriquecimento();
+  } catch (e) {
+    msg.textContent = "❌ " + e.message;
+  }
 });
 
 // Olhinho pra ver a senha de login do painel.

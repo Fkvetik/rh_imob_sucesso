@@ -94,13 +94,33 @@
         <a href="/assets/extensoes/RHIMOB_NT_ENRIQUECIMENTO_v1.zip" style="font-size:12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:6px 10px;text-decoration:none;color:#3730a3;font-weight:700;display:inline-block">🧩 Baixar extensão (.zip)</a>
         <a href="https://docs.google.com/spreadsheets/d/1tdn1yZ1z3283381oi-sIp-U91xgfivT1xekYqnlOkxM/edit" target="_blank" rel="noopener" style="font-size:12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:6px 10px;text-decoration:none;color:#3730a3;font-weight:700;display:inline-block">📄 Abrir planilha mãe</a>
       </div>
-      <div style="margin-top:10px;background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:10px 12px">
-        <small style="display:block;margin-bottom:4px;font-weight:700">🔑 Senha de acesso (cole igual no popup de cada um dos 4 PCs)</small>
-        <div style="display:flex;gap:8px;align-items:center">
-          <code id="ntSenhaValor" style="font-family:ui-monospace,monospace;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:6px;padding:5px 9px;flex:1">NTEnriq@2026</code>
-          <button type="button" id="btnCopiarNtSenha" class="ghost" style="font-size:11px;padding:5px 9px">📋 Copiar</button>
+      <div style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <h4 style="margin:0 0 2px;font-size:13px;color:var(--rh-purple-dark)">🔑 Logins da extensão (um por PC)</h4>
+        <small>Cada PC configura seu próprio login/senha no popup da extensão. Cadastre aqui um login pra cada máquina — a extensão só grava dado se o login/senha bater com algum daqui.</small>
+        <table style="margin-top:10px">
+          <thead><tr><th>Login</th><th>Nome</th><th>Status</th><th></th></tr></thead>
+          <tbody id="listaUsuariosEnriquecimento"><tr><td colspan="4"><small>Carregando...</small></td></tr></tbody>
+        </table>
+      </div>
+
+      <div style="background:#faf9ff;border:1px solid #eee;border-radius:10px;padding:14px;margin-top:12px">
+        <input type="hidden" id="euId">
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px"><label>Login</label><input id="euLogin" placeholder="ex.: fernando, pc2, mariana"></div>
+          <div style="flex:2;min-width:180px"><label>Nome (opcional)</label><input id="euNome" placeholder="Nome de quem usa esse PC"></div>
         </div>
-        <small style="display:block;margin-top:4px;color:#888">Definida direto no código do WebApp (constante SENHA_ACESSO) — pra trocar, é preciso editar o .gs e publicar uma nova versão do deployment.</small>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:2;min-width:200px">
+            <label id="euSenhaLabel">Senha</label>
+            <input id="euSenha" type="text" placeholder="mínimo 6 caracteres (deixe em branco pra manter, se já existir)">
+          </div>
+          <div><button id="btnGerarSenhaEu" class="ghost" type="button">🎲 Gerar</button></div>
+        </div>
+        <div class="btns">
+          <button id="btnSalvarUsuarioEnriquecimento">💾 Salvar login</button>
+          <button id="btnLimparUsuarioEnriquecimento" class="ghost">Limpar</button>
+        </div>
+        <div id="euMsg" class="msg"></div>
       </div>
     </div>
 
