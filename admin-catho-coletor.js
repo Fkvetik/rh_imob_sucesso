@@ -1470,6 +1470,16 @@ $("btnAbrirAvaliacoes")?.addEventListener("click", () => {
   window.open("/admin-avaliacoes", "_blank", "noopener");
 });
 
+$("btnCopiarNtSenha")?.addEventListener("click", () => {
+  const txt = $("ntSenhaValor")?.textContent || "";
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = $("btnCopiarNtSenha");
+    const original = btn.textContent;
+    btn.textContent = "✅ Copiado";
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
+});
+
 // Olhinho pra ver a senha de login do painel.
 $("btnToggleAdminPass")?.addEventListener("click", () => {
   const input = $("adminPass");
