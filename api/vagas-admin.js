@@ -14,7 +14,7 @@ const TABELA = 'site_vagas_publicas';
 // campos texto livres aceitos em criar/editar
 const CAMPOS = [
   'titulo', 'categoria', 'localidade', 'cidade', 'estado_uf', 'modalidade',
-  'remuneracao', 'horario', 'resumo', 'destaques', 'detalhes', 'requisitos',
+  'remuneracao', 'horario', 'resumo', 'destaques', 'sobre_empresa', 'detalhes', 'requisitos',
   'atividades', 'selo', 'whatsapp_destino',
   'imagem_url', 'video_url', 'instagram_url', 'midia_tipo', 'midia_alt', 'imagem_og',
   'responsavel_nome', 'responsavel_whatsapp', 'responsavel_empresa',

@@ -293,6 +293,7 @@ function renderVaga(v, slug) {
 
       ${v.resumo ? `<div class="vg-block"><h2>Sobre a vaga</h2><p>${esc(v.resumo)}</p></div>` : ''}
       ${destaques.length ? `<div class="vg-block"><h2>Diferenciais</h2><ul>${liList(destaques)}</ul></div>` : ''}
+      ${v.sobre_empresa ? `<div class="vg-block"><h2>Sobre a ${esc(v.responsavel_empresa || 'empresa')}</h2><p>${esc(v.sobre_empresa)}</p></div>` : ''}
       ${atividades.length ? `<div class="vg-block"><h2>Principais atividades</h2><ul>${liList(atividades)}</ul></div>` : ''}
       ${requisitos.length ? `<div class="vg-block"><h2>Requisitos e perfil</h2><ul>${liList(requisitos)}</ul></div>` : ''}
 

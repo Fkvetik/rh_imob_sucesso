@@ -210,6 +210,7 @@
         '<div class="grp-title">Conteúdo</div>'+
         '<div class="field"><label>Resumo <span class="dica">(1 frase, aparece no card)</span></label>'+ta('v-resumo',v.resumo)+'</div>'+
         '<div class="field"><label>Destaques <span class="dica">(um por linha)</span></label>'+ta('v-destaques',v.destaques)+'</div>'+
+        '<div class="field"><label>Sobre a empresa <span class="dica">(texto livre, aparece como seção própria na página — histórico, certificações etc.)</span></label>'+ta('v-sobre_empresa',v.sobre_empresa)+'</div>'+
         '<div class="field"><label>Requisitos <span class="dica">(um por linha)</span></label>'+ta('v-requisitos',v.requisitos)+'</div>'+
         '<div class="field"><label>Atividades <span class="dica">(um por linha)</span></label>'+ta('v-atividades',v.atividades)+'</div>'+
         '<div class="field"><label>Detalhes <span class="dica">(texto livre)</span></label>'+ta('v-detalhes',v.detalhes)+'</div>'+
@@ -253,7 +254,7 @@
     }
 
     async function salvar(vagaId){
-      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og'];
+      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og'];
       var payload={ acao: vagaId?'editar_vaga':'criar_vaga' };
       if(vagaId) payload.vaga_id=vagaId; else { var vid=val('v-vaga_id'); if(vid) payload.vaga_id=vid; }
       campos.forEach(function(c){ payload[c]=val('v-'+c); });
