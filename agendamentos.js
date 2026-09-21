@@ -192,10 +192,17 @@ function renderDashboard(d) {
   const porStatus = {};
   (d.agendamentos_por_status||[]).forEach(s => porStatus[s.status] = s.total);
 
+  // Funil simples com os números que já existem — dá pra ver de cara quantas
+  // pessoas foram abordadas em relação ao total coletado, e quanto disso virou
+  // agendamento, sem precisar de nenhuma consulta nova.
+  const pct = (parte, total) => total > 0 ? Math.round((parte / total) * 100) : 0;
+  const pctAbordado = pct(d.leads_enviados || 0, d.leads_total || 0);
+  const pctAgendou = pct(agendamentos.length, d.leads_enviados || 0);
+
   $("dashboard").innerHTML = `
     <div class="stat"><div class="num">${d.leads_total||0}</div><div class="label">Leads coletados (total)</div></div>
-    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Disparos enviados</div></div>
-    <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div></div>
+    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (disparos enviados)</div><div class="sub">${pctAbordado}% do total coletado</div></div>
+    <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div><div class="sub">${pctAgendou}% de quem foi abordado</div></div>
     <div class="stat"><div class="num">${porStatus.CONFIRMADO||0}</div><div class="label">Confirmados</div></div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Leads por operador</div><ul>${opStats || '<li style="color:#aaa">Sem dados</li>'}</ul></div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Agendamentos por operador (produção individual)</div><ul>${agStats}</ul></div>
