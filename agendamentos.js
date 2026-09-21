@@ -201,9 +201,19 @@ function renderDashboard(d) {
 
   $("dashboard").innerHTML = `
     <div class="stat"><div class="num">${d.leads_total||0}</div><div class="label">Leads coletados (total)</div></div>
-    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (disparos enviados)</div><div class="sub">${pctAbordado}% do total coletado</div></div>
+    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (total acumulado)</div><div class="sub">${pctAbordado}% do total coletado</div></div>
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div><div class="sub">${pctAgendou}% de quem foi abordado</div></div>
     <div class="stat"><div class="num">${porStatus.CONFIRMADO||0}</div><div class="label">Confirmados</div></div>
+    <div class="stat wide">
+      <div class="label" style="margin-bottom:4px">Pessoas abordadas por período (ritmo recente)</div>
+      <ul>
+        <li><span>Hoje</span><span>${d.abordados_hoje||0}</span></li>
+        <li><span>Últimos 7 dias</span><span>${d.abordados_7d||0}</span></li>
+        <li><span>Últimos 15 dias</span><span>${d.abordados_15d||0}</span></li>
+        <li><span>Últimos 21 dias</span><span>${d.abordados_21d||0}</span></li>
+        <li><span>Total geral da operação${d.operacao_dias ? ` (dia ${d.operacao_dias})` : ""}</span><span>${d.leads_enviados||0}</span></li>
+      </ul>
+    </div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Leads por operador</div><ul>${opStats || '<li style="color:#aaa">Sem dados</li>'}</ul></div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Agendamentos por operador (produção individual)</div><ul>${agStats}</ul></div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Entrevistas por entrevistador</div><ul>${entrevistadores}</ul></div>
