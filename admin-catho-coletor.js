@@ -1190,6 +1190,7 @@ function renderFiltrosOperador(login, filtros) {
   painel.innerHTML = `
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <button type="button" class="secondary rodarAgoraBtn">▶ Rodar agora (coleta + disparo)</button>
+      <button type="button" class="danger zerarFilaBtn">🗑 Zerar fila (reiniciar operação)</button>
       <small style="color:#888">O computador/Chrome do operador precisa estar aberto — o comando é consumido em até 3min.</small>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1208,6 +1209,27 @@ function renderFiltrosOperador(login, filtros) {
     try {
       await rpc("rpc_admin_definir_comando", { p_admin_password: ADMIN_PASS, p_login: login, p_comando: { tipo: "RODAR_AGORA" } });
       alert("✅ Comando enviado. A extensão desse operador roda em até 3 minutos, assim que checar (precisa do Chrome dele aberto).");
+    } catch (e) {
+      alert("❌ " + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+
+  // "Zerar fila": limpa o que estava preso na fila/falhas/dúvidas desse
+  // operador e para o disparo, sem mexer em quem já foi confirmado enviado
+  // (não reenvia duplicado). Útil quando ele avisa que deu erro e você quer
+  // recomeçar do zero sem precisar mexer no computador dele.
+  painel.querySelector(".zerarFilaBtn")?.addEventListener("click", async (ev) => {
+    if (!confirm(`Zerar a fila de envio de "${login}"?\n\nIsso limpa a fila pendente, os itens em falha/dúvida e para o disparo dele. Quem já foi confirmado enviado continua protegido (não recebe mensagem de novo). A próxima coleta recomeça do zero.`)) return;
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = "Enviando comando...";
+    try {
+      await rpc("rpc_admin_definir_comando", { p_admin_password: ADMIN_PASS, p_login: login, p_comando: { tipo: "ZERAR_FILA" } });
+      alert("✅ Comando enviado. A fila desse operador é zerada em até 3 minutos, assim que a extensão dele checar (precisa do Chrome dele aberto).");
     } catch (e) {
       alert("❌ " + e.message);
     } finally {
