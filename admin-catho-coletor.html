@@ -15,7 +15,13 @@
   header{background:linear-gradient(135deg,var(--rh-purple-dark),var(--rh-purple));color:#fff;padding:16px 24px}
   header h1{font-size:16px;margin:0}
   header img.logo{height:32px;border-radius:6px;background:#fff;padding:2px}
-  main{max-width:720px;margin:24px auto;padding:0 16px}
+  main{max-width:1040px;margin:24px auto;padding:0 16px}
+  #loginCard{max-width:420px;margin:0 auto}
+  .tabbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:0;background:#fbfafc;padding:10px 0;z-index:10}
+  .tabbar button{background:#fff;color:var(--rh-purple-dark);border:1px solid #e4dbe8;font-weight:700;padding:10px 16px;border-radius:10px}
+  .tabbar button:hover{background:var(--rh-purple-light)}
+  .tabbar button.active{background:var(--rh-purple);color:#fff;border-color:var(--rh-purple)}
+  .tabpanel.hide{display:none}
   .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px;margin-bottom:16px}
   label{font-weight:600;font-size:12px;color:#333;display:block;margin-top:10px}
   input,select{width:100%;box-sizing:border-box;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:8px;font-size:13px}
@@ -87,6 +93,15 @@
   </div>
 
   <div id="appArea" class="hide">
+
+    <div class="tabbar">
+      <button type="button" class="tab-btn active" data-tab="tabNT">🧩 Novos Talentos</button>
+      <button type="button" class="tab-btn" data-tab="tabCreci">🏘️ Corretores CRECI</button>
+      <button type="button" class="tab-btn" data-tab="tabOperadores">📇 Operadores (Catho Coletor)</button>
+      <button type="button" class="tab-btn" data-tab="tabAdmin">🔐 Administração</button>
+    </div>
+
+    <div class="tabpanel" id="tabNT">
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">🧩 Enriquecimento Novos Talentos (Catho)</h3>
       <small>Extensão à parte, roda em vários PCs ao mesmo tempo (um login Catho por máquina) — coleta sozinha por filtro de busca, sem depender de planilha de origem. Checa por telefone se a pessoa já está na Novos Talentos: se não tá, entra novo; se tá com 2+ anos, atualiza; se tá fresco, não mexe.</small>
@@ -225,15 +240,9 @@
         <tbody id="listaUsuariosPlataforma"></tbody>
       </table>
     </div>
+    </div><!-- /tabNT -->
 
-    <div class="card">
-      <h3 style="margin-top:0;font-size:14px">📄 Planilha mãe da Catho (espelho de leads)</h3>
-      <small>Toda vez que alguém roda a coleta da Catho ou libera um contato do Pool (Banco de Talentos), o lead é espelhado aqui automaticamente — o Supabase é a fonte de verdade, isso é só pra quem prefere olhar pela planilha.</small>
-      <div class="btns">
-        <a href="https://docs.google.com/spreadsheets/d/1Ld0Mr2PvAUXfWPD83ZFa1Uh3n15AYijBWpe9ycz4SOE/edit" target="_blank" rel="noopener" style="font-size:12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:6px 10px;text-decoration:none;color:#3730a3;font-weight:700;display:inline-block">📄 Abrir planilha mãe</a>
-      </div>
-    </div>
-
+    <div class="tabpanel hide" id="tabCreci">
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">🏘️ Empresas do Banco de Corretores CRECI</h3>
       <small>Quanto cada empresa pode liberar de corretores. O consumo é debitado toda vez que alguém libera o contato de um corretor.</small>
@@ -332,6 +341,16 @@
         <tbody id="listaUsuariosRhi"></tbody>
       </table>
     </div>
+    </div><!-- /tabCreci -->
+
+    <div class="tabpanel hide" id="tabOperadores">
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">📄 Planilha mãe da Catho (espelho de leads)</h3>
+      <small>Toda vez que alguém roda a coleta da Catho ou libera um contato do Pool (Banco de Talentos), o lead é espelhado aqui automaticamente — o Supabase é a fonte de verdade, isso é só pra quem prefere olhar pela planilha.</small>
+      <div class="btns">
+        <a href="https://docs.google.com/spreadsheets/d/1Ld0Mr2PvAUXfWPD83ZFa1Uh3n15AYijBWpe9ycz4SOE/edit" target="_blank" rel="noopener" style="font-size:12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:6px 10px;text-decoration:none;color:#3730a3;font-weight:700;display:inline-block">📄 Abrir planilha mãe</a>
+      </div>
+    </div>
 
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">Adicionar / editar operador</h3>
@@ -391,7 +410,9 @@
         <tbody id="listaUsuarios"></tbody>
       </table>
     </div>
+    </div><!-- /tabOperadores -->
 
+    <div class="tabpanel hide" id="tabAdmin">
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">🔐 Administradores</h3>
       <label>Login</label>
@@ -469,9 +490,27 @@
       </table>
       <div id="logsExtensaoMsg" class="msg"></div>
     </div>
+    </div><!-- /tabAdmin -->
+
   </div>
 
 </main>
+<script>
+  (function(){
+    var TAB_KEY = 'catho_admin_tab_ativa';
+    var btns = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tabpanel');
+    function ativar(id){
+      panels.forEach(function(p){ p.classList.toggle('hide', p.id !== id); });
+      btns.forEach(function(b){ b.classList.toggle('active', b.dataset.tab === id); });
+      try{ sessionStorage.setItem(TAB_KEY, id); }catch(_){}
+    }
+    btns.forEach(function(b){ b.addEventListener('click', function(){ ativar(b.dataset.tab); }); });
+    var salva = null;
+    try{ salva = sessionStorage.getItem(TAB_KEY); }catch(_){}
+    if (salva && document.getElementById(salva)) ativar(salva);
+  })();
+</script>
 <script src="admin-catho-coletor.js?v=20260816apicontaslogin"></script>
 </body>
 </html>
