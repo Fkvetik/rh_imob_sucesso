@@ -2377,3 +2377,17 @@ textarea { resize: vertical; min-height: 100px; }
 .home-news-title{font-size:15.5px;font-weight:800;color:var(--purple-950);line-height:1.35;margin:0}
 .home-news-resumo{font-size:13.5px;color:var(--muted);line-height:1.6;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .home-news-more{text-align:center;margin-top:24px}
+
+/* ── Cabeçalho: cabe em notebooks (1280–1440px) sem empurrar o botão pra fora ── */
+.site-header .container { width: min(1320px, calc(100% - 40px)); }
+.main-nav { gap: 14px; }
+.main-nav a { white-space: nowrap; }
+.btn-header { flex-shrink: 0; white-space: nowrap; padding: 0 16px; font-size: 14.5px; }
+@media (max-width: 1400px) {
+  .brand small { display: none; }
+  .main-nav { gap: 11px; font-size: 13.5px; }
+  .btn-header { padding: 0 14px; font-size: 14px; }
+}
+@media (max-width: 1200px) and (min-width: 981px) {
+  .btn-header { display: none; }
+}

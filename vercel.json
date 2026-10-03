@@ -9,6 +9,16 @@
       "source": "/contratar",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/extensao-recrutadora",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/extensao-recrutadora.html",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "crons": [

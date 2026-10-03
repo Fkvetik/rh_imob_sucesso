@@ -35,6 +35,20 @@
   <link rel="stylesheet" href="styles.css?v=20260713evolucao" />
 
   <style>
+
+    /* ── COMO VOCÊ QUER CONTRATAR (3 caminhos) ── */
+    .plan-from { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+    .plan-card--custom .plan-from { color: rgba(255,255,255,.6); }
+    .plan-title { font-size: 19px; font-weight: 900; color: var(--purple-950); margin: 0; letter-spacing: -.01em; line-height: 1.25; }
+    .plan-card--custom .plan-title { color: #fff; }
+    .plan-desc { font-size: 14px; line-height: 1.55; color: var(--muted); margin: 0; }
+    .plan-card--custom .plan-desc { color: rgba(255,255,255,.72); }
+    .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+    .plan-list li { font-size: 13.5px; line-height: 1.4; color: var(--body, #3b3355); padding-left: 20px; position: relative; }
+    .plan-list li::before { content: '✓'; position: absolute; left: 0; color: var(--orange-500); font-weight: 900; }
+    .plan-card--custom .plan-list li { color: rgba(255,255,255,.85); }
+    .plan-card--custom .plan-list li::before { color: var(--orange-400); }
+    .plan-btn-outline { background: transparent !important; color: var(--purple-900) !important; border: 2px solid var(--purple-900) !important; box-shadow: none !important; }
     /* ── PLANOS E VALORES ──────────────────── */
     .plan-grid {
       display: grid;
@@ -315,7 +329,7 @@
       {
         "@type": "Question",
         "name": "Quanto custa o serviço de recrutamento imobiliário da RH IMOB?",
-        "acceptedAnswer": { "@type": "Answer", "text": "O investimento parte de R$ 2.800/mês (cerca de R$ 560 por corretor) e inclui a operação completa: busca e geração de candidatos, triagem, abordagem estruturada e entrega em reunião, com 1 assistente dedicada e prazo mínimo de 2 meses. O valor final varia conforme volume de vagas, prazo e perfil desejado. Após o diagnóstico inicial, apresentamos uma proposta estruturada com escopo claro." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Depende de como você quer contratar. Para o seu time usar nossas bases e fazer a abordagem: Plataforma Novos Talentos a partir de R$ 249/mês e Plataforma Corretores (CRECI ativo) a partir de R$ 499/mês, mensais e sem fidelidade. Para a RH IMOB conduzir todo o processo — geração de candidatos, triagem, abordagem e entrega em entrevista online, com assistente dedicada e headhunter — a operação completa parte de R$ 3.499/mês (pacote de até 5 profissionais por mês, média de cerca de R$ 700 por profissional apresentado), com prazo mínimo de 2 meses. Somos RH: geramos a demanda e entregamos em entrevista; a decisão de contratação é sempre da empresa." }
       },
       {
         "@type": "Question",
@@ -421,7 +435,7 @@
             <a class="btn btn-cta btn-xl" href="#proposta" data-lead-wired="1" data-journey="empresa" data-origem="Home hero" onclick="event.preventDefault();window.RHLead&&window.RHLead.open('empresa',this)">
               Quero uma proposta →
             </a>
-            <p class="hero-price-hint">⚡ Diagnóstico gratuito, sem compromisso · Operação completa a partir de R$ 2.800/mês — cerca de R$ 560 por corretor · Setup em 7 dias</p>
+            <p class="hero-price-hint">⚡ Diagnóstico gratuito, sem compromisso · Plataformas a partir de R$ 249/mês · Operação completa a partir de R$ 3.499/mês</p>
             <div class="gateway-secondary-links">
               <a href="#como-funciona">Como funciona</a>
               <span>·</span>
@@ -641,6 +655,105 @@
       </div>
     </section>
 
+    <!-- PLANOS E VALORES -->
+    <section class="section-pad sim-section" id="simulador">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Planos e valores</span>
+          <h2>Como você quer contratar?</h2>
+          <p>Do acesso direto às nossas bases até a operação completa conduzida pela RH IMOB. Escolha o caminho que faz sentido para a sua empresa hoje.</p>
+        </div>
+
+        <div class="plan-grid reveal">
+          <div class="plan-card">
+            <span class="plan-badge">Plataforma Novos Talentos</span>
+            <h3 class="plan-title">Acesse a base de novos talentos</h3>
+            <p class="plan-desc">Profissionais em início de carreira com interesse no mercado imobiliário. Seu time filtra e faz a abordagem.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 249/mês</strong></div></div>
+            <ul class="plan-list">
+              <li>R$ 249/mês se você já assina a Catho</li>
+              <li>R$ 649/mês se não assina — o acesso é nosso</li>
+              <li>Filtros por cidade, bairro, perfil e metrô</li>
+              <li>Mensal, sem fidelidade</li>
+            </ul>
+            <a class="btn btn-cta btn-full plan-btn-outline" href="/novos-talentos#planos">Ver planos Novos Talentos →</a>
+          </div>
+          <div class="plan-card">
+            <span class="plan-badge">Plataforma Corretores</span>
+            <h3 class="plan-title">Acesse a base de corretores com CRECI ativo</h3>
+            <p class="plan-desc">Banco de <span data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil</span> corretores com CRECI ativo. Seu time libera os contatos e faz a abordagem.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 499/mês</strong></div></div>
+            <ul class="plan-list">
+              <li>Starter: 500 contatos/mês — R$ 499</li>
+              <li>Pro: 1.000 contatos/mês — R$ 999</li>
+              <li>Ilimitado: contatos ilimitados — R$ 1.499</li>
+              <li>Mensal, sem fidelidade</li>
+            </ul>
+            <a class="btn btn-cta btn-full plan-btn-outline" href="/corretores#planos">Ver planos Corretores →</a>
+          </div>
+          <div class="plan-card plan-card--custom">
+            <span class="plan-badge">Operação completa · Mais completo</span>
+            <h3 class="plan-title">A RH IMOB conduz o processo por você</h3>
+            <p class="plan-desc">Assistente dedicada e headhunter cuidam da geração de candidatos, triagem, abordagem e entrega em entrevista online.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 3.499/mês</strong><span class="plan-unit">média de ≈ R$ 700 por profissional apresentado*</span></div></div>
+            <ul class="plan-list">
+              <li>Assistente dedicada + headhunter</li>
+              <li>Construção da vaga e geração de demanda</li>
+              <li>Entrega em entrevista online</li>
+              <li>Relatório semanal do funil</li>
+            </ul>
+            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender a operação completa (a partir de R$ 3.499/mês).">Quero a operação completa →</a>
+          </div>
+        </div>
+        <p class="plan-footnote">Plataformas: planos mensais, sem fidelidade; usuários adicionais pelo valor da assinatura. Operação completa: prazo mínimo de 2 meses; volumes acima de 5 profissionais/mês e tráfego pago (Meta/Google Ads) sob consulta. *Média considerando o pacote de até 5 profissionais/mês. Somos RH: geramos a demanda e entregamos os candidatos em entrevista — a decisão de contratar é sempre da empresa.</p>
+            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um volume maior que 10 corretores/mês.">Falar sobre volume maior →</a>
+          </div>
+        </div>
+        <p class="plan-footnote">O valor por corretor considera o volume cheio do plano. Prazo mínimo de operação: 2 meses. Para urgência, é possível somar tráfego pago (Meta/Google Ads) à operação — fale com a gente para incluir.</p>
+
+        <div class="incluso-box reveal" style="margin-top: 32px;">
+          <p class="incluso-label">A operação completa inclui</p>
+          <div class="incluso-grid">
+            <div class="incluso-item">
+              <span>👩‍💼</span>
+              <div>
+                <strong>Assistente dedicada</strong>
+                <small>Mais de 10 anos de experiência comprovada no mercado imobiliário conduzindo o processo</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>💼</span>
+              <div>
+                <strong>Acesso a plataformas de vagas</strong>
+                <small>Catho, Pandapé e demais plataformas do mercado usadas ativamente na captação</small>
+              </div>
+            </div>
+            <div class="incluso-item">
+              <span>🔎</span>
+              <div>
+                <strong>Ferramenta própria de CRECI ativo</strong>
+                <small>Localização de corretores com CRECI ativo em qualquer cidade do estado de São Paulo</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="plan-footnote">Geramos entrevistas com o perfil ajustado ao interesse da empresa — a decisão final de contratação é sempre da empresa.</p>
+      </div>
+    </section>
+
+    <!-- GERENTE DE VENDAS -->
+    <section class="section-pad" id="gerente-vendas">
+      <div class="container">
+        <div class="gv-card reveal">
+          <div>
+            <strong>Precisa de um Gerente de Vendas?</strong>
+            <p>Serviço de liberação sob consulta, com valor médio entre R$ 1.400 e R$ 2.000 conforme o grau de dificuldade da vaga. Pagamento: 50% no ato do contrato + 50% em 15 dias.</p>
+          </div>
+          <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um Gerente de Vendas.">Falar com um especialista →</a>
+        </div>
+      </div>
+    </section>
+
     <!-- 6. DEPOIMENTOS -->
     <section class="section-pad testimonial-section" id="depoimentos">
       <div class="container">
@@ -747,7 +860,7 @@
         <div class="faq-list reveal">
           <div class="faq-item">
             <button class="faq-q" aria-expanded="false">Quanto custa o serviço?<span class="faq-icon">+</span></button>
-            <div class="faq-a" role="region"><p>O investimento parte de <strong>R$ 2.800/mês</strong> — cerca de <strong>R$ 560 por corretor</strong> — e inclui a <strong>operação completa</strong>: busca e geração de candidatos, triagem, abordagem estruturada e entrega em reunião, com 1 assistente dedicada e prazo mínimo de 2 meses. O valor final varia conforme o volume de vagas, o prazo e o perfil desejado. Após o diagnóstico inicial, apresentamos uma proposta estruturada com escopo claro — sem surpresa no meio do processo.</p></div>
+            <div class="faq-a" role="region"><p>Depende de como você quer contratar. Para o seu time usar nossas bases e fazer a abordagem: <strong>Plataforma Novos Talentos a partir de R$ 249/mês</strong> e <strong>Plataforma Corretores (CRECI ativo) a partir de R$ 499/mês</strong>, mensais e sem fidelidade. Para a RH IMOB conduzir todo o processo — geração de candidatos, triagem, abordagem e entrega em entrevista online, com assistente dedicada e headhunter — a <strong>operação completa parte de R$ 3.499/mês</strong> (pacote de até 5 profissionais por mês, média de cerca de R$ 700 por profissional apresentado), com prazo mínimo de 2 meses. Somos RH: geramos a demanda e entregamos em entrevista — a decisão de contratação é sempre da empresa.</p></div>
           </div>
           <div class="faq-item">
             <button class="faq-q" aria-expanded="false">Vocês atendem fora de São Paulo?<span class="faq-icon">+</span></button>
@@ -773,86 +886,6 @@
       </div>
     </section>
 
-    <!-- PLANOS E VALORES -->
-    <section class="section-pad sim-section" id="simulador">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="section-kicker">Planos e valores</span>
-          <h2>Tenha uma noção de valor antes de pedir sua proposta.</h2>
-          <p>Veja a faixa de investimento por volume de contratação. A proposta final é sempre fechada com nosso time comercial, considerando o detalhe da sua operação.</p>
-        </div>
-
-        <div class="plan-grid reveal">
-          <div class="plan-card">
-            <span class="plan-badge">Até 5 corretores/mês</span>
-            <div class="plan-price-row">
-              <div><small>Cidades até 500 mil hab.</small><strong>R$ 2.800/mês</strong><span class="plan-unit">≈ R$ 560 por corretor</span></div>
-              <div><small>Cidades acima de 500 mil hab.</small><strong>R$ 3.490/mês</strong><span class="plan-unit">≈ R$ 698 por corretor</span></div>
-            </div>
-            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender o plano de até 5 corretores/mês.">Quero esse plano →</a>
-          </div>
-          <div class="plan-card">
-            <span class="plan-badge">5 a 10 corretores/mês</span>
-            <div class="plan-price-row">
-              <div><small>Cidades até 500 mil hab.</small><strong>R$ 5.600/mês</strong><span class="plan-unit">≈ R$ 560 por corretor</span></div>
-              <div><small>Cidades acima de 500 mil hab.</small><strong>R$ 6.980/mês</strong><span class="plan-unit">≈ R$ 698 por corretor</span></div>
-            </div>
-            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender o plano de 5 a 10 corretores/mês.">Quero esse plano →</a>
-          </div>
-          <div class="plan-card plan-card--custom">
-            <span class="plan-badge">Mais de 10/mês</span>
-            <div class="plan-price-row">
-              <div><small>Projeto de alto volume</small><strong>Sob consulta</strong></div>
-            </div>
-            <p class="plan-note">Volumes maiores têm condições próprias, calculadas conforme a demanda.</p>
-            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um volume maior que 10 corretores/mês.">Falar sobre volume maior →</a>
-          </div>
-        </div>
-        <p class="plan-footnote">O valor por corretor considera o volume cheio do plano. Prazo mínimo de operação: 2 meses. Para urgência, é possível somar tráfego pago (Meta/Google Ads) à operação — fale com a gente para incluir.</p>
-
-        <div class="incluso-box reveal" style="margin-top: 32px;">
-          <p class="incluso-label">Toda simulação já inclui</p>
-          <div class="incluso-grid">
-            <div class="incluso-item">
-              <span>👩‍💼</span>
-              <div>
-                <strong>Assistente dedicada</strong>
-                <small>Mais de 10 anos de experiência comprovada no mercado imobiliário conduzindo o processo</small>
-              </div>
-            </div>
-            <div class="incluso-item">
-              <span>💼</span>
-              <div>
-                <strong>Acesso a plataformas de vagas</strong>
-                <small>Catho, Pandapé e demais plataformas do mercado usadas ativamente na captação</small>
-              </div>
-            </div>
-            <div class="incluso-item">
-              <span>🔎</span>
-              <div>
-                <strong>Ferramenta própria de CRECI ativo</strong>
-                <small>Localização de corretores com CRECI ativo em qualquer cidade do estado de São Paulo</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p class="plan-footnote">Geramos entrevistas com o perfil ajustado ao interesse da empresa — a decisão final de contratação é sempre da empresa.</p>
-      </div>
-    </section>
-
-    <!-- GERENTE DE VENDAS -->
-    <section class="section-pad" id="gerente-vendas">
-      <div class="container">
-        <div class="gv-card reveal">
-          <div>
-            <strong>Precisa de um Gerente de Vendas?</strong>
-            <p>Serviço de liberação sob consulta, com valor médio entre R$ 1.400 e R$ 2.000 conforme o grau de dificuldade da vaga. Pagamento: 50% no ato do contrato + 50% em 15 dias.</p>
-          </div>
-          <a class="btn btn-cta js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um Gerente de Vendas.">Falar com um especialista →</a>
-        </div>
-      </div>
-    </section>
-
     <!-- 8. FORMULÁRIO -->
     <section class="section-pad proposta-section" id="proposta">
       <div class="container">
@@ -860,7 +893,7 @@
           <span class="section-kicker">Solicite sua proposta</span>
           <h2>Conte sua demanda. Retornamos com uma proposta estruturada.</h2>
           <p>Preencha os dados abaixo. Quanto mais contexto, mais precisa será a proposta que prepararemos para você.</p>
-          <div class="price-anchor"><strong>A partir de R$ 2.800/mês</strong><span>— e é a operação completa: busca e geração de candidatos, triagem, abordagem estruturada e entrega em reunião, com assistente dedicada. Menos que o custo de uma contratação errada · mínimo 2 meses · sem compromisso</span></div>
+          <div class="price-anchor"><strong>Operação completa a partir de R$ 3.499/mês</strong><span>— geração de candidatos, triagem, abordagem e entrega em entrevista online, com assistente dedicada e headhunter. Menos que o custo de uma contratação errada · mínimo 2 meses · diagnóstico sem compromisso</span></div>
         </div>
         <div class="direct-wa-wrap reveal">
           <p>Prefere não preencher formulário?</p>

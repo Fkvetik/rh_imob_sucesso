@@ -47,14 +47,14 @@
         "@type": "ListItem",
         "position": 1,
         "name": "Plataforma Corretores",
-        "description": "Banco de <span data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil+</span> corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. 360 cidades disponíveis.",
+        "description": "Banco de 52 mil+ corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. 360 cidades disponíveis.",
         "url": "https://www.rhimob.com.br/corretores.html"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Plataforma Novos Talentos",
-        "description": "Banco de 8 mil+ candidatos em início de carreira com interesse declarado no mercado imobiliário. Filtros por cidade e disponibilidade.",
+        "description": "Banco de 128 mil+ candidatos em início de carreira com interesse declarado no mercado imobiliário. Filtros por cidade e disponibilidade.",
         "url": "https://www.rhimob.com.br/novos-talentos.html"
       }
     ]
@@ -165,6 +165,11 @@
     .plano-btn--primary { background: var(--purple-600, #7c3aed); color: #fff; }
     .plano-btn--outline { background: transparent; color: var(--purple-600, #7c3aed); border: 2px solid var(--purple-600, #7c3aed); }
     .plano-btn:hover { opacity: .85; }
+    .planos-subhead { text-align: center; margin: 8px 0 22px; }
+    .planos-subhead h3 { font-size: 20px; color: var(--purple-950); margin: 6px 0 4px; }
+    .planos-subhead p { color: var(--muted); font-size: 14px; margin: 0; }
+    #planosGrid { grid-template-columns: repeat(2, 1fr); max-width: 780px; margin: 0 auto; }
+    @media (max-width: 768px) { #planosGrid { grid-template-columns: 1fr; max-width: 380px; } }
     .planos-note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 24px; line-height: 1.7; }
   </style>
   <!-- Microsoft Clarity -->
@@ -211,7 +216,7 @@
       <div class="container">
         <span class="section-kicker reveal">Plataformas de acesso · RH IMOB</span>
         <h1 class="reveal">Dois bancos de profissionais imobiliários à disposição da sua operação.</h1>
-        <p class="reveal">Acesso direto ao banco mapeado de corretores com CRECI ativo e ao banco de novos talentos para formação — filtros por cidade, cargo e perfil, com abordagem estruturada da equipe RH IMOB.</p>
+        <p class="reveal">Acesso direto ao banco mapeado de corretores com CRECI ativo e ao banco de novos talentos para formação. Seu time filtra por cidade, cargo e perfil, libera os contatos e faz a abordagem — com funil e mensagens prontas.</p>
         <div class="reveal" style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:22px;">
           <span style="color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-right:2px;">Compartilhar</span>
           <a class="ssbtn ssbtn-wa" href="https://api.whatsapp.com/send?text=Dois%20bancos%20de%20profissionais%20imobili%C3%A1rios%20%C3%A0%20disposi%C3%A7%C3%A3o%20da%20sua%20opera%C3%A7%C3%A3o.%20%E2%80%94%20https%3A%2F%2Fwww.rhimob.com.br%2Fplataformas" target="_blank" rel="noopener" title="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></a>
@@ -234,27 +239,27 @@
             <div class="plat-card-head">
               <span class="plat-card-icon">🏠</span>
               <h2>Plataforma Corretores</h2>
-              <p class="plat-subtitle">Acesso ao banco de corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. Abordagem estruturada via WhatsApp feita pela equipe RH IMOB.</p>
+              <p class="plat-subtitle">Acesso ao banco de corretores com CRECI ativo, filtrados por cidade, tipo de mercado e experiência comercial. Seu time libera os contatos e faz a abordagem.</p>
             </div>
             <div class="plat-card-stats">
               <div class="plat-stat"><strong data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil+</strong><span>Corretores mapeados</span></div>
               <div class="plat-stat"><strong>360</strong><span>Cidades disponíveis</span></div>
-              <div class="plat-stat"><strong>7 dias</strong><span>Setup completo</span></div>
+              <div class="plat-stat"><strong>1 dia útil</strong><span>Para liberar o acesso</span></div>
             </div>
             <div class="plat-card-features">
               <ul>
                 <li>Corretores com CRECI ativo filtrados por cidade e região</li>
                 <li>Segmentação por tipo de mercado: vendas, locação, alto padrão</li>
                 <li>Filtragem por tempo de atuação e histórico de performance</li>
-                <li>Abordagem via WhatsApp conduzida pela equipe RH IMOB</li>
-                <li>Funil organizado: abordados → triados → confirmados → entregues</li>
-                <li>Entrega em reunião online — candidatos já alinhados com a proposta</li>
-                <li>Relatório semanal de andamento do funil</li>
+                <li>Liberação de contatos conforme o plano (500, 1.000 ou ilimitado)</li>
+                <li>Funil de abordagens e mensagens prontas para o WhatsApp</li>
+                <li>Relatórios de produção por operador</li>
+                <li>Mensal, sem fidelidade</li>
               </ul>
             </div>
             <div class="plat-card-cta">
               <a class="btn btn-cta btn-full" href="/corretores.html">Acessar Plataforma Corretores →</a>
-              <p class="plat-note">Planos a partir de <strong>R$499/mês</strong> &bull; Sem fidelidade &bull; <a href="#planos" style="color:var(--purple-700,#6d28d9);font-weight:700">Ver planos →</a></p>
+              <p class="plat-note">Planos a partir de <strong>R$&nbsp;499/mês</strong> &bull; Sem fidelidade &bull; <a href="#planos-corretores" style="color:var(--purple-700,#6d28d9);font-weight:700">Ver planos →</a></p>
             </div>
           </div>
 
@@ -266,7 +271,7 @@
               <p class="plat-subtitle">Banco de candidatos em início de carreira interessados em atuar no mercado imobiliário. Perfis pré-selecionados com interesse declarado em formação e desenvolvimento profissional.</p>
             </div>
             <div class="plat-card-stats">
-              <div class="plat-stat"><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">8 mil+</strong><span>Novos talentos</span></div>
+              <div class="plat-stat"><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">128 mil+</strong><span>Novos talentos</span></div>
               <div class="plat-stat"><strong>180+</strong><span>Cidades</span></div>
               <div class="plat-stat"><strong>Pré-</strong><span>Selecionados</span></div>
             </div>
@@ -275,15 +280,15 @@
                 <li>Candidatos com interesse declarado em atuar no imobiliário</li>
                 <li>Filtragem por cidade, disponibilidade de horário e formato</li>
                 <li>Perfis abertos à formação e ao modelo autônomo/comissionado</li>
-                <li>Abordagem conduzida pela equipe RH IMOB com briefing da vaga</li>
+                <li>Funil de abordagens e mensagens prontas para o WhatsApp</li>
                 <li>Ideal para imobiliárias com programa de formação interna</li>
                 <li>Ótimo para equipes que querem escalar com perfil moldável</li>
-                <li>Relatório de andamento com funil de abordagens e confirmações</li>
+                <li>R$ 249/mês se você já assina a Catho · R$ 649/mês se não assina</li>
               </ul>
             </div>
             <div class="plat-card-cta">
               <a class="btn btn-cta btn-full" href="/novos-talentos.html">Acessar Plataforma Novos Talentos →</a>
-              <p class="plat-note">Planos a partir de <strong>R$499/mês</strong> &bull; Sem fidelidade &bull; <a href="#planos" style="color:var(--purple-700,#6d28d9);font-weight:700">Ver planos →</a></p>
+              <p class="plat-note">Planos a partir de <strong>R$&nbsp;<span data-nt-preco-min>249</span>/mês</strong> &bull; Sem fidelidade &bull; <a href="#planos-novos-talentos" style="color:var(--purple-700,#6d28d9);font-weight:700">Ver planos →</a></p>
             </div>
           </div>
 
@@ -322,7 +327,7 @@
               <tr>
                 <td><strong>Volume disponível</strong></td>
                 <td><span data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil+</span> em 360 cidades</td>
-                <td><span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">8 mil+</span> em 180+ cidades</td>
+                <td><span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">128 mil+</span> em 180+ cidades</td>
               </tr>
               <tr>
                 <td><strong>Exige treinamento interno</strong></td>
@@ -351,7 +356,7 @@
         <div class="full-service-cta reveal">
           <div>
             <h2>Quer que a RH IMOB gerencie todo o processo?</h2>
-            <p>Além do acesso às plataformas, a RH IMOB oferece operação completa: diagnóstico, abordagem, triagem, funil e entrega em reunião — com assistente dedicada e relatório semanal. Setup em 7 dias.</p>
+            <p>Além do acesso às plataformas, a RH IMOB oferece a operação completa: geração de candidatos, abordagem, triagem e entrega em entrevista online — com assistente dedicada, headhunter e relatório semanal. A partir de R$ 3.499/mês, setup em 7 dias.</p>
           </div>
           <a class="btn btn-cta" href="/#proposta">Solicitar proposta completa →</a>
         </div>
@@ -364,8 +369,14 @@
       <div class="container">
         <div class="planos-head">
           <span class="section-kicker reveal">Planos de acesso</span>
-          <h2 class="reveal">O mesmo plano dá acesso a qualquer uma das plataformas</h2>
-          <p class="reveal">Escolha o plano, fale com a Mariana pelo WhatsApp e seu time começa a prospectar em até 1 dia útil. Relatórios, funil de abordagens e mensagens prontas em todos os planos.</p>
+          <h2 class="reveal">Escolha o plano da plataforma que você precisa</h2>
+          <p class="reveal">Fale com a Mariana pelo WhatsApp e seu time começa a prospectar em até 1 dia útil. Relatórios, funil de abordagens e mensagens prontas em todos os planos.</p>
+        </div>
+
+        <div class="planos-subhead reveal" id="planos-corretores">
+          <span class="plano-name">🏠 Plataforma Corretores</span>
+          <h3>Corretores com CRECI ativo — por volume de contatos</h3>
+          <p>A partir de R$ 499/mês</p>
         </div>
 
         <div class="planos-grid">
@@ -375,12 +386,12 @@
             <p class="plano-desc">500 contatos por mês. Ideal para operações que estão estruturando o processo de contratação com escala.</p>
             <ul class="plano-features">
               <li>500 liberações de contato/mês</li>
-              <li>Filtros por cidade, perfil e CRECI (ou bairro/metrô)</li>
+              <li>Filtros por cidade, perfil e CRECI</li>
               <li>Funil de abordagens integrado</li>
               <li>Relatórios de produção</li>
               <li>Mensagens de abordagem prontas</li>
             </ul>
-            <a class="plano-btn plano-btn--outline" href="https://api.whatsapp.com/send?phone=5511978725515&text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Starter+das+Plataformas+RH+IMOB+%28500+contatos%2Fm%C3%AAs+-+R%24499%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Starter →</a>
+            <a class="plano-btn plano-btn--outline" href="https://api.whatsapp.com/send?phone=5511978725515&text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Starter+das+da+Plataforma+Corretores+RH+IMOB+%28500+contatos%2Fm%C3%AAs+-+R%24499%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Starter →</a>
           </div>
 
           <div class="plano-card plano-card--popular reveal">
@@ -390,13 +401,13 @@
             <p class="plano-desc">1.000 contatos por mês. Para imobiliárias e incorporadoras em expansão acelerada de equipe.</p>
             <ul class="plano-features">
               <li>1.000 liberações de contato/mês</li>
-              <li>Filtros por cidade, perfil e CRECI (ou bairro/metrô)</li>
+              <li>Filtros por cidade, perfil e CRECI</li>
               <li>Funil de abordagens integrado</li>
               <li>Relatórios detalhados por operador</li>
               <li>Mensagens de abordagem prontas</li>
               <li>Gestão de equipe de operadores</li>
             </ul>
-            <a class="plano-btn plano-btn--primary" href="https://api.whatsapp.com/send?phone=5511978725515&text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Pro+das+Plataformas+RH+IMOB+%281.000+contatos%2Fm%C3%AAs+-+R%24999%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Pro →</a>
+            <a class="plano-btn plano-btn--primary" href="https://api.whatsapp.com/send?phone=5511978725515&text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Pro+das+da+Plataforma+Corretores+RH+IMOB+%281.000+contatos%2Fm%C3%AAs+-+R%24999%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Pro →</a>
           </div>
 
           <div class="plano-card reveal">
@@ -411,11 +422,20 @@
               <li>Mensagens personalizadas por plano</li>
               <li>Múltiplos operadores sem limite</li>
             </ul>
-            <a class="plano-btn plano-btn--outline" href="https://api.whatsapp.com/send?phone=5511978725515&text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Ilimitado+das+Plataformas+RH+IMOB+%28R%241.499%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Ilimitado →</a>
+            <a class="plano-btn plano-btn--outline" href="https://api.whatsapp.com/send?phone=5511978725515&text=Ol%C3%A1%2C+Mariana.+Tenho+interesse+no+Plano+Ilimitado+das+da+Plataforma+Corretores+RH+IMOB+%28R%241.499%2Fm%C3%AAs%29." target="_blank" rel="noopener">Assinar Ilimitado →</a>
           </div>
         </div>
 
-        <p class="planos-note reveal">Todos os planos são mensais sem fidelidade. Usuários adicionais: + o valor da assinatura mensal por usuário.<br>Login liberado em até 1 dia útil após confirmação. Prefere que a RH IMOB gerencie a operação? <a href="/#proposta" style="color:var(--purple-700,#6d28d9);font-weight:700">Solicite uma proposta completa →</a></p>
+        <div class="planos-subhead reveal" id="planos-novos-talentos" style="margin-top:56px;">
+          <span class="plano-name">🌱 Plataforma Novos Talentos</span>
+          <h3>Talentos em início de carreira — acesso com ou sem Catho própria</h3>
+          <p>A partir de R$ <span data-nt-preco-min>249</span>/mês</p>
+        </div>
+        <div class="planos-grid" id="planosGrid" data-produto="Plataforma Novos Talentos" data-prefix="plano">
+          <div class="plano-card"><span class="plano-name">Carregando planos…</span></div>
+        </div>
+
+        <p class="planos-note reveal">Todos os planos são mensais sem fidelidade. Usuários adicionais: + o valor da assinatura mensal por usuário.<br>Login liberado em até 1 dia útil após confirmação. Prefere que a RH IMOB conduza a operação inteira? <a href="/#simulador" style="color:var(--purple-700,#6d28d9);font-weight:700">Operação completa a partir de R$ 3.499/mês →</a></p>
       </div>
     </section>
 
@@ -491,5 +511,6 @@
   <script src="/supabase-config-novos-talentos.js?v=20260721leadengine"></script>
   <script src="/script.js?v=20260721leadengine"></script>
   <script src="/assets/share-art.js"></script>
+  <script src="planos-render.js?v=20261003"></script>
 </body>
 </html>

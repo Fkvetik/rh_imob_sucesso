@@ -27,6 +27,20 @@
 
   <style>
     /* ── PLANOS E VALORES ──────────────────── */
+
+    /* ── COMO VOCÊ QUER CONTRATAR (3 caminhos) ── */
+    .plan-from { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+    .plan-card--custom .plan-from { color: rgba(255,255,255,.6); }
+    .plan-title { font-size: 19px; font-weight: 900; color: var(--purple-950); margin: 0; letter-spacing: -.01em; line-height: 1.25; }
+    .plan-card--custom .plan-title { color: #fff; }
+    .plan-desc { font-size: 14px; line-height: 1.55; color: var(--muted); margin: 0; }
+    .plan-card--custom .plan-desc { color: rgba(255,255,255,.72); }
+    .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+    .plan-list li { font-size: 13.5px; line-height: 1.4; color: var(--body, #3b3355); padding-left: 20px; position: relative; }
+    .plan-list li::before { content: '✓'; position: absolute; left: 0; color: var(--orange-500); font-weight: 900; }
+    .plan-card--custom .plan-list li { color: rgba(255,255,255,.85); }
+    .plan-card--custom .plan-list li::before { color: var(--orange-400); }
+    .plan-btn-outline { background: transparent !important; color: var(--purple-900) !important; border: 2px solid var(--purple-900) !important; box-shadow: none !important; }
     .plan-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -53,7 +67,21 @@
     .plan-note { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.65); margin: 0; }
     .plan-footnote { font-size: 13.5px; color: var(--muted); text-align: center; margin-top: 24px; max-width: 620px; margin-left: auto; margin-right: auto; }
     @media (max-width: 860px) {
-      .plan-grid { grid-template-columns: 1fr; }
+  
+    /* ── COMO VOCÊ QUER CONTRATAR (3 caminhos) ── */
+    .plan-from { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+    .plan-card--custom .plan-from { color: rgba(255,255,255,.6); }
+    .plan-title { font-size: 19px; font-weight: 900; color: var(--purple-950); margin: 0; letter-spacing: -.01em; line-height: 1.25; }
+    .plan-card--custom .plan-title { color: #fff; }
+    .plan-desc { font-size: 14px; line-height: 1.55; color: var(--muted); margin: 0; }
+    .plan-card--custom .plan-desc { color: rgba(255,255,255,.72); }
+    .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+    .plan-list li { font-size: 13.5px; line-height: 1.4; color: var(--body, #3b3355); padding-left: 20px; position: relative; }
+    .plan-list li::before { content: '✓'; position: absolute; left: 0; color: var(--orange-500); font-weight: 900; }
+    .plan-card--custom .plan-list li { color: rgba(255,255,255,.85); }
+    .plan-card--custom .plan-list li::before { color: var(--orange-400); }
+    .plan-btn-outline { background: transparent !important; color: var(--purple-900) !important; border: 2px solid var(--purple-900) !important; box-shadow: none !important; }
+    .plan-grid { grid-template-columns: 1fr; }
     }
     .gv-card {
       display: flex;
@@ -432,16 +460,16 @@
       </div>
     </section>
 
-    <!-- Ferramenta pra quem quer o processo internamente -->
+    <!-- Para quem quer fazer a abordagem com o próprio time -->
     <section class="section-pad" style="background:var(--off);">
       <div class="container">
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:28px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 36px;">
           <div style="flex:1;min-width:260px;">
-            <span class="section-kicker">Prefere ter o processo internamente?</span>
-            <h2 style="font-size:clamp(20px,3vw,26px);margin:8px 0 10px;">Conheça a extensão que automatiza a captação de corretores.</h2>
-            <p style="color:var(--muted);font-size:15px;line-height:1.65;margin:0;">Uma ferramenta da RH IMOB que coleta currículos, organiza em Kanban e dispara WhatsApp automaticamente — rodando mesmo quando sua equipe não está disponível.</p>
+            <span class="section-kicker">Prefere fazer a abordagem com o seu time?</span>
+            <h2 style="font-size:clamp(20px,3vw,26px);margin:8px 0 10px;">Acesse direto nossas bases de corretores e novos talentos.</h2>
+            <p style="color:var(--muted);font-size:15px;line-height:1.65;margin:0;">Plataforma Novos Talentos a partir de R$ 249/mês e Plataforma Corretores (CRECI ativo) a partir de R$ 499/mês. Mensal, sem fidelidade — sua equipe filtra, libera os contatos e aborda.</p>
           </div>
-          <a class="btn btn-cta" href="/extensao-recrutadora">Conhecer a extensão →</a>
+          <a class="btn btn-cta" href="/plataformas">Ver as plataformas →</a>
         </div>
       </div>
     </section>
@@ -627,40 +655,59 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="section-kicker">Planos e valores</span>
-          <h2>Tenha uma noção de valor antes de falar com a Mariana.</h2>
-          <p>Veja a faixa de investimento por volume de contratação. A proposta final é sempre fechada com a Mariana, considerando o detalhe da sua operação.</p>
+          <h2>Como você quer contratar?</h2>
+          <p>Do acesso direto às nossas bases até a operação completa conduzida pela RH IMOB. A proposta final da operação é fechada com a Mariana, considerando o detalhe da sua empresa.</p>
         </div>
 
         <div class="plan-grid reveal">
           <div class="plan-card">
-            <span class="plan-badge">Até 5 corretores/mês</span>
-            <div class="plan-price-row">
-              <div><small>Cidades até 500 mil hab.</small><strong>R$ 2.800/mês</strong></div>
-              <div><small>Cidades acima de 500 mil hab.</small><strong>R$ 3.490/mês</strong></div>
-            </div>
-            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender o plano de até 5 corretores/mês.">Quero esse plano →</a>
+            <span class="plan-badge">Plataforma Novos Talentos</span>
+            <h3 class="plan-title">Acesse a base de novos talentos</h3>
+            <p class="plan-desc">Profissionais em início de carreira com interesse no mercado imobiliário. Seu time filtra e faz a abordagem.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 249/mês</strong></div></div>
+            <ul class="plan-list">
+              <li>R$ 249/mês se você já assina a Catho</li>
+              <li>R$ 649/mês se não assina — o acesso é nosso</li>
+              <li>Filtros por cidade, bairro, perfil e metrô</li>
+              <li>Mensal, sem fidelidade</li>
+            </ul>
+            <a class="btn btn-cta btn-full plan-btn-outline" href="/novos-talentos#planos">Ver planos Novos Talentos →</a>
           </div>
           <div class="plan-card">
-            <span class="plan-badge">5 a 10 corretores/mês</span>
-            <div class="plan-price-row">
-              <div><small>Cidades até 500 mil hab.</small><strong>R$ 5.600/mês</strong></div>
-              <div><small>Cidades acima de 500 mil hab.</small><strong>R$ 6.980/mês</strong></div>
-            </div>
-            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender o plano de 5 a 10 corretores/mês.">Quero esse plano →</a>
+            <span class="plan-badge">Plataforma Corretores</span>
+            <h3 class="plan-title">Acesse a base de corretores com CRECI ativo</h3>
+            <p class="plan-desc">Banco de <span data-rhimob-metric="corretores_total" data-format="rounded-mil">52 mil</span> corretores com CRECI ativo. Seu time libera os contatos e faz a abordagem.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 499/mês</strong></div></div>
+            <ul class="plan-list">
+              <li>Starter: 500 contatos/mês — R$ 499</li>
+              <li>Pro: 1.000 contatos/mês — R$ 999</li>
+              <li>Ilimitado: contatos ilimitados — R$ 1.499</li>
+              <li>Mensal, sem fidelidade</li>
+            </ul>
+            <a class="btn btn-cta btn-full plan-btn-outline" href="/corretores#planos">Ver planos Corretores →</a>
           </div>
           <div class="plan-card plan-card--custom">
-            <span class="plan-badge">Mais de 10/mês</span>
-            <div class="plan-price-row">
-              <div><small>Projeto de alto volume</small><strong>Sob consulta</strong></div>
-            </div>
-            <p class="plan-note">Volumes maiores têm condições próprias, calculadas conforme a demanda.</p>
+            <span class="plan-badge">Operação completa · Mais completo</span>
+            <h3 class="plan-title">A RH IMOB conduz o processo por você</h3>
+            <p class="plan-desc">Assistente dedicada e headhunter cuidam da geração de candidatos, triagem, abordagem e entrega em entrevista online.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 3.499/mês</strong><span class="plan-unit">média de ≈ R$ 700 por profissional apresentado*</span></div></div>
+            <ul class="plan-list">
+              <li>Assistente dedicada + headhunter</li>
+              <li>Construção da vaga e geração de demanda</li>
+              <li>Entrega em entrevista online</li>
+              <li>Relatório semanal do funil</li>
+            </ul>
+            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender a operação completa (a partir de R$ 3.499/mês).">Quero a operação completa →</a>
+          </div>
+        </div>
+        <p class="plan-footnote">Plataformas: planos mensais, sem fidelidade; usuários adicionais pelo valor da assinatura. Operação completa: prazo mínimo de 2 meses; volumes acima de 5 profissionais/mês e tráfego pago (Meta/Google Ads) sob consulta. *Média considerando o pacote de até 5 profissionais/mês. Somos RH: geramos a demanda e entregamos os candidatos em entrevista — a decisão de contratar é sempre da empresa.</p>
             <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um volume maior que 10 corretores/mês.">Falar sobre volume maior →</a>
           </div>
         </div>
         <p class="plan-footnote">Prazo mínimo de operação: 2 meses. Para urgência, é possível somar tráfego pago (Meta/Google Ads) à operação — fale com a Mariana para incluir.</p>
 
         <div class="incluso-box reveal" style="margin-top: 32px;">
-          <p class="incluso-label">Toda simulação já inclui</p>
+          <p class="incluso-label">A operação completa inclui</p>
           <div class="incluso-grid">
             <div class="incluso-item">
               <span>👩‍💼</span>
