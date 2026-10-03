@@ -379,9 +379,6 @@
     select.disabled = !city;
     select.innerHTML = '';
     select.appendChild(opt(city ? 'Todos os anos' : 'Selecione uma cidade primeiro', ''));
-    cargo.disabled = true;
-    cargo.innerHTML = '';
-    cargo.appendChild(opt('Todos os perfis', ''));
     if (!city) return;
     const rows = await api('lead_filtros_cidade_ano', {
       select: 'ano_inscricao,total',
@@ -391,31 +388,57 @@
     rows.forEach((r) => select.appendChild(opt(r.ano_inscricao, r.ano_inscricao, r.total)));
   }
 
+  // Perfis (cargo) com contagem feita no banco — cidade e ano são opcionais.
+  // Antes o perfil só liberava com cidade + ano, e a lista saía das primeiras
+  // 1.000 linhas (limite da API): em São Paulo (66 mil) perfis como "Gerente"
+  // podiam nem aparecer. Usa a chave pública: funciona logado ou não.
+  async function contarCargos(city, year) {
+    const base = String(cfg.url || '').replace(/\/+$/, '');
+    const res = await fetch(`${base}/rest/v1/rpc/rhi_filtro_cargos`, {
+      method: 'POST',
+      headers: {
+        apikey: cfg.publishableKey,
+        Authorization: `Bearer ${authTokenOrPublic()}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({ p_cidade: city || null, p_ano: year || null })
+    });
+    if (!res.ok) throw new Error('rhi_filtro_cargos indisponível (' + res.status + ')');
+    return res.json();
+  }
+
   async function loadCargos(city, year) {
     const select = $('#cargoSelect');
-    select.disabled = !(city && year);
+    const anterior = state.cargo;
+    select.disabled = false;
     select.innerHTML = '';
-    select.appendChild(opt(city && year ? 'Todos os perfis' : 'Selecione cidade e ano primeiro', ''));
-    if (!(city && year)) return;
+    select.appendChild(opt('Todos os perfis', ''));
 
-    const rows = await api(cfg.publicTable || 'leads_publicos', {
-      select: 'cargo',
-      cidade: `eq.${city}`,
-      ano_inscricao: `eq.${year}`,
-      ativo: 'eq.true',
-      limit: 10000
-    });
+    let lista = [];
+    try {
+      lista = (await contarCargos(city, year))
+        .map((r) => [normalize(r.cargo), Number(r.total) || 0])
+        .filter(([cargo]) => cargo);
+    } catch (e) {
+      // Plano B (função ainda não criada no banco): o jeito antigo, por cidade.
+      console.warn('[corretores] ' + e.message + ' — usando contagem parcial');
+      if (!city) return;
+      const rows = await api(cfg.publicTable || 'leads_publicos', {
+        select: 'cargo', cidade: `eq.${city}`, ...(year ? { ano_inscricao: `eq.${year}` } : {}), ativo: 'eq.true', limit: 10000
+      });
+      const counts = new Map();
+      rows.forEach((r) => { const c = normalize(r.cargo); if (c) counts.set(c, (counts.get(c) || 0) + 1); });
+      lista = Array.from(counts.entries());
+    }
 
-    const counts = new Map();
-    rows.forEach((r) => {
-      const cargo = normalize(r.cargo || 'Perfil imobiliário');
-      if (!cargo) return;
-      counts.set(cargo, (counts.get(cargo) || 0) + 1);
-    });
-
-    Array.from(counts.entries())
+    lista
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
       .forEach(([cargo, total]) => select.appendChild(opt(cargo, cargo, total)));
+
+    // Mantém o perfil escolhido se ele existir na nova cidade/ano.
+    if (anterior && lista.some(([c]) => c === anterior)) select.value = anterior;
+    else state.cargo = '';
   }
 
   function perfilTexto(r) {
@@ -1450,14 +1473,13 @@
     cidade.addEventListener('change', async () => {
       state.city = cidade.value;
       state.year = '';
-      state.cargo = '';
       await loadYears(state.city);
+      await loadCargos(state.city, '');
       await search();
     });
 
     ano.addEventListener('change', async () => {
       state.year = ano.value;
-      state.cargo = '';
       await loadCargos(state.city, state.year);
       await search();
     });
@@ -1485,6 +1507,7 @@
       cidade.value = '';
       termo.value = '';
       await loadYears('');
+      await loadCargos('', '');
       await search();
     });
 
@@ -1872,6 +1895,7 @@
     try {
       await setupAuth();
       await loadCities();
+      await loadCargos('', '');
       await search();
     } catch (e) {
       console.error(e);
