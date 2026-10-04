@@ -105,7 +105,7 @@ function renderArticle(n, slug) {
   const journey  = _cand ? 'candidato' : 'empresa';
   const origemCta = ('Notícia: ' + (n.titulo || '')).replace(/"/g, '&quot;').slice(0, 120);
   const ctaH = _cand ? 'Quer trabalhar como corretor?' : 'Precisa contratar corretores?';
-  const ctaP = _cand ? 'Receba vagas no seu perfil — com leads, estrutura e as condições que você busca.' : '52 mil profissionais mapeados · Setup em 7 dias · 100% online';
+  const ctaP = _cand ? 'Receba vagas no seu perfil — com leads, estrutura e as condições que você busca.' : '85 mil profissionais mapeados · Setup em 7 dias · 100% online';
   const ctaB = _cand ? 'Quero receber vagas →' : 'Solicitar proposta →';
   const headerB = _cand ? 'Quero vagas' : 'Solicitar proposta';
 
