@@ -63,7 +63,8 @@ export default async function handler(req, res) {
 
     const r = await fetch(`${SB_URL}/rest/v1/nt_enriquecimento_usuarios?select=*&order=login.asc`, { headers });
     if (!r.ok) return supabaseErr(res, r);
-    const usuarios = await r.json();
+    // A senha fica só no banco (com hash) — nunca vai para o navegador.
+    const usuarios = (await r.json()).map(({ senha, ...u }) => u);
     return send(res, 200, { ok: true, usuarios });
   } catch (e) {
     return send(res, 500, { error: 'exception', message: String(e && e.message || e) });

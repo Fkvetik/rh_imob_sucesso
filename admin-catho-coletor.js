@@ -848,11 +848,11 @@ async function criarAcessoPlataforma(login, nome) {
   const conta = CONTAS_CACHE[parseInt(escolha, 10) - 1];
   if (!conta) { alert("Opção inválida."); return; }
 
-  // Princípio de senha única: usa a MESMA senha que o operador já digita pra
-  // entrar na extensão — não inventa uma segunda senha que ele nunca vê.
-  const atual = await rpc("rpc_admin_get_senha", { p_admin_password: ADMIN_PASS, p_login: login });
-  if (!atual.ok) { alert("❌ " + atual.error); return; }
-  const senha = atual.senha;
+  // A extensão não usa mais senha para entrar no pool: o servidor
+  // (/api/ext-sessao) gera o acesso pelo e-mail. O login da plataforma recebe
+  // uma senha aleatória forte que não fica guardada em lugar nenhum.
+  const bytes = crypto.getRandomValues(new Uint8Array(18));
+  const senha = btoa(String.fromCharCode(...bytes)).replace(/[^A-Za-z0-9]/g, "") + "Aa1!";
 
   try {
     await apiContas({
@@ -860,18 +860,8 @@ async function criarAcessoPlataforma(login, nome) {
       nome: nome || login, email_login: email, senha, perfil: "OPERADOR"
     });
   } catch (e) {
+    // Já existe login com esse e-mail na plataforma: só vincula, sem mexer na senha dele.
     if (!/já existe/i.test(e.message)) { alert("❌ " + e.message); return; }
-    if (!confirm("Já existe login com esse e-mail na plataforma.\n\nVou redefinir a senha dele para a senha atual desse operador na extensão — só assim o acesso automático ao pool funciona.\n\nContinuar?")) return;
-
-    try {
-      const data = await apiContas(null);
-      const existente = (data.usuarios || []).find(u => (u.email_login || "").toLowerCase() === email.toLowerCase());
-      if (!existente) { alert("❌ Não localizei esse usuário na plataforma para redefinir a senha."); return; }
-      await apiContas({ acao: "resetar_senha_usuario", usuario_id: existente.usuario_id, senha });
-    } catch (err) {
-      alert("❌ Não consegui redefinir a senha: " + err.message);
-      return;
-    }
   }
 
   try {
@@ -879,10 +869,10 @@ async function criarAcessoPlataforma(login, nome) {
       p_admin_password: ADMIN_PASS, p_login: login, p_senha: "", p_nome: nome || login,
       p_ativo: true, p_horario_coleta: "",
       p_email_plataforma: email, p_conta_id_plataforma: conta.conta_id,
-      p_senha_plataforma: senha, p_limite_pool: ""
+      p_senha_plataforma: null, p_limite_pool: ""
     });
     if (!resp.ok) { alert("❌ " + resp.error); return; }
-    alert(`✅ Acesso criado.\n\nEmpresa: ${conta.nome_conta || conta.conta_id}\n\nO operador NÃO precisa dessa senha — ele entra na extensão com o login de sempre e o acesso ao pool vem junto.\n\n(Guardado para uso interno: ${email} / ${senha})`);
+    alert(`✅ Acesso criado.\n\nEmpresa: ${conta.nome_conta || conta.conta_id}\n\nO operador entra na extensão com o login de sempre e o acesso ao pool vem junto (precisa da extensão atualizada).`);
     loadUsuarios();
   } catch (e) {
     alert("❌ " + e.message);
@@ -971,12 +961,10 @@ function renderUsuarios(list) {
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
       <td>${u.email_plataforma
-            ? `<small>${u.tem_senha_plataforma ? '🔗' : '⚠️'} ${esc(u.email_plataforma)}<br>
+            ? `<small>🔗 ${esc(u.email_plataforma)}<br>
                  <span style="color:#888">${esc(u.conta_id_plataforma || 'sem conta')}</span><br>
                  <span style="color:${u.limite_pool != null ? '#5b21b6' : '#999'}">teto: ${u.limite_pool != null ? u.limite_pool : 'só o da empresa'}</span>
-                 ${u.tem_senha_plataforma ? '' : '<br><span style="color:#c2410c">sem senha salva — não entra no pool</span>'}
                  <br>
-                 <button data-login="${esc(u.login)}" data-email="${esc(u.email_plataforma)}" class="secondary sincronizarBtn" style="padding:3px 7px;font-size:10px;margin-top:4px">🔄 Sincronizar</button>
                  <button data-login="${esc(u.login)}" class="ghost desvincularBtn" style="padding:3px 7px;font-size:10px;margin-top:4px">Desvincular</button>
                </small>`
             : `<button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||'')}" class="secondary criarAcessoBtn" style="padding:4px 8px;font-size:11px">+ Criar acesso</button>`}</td>
@@ -1039,23 +1027,6 @@ function renderUsuarios(list) {
     btn.addEventListener("click", () => criarAcessoPlataforma(btn.dataset.login, btn.dataset.nome));
   });
 
-  tbody.querySelectorAll(".sincronizarBtn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      btn.textContent = "Sincronizando...";
-      try {
-        const atual = await rpc("rpc_admin_get_senha", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login });
-        if (!atual.ok) throw new Error(atual.error);
-        await sincronizarSenhaComPlataforma(btn.dataset.login, btn.dataset.email, atual.senha);
-        alert("✅ Senha sincronizada. O operador já pode sair e entrar de novo na extensão pra abrir o pool.");
-        loadUsuarios();
-      } catch (e) {
-        alert("❌ " + e.message);
-        btn.disabled = false;
-        btn.textContent = "🔄 Sincronizar";
-      }
-    });
-  });
 
   tbody.querySelectorAll(".desvincularBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -1339,21 +1310,16 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
       p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome,
       p_ativo: ativo, p_horario_coleta: horario,
       p_email_plataforma: emailPlataforma, p_conta_id_plataforma: contaPlataforma,
-      // A senha da plataforma só é mexida aqui se o admin digitou uma senha
-      // NOVA de extensão nesta tela — daí ela vira a mesma dos dois lados.
-      p_senha_plataforma: (senha && emailPlataforma) ? senha : null,
+      // Senha de plataforma não é mais guardada: a extensão entra no pool
+      // pelo servidor (/api/ext-sessao), só com o e-mail.
+      p_senha_plataforma: null,
       p_limite_pool: $("fLimitePool").value,
-      // Corretores CRECI: login real e independente, digitado (não copiado
-      // da senha da extensão) — é o mesmo em todos os operadores.
+      // Corretores CRECI: só o e-mail; o acesso é gerado pelo servidor.
       p_email_rhi: emailRhi || null,
-      p_senha_rhi: senhaRhi || null
+      p_senha_rhi: null
     });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
 
-    if (senha && emailPlataforma) {
-      $("formMsg").textContent = "Sincronizando com a plataforma...";
-      await sincronizarSenhaComPlataforma(login, emailPlataforma, senha);
-    }
 
     $("formMsg").textContent = "✅ Salvo.";
     $("btnLimparForm").click();

@@ -389,11 +389,10 @@
 
       <div style="border-top:1px dashed #ddd;margin:16px 0 4px"></div>
       <h4 style="margin:0 0 2px;font-size:13px;color:var(--rh-purple-dark)">🏘️ Acesso ao Banco de Corretores CRECI</h4>
-      <small>Login <b>único e compartilhado</b> entre todos os operadores (diferente do de cima) — cadastre o mesmo e-mail/senha em cada um.</small>
+      <small>Login <b>único e compartilhado</b> entre todos os operadores — cadastre o mesmo e-mail em cada um. A senha não é mais necessária: o acesso é gerado pelo servidor.</small>
       <label>E-mail do banco de Corretores CRECI</label>
       <input id="fEmailRhi" type="email" placeholder="acesso@rhimob.com.br">
-      <label>Senha do banco de Corretores CRECI (deixe em branco pra manter a atual)</label>
-      <input id="fSenhaRhi" type="password" autocomplete="new-password" placeholder="senha123">
+      <input id="fSenhaRhi" type="hidden" value="">
 
       <div class="btns">
         <button id="btnSalvarUsuario">💾 Salvar</button>
