@@ -211,13 +211,14 @@ function renderDashboard(d) {
   const excluidosAbordados = temBruto ? Math.max(0, (d.leads_enviados || 0) - (d.leads_enviados_ativos || 0)) : 0;
   const pctAgendou = pct(agendamentos.length, d.leads_enviados || 0);
 
-  // Taxa de resposta: dos abordados, quantos o operador marcou como
-  // "Respondeu" (ou avançaram para agendado/contratado).
+  // Taxa de resposta: dos abordados, quantos responderam e tiveram retorno
+  // do operador (detectado sozinho pela extensão na conversa do WhatsApp) ou
+  // avançaram para agendado/contratado. O resto é "sem resposta".
   const tr = d.taxa_resposta;
   const trG = tr && tr.geral;
   const trLinha = (rot, t) => t ? `<li><span>${rot}</span><span>${t.responderam||0} de ${t.abordados||0} · <b>${t.taxa_pct||0}%</b></span></li>` : "";
   const trOps = tr ? (tr.operadores||[]).map(o =>
-    `<li><span>${esc(o.nome_operador||o.login)}</span><span>${o.total.responderam||0} de ${o.total.abordados||0} · <b>${o.total.taxa_pct||0}%</b> <small style="color:#999">(7 dias: ${o.d7.responderam||0} de ${o.d7.abordados||0} · ${o.d7.taxa_pct||0}% · sem interesse: ${o.total.sem_interesse||0})</small></span></li>`
+    `<li><span>${esc(o.nome_operador||o.login)}</span><span>${o.total.responderam||0} de ${o.total.abordados||0} · <b>${o.total.taxa_pct||0}%</b> <small style="color:#999">(7 dias: ${o.d7.responderam||0} de ${o.d7.abordados||0} · ${o.d7.taxa_pct||0}% · sem resposta: ${Math.max(0,(o.total.abordados||0)-(o.total.responderam||0))})</small></span></li>`
   ).join("") : "";
   const taxaHtml = !tr ? "" : `
     <div class="stat"><div class="num">${trG.total.taxa_pct||0}%</div><div class="label">Taxa de resposta (total)</div><div class="sub">${trG.total.responderam||0} de ${trG.total.abordados||0} abordados responderam</div></div>
@@ -228,7 +229,7 @@ function renderDashboard(d) {
         ${trLinha("Últimos 7 dias", trG.d7)}
         ${trLinha("Últimos 30 dias", trG.d30)}
         ${trLinha("Total", trG.total)}
-        <li><span>Sem interesse (total)</span><span>${trG.total.sem_interesse||0}</span></li>
+        <li><span>Sem resposta (total)</span><span>${Math.max(0,(trG.total.abordados||0)-(trG.total.responderam||0))}</span></li>
       </ul>
     </div>
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Taxa de resposta por operador</div><ul>${trOps || '<li style="color:#aaa">Sem dados</li>'}</ul></div>`;
