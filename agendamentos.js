@@ -111,8 +111,14 @@ async function loadAgendamentos() {
 
 async function loadDashboard() {
   try {
-    const resp = await rpc("rpc_admin_dashboard", { p_admin_password: ADMIN_PASS });
+    const [resp, taxa] = await Promise.all([
+      rpc("rpc_admin_dashboard", { p_admin_password: ADMIN_PASS }),
+      // Taxa de resposta por operador — se a consulta não existir/falhar, o
+      // resto do painel aparece do mesmo jeito.
+      rpc("rpc_admin_taxa_resposta", { p_admin_password: ADMIN_PASS }).catch(() => null)
+    ]);
     if (!resp.ok) return;
+    resp.taxa_resposta = (taxa && taxa.ok) ? taxa : null;
     renderDashboard(resp);
   } catch (e) { /* silencioso — dashboard é complementar */ }
 }
@@ -199,11 +205,34 @@ function renderDashboard(d) {
   const pctAbordado = pct(d.leads_enviados || 0, d.leads_total || 0);
   const pctAgendou = pct(agendamentos.length, d.leads_enviados || 0);
 
+  // Taxa de resposta: dos abordados, quantos o operador marcou como
+  // "Respondeu" (ou avançaram para agendado/contratado).
+  const tr = d.taxa_resposta;
+  const trG = tr && tr.geral;
+  const trLinha = (rot, t) => t ? `<li><span>${rot}</span><span>${t.responderam||0} de ${t.abordados||0} · <b>${t.taxa_pct||0}%</b></span></li>` : "";
+  const trOps = tr ? (tr.operadores||[]).map(o =>
+    `<li><span>${esc(o.nome_operador||o.login)}</span><span>${o.total.responderam||0} de ${o.total.abordados||0} · <b>${o.total.taxa_pct||0}%</b> <small style="color:#999">(7 dias: ${o.d7.responderam||0} de ${o.d7.abordados||0} · ${o.d7.taxa_pct||0}% · sem interesse: ${o.total.sem_interesse||0})</small></span></li>`
+  ).join("") : "";
+  const taxaHtml = !tr ? "" : `
+    <div class="stat"><div class="num">${trG.total.taxa_pct||0}%</div><div class="label">Taxa de resposta (total)</div><div class="sub">${trG.total.responderam||0} de ${trG.total.abordados||0} abordados responderam</div></div>
+    <div class="stat wide">
+      <div class="label" style="margin-bottom:4px">Respostas dos leads abordados (por período da abordagem)</div>
+      <ul>
+        ${trLinha("Hoje", trG.hoje)}
+        ${trLinha("Últimos 7 dias", trG.d7)}
+        ${trLinha("Últimos 30 dias", trG.d30)}
+        ${trLinha("Total", trG.total)}
+        <li><span>Sem interesse (total)</span><span>${trG.total.sem_interesse||0}</span></li>
+      </ul>
+    </div>
+    <div class="stat wide"><div class="label" style="margin-bottom:4px">Taxa de resposta por operador</div><ul>${trOps || '<li style="color:#aaa">Sem dados</li>'}</ul></div>`;
+
   $("dashboard").innerHTML = `
     <div class="stat"><div class="num">${d.leads_total||0}</div><div class="label">Leads coletados (total)</div></div>
     <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (total acumulado)</div><div class="sub">${pctAbordado}% do total coletado</div></div>
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div><div class="sub">${pctAgendou}% de quem foi abordado</div></div>
     <div class="stat"><div class="num">${porStatus.CONFIRMADO||0}</div><div class="label">Confirmados</div></div>
+    ${taxaHtml}
     <div class="stat wide">
       <div class="label" style="margin-bottom:4px">Pessoas abordadas por período (ritmo recente)</div>
       <ul>
