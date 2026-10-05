@@ -202,7 +202,13 @@ function renderDashboard(d) {
   // pessoas foram abordadas em relação ao total coletado, e quanto disso virou
   // agendamento, sem precisar de nenhuma consulta nova.
   const pct = (parte, total) => total > 0 ? Math.round((parte / total) * 100) : 0;
-  const pctAbordado = pct(d.leads_enviados || 0, d.leads_total || 0);
+  // Abordados inclui leads que depois foram excluídos; o total "ativo" não.
+  // Comparar os dois dava mais de 100%. Com o total bruto (todos os leads
+  // já coletados, inclusive excluídos) a conta fecha.
+  const temBruto = d.leads_total_bruto != null;
+  const baseColetados = temBruto ? d.leads_total_bruto : (d.leads_total || 0);
+  const pctAbordado = Math.min(100, pct(d.leads_enviados || 0, baseColetados));
+  const excluidosAbordados = temBruto ? Math.max(0, (d.leads_enviados || 0) - (d.leads_enviados_ativos || 0)) : 0;
   const pctAgendou = pct(agendamentos.length, d.leads_enviados || 0);
 
   // Taxa de resposta: dos abordados, quantos o operador marcou como
@@ -228,8 +234,8 @@ function renderDashboard(d) {
     <div class="stat wide"><div class="label" style="margin-bottom:4px">Taxa de resposta por operador</div><ul>${trOps || '<li style="color:#aaa">Sem dados</li>'}</ul></div>`;
 
   $("dashboard").innerHTML = `
-    <div class="stat"><div class="num">${d.leads_total||0}</div><div class="label">Leads coletados (total)</div></div>
-    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (total acumulado)</div><div class="sub">${pctAbordado}% do total coletado</div></div>
+    <div class="stat"><div class="num">${baseColetados}</div><div class="label">Leads coletados (total${temBruto ? ", incluindo excluídos" : ""})</div>${temBruto ? `<div class="sub">${d.leads_total||0} ativos com telefone</div>` : ""}</div>
+    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (total acumulado)</div><div class="sub">${pctAbordado}% do total coletado${excluidosAbordados ? ` · ${excluidosAbordados} já excluídos depois` : ""}</div></div>
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div><div class="sub">${pctAgendou}% de quem foi abordado</div></div>
     <div class="stat"><div class="num">${porStatus.CONFIRMADO||0}</div><div class="label">Confirmados</div></div>
     ${taxaHtml}
@@ -270,10 +276,14 @@ function renderCharts(d) {
   $("charts").innerHTML = `
     <div class="chart-card" id="chartDonutCard"></div>
     <div class="chart-card" id="chartWeekCard"></div>
+    <div class="chart-card" id="chartWeekAbordCard"></div>
     <div class="chart-card" id="chart30dCard" style="flex-basis:100%"></div>
   `;
   renderDonutStatus(d.agendamentos_por_status || []);
-  renderBarDiaSemana(d.por_dia_semana || []);
+  renderBarDiaSemana(d.por_dia_semana || [], "chartWeekCard", "Agendamentos por dia da semana (dia marcado da entrevista)", "agendamento(s)");
+  // Só aparece depois que o banco passa a mandar esse dado (SQL DASH_1).
+  if (d.abordagens_por_dia_semana) renderBarDiaSemana(d.abordagens_por_dia_semana, "chartWeekAbordCard", "Abordagens por dia da semana (dia em que a mensagem saiu)", "abordagem(ns)");
+  else $("chartWeekAbordCard").remove();
   renderBar30Dias(d.ultimos_30_dias || []);
 }
 
@@ -336,15 +346,15 @@ function donutArcPath(cx, cy, rOuter, rInner, startDeg, endDeg) {
 }
 
 // --- Barras: padrão por dia da semana ---
-function renderBarDiaSemana(rows) {
-  const card = $("chartWeekCard");
+function renderBarDiaSemana(rows, cardId, titulo, unidade) {
+  const card = $(cardId);
   const DIAS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
   const byDow = {};
   rows.forEach(r => byDow[r.dow] = r.total);
   const data = DIAS.map((label, i) => ({ label, total: byDow[i] || 0 }));
   const max = Math.max(1, ...data.map(d => d.total));
 
-  if (!rows.length) { card.innerHTML = '<h4>Agendamentos por dia da semana</h4><div class="chart-empty">Sem dados ainda</div>'; return; }
+  if (!rows.length) { card.innerHTML = '<h4>' + titulo + '</h4><div class="chart-empty">Sem dados ainda</div>'; return; }
 
   const w = 260, h = 140, padBottom = 20, barGap = 6;
   const barW = Math.min(24, (w / data.length) - barGap);
@@ -357,14 +367,14 @@ function renderBarDiaSemana(rows) {
   }).join("");
 
   card.innerHTML = `
-    <h4>Agendamentos por dia da semana</h4>
+    <h4>${titulo}</h4>
     <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
       <line x1="0" y1="${h-padBottom}" x2="${w}" y2="${h-padBottom}" stroke="var(--baseline)" stroke-width="1"/>
       ${bars}
     </svg>
   `;
   card.querySelectorAll(".bar-rect").forEach(bar => {
-    bar.addEventListener("mousemove", (e) => showTooltip(e, `<b>${bar.dataset.label}</b><br>${bar.dataset.total} agendamento(s)`));
+    bar.addEventListener("mousemove", (e) => showTooltip(e, `<b>${bar.dataset.label}</b><br>${bar.dataset.total} ${unidade}`));
     bar.addEventListener("mouseleave", hideTooltip);
   });
 }
