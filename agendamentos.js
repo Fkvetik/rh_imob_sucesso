@@ -109,6 +109,22 @@ async function loadAgendamentos() {
   }
 }
 
+// "Nova contagem" do funil de um operador (botão em Visão Geral).
+document.addEventListener("click", async (e) => {
+  const btn = e.target && e.target.closest && e.target.closest(".btnNovaContagem");
+  if (!btn) return;
+  const nome = btn.dataset.nome, login = btn.dataset.login;
+  if (!confirm(`Começar uma nova contagem para ${nome}?\n\n• Os números do funil dele voltam a zero e passam a contar só o que for abordado a partir de agora.\n• Nenhum lead, conversa ou agendamento é apagado.\n• Os números de hoje ficam guardados como "contagem anterior".`)) return;
+  const nota = prompt("O que muda nesta nova fase? (opcional — ajuda a comparar depois)\nEx.: \"nova proposta com ajuda de custo maior\"", "");
+  if (nota === null) return; // cancelou
+  btn.disabled = true;
+  try {
+    const resp = await rpc("rpc_admin_reiniciar_funil", { p_admin_password: ADMIN_PASS, p_login: login, p_nota: nota || null });
+    if (!resp || !resp.ok) { alert("Não foi possível reiniciar: " + ((resp && (resp.error || resp.message)) || "erro")); btn.disabled = false; return; }
+    await loadDashboard();
+  } catch (err) { alert("Falha ao reiniciar: " + err.message); btn.disabled = false; }
+});
+
 async function loadDashboard() {
   try {
     const [resp, taxa] = await Promise.all([
@@ -216,23 +232,55 @@ function renderDashboard(d) {
   // avançaram para agendado/contratado. O resto é "sem resposta".
   const tr = d.taxa_resposta;
   const trG = tr && tr.geral;
-  const trLinha = (rot, t) => t ? `<li><span>${rot}</span><span>${t.responderam||0} de ${t.abordados||0} · <b>${t.taxa_pct||0}%</b></span></li>` : "";
-  const trOps = tr ? (tr.operadores||[]).map(o =>
-    `<li><span>${esc(o.nome_operador||o.login)}</span><span>${o.total.responderam||0} de ${o.total.abordados||0} · <b>${o.total.taxa_pct||0}%</b> <small style="color:#999">(7 dias: ${o.d7.responderam||0} de ${o.d7.abordados||0} · ${o.d7.taxa_pct||0}% · sem resposta: ${Math.max(0,(o.total.abordados||0)-(o.total.responderam||0))})</small></span></li>`
-  ).join("") : "";
+  // Funil: abordados -> responderam -> receberam a proposta -> agendaram.
+  // "Pararam na proposta" = receberam a apresentação da empresa e não
+  // agendaram. Sem prazo: fica valendo até a operação ser reiniciada.
+  const temFunil = !!(trG && trG.total && trG.total.proposta != null); // banco já com o FUNIL_1
+  const nn = (o, k) => Number(o && o[k]) || 0;
+  const semResp = o => Math.max(0, nn(o, "abordados") - nn(o, "responderam"));
+  const funilLinhas = o => !o ? "" : `
+        <li><span>Abordados</span><span><b>${nn(o,"abordados")}</b></span></li>
+        <li><span>Responderam</span><span><b>${nn(o,"responderam")}</b> · ${nn(o,"taxa_pct")}% dos abordados</span></li>
+        ${temFunil ? `<li><span>Receberam a proposta</span><span><b>${nn(o,"proposta")}</b> · ${nn(o,"proposta_pct")}% dos que responderam</span></li>` : ""}
+        <li><span>Agendaram</span><span><b>${temFunil ? nn(o,"agendaram") : nn(o,"agendados")}</b>${temFunil ? ` · ${nn(o,"agendou_pct")}% dos que receberam` : ""}</span></li>
+        ${temFunil ? `<li style="color:#c0392b"><span>Pararam na proposta</span><span><b>${nn(o,"pararam_na_proposta")}</b></span></li>` : ""}
+        <li style="color:#999"><span>Sem resposta</span><span>${semResp(o)}</span></li>`;
+  const trPeriodo = (rot, o) => o ? `<li><span>${rot}</span><span>${nn(o,"abordados")} abordados · ${nn(o,"responderam")} responderam (${nn(o,"taxa_pct")}%)${temFunil ? ` · ${nn(o,"proposta")} proposta · ${nn(o,"agendaram")} agendaram · <span style="color:#c0392b">${nn(o,"pararam_na_proposta")} pararam</span>` : ""}</span></li>` : "";
+  // Cada operador: funil da contagem atual, desde quando ela vale, botão
+  // "Nova contagem" e as contagens anteriores (para comparar antes/depois).
+  const fmtDia = s => { if (!s) return ""; const dt = new Date(s); return isNaN(dt) ? "" : dt.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", year:"2-digit" }); };
+  const resumoFunil = x => `${nn(x,"abordados")} abordados · <b>${nn(x,"responderam")}</b> responderam (${nn(x,"taxa_pct")}%)${temFunil ? ` · <b>${nn(x,"proposta")}</b> proposta · <b>${nn(x,"agendaram")}</b> agendaram · <span style="color:#c0392b"><b>${nn(x,"pararam_na_proposta")}</b> pararam na proposta</span>` : ""}`;
+  const trOps = tr ? (tr.operadores||[]).map(o => {
+    const x = o.total || {};
+    const ciclos = (o.ciclos || []).map(c => `
+        <div style="margin-top:4px;padding:5px 8px;border-left:3px solid #ddd;color:#666;font-size:11px">
+          <b>Contagem anterior</b> (${fmtDia(c.inicio) || "início"} a ${fmtDia(c.fim)})${c.nota ? " — " + esc(c.nota) : ""}<br>${resumoFunil(c.numeros || {})}
+        </div>`).join("");
+    return `<li style="display:block">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span><b>${esc(o.nome_operador||o.login)}</b> <small style="color:#999">· ${o.desde ? "contando desde " + fmtDia(o.desde) : "contando desde o início"}</small></span>
+          ${temFunil ? `<button type="button" class="btnNovaContagem" data-login="${esc(o.login)}" data-nome="${esc(o.nome_operador||o.login)}" style="padding:4px 10px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:11px;font-weight:700">↺ Nova contagem</button>` : ""}
+        </div>
+        <div style="margin-top:3px">${resumoFunil(x)} <small style="color:#999">· sem resposta: ${semResp(x)}</small></div>
+        ${ciclos}
+      </li>`;
+  }).join("") : "";
   const taxaHtml = !tr ? "" : `
-    <div class="stat"><div class="num">${trG.total.taxa_pct||0}%</div><div class="label">Taxa de resposta (total)</div><div class="sub">${trG.total.responderam||0} de ${trG.total.abordados||0} abordados responderam</div></div>
+    <div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta (total)</div><div class="sub">${nn(trG.total,"responderam")} de ${nn(trG.total,"abordados")} abordados responderam</div></div>
+    ${temFunil ? `<div class="stat"><div class="num" style="color:#c0392b">${nn(trG.total,"pararam_na_proposta")}</div><div class="label">Pararam na proposta</div><div class="sub">de ${nn(trG.total,"proposta")} que receberam a proposta</div></div>` : ""}
     <div class="stat wide">
-      <div class="label" style="margin-bottom:4px">Respostas dos leads abordados (por período da abordagem)</div>
+      <div class="label" style="margin-bottom:4px">Funil dos leads abordados (total da operação)</div>
+      <ul>${funilLinhas(trG.total)}</ul>
+    </div>
+    <div class="stat wide">
+      <div class="label" style="margin-bottom:4px">Funil por período (pela data da abordagem)</div>
       <ul>
-        ${trLinha("Hoje", trG.hoje)}
-        ${trLinha("Últimos 7 dias", trG.d7)}
-        ${trLinha("Últimos 30 dias", trG.d30)}
-        ${trLinha("Total", trG.total)}
-        <li><span>Sem resposta (total)</span><span>${Math.max(0,(trG.total.abordados||0)-(trG.total.responderam||0))}</span></li>
+        ${trPeriodo("Hoje", trG.hoje)}
+        ${trPeriodo("Últimos 7 dias", trG.d7)}
+        ${trPeriodo("Últimos 30 dias", trG.d30)}
       </ul>
     </div>
-    <div class="stat wide"><div class="label" style="margin-bottom:4px">Taxa de resposta por operador</div><ul>${trOps || '<li style="color:#aaa">Sem dados</li>'}</ul></div>`;
+    <div class="stat wide"><div class="label" style="margin-bottom:4px">Funil por operador <small style="font-weight:400;color:#999">— "Nova contagem" zera os números do operador para medir uma nova fase. Não apaga leads nem conversas; a contagem anterior fica guardada abaixo.</small></div><ul>${trOps || '<li style="color:#aaa">Sem dados</li>'}</ul></div>`;
 
   $("dashboard").innerHTML = `
     <div class="stat"><div class="num">${baseColetados}</div><div class="label">Leads coletados (total${temBruto ? ", incluindo excluídos" : ""})</div>${temBruto ? `<div class="sub">${d.leads_total||0} ativos com telefone</div>` : ""}</div>
