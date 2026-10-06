@@ -973,6 +973,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
     </tr>
     <tr class="filtrosRow hide" data-login-row="${esc(u.login)}"><td colspan="6"><div class="filtrosPainel" data-login="${esc(u.login)}"></div></td></tr>
@@ -982,6 +983,28 @@ function renderUsuarios(list) {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
   });
   aplicarBadgesColeta(); // já aplica o que tiver em cache, sem esperar o próximo poll
+
+  // "Nova contagem" do funil (abordados → responderam → proposta → agendaram).
+  // Fica só aqui no painel: a tela /agendamentos também é aberta pelo cliente.
+  tbody.querySelectorAll(".novaContagemBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const nome = btn.dataset.nome;
+      if (!confirm(`Começar uma nova contagem do funil para ${nome}?\n\n• Os números dele (abordados, responderam, proposta, agendaram) voltam a zero e passam a contar só o que for abordado a partir de agora.\n• Nenhum lead, conversa ou agendamento é apagado.\n• Os números de hoje ficam guardados como "contagem anterior" e continuam visíveis em /agendamentos e na bolha.\n\nNão dá para desfazer.`)) return;
+      const nota = prompt("O que muda nesta nova fase? (opcional — ajuda a comparar depois)\nEx.: \"nova proposta com ajuda de custo maior\"", "");
+      if (nota === null) return;
+      btn.disabled = true;
+      try {
+        const resp = await rpc("rpc_admin_reiniciar_funil", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_nota: nota || null });
+        if (!resp || !resp.ok) { alert("❌ " + ((resp && (resp.error || resp.message)) || "Não foi possível reiniciar a contagem.")); btn.disabled = false; return; }
+        const n = resp.encerrado || {};
+        alert(`✅ Nova contagem iniciada para ${nome}.\n\nContagem encerrada: ${n.abordados||0} abordados · ${n.responderam||0} responderam · ${n.proposta||0} receberam a proposta · ${n.agendaram||0} agendaram · ${n.pararam_na_proposta||0} pararam na proposta.`);
+        btn.disabled = false;
+      } catch (e) {
+        alert("❌ " + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
 
   tbody.querySelectorAll(".excluirOperadorBtn").forEach(btn => {
     btn.addEventListener("click", async () => {

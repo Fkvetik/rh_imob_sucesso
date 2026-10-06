@@ -109,22 +109,6 @@ async function loadAgendamentos() {
   }
 }
 
-// "Nova contagem" do funil de um operador (botão em Visão Geral).
-document.addEventListener("click", async (e) => {
-  const btn = e.target && e.target.closest && e.target.closest(".btnNovaContagem");
-  if (!btn) return;
-  const nome = btn.dataset.nome, login = btn.dataset.login;
-  if (!confirm(`Começar uma nova contagem para ${nome}?\n\n• Os números do funil dele voltam a zero e passam a contar só o que for abordado a partir de agora.\n• Nenhum lead, conversa ou agendamento é apagado.\n• Os números de hoje ficam guardados como "contagem anterior".`)) return;
-  const nota = prompt("O que muda nesta nova fase? (opcional — ajuda a comparar depois)\nEx.: \"nova proposta com ajuda de custo maior\"", "");
-  if (nota === null) return; // cancelou
-  btn.disabled = true;
-  try {
-    const resp = await rpc("rpc_admin_reiniciar_funil", { p_admin_password: ADMIN_PASS, p_login: login, p_nota: nota || null });
-    if (!resp || !resp.ok) { alert("Não foi possível reiniciar: " + ((resp && (resp.error || resp.message)) || "erro")); btn.disabled = false; return; }
-    await loadDashboard();
-  } catch (err) { alert("Falha ao reiniciar: " + err.message); btn.disabled = false; }
-});
-
 async function loadDashboard() {
   try {
     const [resp, taxa] = await Promise.all([
@@ -281,7 +265,6 @@ function renderDashboard(d) {
     return `<div class="funil-op">
         <div class="funil-op-cab">
           <b>${esc(o.nome_operador||o.login)}</b>
-          ${temFunil ? `<button type="button" class="btnNovaContagem" data-login="${esc(o.login)}" data-nome="${esc(o.nome_operador||o.login)}">↺ Nova contagem</button>` : ""}
         </div>
         ${funilTabela(linhas)}
       </div>`;
@@ -298,7 +281,7 @@ function renderDashboard(d) {
       ${funilTabela([{ rot: "Hoje", o: trG.hoje }, { rot: "Últimos 7 dias", o: trG.d7 }, { rot: "Últimos 30 dias", o: trG.d30 }, { rot: "Total", o: trG.total, cls: "total" }])}
     </div>
     <div class="stat full">
-      <div class="label">Funil por operador <small>— "Nova contagem" zera os números do operador para medir uma nova fase. Não apaga leads nem conversas; as contagens anteriores continuam aqui.</small></div>
+      <div class="label">Funil por operador <small>— a contagem atual, a operação inteira e as contagens anteriores de cada operador. (Uma nova contagem é iniciada pelo administrador, no painel.)</small></div>
       ${trOps || '<div style="color:#aaa;font-size:12px;margin-top:6px">Sem dados</div>'}
     </div>`;
 
