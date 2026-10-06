@@ -250,6 +250,13 @@ function renderDashboard(d) {
   // "Nova contagem" e as contagens anteriores (para comparar antes/depois).
   const fmtDia = s => { if (!s) return ""; const dt = new Date(s); return isNaN(dt) ? "" : dt.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", year:"2-digit" }); };
   const resumoFunil = x => `${nn(x,"abordados")} abordados · <b>${nn(x,"responderam")}</b> responderam (${nn(x,"taxa_pct")}%)${temFunil ? ` · <b>${nn(x,"proposta")}</b> proposta · <b>${nn(x,"agendaram")}</b> agendaram · <span style="color:#c0392b"><b>${nn(x,"pararam_na_proposta")}</b> pararam na proposta</span>` : ""}`;
+  // Soma várias contagens (atual + anteriores) e refaz os percentuais.
+  const somaFunil = lista => {
+    const s = {};
+    ["abordados","responderam","proposta","agendaram","pararam_na_proposta"].forEach(k => { s[k] = lista.reduce((a, f) => a + nn(f, k), 0); });
+    s.taxa_pct = s.abordados ? Math.round(1000 * s.responderam / s.abordados) / 10 : 0;
+    return s;
+  };
   const trOps = tr ? (tr.operadores||[]).map(o => {
     const x = o.total || {};
     const ciclos = (o.ciclos || []).map(c => `
@@ -262,6 +269,7 @@ function renderDashboard(d) {
           ${temFunil ? `<button type="button" class="btnNovaContagem" data-login="${esc(o.login)}" data-nome="${esc(o.nome_operador||o.login)}" style="padding:4px 10px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:11px;font-weight:700">↺ Nova contagem</button>` : ""}
         </div>
         <div style="margin-top:3px">${resumoFunil(x)} <small style="color:#999">· sem resposta: ${semResp(x)}</small></div>
+        ${(o.ciclos || []).length ? `<div style="margin-top:4px;padding:5px 8px;border-left:3px solid #111;background:#f4f4f4;font-size:11px"><b>Operação inteira</b> (contagem atual + ${(o.ciclos || []).length} anterior${(o.ciclos || []).length > 1 ? "es" : ""})<br>${resumoFunil(somaFunil([x].concat((o.ciclos || []).map(c => c.numeros || {}))))}</div>` : ""}
         ${ciclos}
       </li>`;
   }).join("") : "";
