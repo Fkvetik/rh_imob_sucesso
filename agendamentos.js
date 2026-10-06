@@ -245,11 +245,7 @@ function renderDashboard(d) {
         <li><span>Agendaram</span><span><b>${temFunil ? nn(o,"agendaram") : nn(o,"agendados")}</b>${temFunil ? ` · ${nn(o,"agendou_pct")}% dos que receberam` : ""}</span></li>
         ${temFunil ? `<li style="color:#c0392b"><span>Pararam na proposta</span><span><b>${nn(o,"pararam_na_proposta")}</b></span></li>` : ""}
         <li style="color:#999"><span>Sem resposta</span><span>${semResp(o)}</span></li>`;
-  const trPeriodo = (rot, o) => o ? `<li><span>${rot}</span><span>${nn(o,"abordados")} abordados · ${nn(o,"responderam")} responderam (${nn(o,"taxa_pct")}%)${temFunil ? ` · ${nn(o,"proposta")} proposta · ${nn(o,"agendaram")} agendaram · <span style="color:#c0392b">${nn(o,"pararam_na_proposta")} pararam</span>` : ""}</span></li>` : "";
-  // Cada operador: funil da contagem atual, desde quando ela vale, botão
-  // "Nova contagem" e as contagens anteriores (para comparar antes/depois).
   const fmtDia = s => { if (!s) return ""; const dt = new Date(s); return isNaN(dt) ? "" : dt.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", year:"2-digit" }); };
-  const resumoFunil = x => `${nn(x,"abordados")} abordados · <b>${nn(x,"responderam")}</b> responderam (${nn(x,"taxa_pct")}%)${temFunil ? ` · <b>${nn(x,"proposta")}</b> proposta · <b>${nn(x,"agendaram")}</b> agendaram · <span style="color:#c0392b"><b>${nn(x,"pararam_na_proposta")}</b> pararam na proposta</span>` : ""}`;
   // Soma várias contagens (atual + anteriores) e refaz os percentuais.
   const somaFunil = lista => {
     const s = {};
@@ -257,21 +253,38 @@ function renderDashboard(d) {
     s.taxa_pct = s.abordados ? Math.round(1000 * s.responderam / s.abordados) / 10 : 0;
     return s;
   };
+  // Tabela do funil: uma linha por período/contagem, uma coluna por etapa.
+  // (Antes era uma frase corrida por linha, que quebrava toda torta.)
+  const funilTabela = linhas => `
+      <table class="funil-tab">
+        <thead><tr><th></th><th>Abordados</th><th>Responderam</th>${temFunil ? "<th>Proposta</th>" : ""}<th>Agendaram</th>${temFunil ? '<th class="parou">Pararam na proposta</th>' : ""}<th class="apagado">Sem resposta</th></tr></thead>
+        <tbody>${linhas.filter(l => l && l.o).map(l => `
+          <tr class="${l.cls || ""}">
+            <td class="rot">${l.rot}${l.sub ? `<small>${l.sub}</small>` : ""}</td>
+            <td>${nn(l.o,"abordados")}</td>
+            <td><b>${nn(l.o,"responderam")}</b> <small>${nn(l.o,"taxa_pct")}%</small></td>
+            ${temFunil ? `<td><b>${nn(l.o,"proposta")}</b></td>` : ""}
+            <td><b>${temFunil ? nn(l.o,"agendaram") : nn(l.o,"agendados")}</b></td>
+            ${temFunil ? `<td class="parou"><b>${nn(l.o,"pararam_na_proposta")}</b></td>` : ""}
+            <td class="apagado">${semResp(l.o)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  // Cada operador: contagem atual, operação inteira e contagens anteriores,
+  // com o botão "Nova contagem".
   const trOps = tr ? (tr.operadores||[]).map(o => {
     const x = o.total || {};
-    const ciclos = (o.ciclos || []).map(c => `
-        <div style="margin-top:4px;padding:5px 8px;border-left:3px solid #ddd;color:#666;font-size:11px">
-          <b>Contagem anterior</b> (${fmtDia(c.inicio) || "início"} a ${fmtDia(c.fim)})${c.nota ? " — " + esc(c.nota) : ""}<br>${resumoFunil(c.numeros || {})}
-        </div>`).join("");
-    return `<li style="display:block">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <span><b>${esc(o.nome_operador||o.login)}</b> <small style="color:#999">· ${o.desde ? "contando desde " + fmtDia(o.desde) : "contando desde o início"}</small></span>
-          ${temFunil ? `<button type="button" class="btnNovaContagem" data-login="${esc(o.login)}" data-nome="${esc(o.nome_operador||o.login)}" style="padding:4px 10px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:11px;font-weight:700">↺ Nova contagem</button>` : ""}
+    const ciclos = o.ciclos || [];
+    const linhas = [{ rot: "Contagem atual", sub: o.desde ? "desde " + fmtDia(o.desde) : "desde o início", o: x, cls: "atual" }];
+    if (ciclos.length) linhas.push({ rot: "Operação inteira", sub: "atual + " + ciclos.length + " anterior" + (ciclos.length > 1 ? "es" : ""), o: somaFunil([x].concat(ciclos.map(c => c.numeros || {}))), cls: "total" });
+    ciclos.forEach(c => linhas.push({ rot: (fmtDia(c.inicio) || "início") + " a " + fmtDia(c.fim), sub: c.nota ? esc(c.nota) : "contagem anterior", o: c.numeros || {}, cls: "antiga" }));
+    return `<div class="funil-op">
+        <div class="funil-op-cab">
+          <b>${esc(o.nome_operador||o.login)}</b>
+          ${temFunil ? `<button type="button" class="btnNovaContagem" data-login="${esc(o.login)}" data-nome="${esc(o.nome_operador||o.login)}">↺ Nova contagem</button>` : ""}
         </div>
-        <div style="margin-top:3px">${resumoFunil(x)} <small style="color:#999">· sem resposta: ${semResp(x)}</small></div>
-        ${(o.ciclos || []).length ? `<div style="margin-top:4px;padding:5px 8px;border-left:3px solid #111;background:#f4f4f4;font-size:11px"><b>Operação inteira</b> (contagem atual + ${(o.ciclos || []).length} anterior${(o.ciclos || []).length > 1 ? "es" : ""})<br>${resumoFunil(somaFunil([x].concat((o.ciclos || []).map(c => c.numeros || {}))))}</div>` : ""}
-        ${ciclos}
-      </li>`;
+        ${funilTabela(linhas)}
+      </div>`;
   }).join("") : "";
   const taxaHtml = !tr ? "" : `
     <div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta (total)</div><div class="sub">${nn(trG.total,"responderam")} de ${nn(trG.total,"abordados")} abordados responderam</div></div>
@@ -280,15 +293,14 @@ function renderDashboard(d) {
       <div class="label" style="margin-bottom:4px">Funil dos leads abordados (total da operação)</div>
       <ul>${funilLinhas(trG.total)}</ul>
     </div>
-    <div class="stat wide">
-      <div class="label" style="margin-bottom:4px">Funil por período (pela data da abordagem)</div>
-      <ul>
-        ${trPeriodo("Hoje", trG.hoje)}
-        ${trPeriodo("Últimos 7 dias", trG.d7)}
-        ${trPeriodo("Últimos 30 dias", trG.d30)}
-      </ul>
+    <div class="stat full">
+      <div class="label">Funil por período <small>— conta os leads pela data em que foram abordados</small></div>
+      ${funilTabela([{ rot: "Hoje", o: trG.hoje }, { rot: "Últimos 7 dias", o: trG.d7 }, { rot: "Últimos 30 dias", o: trG.d30 }, { rot: "Total", o: trG.total, cls: "total" }])}
     </div>
-    <div class="stat wide"><div class="label" style="margin-bottom:4px">Funil por operador <small style="font-weight:400;color:#999">— "Nova contagem" zera os números do operador para medir uma nova fase. Não apaga leads nem conversas; a contagem anterior fica guardada abaixo.</small></div><ul>${trOps || '<li style="color:#aaa">Sem dados</li>'}</ul></div>`;
+    <div class="stat full">
+      <div class="label">Funil por operador <small>— "Nova contagem" zera os números do operador para medir uma nova fase. Não apaga leads nem conversas; as contagens anteriores continuam aqui.</small></div>
+      ${trOps || '<div style="color:#aaa;font-size:12px;margin-top:6px">Sem dados</div>'}
+    </div>`;
 
   $("dashboard").innerHTML = `
     <div class="stat"><div class="num">${baseColetados}</div><div class="label">Leads coletados (total${temBruto ? ", incluindo excluídos" : ""})</div>${temBruto ? `<div class="sub">${d.leads_total||0} ativos com telefone</div>` : ""}</div>

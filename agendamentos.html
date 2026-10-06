@@ -52,6 +52,26 @@
   .stat .label{font-size:11px;color:#777;margin-top:2px}
   .stat .sub{font-size:10.5px;color:#9333ea;margin-top:4px;font-weight:700}
   .stat.wide{grid-column:span 2}
+  .stat.full{grid-column:1 / -1}
+  .stat .label small{font-weight:400;color:#999}
+  .funil-tab{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  .funil-tab th{font-size:11px;font-weight:700;color:#777;text-align:right;padding:6px 10px;border-bottom:2px solid #eee;white-space:nowrap}
+  .funil-tab td{text-align:right;padding:7px 10px;border-bottom:1px solid #f1f1f1;color:#333;white-space:nowrap}
+  .funil-tab td small{color:#999;font-size:11px;margin-left:3px}
+  .funil-tab td.rot{text-align:left;font-weight:700;color:#222;white-space:normal}
+  .funil-tab td.rot small{display:block;font-weight:400;color:#999;margin:1px 0 0}
+  .funil-tab .parou{color:#c0392b}
+  .funil-tab .apagado{color:#aaa}
+  .funil-tab tr.total td{background:#f6f6f6}
+  .funil-tab tr.antiga td{color:#888}
+  .funil-tab tr.antiga td.rot{color:#666;font-weight:600}
+  .funil-tab tbody tr:last-child td{border-bottom:0}
+  .funil-op{margin-top:12px;padding-top:10px;border-top:1px solid #eee}
+  .funil-op:first-of-type{border-top:0;padding-top:0}
+  .funil-op-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+  .btnNovaContagem{padding:5px 12px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#333}
+  .btnNovaContagem:hover{background:#f3f3f3}
+  @media (max-width:700px){ .funil-tab{font-size:11px} .funil-tab th,.funil-tab td{padding:5px 4px} }
   .stat ul{list-style:none;margin:6px 0 0;padding:0;font-size:11px;color:#555}
   .stat li{display:flex;justify-content:space-between;padding:2px 0}
 
