@@ -195,6 +195,7 @@ $("btnExportCsv").addEventListener("click", () => {
 
 // ===== Dashboard =====
 function renderDashboard(d) {
+  _ultimoDash = d;
   const porStatus = {};
   (d.agendamentos_por_status||[]).forEach(s => porStatus[s.status] = s.total);
 
@@ -300,7 +301,18 @@ function renderDashboard(d) {
       </div>`;
   // ── Etapas do funil: por onde o lead passou e onde parou. Cada caixa é uma
   // etapa; a seta mostra quantos % avançaram; embaixo, quantos pararam ali.
-  const fT = trG && trG.total;
+  // Com mais de um operador, dá para olhar o funil da empresa inteira ou de
+  // um operador só (botões "Ver"). Os cartões do topo são sempre da empresa.
+  const opSel = ops.length > 1 ? ops.find(o => chave(o.login) === _opVisao) : null;
+  const fonte = opSel ? { hoje: null, d7: opSel.d7, d30: opSel.d30, total: opSel.total } : trG;
+  const quem = opSel ? esc(opSel.nome_operador || opSel.login) : (ops.length > 1 ? "empresa inteira" : "operação inteira");
+  const verHtml = ops.length < 2 ? "" : `
+    <div class="ver-op">
+      <span>Ver:</span>
+      <button data-op="" class="${opSel ? "" : "on"}">Empresa inteira</button>
+      ${ops.map(o => `<button data-op="${esc(chave(o.login))}" class="${opSel === o ? "on" : ""}">${esc(o.nome_operador || o.login)}</button>`).join("")}
+    </div>`;
+  const fT = fonte && fonte.total;
   const etapasHtml = !fT ? "" : (() => {
     const ab = nn(fT,"abordados"), re = nn(fT,"responderam"), pr = nn(fT,"proposta");
     const ag = temFunil ? nn(fT,"agendaram") : nn(fT,"agendados");
@@ -313,7 +325,7 @@ function renderDashboard(d) {
     const seta = (parte, total) => `<div class="seta"><i>${pct(parte, total)}%</i>→</div>`;
     return `
     <div class="stat full">
-      <div class="label">Etapas do funil <small>— por onde os leads passaram e onde pararam (operação inteira)</small></div>
+      <div class="label">Etapas do funil <small>— por onde os leads passaram e onde pararam (${quem})</small></div>
       <div class="etapas">
         ${caixa("Abordados", ab, Math.max(0, ab - re), "não responderam")}
         ${seta(re, ab)}
@@ -333,6 +345,7 @@ function renderDashboard(d) {
     ${tr ? `<div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta</div><div class="sub">${nn(trG.total,"responderam")} de ${abordados} abordados</div></div>` : `<div class="stat"><div class="num">${abordados}</div><div class="label">Pessoas abordadas</div></div>`}
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos</div><div class="sub">${porStatus.CONFIRMADO||0} confirmado(s) · ${pct(agendamentos.length, abordados)}% dos abordados</div></div>
     </div>
+    ${verHtml}
     ${etapasHtml}
     <div class="stat full">
       <div class="label">Ritmo da operação <small>— pessoas abordadas em cada período${d.operacao_dias ? ` · hoje é o dia ${d.operacao_dias} da operação` : ""}</small></div>
@@ -347,8 +360,8 @@ function renderDashboard(d) {
     </div>
     ${!tr ? "" : `
     <div class="stat full">
-      <div class="label">Funil por período <small>— conta os leads pela data em que foram abordados</small></div>
-      ${funilTabela([{ rot: "Hoje", o: trG.hoje }, { rot: "Últimos 7 dias", o: trG.d7 }, { rot: "Últimos 30 dias", o: trG.d30 }, { rot: "Total", o: trG.total, cls: "total" }])}
+      <div class="label">Funil por período <small>— ${quem} · conta os leads pela data em que foram abordados</small></div>
+      ${funilTabela([{ rot: "Hoje", o: fonte.hoje }, { rot: "Últimos 7 dias", o: fonte.d7 }, { rot: "Últimos 30 dias", o: fonte.d30 }, { rot: "Total", o: fonte.total, cls: "total" }])}
     </div>
     <details class="stat full dash-ops" id="dashOps" ${abrirOps ? "open" : ""}>
       <summary><span class="label">Por operador <small>— ${ops.length} operador${ops.length === 1 ? "" : "es"}${temCiclos ? ", com as contagens anteriores" : ""}${ops.length === 1 && !temCiclos ? " (mesmos números do Total acima; clique para abrir)" : ""}</small></span></summary>
@@ -357,9 +370,15 @@ function renderDashboard(d) {
   `;
   const det = $("dashOps");
   if (det) det.addEventListener("toggle", () => { _opsAberto = det.open; });
+  document.querySelectorAll("#dashboard .ver-op button").forEach(b => b.addEventListener("click", () => {
+    _opVisao = b.dataset.op || "";
+    if (_ultimoDash) renderDashboard(_ultimoDash);
+  }));
 
   renderCharts(d);
 }
+let _opVisao = "";      // "" = empresa inteira; senão, o login do operador escolhido em "Ver"
+let _ultimoDash = null; // últimos dados recebidos, para redesenhar ao trocar de operador
 let _opsAberto = null; // null = decide sozinho; depois do primeiro clique, respeita o operador
 
 // ===== Gráficos (SVG puro, paleta validada em references/palette.md) =====
