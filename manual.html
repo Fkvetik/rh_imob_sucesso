@@ -174,6 +174,12 @@
   .badge.purple{background:var(--purple-light); color:var(--purple-dark)}
   .badge.orange{background:var(--orange-light); color:var(--orange-dark)}
 
+  /* ── Telas da ferramenta ────────────────────────────────── */
+  figure.shot{margin:20px 0; text-align:center}
+  figure.shot img{max-width:100%; height:auto; border-radius:12px; border:1px solid var(--line); box-shadow:0 6px 24px rgba(31,19,48,.12); background:#e5ddd5}
+  figure.shot.estreita img{max-width:380px}
+  figure.shot figcaption{font-size:12.5px; color:var(--ink-muted); margin-top:8px}
+
   /* ── Passo a passo ──────────────────────────────────────── */
   .steps{counter-reset:step; list-style:none; padding:0; margin:16px 0}
   .steps li{
@@ -225,7 +231,7 @@
   <img class="mark" src="assets/rhimob-logo.jpg" alt="RH Imob">
   <div>
     <strong>RH IMOB Aceleradora</strong><br>
-    <span>Cartilha de uso — RH Imob</span>
+    <span>Manual do operador</span>
   </div>
   <button class="navtoggle" id="navToggle" aria-expanded="false">Sumário</button>
 </div>
@@ -234,13 +240,17 @@
   <nav class="toc" id="toc">
     <ol>
       <li><a href="#intro">Visão geral</a></li>
-      <li><a href="#login">1. Entrando na extensão</a></li>
-      <li><a href="#coleta">2. Captação de candidatos</a></li>
-      <li><a href="#envio">3. Abordagem e envio automático</a></li>
-      <li><a href="#flutuante">4. Painel no WhatsApp</a></li>
-      <li><a href="#crm">5. Agendamentos e CRM</a></li>
-      <li><a href="#analytics">6. Analytics e metas</a></li>
-      <li><a href="#seguranca">7. Boas práticas</a></li>
+      <li><a href="#mapa">O caminho do lead</a></li>
+      <li><a href="#login">1. Entrar e sair</a></li>
+      <li><a href="#coleta">2. Captação de contatos</a></li>
+      <li><a href="#envio">3. Disparo automático</a></li>
+      <li><a href="#bolha">4. A bolha no WhatsApp</a></li>
+      <li><a href="#respostas">5. Respostas prontas</a></li>
+      <li><a href="#programar">6. Mensagens programadas</a></li>
+      <li><a href="#funil">7. Funil e resultados</a></li>
+      <li><a href="#crm">8. Agendamentos e CRM</a></li>
+      <li><a href="#numero">9. Proteção do número</a></li>
+      <li><a href="#rotina">10. Rotina recomendada</a></li>
       <li><a href="#faq">Perguntas frequentes</a></li>
     </ol>
   </nav>
@@ -248,204 +258,411 @@
   <main>
     <section class="intro" id="intro">
       <span class="eyebrow">Manual do operador</span>
-      <h1>Uma plataforma de recrutamento que trabalha enquanto você não está olhando</h1>
-      <p class="lede">O RH IMOB Aceleradora busca candidatos (Catho, Banco de Talentos, Banco de Corretores CRECI ou base própria), guarda tudo organizado, aborda cada um no WhatsApp com uma mensagem diferente, acompanha agendamentos de entrevista, e mostra em números como o funil de recrutamento está indo — sem planilha, sem copiar e colar, sem depender de alguém lembrar de fazer manualmente.</p>
+      <h1>Do primeiro contato ao agendamento, numa ferramenta só</h1>
+      <p class="lede">A RH IMOB Aceleradora encontra os contatos, faz a primeira abordagem no WhatsApp sozinha, ajuda você a conduzir a conversa com respostas prontas, agenda a reunião e mostra em números onde cada operação ganha e onde perde gente. Sem planilha e sem copiar e colar.</p>
       <div class="stat-row">
-        <div class="stat"><b>24h</b><span>coleta roda sozinha, todo dia</span></div>
-        <div class="stat"><b>3</b><span>abordagens diferentes por candidato</span></div>
-        <div class="stat"><b>4</b><span>fontes de candidatos: Catho, Banco de Talentos, Corretores CRECI e base própria</span></div>
+        <div class="stat"><b>4</b><span>fontes de contatos: Catho, Banco de Talentos, Corretores CRECI e lista própria</span></div>
+        <div class="stat"><b>7h às 20h</b><span>disparo roda sozinho, de segunda a sábado</span></div>
+        <div class="stat"><b>5</b><span>etapas medidas: abordado, respondeu, recebeu a proposta, agendou, parou</span></div>
+      </div>
+
+      <div class="grid-2" style="margin-top:22px">
+        <div class="feature"><div class="icon">🧲</div><h4>Captar</h4><p>Busca currículos na Catho todo dia, libera contatos dos bancos da RH IMOB ou recebe a sua planilha.</p></div>
+        <div class="feature"><div class="icon">📨</div><h4>Abordar</h4><p>Envia a primeira mensagem para cada contato, com intervalo entre os envios e texto variado.</p></div>
+        <div class="feature"><div class="icon">💬</div><h4>Conversar</h4><p>Quando o lead responde, a bolha no WhatsApp coloca suas respostas prontas a um clique, com imagem ou PDF.</p></div>
+        <div class="feature"><div class="icon">📊</div><h4>Medir</h4><p>Conta sozinha quem respondeu, quem recebeu a proposta, quem agendou e quem parou no caminho.</p></div>
       </div>
     </section>
 
+    <section id="mapa">
+      <h2><span class="num">00</span> O caminho do lead</h2>
+      <p class="dek">Entender esta sequência ajuda a entender o resto do manual. Cada linha é uma etapa, e a ferramenta registra todas.</p>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Etapa</th><th>O que acontece</th><th>Quem faz</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Coletado</strong></td><td>O contato entra na sua base.</td><td>A extensão (ou você, ao liberar ou subir uma lista)</td></tr>
+            <tr><td><strong>Abordado</strong></td><td>Recebe a primeira mensagem.</td><td>A extensão, pelo disparo</td></tr>
+            <tr><td><strong>Respondeu</strong></td><td>Respondeu e você falou com ele.</td><td>Você, ao usar uma resposta da bolha</td></tr>
+            <tr><td><strong>Recebeu a proposta</strong></td><td>Você enviou a apresentação da empresa.</td><td>Você, ao usar a resposta marcada como proposta</td></tr>
+            <tr><td><strong>Agendou</strong></td><td>Marcou a reunião.</td><td>Você, pela aba Agendar</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Quem recebe a proposta e não agenda aparece em <strong>Pararam na proposta</strong>. Esse número mostra se o problema da operação está na abordagem (pouca gente responde) ou na proposta (respondem, mas não seguem).</p>
+    </section>
+
     <section id="login">
-      <h2><span class="num">01</span> Entrando na extensão</h2>
-      <p class="dek">O ponto de partida de tudo — o ícone da extensão fica fixo na barra do Chrome.</p>
+      <h2><span class="num">01</span> Entrar e sair</h2>
+      <p class="dek">O ícone da extensão fica na barra do Chrome. Tudo o que você coleta e envia fica registrado no seu login.</p>
       <ol class="steps">
         <li>Clique no ícone <strong>RH IMOB Aceleradora</strong> na barra de extensões do Chrome.</li>
-        <li>Digite seu <strong>usuário</strong> e <strong>senha</strong> (cadastrados pelo administrador).</li>
-        <li>Clique <strong>Entrar</strong>. A partir daqui, tudo que você coletar e enviar fica registrado no seu nome.</li>
+        <li>Digite seu <strong>usuário</strong> e <strong>senha</strong>, cadastrados pelo administrador. Pode apertar <kbd>Enter</kbd> para entrar.</li>
+        <li>Para conferir a senha, <strong>segure</strong> o ícone do olho. Ela aparece enquanto você segura e some ao soltar.</li>
       </ol>
-      <div class="card tip">
-        <span class="tag">Vantagem</span>
-        <p>Cada operador só vê e mexe nos próprios candidatos. Ninguém apaga ou reenvia mensagem pra um lead que já é seu.</p>
+      <h3>O que o login libera</h3>
+      <p>Além da extensão, o login já abre o acesso ao Banco de Talentos e ao Banco de Corretores CRECI, se o administrador tiver vinculado esses acessos ao seu cadastro. Você não digita outra senha.</p>
+      <div class="card warn">
+        <span class="tag">Importante</span>
+        <p><strong>Sair para tudo.</strong> Ao clicar em Sair, a coleta em andamento é interrompida, o disparo para e a fila de envio é esvaziada. Nada continua rodando em seu nome. Se errar a senha 5 vezes, o login fica travado por 15 minutos.</p>
       </div>
     </section>
 
     <section id="coleta">
-      <h2><span class="num">02</span> Captação de candidatos</h2>
-      <p class="dek">A parte que antes era manual — abrir a Catho, copiar nome e telefone um por um — agora roda sozinha. E agora você tem 3 fontes diferentes, todas dentro da aba <strong>Captação</strong>.</p>
+      <h2><span class="num">02</span> Captação de contatos</h2>
+      <p class="dek">São quatro fontes, todas na aba <strong>Captação</strong>. O contato que entra por qualquer uma delas vai para a mesma fila de envio.</p>
 
       <h3>Catho</h3>
-      <p>Você cola o link de uma busca de currículos da Catho (o filtro que já usa — cargo, região, etc.) e define quantas páginas de resultado ela deve percorrer. A extensão abre cada perfil, lê nome, telefone, profissão, cidade e mais uma dezena de dados, e guarda tudo automaticamente.</p>
-
+      <p>Você cola o link de uma busca de currículos da Catho e define quantas páginas ela deve percorrer. A extensão abre cada perfil, lê nome, telefone, cargo, cidade e outros dados, e guarda tudo.</p>
       <div class="grid-2">
-        <div class="feature">
-          <div class="icon">🌅</div>
-          <h4>Automática</h4>
-          <p>Roda sozinha todo dia, no horário definido pelo administrador — não precisa lembrar de abrir o computador de manhã.</p>
-        </div>
-        <div class="feature">
-          <div class="icon">▶️</div>
-          <h4>Manual</h4>
-          <p>Botão <strong>Rodar coleta agora</strong> continua disponível a qualquer momento — pra testar um filtro novo ou reforçar no meio do dia.</p>
-        </div>
+        <div class="feature"><div class="icon">🌅</div><h4>Automática</h4><p>Roda sozinha todo dia, no horário definido pelo administrador para o seu login.</p></div>
+        <div class="feature"><div class="icon">▶️</div><h4>Manual</h4><p>O botão <strong>Rodar coleta agora</strong> funciona a qualquer momento, para testar um filtro novo ou reforçar o dia.</p></div>
       </div>
 
       <h3>Banco de Talentos</h3>
-      <p>Uma base própria da RH IMOB com dezenas de milhares de candidatos já mapeados anteriormente. Você filtra por cidade, região, cargo, faixa etária e proximidade de estação de metrô, seleciona quem interessa e libera o contato direto pra dentro do seu funil — sem precisar esperar uma coleta nova rodar. O acesso é liberado por operador, com limite de contatos configurado pelo administrador.</p>
+      <p>Base da RH IMOB com candidatos já mapeados. Você filtra por cidade, região, cargo, faixa etária e proximidade de metrô, seleciona quem interessa e libera o contato para a sua fila. O acesso e o limite de contatos são definidos pelo administrador.</p>
 
       <h3>Banco de Corretores CRECI</h3>
-      <p>Uma base separada, só com profissionais que já têm CRECI ativo — ideal quando a demanda é reforçar o time com corretor experiente, não formar alguém do zero. Acesso pela aba <strong>Corretores CRECI ↗</strong> no menu da extensão. Você filtra por cidade e ano de inscrição no CRECI, vê o nome real de cada corretor na lista (telefone e Instagram continuam ocultos até liberar), seleciona quem interessa e manda pra fila — o contato já sai debitado do limite do plano nesse momento, não depois.</p>
+      <p>Base só com profissionais com CRECI ativo. Abra pela aba <strong>Corretores CRECI ↗</strong>. Você filtra por <strong>cidade</strong>, <strong>ano de inscrição</strong> e <strong>perfil</strong>, vê o nome de cada corretor e libera os selecionados. Ao liberar, o botão mostra o andamento ("Liberando 12 de 40") e o contato é descontado do limite do plano naquele momento.</p>
       <div class="card tip">
-        <span class="tag">Diferença pro Banco de Talentos</span>
-        <p>O login desse banco é <strong>compartilhado</strong> entre os operadores (não é individual) — se aparecer "sem acesso" ao abrir a aba, peça pro administrador vincular o login compartilhado no seu cadastro e depois saia e entre de novo na extensão.</p>
+        <span class="tag">Bom saber</span>
+        <p>Quem já foi liberado não aparece mais na busca e não é cobrado de novo. Se a liberação for interrompida no meio, é só buscar outra vez: os que faltaram continuam disponíveis.</p>
       </div>
 
-      <h3>Base própria (upload)</h3>
-      <p>Se você já tem uma lista de contatos (nome + telefone) fora da Catho, a aba <strong>Base própria</strong> aceita uma planilha CSV — baixe o modelo, preencha, suba, e os contatos entram no mesmo funil de envio, já organizados por nome de campanha.</p>
+      <h3>Lista própria (planilha)</h3>
+      <p>Se você já tem contatos fora dessas bases, a aba <strong>Base própria</strong> aceita uma planilha CSV. Baixe o modelo, preencha, suba, e os contatos entram na fila já organizados pelo nome da campanha.</p>
 
       <div class="card tip">
-        <span class="tag">Vantagem</span>
-        <p>A extensão nunca coleta o mesmo currículo duas vezes pro mesmo operador — se um perfil já está na sua base, ele é atualizado, não duplicado. Vale pras 3 fontes.</p>
+        <span class="tag">Sem duplicar</span>
+        <p>O mesmo contato não entra duas vezes para o mesmo operador. Se já está na sua base, ele é atualizado.</p>
       </div>
     </section>
 
     <section id="envio">
-      <h2><span class="num">03</span> Abordagem e envio automático</h2>
-      <p class="dek">O elo mais importante: assim que a coleta termina, o disparo já começa sozinho.</p>
+      <h2><span class="num">03</span> Disparo automático</h2>
+      <p class="dek">É a primeira mensagem para cada contato. Assim que a coleta termina, o disparo começa sozinho.</p>
 
-      <p>Na aba <strong>Envio</strong>, você cadastra até <strong>3 abordagens diferentes</strong> de mensagem — a extensão sorteia uma pra cada candidato, então ninguém recebe um texto idêntico ao do vizinho. Use <kbd>{nome}</kbd> pro primeiro nome do lead e <kbd>{saudacao}</kbd> pro "bom dia/boa tarde/boa noite" ajustado à hora real do envio.</p>
+      <p>Na aba <strong>Envio</strong> você cadastra até <strong>3 textos de abordagem</strong>. A extensão sorteia um para cada contato. Use <kbd>{nome}</kbd> para o primeiro nome e <kbd>{saudacao}</kbd> para "bom dia", "boa tarde" ou "boa noite" conforme a hora do envio.</p>
 
+      <h3>Horário de funcionamento</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Quando</th><th>Horário</th></tr></thead>
+          <tbody>
+            <tr><td>Início</td><td>entre 7h00 e 7h50</td></tr>
+            <tr><td>Almoço</td><td>começa entre 12h00 e 12h30 e dura de 60 a 90 minutos</td></tr>
+            <tr><td>Fim (segunda a sexta)</td><td>entre 19h00 e 20h00</td></tr>
+            <tr><td>Sábado</td><td>só de manhã, até o horário do almoço</td></tr>
+            <tr><td>Domingo</td><td>não envia</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Os horários exatos são sorteados a cada dia, de propósito, para o padrão não se repetir. O popup mostra a janela de hoje.</p>
+
+      <h3>Intervalo entre os envios</h3>
       <div class="tblwrap">
         <table>
           <thead><tr><th>Intervalo</th><th>Quando usar</th></tr></thead>
           <tbody>
-            <tr><td>6–10 min</td><td><span class="badge orange">Agressiva</span> envio mais rápido, mais risco de bloqueio</td></tr>
-            <tr><td>10–15 min</td><td><span class="badge purple">Segura</span> recomendada no dia a dia</td></tr>
-            <tr><td>12–20 min</td><td>Aquecimento — depois de um bloqueio ou com número novo</td></tr>
+            <tr><td>6 a 10 min</td><td><span class="badge orange">Agressivo</span> mais volume, mais risco de bloqueio</td></tr>
+            <tr><td>10 a 15 min</td><td><span class="badge purple">Seguro</span> recomendado no dia a dia (cerca de 50 abordagens num dia cheio)</td></tr>
+            <tr><td>12 a 20 min</td><td>Aquecimento: número novo ou depois de um bloqueio</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h3>O que a extensão faz sozinha</h3>
+      <h3>O que a extensão cuida sozinha</h3>
       <ul>
-        <li>Assim que termina uma coleta, ela verifica se há candidatos novos e <strong>já começa a enviar</strong> — sem precisar clicar em nada.</li>
-        <li>Respeita um horário de trabalho e uma pausa de almoço sorteados a cada dia (varia o padrão, reduz risco de bloqueio).</li>
-        <li>Se o computador reiniciar no meio do envio, ela retoma sozinha de onde parou.</li>
+        <li><strong>Não repete.</strong> Um número que já recebeu mensagem neste computador não recebe de novo, mesmo que o lead reapareça na base.</li>
+        <li><strong>Separa o que falhou.</strong> Envio que não saiu vai para a lista "Não enviados", com o motivo e um botão <strong>Reenviar</strong>. Ele não volta para a fila sozinho.</li>
+        <li><strong>Não perde tempo com número ruim.</strong> Se o número não tem WhatsApp, o próximo da fila sai em cerca de um minuto, sem esperar o intervalo inteiro.</li>
+        <li><strong>Para sozinha se o WhatsApp travar.</strong> Depois de 3 erros técnicos seguidos, ou se o WhatsApp desconectar, o disparo pausa e avisa.</li>
+        <li><strong>Retoma depois de reiniciar.</strong> Se o computador reiniciar no meio do dia, o disparo continua de onde parou.</li>
       </ul>
 
       <div class="card warn">
         <span class="tag">Importante</span>
-        <p>Se você clicar em <strong>Pausar</strong> ou <strong>Encerrar</strong>, a extensão respeita — ela não volta a enviar sozinha até você clicar em <strong>Iniciar</strong> de novo. E nada disso funciona com o computador desligado ou o Chrome fechado.</p>
+        <p>O disparo usa a mesma aba do WhatsApp Web que você usa. Na hora de enviar, a tela muda para a conversa do lead. A bolha mostra quanto tempo falta para isso (veja o próximo capítulo). E nada funciona com o computador desligado ou o Chrome fechado.</p>
       </div>
     </section>
 
-    <section id="flutuante">
-      <h2><span class="num">04</span> Painel flutuante no WhatsApp Web</h2>
-      <p class="dek">Um painel fixo no canto da tela, sempre que você está no WhatsApp Web — pra nunca precisar sair da conversa.</p>
+    <section id="bolha">
+      <h2><span class="num">04</span> A bolha no WhatsApp</h2>
+      <p class="dek">É o painel com a logo da RH IMOB que aparece no WhatsApp Web. Você conduz a conversa inteira por ele, sem sair do chat.</p>
+
+      <p>Clique na logo para abrir ou fechar. Arraste pelo topo para mudar de lugar. Ao abrir uma conversa, a bolha identifica o contato e mostra o nome e a etapa dele.</p>
+      <figure class="shot estreita">
+        <img src="assets/manual/bolha-fechada.jpg" alt="Bolha fechada: a logo da RH IMOB com o número de agendamentos em aberto e o tempo para o próximo envio" width="600" height="380" loading="lazy">
+        <figcaption>Fechada: a logo, o número de agendamentos em aberto e o tempo que falta para o próximo envio.</figcaption>
+      </figure>
+      <figure class="shot estreita">
+        <img src="assets/manual/bolha-respostas.jpg" alt="Bolha aberta na aba Respostas, com a contagem do próximo envio, a etapa do lead e as respostas prontas" width="880" height="1600" loading="lazy">
+        <figcaption>Aberta, na aba Respostas. Os dados desta tela são de exemplo.</figcaption>
+      </figure>
 
       <div class="grid-2">
-        <div class="feature">
-          <div class="icon">💬</div>
-          <h4>Respostas rápidas</h4>
-          <p>Modelos de resposta pré-configurados, personalizados com o nome do candidato — um clique insere o texto pronto na conversa.</p>
-        </div>
-        <div class="feature">
-          <div class="icon">🗓</div>
-          <h4>Agendar</h4>
-          <p>Marca a entrevista do candidato aberto na conversa sem sair do WhatsApp — telefone e nome já vêm preenchidos automaticamente.</p>
-        </div>
-        <div class="feature">
-          <div class="icon">📋</div>
-          <h4>Meus Agendamentos</h4>
-          <p>Sua lista de agendamentos, com um número vermelho na aba avisando quantos ainda estão em aberto. Some quando não há pendência.</p>
-        </div>
-        <div class="feature">
-          <div class="icon">⚠️</div>
-          <h4>Aviso de duplicidade</h4>
-          <p>Se o contato aberto já tem agendamento — mesmo que feito por outro operador — o painel avisa antes de você marcar de novo.</p>
-        </div>
+        <div class="feature"><div class="icon">💬</div><h4>Respostas</h4><p>Seus textos prontos, a um clique, já com o nome do lead. Aceitam imagem e PDF.</p></div>
+        <div class="feature"><div class="icon">🗓</div><h4>Agendar</h4><p>Marca a reunião do contato aberto. Nome e telefone já vêm preenchidos.</p></div>
+        <div class="feature"><div class="icon">📋</div><h4>Agendamentos</h4><p>Seus agendamentos, o funil da operação e o botão de confirmação de agendamento.</p></div>
+        <div class="feature"><div class="icon">⏰</div><h4>Programar</h4><p>Deixa uma mensagem marcada para sair num dia e hora, para o contato aberto.</p></div>
       </div>
 
+      <h3>O que aparece no topo da bolha</h3>
+      <ul>
+        <li><strong>Nome e etapa do lead</strong>, quando o contato está na sua base.</li>
+        <li><strong>Contagem do próximo envio:</strong> "⏱ Próximo envio em 4:28 · 12 na fila". Nos últimos 30 segundos fica vermelha, avisando que a tela vai mudar. Com a bolha fechada, o tempo aparece embaixo da logo.</li>
+        <li><strong>Motivo da pausa</strong>, quando o disparo está parado: almoço, fora do horário, fim de semana ou WhatsApp desconectado, com a hora de volta.</li>
+        <li><strong>Aviso de agendamento existente</strong>, se aquele contato já foi agendado, mesmo que por outro operador.</li>
+      </ul>
+
+      <h3>Etapa do lead com um clique</h3>
+      <p>Na aba Respostas, quando o contato está na base, aparece a linha <strong>Etapa do lead</strong>: Enviado, Contratado, Desistiu, Cancelado, Encerrado e um atalho para Agendar. Clicar muda a etapa na hora, e o Kanban acompanha. Ao lado fica um selo que diz se o lead já respondeu ou já recebeu a proposta.</p>
+    </section>
+
+    <section id="respostas">
+      <h2><span class="num">05</span> Respostas prontas</h2>
+      <p class="dek">São os textos que você usa depois que o lead responde. Monte uma vez e use sempre.</p>
+
+      <p>Para criar ou editar, clique em <strong>+ Nova resposta</strong> ou no lápis de uma resposta. Para enviar, clique no cartão, no botão pequeno acima da lista, ou use <kbd>Alt</kbd> + <kbd>1</kbd> a <kbd>9</kbd>.</p>
+      <figure class="shot estreita">
+        <img src="assets/manual/editor-resposta.jpg" alt="Editor de resposta com duas versões da primeira mensagem, um anexo e a opção de proposta da empresa marcada" width="1040" height="2000" loading="lazy">
+        <figcaption>O editor de uma resposta: marcação de proposta, variáveis, duas versões da mensagem 1 e um anexo.</figcaption>
+      </figure>
+
+      <h3>Combo de mensagens</h3>
+      <p>Uma resposta pode ter até <strong>3 mensagens</strong>, enviadas em sequência com o intervalo que você definir. Enquanto espera, o texto da próxima já fica na caixa de mensagem, então o lead vê "digitando" o tempo todo. Um aviso na tela mostra "mensagem 2 de 3" e tem botão <strong>Cancelar</strong>.</p>
+
+      <h3>Variáveis</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Escreva</th><th>O lead recebe</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>{nome}</kbd></td><td>o primeiro nome dele</td></tr>
+            <tr><td><kbd>{saudacao}</kbd></td><td>bom dia, boa tarde ou boa noite, conforme a hora</td></tr>
+            <tr><td><kbd>{cargo}</kbd></td><td>o cargo, quando consta na base</td></tr>
+            <tr><td><kbd>{cidade}</kbd></td><td>a cidade, quando consta na base</td></tr>
+            <tr><td><kbd>{operador}</kbd></td><td>o seu primeiro nome</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Se o dado não existir para aquele lead, a frase que dependia dele é retirada e o resto da mensagem segue normal. Corretores CRECI quase nunca têm cargo cadastrado, então evite <kbd>{cargo}</kbd> nesse público.</p>
+
+      <h3>Versões da mesma mensagem</h3>
+      <p>Cada mensagem pode ter várias versões. Use <strong>+ outra versão desta mensagem</strong> no editor. A cada envio sai uma delas, sem repetir a última, para o seu texto não ser sempre idêntico.</p>
+
+      <h3>Imagem ou PDF</h3>
+      <p>Cada mensagem pode levar um anexo: use <strong>📎 Anexar imagem ou PDF</strong> no editor. O texto vai como legenda, numa mensagem só.</p>
+      <ul>
+        <li>Imagens grandes são reduzidas automaticamente.</li>
+        <li>O PDF vai como está, com o <strong>mesmo nome do arquivo</strong> (limite de 8 MB). Dê um nome apresentável antes de anexar.</li>
+        <li>O anexo fica guardado <strong>só neste computador</strong>. Em outro computador, é preciso anexar de novo.</li>
+        <li>Se o anexo não entrar no WhatsApp, <strong>nada é enviado</strong> e a bolha avisa. O texto nunca sai sozinho sem o anexo.</li>
+      </ul>
+
+      <h3>A resposta de proposta</h3>
+      <p>No editor há a opção <strong>"Esta resposta é a proposta da empresa"</strong>. Marque na resposta que apresenta a empresa. Toda vez que você usá-la, o lead entra em "receberam a proposta" no funil.</p>
+
+      <h3>Enviar automático</h3>
+      <p>Com <strong>Enviar automático ao clicar</strong> desligado, a bolha só escreve a mensagem e você confere antes de enviar. Ligado, ela envia após uma contagem curta. Os combos de 2 ou 3 mensagens sempre enviam em sequência.</p>
+
       <div class="card tip">
-        <span class="tag">Vantagem</span>
-        <p>Evita o cenário clássico: dois operadores ligando pro mesmo candidato pra confirmar a mesma entrevista sem saber.</p>
+        <span class="tag">Suas respostas não se perdem</span>
+        <p>Os textos ficam salvos no seu login. Trocar de computador ou reinstalar a extensão traz tudo de volta. Para levar para outro login, use <strong>Exportar CSV</strong> e <strong>Importar CSV</strong>. O botão <strong>Restaurar padrão</strong> apaga as suas respostas e volta ao modelo inicial.</p>
+      </div>
+    </section>
+
+    <section id="programar">
+      <h2><span class="num">06</span> Mensagens programadas</h2>
+      <p class="dek">Para retomar uma conversa depois: você deixa a mensagem marcada e ela sai sozinha no horário.</p>
+      <ol class="steps">
+        <li>Abra a conversa do contato e vá na aba <strong>⏰ Programar</strong>.</li>
+        <li>Escreva a mensagem ou escolha uma das suas respostas prontas. A prévia aparece já com o nome do lead.</li>
+        <li>Escolha o dia e a hora. Há atalhos para "Daqui 1h", "Amanhã 9h" e "Amanhã 14h".</li>
+        <li>Clique em <strong>Programar envio</strong>.</li>
+      </ol>
+      <figure class="shot estreita">
+        <img src="assets/manual/bolha-programar.jpg" alt="Aba Programar com a mensagem, a prévia, o horário e a lista de mensagens programadas" width="440" height="920" loading="lazy">
+        <figcaption>A aba Programar: mensagem, prévia, horário, o que vai sair e o histórico.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Não disputa com o disparo.</strong> Se o disparo estiver enviando naquele instante, a programada espera a vez.</li>
+        <li><strong>Sai no horário marcado</strong>, mesmo fora da janela do disparo, inclusive à noite e no domingo.</li>
+        <li><strong>A saudação acompanha a hora do envio</strong>, e não a hora em que você programou.</li>
+        <li><strong>Lembrete na conversa.</strong> Ao abrir um contato que tem mensagem programada, a aba Respostas avisa e oferece cancelar. Útil se o lead responder antes da hora.</li>
+      </ul>
+      <div class="card warn">
+        <span class="tag">Importante</span>
+        <p>Se, no horário, o computador estiver desligado, o Chrome fechado ou o WhatsApp desconectado, a mensagem <strong>não é enviada depois</strong>. Ela fica marcada como "Não enviada" e você é avisado na bolha, no popup e no ícone da extensão. Mensagem programada leva só texto: imagem e PDF não vão junto. As programações ficam guardadas neste computador.</p>
+      </div>
+    </section>
+
+    <section id="funil">
+      <h2><span class="num">07</span> Funil e resultados</h2>
+      <p class="dek">A ferramenta conta sozinha, a partir do que você faz no dia a dia. Você não preenche nada à parte.</p>
+
+      <h3>Como cada número é contado</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Número</th><th>Entra quando</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Abordados</strong></td><td>a primeira mensagem do disparo sai</td></tr>
+            <tr><td><strong>Responderam</strong></td><td>você usa qualquer resposta da bolha com aquele lead</td></tr>
+            <tr><td><strong>Receberam a proposta</strong></td><td>você usa a resposta marcada como proposta da empresa</td></tr>
+            <tr><td><strong>Agendaram</strong></td><td>o lead é agendado</td></tr>
+            <tr><td><strong>Pararam na proposta</strong></td><td>recebeu a proposta e não agendou</td></tr>
+            <tr><td><strong>Sem resposta</strong></td><td>foi abordado e ainda não respondeu</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Uma etapa conquistada não é desfeita: quem respondeu continua contando como "respondeu" mesmo que depois desista. Quem agenda sai de "pararam na proposta" automaticamente.</p>
+
+      <h3>Onde ver</h3>
+      <ul>
+        <li><strong>Na bolha, aba Agendamentos:</strong> o funil do seu login, com botões para ver Hoje, 7 dias, 30 dias e Total.</li>
+        <li><strong>Na bolha, aba Respostas:</strong> uma faixa com o resumo dos últimos 7 dias.</li>
+        <li><strong>No painel de agendamentos (site):</strong> o funil geral, por período e por operador.</li>
+      </ul>
+      <figure class="shot estreita">
+        <img src="assets/manual/bolha-funil.jpg" alt="Funil na aba Agendamentos da bolha, com as etapas e o histórico da operação" width="440" height="620" loading="lazy">
+        <figcaption>O funil na bolha, com o histórico das contagens anteriores.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="assets/manual/painel-funil.jpg" alt="Funil por período e por operador no painel de agendamentos" width="800" height="386" loading="lazy">
+        <figcaption>O funil no painel de agendamentos, por período e por operador.</figcaption>
+      </figure>
+
+      <h3>Nova contagem</h3>
+      <p>Quando a operação muda de fase (uma proposta nova, por exemplo), o administrador pode iniciar uma <strong>nova contagem</strong> para o operador. Os números voltam a zero e passam a contar só o que for abordado dali em diante. Nenhum lead ou conversa é apagado, e os números anteriores ficam guardados no <strong>Histórico da operação</strong>, junto com o total de tudo. Assim dá para comparar o antes e o depois.</p>
+
+      <div class="card tip">
+        <span class="tag">Para o número ser confiável</span>
+        <p>Use as respostas da bolha ao conversar. Se você responder só digitando à mão, sem usar a bolha, aquele lead pode não entrar em "responderam". A contagem só vale para contatos que estão na sua base.</p>
       </div>
     </section>
 
     <section id="crm">
-      <h2><span class="num">05</span> Agendamentos e CRM</h2>
-      <p class="dek">A visão completa — pra quem acompanha o processo de ponta a ponta, não só os próprios candidatos.</p>
+      <h2><span class="num">08</span> Agendamentos e CRM</h2>
+      <p class="dek">Onde ficam as reuniões marcadas e a visão geral da operação.</p>
 
-      <p>O <strong>Kanban de Agendamentos</strong> mostra todo candidato agendado, de todos os operadores, organizado por etapa: Agendado → Confirmado → Realizado → Contratado (ou Reagendado/Desistiu/Cancelado). Arraste o card pra mudar a etapa, ou clique pra ver o histórico completo de mudanças.</p>
+      <h3>Agendar pela bolha</h3>
+      <p>Com a conversa aberta, vá na aba <strong>Agendar</strong>, preencha data, horário, empresa e link da reunião, e salve. O lead passa para a etapa Agendado. Na aba <strong>Agendamentos</strong> você atualiza o status, a data, o link e as observações de cada um, e usa o botão <strong>Confirmação de agendamento</strong> para montar a mensagem de confirmação.</p>
 
-      <p>A aba <strong>Visão Geral</strong> traz gráficos — quantos agendamentos por etapa, produção de cada operador, padrão de agendamento por dia da semana e nos últimos 30 dias.</p>
+      <h3>Kanban</h3>
+      <p>O Kanban da extensão mostra todos os seus leads por etapa: Novo, Enviado, Respondeu, Sem interesse, Agendado, Contratado, Desistiu, Cancelado, Encerrado e Excluído. Arraste o cartão para mudar de etapa.</p>
+
+      <h3>Painel de agendamentos (site)</h3>
+      <p>Reúne os agendamentos de todos os operadores da empresa, por etapa: Agendado, Confirmado, Realizado, Contratado, Reagendado, Desistiu e Cancelado. A aba <strong>Visão Geral</strong> traz o funil, as abordagens por período e por dia da semana, e a produção de cada operador. A tela se atualiza sozinha a cada 45 segundos.</p>
 
       <div class="card tip">
         <span class="tag">Acesso</span>
-        <p>Esse painel é restrito — só quem tem senha de administrador (completo ou "só agendamentos") consegue entrar. Um operador comum não vê o Kanban geral, só os próprios agendamentos no flutuante.</p>
+        <p>Esse painel pede senha de administrador. Quem só acompanha os resultados usa o nível "agendamentos", que vê tudo, mas não altera a operação. O operador vê os próprios agendamentos pela bolha.</p>
       </div>
     </section>
 
-    <section id="analytics">
-      <h2><span class="num">06</span> Analytics e metas</h2>
-      <p class="dek">Números de verdade, tirados do que você já faz no dia a dia — não é preciso preencher nada à parte.</p>
+    <section id="numero">
+      <h2><span class="num">09</span> Proteção do número</h2>
+      <p class="dek">O WhatsApp restringe números que mandam muita mensagem para quem não os conhece. A ferramenta trabalha para reduzir esse risco, mas ele nunca é zero.</p>
 
-      <p>O botão <strong>Analytics</strong> (dentro da aba Gestão) abre um painel com:</p>
+      <h3>O que a ferramenta faz</h3>
       <ul>
-        <li><strong>Funil de conversão por campanha</strong> — quantos candidatos entraram, foram abordados, agendados, contratados, desistiram ou foram cancelados, por campanha de upload.</li>
-        <li><strong>Taxa de agendamento</strong> — de quem você aborda, quantos viram agendamento.</li>
-        <li><strong>Agendamentos em aberto</strong> — quem ainda está esperando um desfecho.</li>
-        <li><strong>Saúde da campanha</strong> — alertas automáticos: taxa de falha de envio alta (possível bloqueio no WhatsApp), campanha rodando sem nenhuma conversão, agendamentos atrasados.</li>
-        <li><strong>Meta de recrutamento</strong> — com base no seu histórico real, quantos candidatos você costuma precisar abordar pra fechar 1 contratação. Só aparece com confiança quando já existe volume suficiente de dados — no começo, mostra o funil bruto até acumular histórico.</li>
+        <li>Espera um intervalo entre os envios e nunca envia no mesmo instante em que escreve.</li>
+        <li>Sorteia os horários do dia, o texto de abordagem e as versões das respostas.</li>
+        <li>Não manda duas vezes para o mesmo número.</li>
+        <li>Pausa sozinha se o WhatsApp travar ou desconectar.</li>
       </ul>
 
-      <div class="card tip">
-        <span class="tag">Vantagem</span>
-        <p>Nada aqui é inventado ou estimado às cegas — todo número vem de eventos reais registrados enquanto você usa a extensão normalmente (Kanban, agendamentos, envio).</p>
+      <h3>O aviso de saúde do número</h3>
+      <p>O popup mostra um aviso quando o padrão do dia fica arriscado:</p>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Situação</th><th>Aviso</th></tr></thead>
+          <tbody>
+            <tr><td>Muitos números do dia sem WhatsApp (30% ou mais)</td><td><span class="badge orange">Risco</span> pause e revise a lista</td></tr>
+            <tr><td>Muitos números sem WhatsApp na semana (20% ou mais)</td><td><span class="badge purple">Atenção</span> a base precisa de limpeza</td></tr>
+            <tr><td>Muitos envios falhando por erro técnico</td><td><span class="badge purple">Atenção</span> recarregue a aba do WhatsApp</td></tr>
+            <tr><td>80 abordagens ou mais no dia</td><td><span class="badge purple">Atenção</span> acima do ritmo normal</td></tr>
+            <tr><td>120 abordagens ou mais no dia</td><td><span class="badge orange">Risco</span> recomendado parar por hoje</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p>É só um aviso: nada é pausado por causa dele. A decisão é sua.</p>
+
+      <h3>O que depende de você</h3>
+      <ul>
+        <li><strong>Prefira o intervalo Seguro.</strong> Deixe o Agressivo para quando precisar mesmo de volume.</li>
+        <li><strong>Número novo ou recém-desbloqueado:</strong> use o Aquecimento por alguns dias.</li>
+        <li><strong>Revise a lista antes de disparar.</strong> Tire contato errado e número duplicado.</li>
+        <li><strong>Se o WhatsApp mostrar algum aviso de restrição,</strong> pare o disparo. Insistir costuma transformar um aviso em bloqueio longo.</li>
+      </ul>
     </section>
 
-    <section id="seguranca">
-      <h2><span class="num">07</span> Boas práticas</h2>
-      <ul>
-        <li><strong>Não force o envio no modo Agressivo</strong> o tempo todo — reserve pra quando realmente precisar de volume rápido.</li>
-        <li><strong>Depois de um bloqueio do WhatsApp</strong>, use o intervalo de Aquecimento por alguns dias antes de voltar ao normal.</li>
-        <li><strong>Revise a aba Leads</strong> antes de iniciar o envio — remova quem não deveria receber mensagem (ex: contato errado, duplicado).</li>
-        <li><strong>Mantenha o computador ligado</strong> no horário configurado de coleta — sem isso, ela só roda quando o Chrome for aberto de novo.</li>
-      </ul>
+    <section id="rotina">
+      <h2><span class="num">10</span> Rotina recomendada</h2>
+      <p class="dek">Um dia típico com a ferramenta.</p>
+      <ol class="steps">
+        <li><strong>De manhã:</strong> ligue o computador, abra o Chrome e deixe o WhatsApp Web conectado. O disparo começa sozinho entre 7h00 e 7h50.</li>
+        <li><strong>Ao longo do dia:</strong> responda quem respondeu, sempre pela bolha. Use a primeira resposta para quem confirmou o contato e a resposta de proposta para quem quer saber mais.</li>
+        <li><strong>Lead interessado:</strong> agende pela aba Agendar e envie a confirmação.</li>
+        <li><strong>Lead que pediu para falar depois:</strong> programe uma mensagem pela aba Programar.</li>
+        <li><strong>Fim do dia:</strong> olhe o funil na aba Agendamentos, a lista de "Não enviados" no popup e os avisos de mensagem programada.</li>
+        <li><strong>Uma vez por semana:</strong> compare "responderam" com "receberam a proposta" e "agendaram". É ali que aparece o que ajustar no texto.</li>
+      </ol>
     </section>
 
     <section id="faq">
       <h2>Perguntas frequentes</h2>
       <details>
-        <summary>Preciso clicar em algo todo dia pra a coleta funcionar?</summary>
-        <p>Não, se o administrador configurou um horário pra você. Ela roda sozinha, desde que o computador esteja ligado com o Chrome aberto naquele horário.</p>
+        <summary>Preciso clicar em algo todo dia para a coleta e o disparo funcionarem?</summary>
+        <p>Não. Com o horário de coleta configurado pelo administrador, tudo roda sozinho, desde que o computador esteja ligado, o Chrome aberto e o WhatsApp Web conectado.</p>
       </details>
       <details>
-        <summary>E se eu quiser coletar num horário diferente do configurado?</summary>
-        <p>Use o botão <strong>Rodar coleta agora</strong>, na aba Coleta — funciona a qualquer momento, além da rotina automática.</p>
+        <summary>A tela do WhatsApp mudou sozinha enquanto eu digitava. O que houve?</summary>
+        <p>Foi o disparo. Ele usa a mesma aba e, na hora de enviar, abre a conversa do lead. A contagem no topo da bolha mostra quanto falta para o próximo envio; nos últimos 30 segundos ela fica vermelha.</p>
       </details>
       <details>
-        <summary>O envio começa sozinho depois da coleta automática?</summary>
-        <p>Sim — assim que a coleta (automática ou manual) termina e encontra candidatos novos, o envio já é iniciado, contanto que você tenha frases de abordagem salvas na aba Envio.</p>
+        <summary>A bolha mostra o nome errado ou "Lead não encontrado na base".</summary>
+        <p>"Não encontrado" significa que aquele contato não está na sua base; a bolha usa então o nome que o WhatsApp mostra, e as etapas do lead não aparecem. Se o nome estiver claramente errado, atualize a página do WhatsApp Web (F5).</p>
       </details>
       <details>
-        <summary>Posso ver os agendamentos de outro operador?</summary>
-        <p>No painel flutuante, não — cada operador só vê os próprios. O Kanban completo (todos os operadores) é restrito a quem tem acesso de administrador.</p>
+        <summary>A imagem ou o PDF não saiu.</summary>
+        <p>Quando o anexo não entra no WhatsApp, a bolha avisa e não envia nada. Tente de novo. Se a bolha disser que o anexo não está neste computador, abra o lápis da resposta e anexe outra vez: anexos ficam guardados só no computador onde foram adicionados.</p>
       </details>
       <details>
-        <summary>O que acontece se eu pausar o envio no meio do dia?</summary>
-        <p>Ele fica pausado até você clicar em Iniciar de novo — a extensão não reativa sozinha depois de uma pausa manual, mesmo que rode uma coleta nova nesse meio tempo.</p>
+        <summary>Programei uma mensagem e ela não foi enviada.</summary>
+        <p>No horário marcado, o computador, o Chrome ou o WhatsApp não estava disponível. A mensagem não é reenviada sozinha. Abra a conversa e programe de novo, ou envie na hora.</p>
       </details>
       <details>
-        <summary>Por que a aba Corretores CRECI mostra "sem acesso" mesmo eu já usando a extensão normalmente?</summary>
-        <p>Esse banco tem um login próprio, separado do seu login da extensão, e precisa ser vinculado pelo administrador no seu cadastro. Depois de vinculado, saia e entre de novo na extensão — o acesso só é carregado no momento do login, não durante uma sessão já aberta.</p>
+        <summary>O número de "responderam" está menor do que eu atendi.</summary>
+        <p>Ele conta quando você usa uma resposta da bolha com um lead da sua base. Conversas respondidas só digitando à mão, ou pelo celular, podem ficar de fora. Abrir a conversa e usar uma resposta da bolha resolve.</p>
+      </details>
+      <details>
+        <summary>Zeraram os números do meu funil. Perdi os dados?</summary>
+        <p>Não. O administrador iniciou uma nova contagem. Os números anteriores estão no "Histórico da operação", na aba Agendamentos da bolha, e nenhum lead foi apagado.</p>
+      </details>
+      <details>
+        <summary>O que acontece se eu pausar o disparo?</summary>
+        <p>Ele fica pausado até você clicar em Iniciar. A extensão não volta a enviar sozinha depois de uma pausa manual, mesmo que rode uma coleta nova.</p>
+      </details>
+      <details>
+        <summary>Cliquei em Sair e depois entrei de novo. A fila sumiu.</summary>
+        <p>É o esperado: sair esvazia a fila de envio, para nada continuar rodando sem ninguém logado. Os leads continuam na sua base. Ao clicar em Iniciar, a fila é montada de novo com quem ainda não foi abordado.</p>
+      </details>
+      <details>
+        <summary>Apareceu "Tempo esgotado esperando o servidor".</summary>
+        <p>A internet ou o servidor demorou mais de 30 segundos para responder. Confira a conexão e tente de novo. Nada é perdido: a ação simplesmente não foi concluída.</p>
+      </details>
+      <details>
+        <summary>A aba Corretores CRECI ou o Banco de Talentos mostra "sem acesso".</summary>
+        <p>O acesso precisa ser vinculado ao seu cadastro pelo administrador. Depois de vinculado, saia e entre de novo na extensão.</p>
+      </details>
+      <details>
+        <summary>Posso usar no celular?</summary>
+        <p>Não. A extensão funciona no Chrome do computador. O painel de agendamentos, no site, abre no celular para consulta.</p>
       </details>
     </section>
 
     <footer>
-      RH IMOB Aceleradora · RH Imob — documento interno, uso da equipe operacional.
+      RH IMOB Aceleradora · RH Imob · Manual do operador. Atualizado em outubro de 2026.
     </footer>
   </main>
 </div>
