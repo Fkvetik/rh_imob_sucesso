@@ -274,6 +274,16 @@ function renderDashboard(d) {
     ${tr ? `<div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta</div><div class="sub">${nn(trG.total,"responderam")} de ${abordados} abordados</div></div>` : `<div class="stat"><div class="num">${abordados}</div><div class="label">Pessoas abordadas</div></div>`}
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos</div><div class="sub">${porStatus.CONFIRMADO||0} confirmado(s) · ${pct(agendamentos.length, abordados)}% dos abordados</div></div>
     </div>
+    <div class="stat full">
+      <div class="label">Ritmo da operação <small>— pessoas abordadas em cada período${d.operacao_dias ? ` · hoje é o dia ${d.operacao_dias} da operação` : ""}</small></div>
+      <div class="ritmo">
+        <div><b>${d.abordados_hoje||0}</b><span>Hoje</span></div>
+        <div><b>${d.abordados_7d||0}</b><span>Últimos 7 dias</span></div>
+        <div><b>${d.abordados_15d||0}</b><span>Últimos 15 dias</span></div>
+        <div><b>${d.abordados_21d||0}</b><span>Últimos 21 dias</span></div>
+        <div class="tot"><b>${abordados}</b><span>Operação inteira</span></div>
+      </div>
+    </div>
     ${!tr ? "" : `
     <div class="stat full">
       <div class="label">Funil por período <small>— conta os leads pela data em que foram abordados</small></div>
