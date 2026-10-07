@@ -298,6 +298,32 @@ function renderDashboard(d) {
           <tbody>${linhasSem}</tbody>
         </table>
       </div>`;
+  // ── Etapas do funil: por onde o lead passou e onde parou. Cada caixa é uma
+  // etapa; a seta mostra quantos % avançaram; embaixo, quantos pararam ali.
+  const fT = trG && trG.total;
+  const etapasHtml = !fT ? "" : (() => {
+    const ab = nn(fT,"abordados"), re = nn(fT,"responderam"), pr = nn(fT,"proposta");
+    const ag = temFunil ? nn(fT,"agendaram") : nn(fT,"agendados");
+    const parouProp = temFunil ? nn(fT,"pararam_na_proposta") : 0;
+    const caixa = (rot, num, parou, parouTxt, cls) => `
+        <div class="etapa ${cls || ""}">
+          <span>${rot}</span><b>${num}</b>
+          ${parouTxt ? `<small class="${parou > 0 ? "parou" : ""}">${parou} ${parouTxt}</small>` : '<small class="fim">chegaram ao fim do funil</small>'}
+        </div>`;
+    const seta = (parte, total) => `<div class="seta"><i>${pct(parte, total)}%</i>→</div>`;
+    return `
+    <div class="stat full">
+      <div class="label">Etapas do funil <small>— por onde os leads passaram e onde pararam (operação inteira)</small></div>
+      <div class="etapas">
+        ${caixa("Abordados", ab, Math.max(0, ab - re), "não responderam")}
+        ${seta(re, ab)}
+        ${caixa("Responderam", re, temFunil ? Math.max(0, re - pr) : Math.max(0, re - ag), temFunil ? "pararam antes da proposta" : "não agendaram")}
+        ${temFunil ? seta(pr, re) + caixa("Receberam a proposta", pr, parouProp, "pararam na proposta") + seta(ag, pr) : seta(ag, re)}
+        ${caixa("Agendaram", ag, 0, "", "fim")}
+      </div>
+    </div>`;
+  })();
+
   const titulo = (txt, sub) => `<div class="dash-sec">${txt}${sub ? ` <small>${sub}</small>` : ""}</div>`;
 
   $("dashboard").innerHTML = `
@@ -307,6 +333,7 @@ function renderDashboard(d) {
     ${tr ? `<div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta</div><div class="sub">${nn(trG.total,"responderam")} de ${abordados} abordados</div></div>` : `<div class="stat"><div class="num">${abordados}</div><div class="label">Pessoas abordadas</div></div>`}
     <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos</div><div class="sub">${porStatus.CONFIRMADO||0} confirmado(s) · ${pct(agendamentos.length, abordados)}% dos abordados</div></div>
     </div>
+    ${etapasHtml}
     <div class="stat full">
       <div class="label">Ritmo da operação <small>— pessoas abordadas em cada período${d.operacao_dias ? ` · hoje é o dia ${d.operacao_dias} da operação` : ""}</small></div>
       <div class="ritmo">
