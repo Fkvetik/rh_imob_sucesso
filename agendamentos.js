@@ -111,14 +111,17 @@ async function loadAgendamentos() {
 
 async function loadDashboard() {
   try {
-    const [resp, taxa] = await Promise.all([
+    const [resp, taxa, ritmo] = await Promise.all([
       rpc("rpc_admin_dashboard", { p_admin_password: ADMIN_PASS }),
       // Taxa de resposta por operador — se a consulta não existir/falhar, o
       // resto do painel aparece do mesmo jeito.
-      rpc("rpc_admin_taxa_resposta", { p_admin_password: ADMIN_PASS }).catch(() => null)
+      rpc("rpc_admin_taxa_resposta", { p_admin_password: ADMIN_PASS }).catch(() => null),
+      // Ritmo semana a semana (SQL DASH_2) — sem ele, fica só a faixa de períodos.
+      rpc("rpc_admin_ritmo_semanal", { p_admin_password: ADMIN_PASS }).catch(() => null)
     ]);
     if (!resp.ok) return;
     resp.taxa_resposta = (taxa && taxa.ok) ? taxa : null;
+    resp.ritmo_semanal = (ritmo && ritmo.ok) ? ritmo : null;
     renderDashboard(resp);
   } catch (e) { /* silencioso — dashboard é complementar */ }
 }
@@ -265,6 +268,36 @@ function renderDashboard(d) {
   const extrasOps = [{ th: "Leads coletados", k: "coletados" }, { th: "Agendamentos", k: "ag" }];
 
   const abordados = tr ? nn(trG.total, "abordados") : (d.leads_enviados || 0);
+
+  // ── Ritmo semana a semana, desde a primeira abordagem da empresa. Serve
+  // para operações longas: no dia 28, 60 ou 120 o histórico inteiro continua
+  // visível. Com mais de um operador, mostra a parte de cada um.
+  const rs = d.ritmo_semanal, semanas = (rs && rs.semanas) || [];
+  const diaMes = s => { const p = String(s || "").split("-"); return p.length === 3 ? p[2] + "/" + p[1] : ""; };
+  const nomeOp = {};
+  ops.forEach(o => { nomeOp[chave(o.login)] = o.nome_operador || o.login; });
+  const opsRitmo = [...new Set(semanas.flatMap(s => Object.keys(s.operadores || {})))];
+  const colsOp = opsRitmo.length > 1 && opsRitmo.length <= 6 ? opsRitmo : [];
+  const maxSem = Math.max(1, ...semanas.map(s => s.abordados || 0));
+  let acum = 0;
+  const linhasSem = semanas.map((s, i) => {
+    acum += s.abordados || 0;
+    const atual = i === semanas.length - 1;
+    return `<tr class="${atual ? "atual" : ""}">
+        <td class="rot">Semana ${s.semana}<small>${diaMes(s.inicio)} a ${diaMes(s.fim)}${atual ? " · em andamento" : ""}</small></td>
+        <td><b>${s.abordados || 0}</b></td>
+        <td class="barra"><span style="width:${Math.round(100 * (s.abordados || 0) / maxSem)}%"></span></td>
+        ${colsOp.map(l => `<td>${(s.operadores || {})[l] || 0}</td>`).join("")}
+        <td class="apagado">${acum}</td>
+      </tr>`;
+  }).reverse().join(""); // a semana atual em cima
+  const ritmoSemanalHtml = !semanas.length ? "" : `
+      <div class="ritmo-sem">
+        <table class="funil-tab">
+          <thead><tr><th></th><th>Abordados</th><th></th>${colsOp.map(l => `<th>${esc(nomeOp[chave(l)] || l)}</th>`).join("")}<th class="apagado">Acumulado</th></tr></thead>
+          <tbody>${linhasSem}</tbody>
+        </table>
+      </div>`;
   const titulo = (txt, sub) => `<div class="dash-sec">${txt}${sub ? ` <small>${sub}</small>` : ""}</div>`;
 
   $("dashboard").innerHTML = `
@@ -283,6 +316,7 @@ function renderDashboard(d) {
         <div><b>${d.abordados_21d||0}</b><span>Últimos 21 dias</span></div>
         <div class="tot"><b>${abordados}</b><span>Operação inteira</span></div>
       </div>
+      ${ritmoSemanalHtml}
     </div>
     ${!tr ? "" : `
     <div class="stat full">
