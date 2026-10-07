@@ -192,9 +192,6 @@ $("btnExportCsv").addEventListener("click", () => {
 
 // ===== Dashboard =====
 function renderDashboard(d) {
-  const opStats = (d.leads_por_operador||[]).map(o => `<li><span>${esc(o.login)}</span><span>${o.total} (${o.enviados} enviados)</span></li>`).join("");
-  const agStats = (d.agendamentos_por_operador||[]).map(o => `<li><span>${esc(o.nome_operador||o.login)}</span><span>${o.total} (${o.confirmados} confirmados+)</span></li>`).join("") || '<li style="color:#aaa">Nenhum ainda</li>';
-  const entrevistadores = (d.entrevistadores||[]).slice(0,8).map(e => `<li><span>${esc(e.entrevistador)}</span><span>${e.total}</span></li>`).join("") || '<li style="color:#aaa">Nenhum ainda</li>';
   const porStatus = {};
   (d.agendamentos_por_status||[]).forEach(s => porStatus[s.status] = s.total);
 
@@ -207,9 +204,6 @@ function renderDashboard(d) {
   // já coletados, inclusive excluídos) a conta fecha.
   const temBruto = d.leads_total_bruto != null;
   const baseColetados = temBruto ? d.leads_total_bruto : (d.leads_total || 0);
-  const pctAbordado = Math.min(100, pct(d.leads_enviados || 0, baseColetados));
-  const excluidosAbordados = temBruto ? Math.max(0, (d.leads_enviados || 0) - (d.leads_enviados_ativos || 0)) : 0;
-  const pctAgendou = pct(agendamentos.length, d.leads_enviados || 0);
 
   // Taxa de resposta: dos abordados, quantos responderam e tiveram retorno
   // do operador (detectado sozinho pela extensão na conversa do WhatsApp) ou
@@ -222,13 +216,6 @@ function renderDashboard(d) {
   const temFunil = !!(trG && trG.total && trG.total.proposta != null); // banco já com o FUNIL_1
   const nn = (o, k) => Number(o && o[k]) || 0;
   const semResp = o => Math.max(0, nn(o, "abordados") - nn(o, "responderam"));
-  const funilLinhas = o => !o ? "" : `
-        <li><span>Abordados</span><span><b>${nn(o,"abordados")}</b></span></li>
-        <li><span>Responderam</span><span><b>${nn(o,"responderam")}</b> · ${nn(o,"taxa_pct")}% dos abordados</span></li>
-        ${temFunil ? `<li><span>Receberam a proposta</span><span><b>${nn(o,"proposta")}</b> · ${nn(o,"proposta_pct")}% dos que responderam</span></li>` : ""}
-        <li><span>Agendaram</span><span><b>${temFunil ? nn(o,"agendaram") : nn(o,"agendados")}</b>${temFunil ? ` · ${nn(o,"agendou_pct")}% dos que receberam` : ""}</span></li>
-        ${temFunil ? `<li style="color:#c0392b"><span>Pararam na proposta</span><span><b>${nn(o,"pararam_na_proposta")}</b></span></li>` : ""}
-        <li style="color:#999"><span>Sem resposta</span><span>${semResp(o)}</span></li>`;
   const fmtDia = s => { if (!s) return ""; const dt = new Date(s); return isNaN(dt) ? "" : dt.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit", year:"2-digit" }); };
   // Soma várias contagens (atual + anteriores) e refaz os percentuais.
   const somaFunil = lista => {
@@ -239,12 +226,13 @@ function renderDashboard(d) {
   };
   // Tabela do funil: uma linha por período/contagem, uma coluna por etapa.
   // (Antes era uma frase corrida por linha, que quebrava toda torta.)
-  const funilTabela = linhas => `
+  const funilTabela = (linhas, extras) => { extras = extras || []; return `
       <table class="funil-tab">
-        <thead><tr><th></th><th>Abordados</th><th>Responderam</th>${temFunil ? "<th>Proposta</th>" : ""}<th>Agendaram</th>${temFunil ? '<th class="parou">Pararam na proposta</th>' : ""}<th class="apagado">Sem resposta</th></tr></thead>
+        <thead><tr><th></th>${extras.map(e => `<th>${e.th}</th>`).join("")}<th>Abordados</th><th>Responderam</th>${temFunil ? "<th>Proposta</th>" : ""}<th>Agendaram</th>${temFunil ? '<th class="parou">Pararam na proposta</th>' : ""}<th class="apagado">Sem resposta</th></tr></thead>
         <tbody>${linhas.filter(l => l && l.o).map(l => `
           <tr class="${l.cls || ""}">
             <td class="rot">${l.rot}${l.sub ? `<small>${l.sub}</small>` : ""}</td>
+            ${extras.map(e => `<td>${l.extra && l.extra[e.k] != null ? l.extra[e.k] : '<span class="apagado">—</span>'}</td>`).join("")}
             <td>${nn(l.o,"abordados")}</td>
             <td><b>${nn(l.o,"responderam")}</b> <small>${nn(l.o,"taxa_pct")}%</small></td>
             ${temFunil ? `<td><b>${nn(l.o,"proposta")}</b></td>` : ""}
@@ -253,61 +241,55 @@ function renderDashboard(d) {
             <td class="apagado">${semResp(l.o)}</td>
           </tr>`).join("")}
         </tbody>
-      </table>`;
-  // Cada operador: contagem atual, operação inteira e contagens anteriores,
-  // com o botão "Nova contagem".
-  const trOps = tr ? (tr.operadores||[]).map(o => {
-    const x = o.total || {};
-    const ciclos = o.ciclos || [];
-    const linhas = [{ rot: "Contagem atual", sub: o.desde ? "desde " + fmtDia(o.desde) : "desde o início", o: x, cls: "atual" }];
-    if (ciclos.length) linhas.push({ rot: "Operação inteira", sub: "atual + " + ciclos.length + " anterior" + (ciclos.length > 1 ? "es" : ""), o: somaFunil([x].concat(ciclos.map(c => c.numeros || {}))), cls: "total" });
-    ciclos.forEach(c => linhas.push({ rot: (fmtDia(c.inicio) || "início") + " a " + fmtDia(c.fim), sub: c.nota ? esc(c.nota) : "contagem anterior", o: c.numeros || {}, cls: "antiga" }));
-    return `<div class="funil-op">
-        <div class="funil-op-cab">
-          <b>${esc(o.nome_operador||o.login)}</b>
-        </div>
-        ${funilTabela(linhas)}
-      </div>`;
-  }).join("") : "";
-  const taxaHtml = !tr ? "" : `
-    <div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta (total)</div><div class="sub">${nn(trG.total,"responderam")} de ${nn(trG.total,"abordados")} abordados responderam</div></div>
-    ${temFunil ? `<div class="stat"><div class="num" style="color:#c0392b">${nn(trG.total,"pararam_na_proposta")}</div><div class="label">Pararam na proposta</div><div class="sub">de ${nn(trG.total,"proposta")} que receberam a proposta</div></div>` : ""}
-    <div class="stat wide">
-      <div class="label" style="margin-bottom:4px">Funil dos leads abordados (total da operação)</div>
-      <ul>${funilLinhas(trG.total)}</ul>
+      </table>`; };
+  // ── Por operador: UMA tabela com tudo o que antes ficava em quatro cartões
+  // (funil por operador, leads por operador, agendamentos por operador).
+  // Contagens anteriores viram linhas logo abaixo do operador.
+  const chave = s => String(s || "").trim().toLowerCase();
+  const coletadosDe = {}, agDe = {};
+  (d.leads_por_operador||[]).forEach(o => { coletadosDe[chave(o.login)] = o.total; });
+  (d.agendamentos_por_operador||[]).forEach(o => { agDe[chave(o.login)] = `<b>${o.total}</b> <small>${o.confirmados} confirm.+</small>`; });
+  const ops = tr ? (tr.operadores||[]) : [];
+  const temCiclos = ops.some(o => (o.ciclos||[]).length);
+  const linhasOps = [];
+  ops.forEach(o => {
+    const x = o.total || {}, ciclos = o.ciclos || [], k = chave(o.login);
+    linhasOps.push({ rot: esc(o.nome_operador||o.login), sub: o.desde ? "contagem atual, desde " + fmtDia(o.desde) : (ciclos.length ? "contagem atual" : ""), o: x, cls: "atual",
+      extra: { coletados: coletadosDe[k], ag: agDe[k] } });
+    if (ciclos.length) linhasOps.push({ rot: "↳ Operação inteira", sub: "atual + " + ciclos.length + " anterior" + (ciclos.length > 1 ? "es" : ""), o: somaFunil([x].concat(ciclos.map(c => c.numeros || {}))), cls: "total" });
+    ciclos.forEach(c => linhasOps.push({ rot: "↳ " + (fmtDia(c.inicio) || "início") + " a " + fmtDia(c.fim), sub: c.nota ? esc(c.nota) : "contagem anterior", o: c.numeros || {}, cls: "antiga" }));
+  });
+  // Com um operador só e sem contagens anteriores, a tabela repete o Total do
+  // funil: fica recolhida. O operador abre se quiser (e a escolha é lembrada).
+  const abrirOps = _opsAberto != null ? _opsAberto : (ops.length > 1 || temCiclos);
+  const extrasOps = [{ th: "Leads coletados", k: "coletados" }, { th: "Agendamentos", k: "ag" }];
+
+  const abordados = tr ? nn(trG.total, "abordados") : (d.leads_enviados || 0);
+  const titulo = (txt, sub) => `<div class="dash-sec">${txt}${sub ? ` <small>${sub}</small>` : ""}</div>`;
+
+  $("dashboard").innerHTML = `
+    ${titulo("Funil", "da coleta ao agendamento")}
+    <div class="dash-kpis">
+    <div class="stat"><div class="num">${baseColetados}</div><div class="label">Leads coletados${temBruto ? " (incluindo excluídos)" : ""}</div><div class="sub">${Math.min(100, pct(abordados, baseColetados))}% já abordados</div></div>
+    ${tr ? `<div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta</div><div class="sub">${nn(trG.total,"responderam")} de ${abordados} abordados</div></div>` : `<div class="stat"><div class="num">${abordados}</div><div class="label">Pessoas abordadas</div></div>`}
+    <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos</div><div class="sub">${porStatus.CONFIRMADO||0} confirmado(s) · ${pct(agendamentos.length, abordados)}% dos abordados</div></div>
     </div>
+    ${!tr ? "" : `
     <div class="stat full">
       <div class="label">Funil por período <small>— conta os leads pela data em que foram abordados</small></div>
       ${funilTabela([{ rot: "Hoje", o: trG.hoje }, { rot: "Últimos 7 dias", o: trG.d7 }, { rot: "Últimos 30 dias", o: trG.d30 }, { rot: "Total", o: trG.total, cls: "total" }])}
     </div>
-    <div class="stat full">
-      <div class="label">Funil por operador <small>— a contagem atual, a operação inteira e as contagens anteriores de cada operador. (Uma nova contagem é iniciada pelo administrador, no painel.)</small></div>
-      ${trOps || '<div style="color:#aaa;font-size:12px;margin-top:6px">Sem dados</div>'}
-    </div>`;
-
-  $("dashboard").innerHTML = `
-    <div class="stat"><div class="num">${baseColetados}</div><div class="label">Leads coletados (total${temBruto ? ", incluindo excluídos" : ""})</div>${temBruto ? `<div class="sub">${d.leads_total||0} ativos com telefone</div>` : ""}</div>
-    <div class="stat"><div class="num">${d.leads_enviados||0}</div><div class="label">Pessoas abordadas (total acumulado)</div><div class="sub">${pctAbordado}% do total coletado${excluidosAbordados ? ` · ${excluidosAbordados} já excluídos depois` : ""}</div></div>
-    <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos (total)</div><div class="sub">${pctAgendou}% de quem foi abordado</div></div>
-    <div class="stat"><div class="num">${porStatus.CONFIRMADO||0}</div><div class="label">Confirmados</div></div>
-    ${taxaHtml}
-    <div class="stat wide">
-      <div class="label" style="margin-bottom:4px">Pessoas abordadas por período (ritmo recente)</div>
-      <ul>
-        <li><span>Hoje</span><span>${d.abordados_hoje||0}</span></li>
-        <li><span>Últimos 7 dias</span><span>${d.abordados_7d||0}</span></li>
-        <li><span>Últimos 15 dias</span><span>${d.abordados_15d||0}</span></li>
-        <li><span>Últimos 21 dias</span><span>${d.abordados_21d||0}</span></li>
-        <li><span>Total geral da operação${d.operacao_dias ? ` (dia ${d.operacao_dias})` : ""}</span><span>${d.leads_enviados||0}</span></li>
-      </ul>
-    </div>
-    <div class="stat wide"><div class="label" style="margin-bottom:4px">Leads por operador</div><ul>${opStats || '<li style="color:#aaa">Sem dados</li>'}</ul></div>
-    <div class="stat wide"><div class="label" style="margin-bottom:4px">Agendamentos por operador (produção individual)</div><ul>${agStats}</ul></div>
-    <div class="stat wide"><div class="label" style="margin-bottom:4px">Entrevistas por entrevistador</div><ul>${entrevistadores}</ul></div>
+    <details class="stat full dash-ops" id="dashOps" ${abrirOps ? "open" : ""}>
+      <summary><span class="label">Por operador <small>— ${ops.length} operador${ops.length === 1 ? "" : "es"}${temCiclos ? ", com as contagens anteriores" : ""}${ops.length === 1 && !temCiclos ? " (mesmos números do Total acima; clique para abrir)" : ""}</small></span></summary>
+      ${linhasOps.length ? funilTabela(linhasOps, extrasOps) : '<div style="color:#aaa;font-size:12px;margin-top:6px">Sem dados</div>'}
+    </details>`}
   `;
+  const det = $("dashOps");
+  if (det) det.addEventListener("toggle", () => { _opsAberto = det.open; });
 
   renderCharts(d);
 }
+let _opsAberto = null; // null = decide sozinho; depois do primeiro clique, respeita o operador
 
 // ===== Gráficos (SVG puro, paleta validada em references/palette.md) =====
 function showTooltip(evt, html) {
@@ -325,18 +307,22 @@ function moveTooltip(evt) {
 function hideTooltip() { $("chartTooltip").classList.remove("show"); }
 
 function renderCharts(d) {
+  const entrevistadores = (d.entrevistadores||[]).slice(0,8).map(e => `<li><span>${esc(e.entrevistador)}</span><span>${e.total}</span></li>`).join("") || '<li style="color:#aaa">Nenhum ainda</li>';
   $("charts").innerHTML = `
+    <div class="dash-sec">Agendamentos <small>em que etapa estão e quando acontecem</small></div>
     <div class="chart-card" id="chartDonutCard"></div>
-    <div class="chart-card" id="chartWeekCard"></div>
+    <div class="chart-card" id="chart30dCard" style="flex:2 1 480px"></div>
+    <div class="chart-card" style="flex:0 1 240px;min-width:200px"><h4>Entrevistas por entrevistador</h4><ul class="lista-simples">${entrevistadores}</ul></div>
+    <div class="dash-sec">Melhores dias da semana <small>para abordar e para marcar entrevista</small></div>
     <div class="chart-card" id="chartWeekAbordCard"></div>
-    <div class="chart-card" id="chart30dCard" style="flex-basis:100%"></div>
+    <div class="chart-card" id="chartWeekCard"></div>
   `;
   renderDonutStatus(d.agendamentos_por_status || []);
-  renderBarDiaSemana(d.por_dia_semana || [], "chartWeekCard", "Agendamentos por dia da semana (dia marcado da entrevista)", "agendamento(s)");
-  // Só aparece depois que o banco passa a mandar esse dado (SQL DASH_1).
-  if (d.abordagens_por_dia_semana) renderBarDiaSemana(d.abordagens_por_dia_semana, "chartWeekAbordCard", "Abordagens por dia da semana (dia em que a mensagem saiu)", "abordagem(ns)");
-  else $("chartWeekAbordCard").remove();
   renderBar30Dias(d.ultimos_30_dias || []);
+  // Só aparece depois que o banco passa a mandar esse dado (SQL DASH_1).
+  if (d.abordagens_por_dia_semana) renderBarDiaSemana(d.abordagens_por_dia_semana, "chartWeekAbordCard", "Abordagens (dia em que a mensagem saiu)", "abordagem(ns)");
+  else $("chartWeekAbordCard").remove();
+  renderBarDiaSemana(d.por_dia_semana || [], "chartWeekCard", "Entrevistas (dia marcado)", "agendamento(s)");
 }
 
 // --- Donut: agendamentos por etapa (pizza pedida) ---
