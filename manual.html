@@ -175,6 +175,7 @@
   .badge.orange{background:var(--orange-light); color:var(--orange-dark)}
 
   /* ── Telas da ferramenta ────────────────────────────────── */
+  section > h4{margin:22px 0 6px; font-size:15px; font-family:var(--sans); font-weight:700}
   figure.shot{margin:20px 0; text-align:center}
   figure.shot img{max-width:100%; height:auto; border-radius:12px; border:1px solid var(--line); box-shadow:0 6px 24px rgba(31,19,48,.12); background:#e5ddd5}
   figure.shot.estreita img{max-width:380px}
@@ -529,15 +530,11 @@
       <ul>
         <li><strong>Na bolha, aba Agendamentos:</strong> o funil do seu login, com botões para ver Hoje, 7 dias, 30 dias e Total.</li>
         <li><strong>Na bolha, aba Respostas:</strong> uma faixa com o resumo dos últimos 7 dias.</li>
-        <li><strong>No painel de agendamentos (site):</strong> o funil geral, por período e por operador.</li>
+        <li><strong>No painel de agendamentos (site), aba Visão Geral:</strong> a operação inteira da empresa, com todos os operadores. Veja <a href="#crm">Agendamentos e CRM</a>.</li>
       </ul>
       <figure class="shot estreita">
         <img src="assets/manual/bolha-funil.jpg" alt="Funil na aba Agendamentos da bolha, com as etapas e o histórico da operação" width="440" height="620" loading="lazy">
         <figcaption>O funil na bolha, com o histórico das contagens anteriores.</figcaption>
-      </figure>
-      <figure class="shot">
-        <img src="assets/manual/painel-funil.jpg" alt="Funil por período e por operador no painel de agendamentos" width="800" height="386" loading="lazy">
-        <figcaption>O funil no painel de agendamentos, por período e por operador.</figcaption>
       </figure>
 
       <h3>Nova contagem</h3>
@@ -560,11 +557,44 @@
       <p>O Kanban da extensão mostra todos os seus leads por etapa: Novo, Enviado, Respondeu, Sem interesse, Agendado, Contratado, Desistiu, Cancelado, Encerrado e Excluído. Arraste o cartão para mudar de etapa.</p>
 
       <h3>Painel de agendamentos (site)</h3>
-      <p>Reúne os agendamentos de todos os operadores da empresa, por etapa: Agendado, Confirmado, Realizado, Contratado, Reagendado, Desistiu e Cancelado. A aba <strong>Visão Geral</strong> traz o funil, as abordagens por período e por dia da semana, e a produção de cada operador. A tela se atualiza sozinha a cada 45 segundos.</p>
+      <p>Fica em <a href="https://www.rhimob.com.br/agendamentos">rhimob.com.br/agendamentos</a> e reúne os agendamentos de <strong>todos os operadores da empresa</strong>. Tem duas abas, <strong>Kanban</strong> e <strong>Visão Geral</strong>, e se atualiza sozinho a cada 45 segundos.</p>
+
+      <h4>Aba Kanban</h4>
+      <p>Uma coluna por etapa: Agendado, Confirmado, Realizado, Contratado, Reagendado, Desistiu e Cancelado. Cada cartão é um lead, com a data da entrevista, o operador e as observações. O selo vermelho <strong>Atrasado</strong> aparece quando a data da entrevista já passou e o cartão continua em Agendado, Confirmado ou Reagendado, ou seja, sem desfecho. É a lista de quem precisa de contato primeiro.</p>
       <figure class="shot">
         <img src="assets/manual/painel-kanban.jpg" alt="Painel de agendamentos em colunas por etapa, com um cartão para cada lead" width="800" height="450" loading="lazy">
         <figcaption>O painel de agendamentos: uma coluna por etapa e um cartão por lead. Nomes de exemplo.</figcaption>
       </figure>
+
+      <h4>Aba Visão Geral</h4>
+      <p>Mostra a operação da empresa em números, de cima para baixo. Cada número aparece em um lugar só.</p>
+      <figure class="shot">
+        <img src="assets/manual/painel-visao-geral.jpg" alt="Visão Geral do painel de agendamentos: resumo, etapas do funil, ritmo da operação semana a semana, funil por período e produção por operador" width="800" height="777" loading="lazy">
+        <figcaption>A Visão Geral de uma empresa com dois operadores. Dados de exemplo.</figcaption>
+      </figure>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Bloco</th><th>O que mostra</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Resumo</strong></td><td>Leads coletados, taxa de resposta e total de agendamentos, com o desfecho: quantos estão em aberto, quantos foram realizados (e contratados) e quantos desistiram ou cancelaram. Avisa quando há entrevista com a data vencida e sem desfecho.</td></tr>
+            <tr><td><strong>Etapas do funil</strong></td><td>Abordados → Responderam → Receberam a proposta → Agendaram. A seta mostra quantos por cento avançaram; em vermelho, quantos pararam em cada etapa.</td></tr>
+            <tr><td><strong>Ritmo da operação</strong></td><td>Pessoas abordadas hoje, em 7, 15 e 21 dias e na operação inteira. Abaixo, semana a semana desde a primeira abordagem, com o acumulado. Serve para acompanhar operações de vários meses.</td></tr>
+            <tr><td><strong>Funil por período</strong></td><td>O mesmo funil para hoje, 7 dias, 30 dias e total, contando o lead pela data em que foi abordado.</td></tr>
+            <tr><td><strong>Por operador</strong></td><td>Uma linha por operador: leads coletados, agendamentos e o funil de cada um. As contagens anteriores aparecem logo abaixo do operador.</td></tr>
+            <tr><td><strong>Agendamentos</strong></td><td>Em que etapa estão (rosca), quando acontecem (últimos 30 dias; clique num dia para ver quem está agendado) e as entrevistas por entrevistador.</td></tr>
+            <tr><td><strong>Melhores dias da semana</strong></td><td>Em que dias as abordagens saíram e para que dias as entrevistas foram marcadas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Empresa com mais de um operador</h4>
+      <p>A Visão Geral sempre soma todos os operadores da empresa. Para saber quem produziu o quê:</p>
+      <ul>
+        <li><strong>Botões "Ver":</strong> acima das Etapas do funil, escolha <em>Empresa inteira</em> ou um operador. As etapas e o funil por período passam a mostrar só os números dele.</li>
+        <li><strong>Por operador:</strong> a tabela compara todos lado a lado.</li>
+        <li><strong>Ritmo da operação:</strong> a tabela semanal ganha uma coluna para cada operador.</li>
+      </ul>
+      <p>Com um operador só, os botões "Ver" não aparecem e o bloco "Por operador" fica recolhido, porque repete o total.</p>
 
       <div class="card tip">
         <span class="tag">Acesso</span>
