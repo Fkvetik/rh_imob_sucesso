@@ -13,7 +13,18 @@ let editingId = null;
 // confirmou/cancelou é o caso que precisa de atenção (atrasado).
 // Etapas em que a entrevista ainda não tem desfecho: se a data passou, está atrasado.
 // (Antes só "Agendado" contava — um Confirmado ou Reagendado com a data vencida ficava sem aviso.)
-const STATUS_ABERTOS = ["AGENDADO", "CONFIRMADO", "REAGENDADO"];
+const STATUS_ABERTOS = ["AGENDADO", "CONFIRMADO", "REAGENDADO", "PRESENCIAL"];
+
+// Caminho de cada agendamento: as etapas por onde ele já passou, tiradas do
+// histórico (SQL AGEND_1). Quem agendou presencial continua contando como
+// "agendou presencial" mesmo depois de virar Contratado ou Desistiu.
+let JORNADA = {};        // id do agendamento -> { etapas:[...], presencial_em }
+let temJornada = false;  // o banco já tem a consulta do caminho?
+function passouPor(a, etapa) {
+  if (String(a.status || "AGENDADO").toUpperCase() === etapa) return true;
+  const j = JORNADA[a.id];
+  return !!(j && (j.etapas || []).includes(etapa));
+}
 
 $("tabBtnKanban").addEventListener("click", () => switchTab("Kanban"));
 $("tabBtnVisaoGeral").addEventListener("click", () => switchTab("VisaoGeral"));
@@ -113,17 +124,25 @@ async function loadAgendamentos() {
 
 async function loadDashboard() {
   try {
-    const [resp, taxa, ritmo] = await Promise.all([
+    const [resp, taxa, ritmo, jornada] = await Promise.all([
       rpc("rpc_admin_dashboard", { p_admin_password: ADMIN_PASS }),
       // Taxa de resposta por operador — se a consulta não existir/falhar, o
       // resto do painel aparece do mesmo jeito.
       rpc("rpc_admin_taxa_resposta", { p_admin_password: ADMIN_PASS }).catch(() => null),
       // Ritmo semana a semana (SQL DASH_2) — sem ele, fica só a faixa de períodos.
-      rpc("rpc_admin_ritmo_semanal", { p_admin_password: ADMIN_PASS }).catch(() => null)
+      rpc("rpc_admin_ritmo_semanal", { p_admin_password: ADMIN_PASS }).catch(() => null),
+      // Caminho de cada agendamento (SQL AGEND_1) — sem ele, vale só a etapa atual.
+      rpc("rpc_admin_jornada_agendamentos", { p_admin_password: ADMIN_PASS }).catch(() => null)
     ]);
     if (!resp.ok) return;
     resp.taxa_resposta = (taxa && taxa.ok) ? taxa : null;
     resp.ritmo_semanal = (ritmo && ritmo.ok) ? ritmo : null;
+    if (jornada && jornada.ok) {
+      const antes = JSON.stringify(JORNADA);
+      JORNADA = {}; (jornada.itens || []).forEach(i => { JORNADA[i.id] = i; });
+      temJornada = true;
+      if (antes !== JSON.stringify(JORNADA)) renderBoard(); // selo "agendou presencial" nos cartões
+    }
     renderDashboard(resp);
   } catch (e) { /* silencioso — dashboard é complementar */ }
 }
@@ -276,12 +295,36 @@ function renderDashboard(d) {
   // duas abas dizerem a mesma coisa.
   const stDe = a => String(a.status || "AGENDADO").toUpperCase();
   const qtd = lista => agendamentos.filter(a => lista.includes(stDe(a))).length;
-  const agAbertos = qtd(["AGENDADO", "CONFIRMADO", "REAGENDADO"]);
+  const agAbertos = qtd(["AGENDADO", "CONFIRMADO", "REAGENDADO", "PRESENCIAL"]);
   const agFeitos = qtd(["REALIZADO", "CONTRATADO"]);
   const agContratados = qtd(["CONTRATADO"]);
   const agPerdidos = qtd(["DESISTIU", "CANCELADO"]);
   const agAtrasados = agendamentos.filter(isAtrasado).length;
   const desfechoTxt = `${agAbertos} em aberto · ${agFeitos} realizada${agFeitos === 1 ? "" : "s"}${agContratados ? ` (${agContratados} contratado${agContratados === 1 ? "" : "s"})` : ""} · ${agPerdidos} desistência${agPerdidos === 1 ? "" : "s"}/cancelamento${agPerdidos === 1 ? "" : "s"}`;
+
+  // ── Depois de agendar: o caminho do candidato (online → presencial →
+  // contratado) e quantos cartões há em cada coluna do Kanban agora.
+  const fezOnline = agendamentos.filter(a => ["REALIZADO", "PRESENCIAL", "CONTRATADO"].some(e => passouPor(a, e))).length;
+  const marcouPresencial = agendamentos.filter(a => passouPor(a, "PRESENCIAL")).length;
+  const temColPresencial = COLUMNS.some(c => c.id === "PRESENCIAL");
+  const cx = (rot, num, sub, cls) => `<div class="etapa ${cls || ""}"><span>${rot}</span><b>${num}</b><small>${sub}</small></div>`;
+  const st2 = (parte, total) => `<div class="seta"><i>${pct(parte, total)}%</i>→</div>`;
+  const porColuna = COLUMNS.map(c => `<span class="chip-col" style="border-color:${esc(c.color || "#ccc")}"><i style="background:${esc(c.color || "#ccc")}"></i>${esc(c.label)} <b>${agendamentos.filter(a => stDe(a) === c.id).length}</b></span>`).join("");
+  const jornadaHtml = !agendamentos.length ? "" : `
+    <div class="stat full">
+      <div class="label">Depois de agendar <small>— o caminho do candidato: entrevista online, presencial e contratação (empresa inteira)</small></div>
+      <div class="etapas">
+        ${cx("Agendaram", agendamentos.length, `${agPerdidos} desistiram ou cancelaram`)}
+        ${st2(fezOnline, agendamentos.length)}
+        ${cx("Fizeram a entrevista online", fezOnline, "primeira entrevista, realizada")}
+        ${st2(marcouPresencial, fezOnline)}
+        ${cx("Agendaram presencial", marcouPresencial, temColPresencial ? (temJornada ? "contando quem já passou por essa etapa" : "só quem está na etapa agora") : "etapa ainda não criada no Kanban")}
+        <div class="seta">→</div>
+        ${cx("Contratados", agContratados, `${pct(agContratados, fezOnline)}% de quem fez a online · ${pct(agContratados, agendamentos.length)}% dos agendados`, "fim")}
+      </div>
+      <div class="label" style="margin-top:12px">Agora em cada etapa <small>— os mesmos números das colunas do Kanban</small></div>
+      <div class="chips-col">${porColuna}</div>
+    </div>`;
 
   // ── Ritmo semana a semana, desde a primeira abordagem da empresa. Serve
   // para operações longas: no dia 28, 60 ou 120 o histórico inteiro continua
@@ -338,7 +381,7 @@ function renderDashboard(d) {
     // Na visão da empresa, o desfecho vem do Kanban; na de um operador, dos cartões dele.
     const doOp = opSel ? agendamentos.filter(a => chave(a.login) === chave(opSel.login)) : agendamentos;
     const q2 = lista => doOp.filter(a => lista.includes(stDe(a))).length;
-    const fimTxt = `${q2(["AGENDADO","CONFIRMADO","REAGENDADO"])} em aberto · ${q2(["REALIZADO","CONTRATADO"])} realizadas · ${q2(["DESISTIU","CANCELADO"])} perdidos`;
+    const fimTxt = `${q2(["AGENDADO","CONFIRMADO","REAGENDADO","PRESENCIAL"])} em aberto · ${q2(["REALIZADO","CONTRATADO"])} realizadas · ${q2(["DESISTIU","CANCELADO"])} perdidos`;
     const seta = (parte, total) => `<div class="seta"><i>${pct(parte, total)}%</i>→</div>`;
     return `
     <div class="stat full">
@@ -364,6 +407,7 @@ function renderDashboard(d) {
     </div>
     ${verHtml}
     ${etapasHtml}
+    ${jornadaHtml}
     <div class="stat full">
       <div class="label">Ritmo da operação <small>— pessoas abordadas em cada período${d.operacao_dias ? ` · hoje é o dia ${d.operacao_dias} da operação` : ""}</small></div>
       <div class="ritmo">
@@ -614,7 +658,8 @@ function waLink(phone) {
 }
 
 function renderCard(a) {
-  const reag = a.vezes_reagendado > 0 ? `<span class="badge2">🔁 ${a.vezes_reagendado}x reagendado</span>` : "";
+  const reag = (a.vezes_reagendado > 0 ? `<span class="badge2">🔁 ${a.vezes_reagendado}x reagendado</span>` : "")
+    + (String(a.status || "").toUpperCase() !== "PRESENCIAL" && passouPor(a, "PRESENCIAL") ? `<span class="badge2 presencial">🏢 agendou presencial</span>` : "");
   const atrasado = isAtrasado(a);
   const badgeAtrasado = atrasado ? `<span class="badge-atrasado">⚠️ Atrasado</span>` : "";
   const wa = waLink(a.telefone);
@@ -702,7 +747,10 @@ function openEditModal(id) {
       if (!resp.ok) { $("mHistorico").innerHTML = '<small style="color:#aaa">Sem histórico</small>'; return; }
       const h = resp.historico || [];
       $("mHistorico").innerHTML = h.length
-        ? h.map(x => `<div class="hist-item">${esc(x.status_anterior||"—")} → <b>${esc(x.status_novo)}</b>${x.motivo ? " — "+esc(x.motivo) : ""}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}</div>`).join("")
+        ? h.map(x => {
+            const nome = s => { const c = COLUMNS.find(c => c.id === s); return c ? c.label : (s || "—"); };
+            return `<div class="hist-item">${esc(nome(x.status_anterior))} → <b>${esc(nome(x.status_novo))}</b>${x.data_agendamento ? " · entrevista em " + esc(fmtData(x.data_agendamento)) : ""}${x.motivo ? " — " + esc(x.motivo) : ""}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
+          }).join("")
         : '<small style="color:#aaa">Sem mudanças registradas ainda</small>';
     })
     .catch(() => { $("mHistorico").innerHTML = '<small style="color:#aaa">Sem histórico</small>'; });
