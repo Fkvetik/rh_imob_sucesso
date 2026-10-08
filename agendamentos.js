@@ -11,7 +11,9 @@ let editingId = null;
 
 // Status considerados "em aberto" — um AGENDADO com data passada e ninguém
 // confirmou/cancelou é o caso que precisa de atenção (atrasado).
-const STATUS_ABERTOS = ["AGENDADO"];
+// Etapas em que a entrevista ainda não tem desfecho: se a data passou, está atrasado.
+// (Antes só "Agendado" contava — um Confirmado ou Reagendado com a data vencida ficava sem aviso.)
+const STATUS_ABERTOS = ["AGENDADO", "CONFIRMADO", "REAGENDADO"];
 
 $("tabBtnKanban").addEventListener("click", () => switchTab("Kanban"));
 $("tabBtnVisaoGeral").addEventListener("click", () => switchTab("VisaoGeral"));
@@ -270,6 +272,17 @@ function renderDashboard(d) {
 
   const abordados = tr ? nn(trG.total, "abordados") : (d.leads_enviados || 0);
 
+  // Desfecho dos agendamentos — contado nos MESMOS cartões do Kanban, para as
+  // duas abas dizerem a mesma coisa.
+  const stDe = a => String(a.status || "AGENDADO").toUpperCase();
+  const qtd = lista => agendamentos.filter(a => lista.includes(stDe(a))).length;
+  const agAbertos = qtd(["AGENDADO", "CONFIRMADO", "REAGENDADO"]);
+  const agFeitos = qtd(["REALIZADO", "CONTRATADO"]);
+  const agContratados = qtd(["CONTRATADO"]);
+  const agPerdidos = qtd(["DESISTIU", "CANCELADO"]);
+  const agAtrasados = agendamentos.filter(isAtrasado).length;
+  const desfechoTxt = `${agAbertos} em aberto · ${agFeitos} realizada${agFeitos === 1 ? "" : "s"}${agContratados ? ` (${agContratados} contratado${agContratados === 1 ? "" : "s"})` : ""} · ${agPerdidos} desistência${agPerdidos === 1 ? "" : "s"}/cancelamento${agPerdidos === 1 ? "" : "s"}`;
+
   // ── Ritmo semana a semana, desde a primeira abordagem da empresa. Serve
   // para operações longas: no dia 28, 60 ou 120 o histórico inteiro continua
   // visível. Com mais de um operador, mostra a parte de cada um.
@@ -320,8 +333,12 @@ function renderDashboard(d) {
     const caixa = (rot, num, parou, parouTxt, cls) => `
         <div class="etapa ${cls || ""}">
           <span>${rot}</span><b>${num}</b>
-          ${parouTxt ? `<small class="${parou > 0 ? "parou" : ""}">${parou} ${parouTxt}</small>` : '<small class="fim">chegaram ao fim do funil</small>'}
+          ${parouTxt ? `<small class="${parou > 0 ? "parou" : ""}">${parou} ${parouTxt}</small>` : `<small class="fim">${fimTxt}</small>`}
         </div>`;
+    // Na visão da empresa, o desfecho vem do Kanban; na de um operador, dos cartões dele.
+    const doOp = opSel ? agendamentos.filter(a => chave(a.login) === chave(opSel.login)) : agendamentos;
+    const q2 = lista => doOp.filter(a => lista.includes(stDe(a))).length;
+    const fimTxt = `${q2(["AGENDADO","CONFIRMADO","REAGENDADO"])} em aberto · ${q2(["REALIZADO","CONTRATADO"])} realizadas · ${q2(["DESISTIU","CANCELADO"])} perdidos`;
     const seta = (parte, total) => `<div class="seta"><i>${pct(parte, total)}%</i>→</div>`;
     return `
     <div class="stat full">
@@ -343,7 +360,7 @@ function renderDashboard(d) {
     <div class="dash-kpis">
     <div class="stat"><div class="num">${baseColetados}</div><div class="label">Leads coletados${temBruto ? " (incluindo excluídos)" : ""}</div><div class="sub">${Math.min(100, pct(abordados, baseColetados))}% já abordados</div></div>
     ${tr ? `<div class="stat"><div class="num">${nn(trG.total,"taxa_pct")}%</div><div class="label">Taxa de resposta</div><div class="sub">${nn(trG.total,"responderam")} de ${abordados} abordados</div></div>` : `<div class="stat"><div class="num">${abordados}</div><div class="label">Pessoas abordadas</div></div>`}
-    <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos</div><div class="sub">${porStatus.CONFIRMADO||0} confirmado(s) · ${pct(agendamentos.length, abordados)}% dos abordados</div></div>
+    <div class="stat"><div class="num">${agendamentos.length}</div><div class="label">Agendamentos</div><div class="sub">${desfechoTxt}</div>${agAtrasados ? `<div class="sub" style="color:#c0392b">⚠ ${agAtrasados} com a data vencida e sem desfecho</div>` : ""}</div>
     </div>
     ${verHtml}
     ${etapasHtml}
@@ -357,6 +374,7 @@ function renderDashboard(d) {
         <div class="tot"><b>${abordados}</b><span>Operação inteira</span></div>
       </div>
       ${ritmoSemanalHtml}
+      ${semanas.length && abordados !== acum ? `<div class="nota-dif">As semanas somam ${acum}: são as pessoas que receberam a mensagem do disparo. O funil conta ${abordados} porque inclui ${Math.abs(abordados - acum)} lead${Math.abs(abordados - acum) === 1 ? "" : "s"} que entr${Math.abs(abordados - acum) === 1 ? "ou" : "aram"} no funil sem passar pelo disparo (respondeu, recebeu a proposta ou foi agendado direto).</div>` : ""}
     </div>
     ${!tr ? "" : `
     <div class="stat full">
@@ -398,11 +416,13 @@ function hideTooltip() { $("chartTooltip").classList.remove("show"); }
 
 function renderCharts(d) {
   const entrevistadores = (d.entrevistadores||[]).slice(0,8).map(e => `<li><span>${esc(e.entrevistador)}</span><span>${e.total}</span></li>`).join("") || '<li style="color:#aaa">Nenhum ainda</li>';
+  const comEntrev = (d.entrevistadores||[]).reduce((s, e) => s + (Number(e.total) || 0), 0);
+  const notaEntrev = agendamentos.length > comEntrev ? `<div class="nota-dif">Só conta cartão com o campo "entrevistador" preenchido: ${comEntrev} de ${agendamentos.length} agendamentos.</div>` : "";
   $("charts").innerHTML = `
     <div class="dash-sec">Agendamentos <small>em que etapa estão e quando acontecem</small></div>
     <div class="chart-card" id="chartDonutCard"></div>
     <div class="chart-card" id="chart30dCard" style="flex:2 1 480px"></div>
-    <div class="chart-card" style="flex:0 1 240px;min-width:200px"><h4>Entrevistas por entrevistador</h4><ul class="lista-simples">${entrevistadores}</ul></div>
+    <div class="chart-card" style="flex:0 1 240px;min-width:200px"><h4>Entrevistas por entrevistador</h4><ul class="lista-simples">${entrevistadores}</ul>${notaEntrev}</div>
     <div class="dash-sec">Melhores dias da semana <small>para abordar e para marcar entrevista</small></div>
     <div class="chart-card" id="chartWeekAbordCard"></div>
     <div class="chart-card" id="chartWeekCard"></div>
@@ -412,7 +432,7 @@ function renderCharts(d) {
   // Só aparece depois que o banco passa a mandar esse dado (SQL DASH_1).
   if (d.abordagens_por_dia_semana) renderBarDiaSemana(d.abordagens_por_dia_semana, "chartWeekAbordCard", "Abordagens (dia em que a mensagem saiu)", "abordagem(ns)");
   else $("chartWeekAbordCard").remove();
-  renderBarDiaSemana(d.por_dia_semana || [], "chartWeekCard", "Entrevistas (dia marcado)", "agendamento(s)");
+  renderBarDiaSemana(d.por_dia_semana || [], "chartWeekCard", "Entrevistas marcadas por dia da semana (todas, inclusive canceladas)", "agendamento(s)");
 }
 
 // --- Donut: agendamentos por etapa (pizza pedida) ---
