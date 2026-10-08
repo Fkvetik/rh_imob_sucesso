@@ -542,7 +542,14 @@
 
       state.offset += rows.length;
       more.hidden = rows.length < PAGE_SIZE;
-      status(`${rows.length} resultados exibidos nesta página${state.session ? ' • contatos já liberados ficam fora da lista' : ''}`);
+      // Antes mostrava só o tamanho do último lote do banco (sempre 12), ignorando
+      // os contatos da base própria ("Meu contato") e o que já tinha sido carregado.
+      const nMeus = (state.session && state.profile) ? importedLeadsFiltrados().length : 0;
+      const nBanco = state.offset;
+      const partes = [];
+      if (nMeus) partes.push(`${nMeus} da sua base própria`);
+      partes.push(`${nBanco} do banco${rows.length >= PAGE_SIZE ? ' (há mais — use "Carregar mais")' : ''}`);
+      status(`${nMeus + nBanco} contatos exibidos: ${partes.join(' + ')}${state.session ? ' • contatos já liberados ficam fora da lista' : ''}`);
     } catch (e) {
       console.error(e);
       if (!append) grid.innerHTML = `<div class="error">Não foi possível carregar os resultados agora. ${esc(e.message)}</div>`;
