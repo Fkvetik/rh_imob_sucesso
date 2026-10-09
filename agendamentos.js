@@ -307,6 +307,18 @@ function renderDashboard(d) {
   const fezOnline = agendamentos.filter(a => ["REALIZADO", "PRESENCIAL", "CONTRATADO"].some(e => passouPor(a, e))).length;
   const marcouPresencial = agendamentos.filter(a => passouPor(a, "PRESENCIAL")).length;
   const temColPresencial = COLUMNS.some(c => c.id === "PRESENCIAL");
+  // O que aconteceu com quem agendou a presencial. Quem desistiu ou cancelou
+  // DEPOIS de marcar continua contando: passou pela online e chegou a marcar,
+  // então é um candidato com potencial que vale retomar.
+  const dosPresenciais = agendamentos.filter(a => passouPor(a, "PRESENCIAL"));
+  const presAgora = dosPresenciais.filter(a => stDe(a) === "PRESENCIAL").length;
+  const presContratados = dosPresenciais.filter(a => stDe(a) === "CONTRATADO").length;
+  const presPerdidos = dosPresenciais.filter(a => ["DESISTIU", "CANCELADO"].includes(stDe(a)));
+  const presSub = !temColPresencial ? "etapa ainda não criada no Kanban"
+    : !marcouPresencial ? "ninguém ainda"
+    : `${presAgora} com a presencial marcada · ${presContratados} contratado${presContratados === 1 ? "" : "s"} · <span class="parou-txt">${presPerdidos.length} desistiu/cancelou depois</span>`;
+  const presPerdidosHtml = !presPerdidos.length ? "" : `
+      <div class="nota-pres"><b>Agendaram a presencial e saíram depois (${presPerdidos.length}):</b> ${presPerdidos.map(a => `${esc(a.nome_candidato || "—")} <small>(${stDe(a) === "DESISTIU" ? "desistiu" : "cancelou"})</small>`).join(", ")}. Passaram pela entrevista online e chegaram a marcar a presencial: são os candidatos com mais potencial para retomar.</div>`;
   const cx = (rot, num, sub, cls) => `<div class="etapa ${cls || ""}"><span>${rot}</span><b>${num}</b><small>${sub}</small></div>`;
   const st2 = (parte, total) => `<div class="seta"><i>${pct(parte, total)}%</i>→</div>`;
   const porColuna = COLUMNS.map(c => `<span class="chip-col" style="border-color:${esc(c.color || "#ccc")}"><i style="background:${esc(c.color || "#ccc")}"></i>${esc(c.label)} <b>${agendamentos.filter(a => stDe(a) === c.id).length}</b></span>`).join("");
@@ -318,10 +330,12 @@ function renderDashboard(d) {
         ${st2(fezOnline, agendamentos.length)}
         ${cx("Fizeram a entrevista online", fezOnline, "primeira entrevista, realizada")}
         ${st2(marcouPresencial, fezOnline)}
-        ${cx("Agendaram presencial", marcouPresencial, temColPresencial ? (temJornada ? "contando quem já passou por essa etapa" : "só quem está na etapa agora") : "etapa ainda não criada no Kanban")}
+        ${cx("Agendaram presencial", marcouPresencial, presSub)}
         <div class="seta">→</div>
         ${cx("Contratados", agContratados, `${pct(agContratados, fezOnline)}% de quem fez a online · ${pct(agContratados, agendamentos.length)}% dos agendados`, "fim")}
       </div>
+      ${presPerdidosHtml}
+      ${temColPresencial && !temJornada ? '<div class="nota-dif">O histórico das etapas não carregou: a contagem de presencial está considerando só quem está nessa etapa agora.</div>' : ""}
       <div class="label" style="margin-top:12px">Agora em cada etapa <small>— os mesmos números das colunas do Kanban</small></div>
       <div class="chips-col">${porColuna}</div>
     </div>`;
