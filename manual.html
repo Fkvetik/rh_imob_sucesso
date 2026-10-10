@@ -402,8 +402,8 @@
 
       <p>Clique na logo para abrir ou fechar. Arraste pelo topo para mudar de lugar. Ao abrir uma conversa, a bolha identifica o contato e mostra o nome e a etapa dele.</p>
       <figure class="shot estreita">
-        <img src="assets/manual/bolha-fechada.jpg" alt="Bolha fechada: a logo da RH IMOB com o número de agendamentos em aberto e o tempo para o próximo envio" width="600" height="380" loading="lazy">
-        <figcaption>Fechada: a logo, o número de agendamentos em aberto e o tempo que falta para o próximo envio.</figcaption>
+        <img src="assets/manual/bolha-fechada.jpg" alt="Bolha fechada: a logo da RH IMOB com o número de agendamentos que pedem ação hoje e o tempo para o próximo envio" width="600" height="380" loading="lazy">
+        <figcaption>Fechada: a logo, o número de agendamentos que pedem ação hoje e o tempo que falta para o próximo envio.</figcaption>
       </figure>
       <figure class="shot estreita">
         <img src="assets/manual/bolha-respostas.jpg" alt="Bolha aberta na aba Respostas, com a contagem do próximo envio, a etapa do lead e as respostas prontas" width="880" height="1600" loading="lazy">
@@ -413,8 +413,9 @@
       <div class="grid-2">
         <div class="feature"><div class="icon">💬</div><h4>Respostas</h4><p>Seus textos prontos, a um clique, já com o nome do lead. Aceitam imagem e PDF.</p></div>
         <div class="feature"><div class="icon">🗓</div><h4>Agendar</h4><p>Marca a reunião do contato aberto. Nome e telefone já vêm preenchidos.</p></div>
-        <div class="feature"><div class="icon">📋</div><h4>Agendamentos</h4><p>Seus agendamentos, o funil da operação e o botão de confirmação de agendamento.</p></div>
+        <div class="feature"><div class="icon">📋</div><h4>Agenda</h4><p>O que pede ação hoje e todos os seus agendamentos, da entrevista mais próxima para a mais distante.</p></div>
         <div class="feature"><div class="icon">⏰</div><h4>Programar</h4><p>Deixa uma mensagem marcada para sair num dia e hora, para o contato aberto.</p></div>
+        <div class="feature"><div class="icon">📊</div><h4>Funil</h4><p>Os seus números: abordados, responderam, receberam a proposta e agendaram.</p></div>
       </div>
 
       <h3>O que aparece no topo da bolha</h3>
@@ -425,8 +426,26 @@
         <li><strong>Aviso de agendamento existente</strong>, se aquele contato já foi agendado, mesmo que por outro operador.</li>
       </ul>
 
-      <h3>Etapa do lead com um clique</h3>
-      <p>Na aba Respostas, quando o contato está na base, aparece a linha <strong>Etapa do lead</strong>: Enviado, Contratado, Desistiu, Cancelado, Encerrado e um atalho para Agendar. Clicar muda a etapa na hora, e o Kanban acompanha. Ao lado fica um selo que diz se o lead já respondeu ou já recebeu a proposta.</p>
+      <h3>Etapa com um clique</h3>
+      <p>Na aba Respostas há uma linha de etapas, e ela é uma só:</p>
+      <ul>
+        <li><strong>Contato sem agendamento:</strong> aparece <strong>Etapa do lead</strong> (Enviado, Contratado, Desistiu, Cancelado, Encerrado e o atalho Agendar), com um selo que diz se ele já respondeu ou já recebeu a proposta.</li>
+        <li><strong>Contato que está na sua agenda:</strong> aparece <strong>Etapa do agendamento</strong>, com as mesmas etapas do Kanban do painel (Agendado, Confirmado, Realizado, Presencial agendado, Contratado, Reagendado, Desistiu, Cancelado) e a data da entrevista.</li>
+      </ul>
+      <p>Clicar muda a etapa na hora. Quando o lead já respondeu e ainda não recebeu a proposta, a resposta de proposta aparece destacada com uma estrela; quando já recebeu, o destaque passa para o botão Agendar.</p>
+
+      <h3>Para hoje: o que precisa de você</h3>
+      <p>No topo da aba <strong>Agenda</strong> fica o bloco <strong>Para hoje</strong>, com três listas:</p>
+      <ul>
+        <li><strong>Atrasados, sem desfecho:</strong> a data da entrevista passou e o cartão continua em aberto.</li>
+        <li><strong>Entrevistas de hoje.</strong></li>
+        <li><strong>Confirmar na véspera:</strong> as de amanhã que ainda não estão como Confirmado. Na sexta entram também as de sábado, domingo e segunda.</li>
+      </ul>
+      <p>Cada linha tem um botão (Remarcar, Lembrar ou Confirmar) que abre a conversa do candidato com a mensagem já escrita. Você confere e envia. O número vermelho na aba Agenda e na bolha fechada é a soma dessas três listas.</p>
+      <div class="card tip">
+        <span class="tag">Bom saber</span>
+        <p>Abrir a conversa de outro contato recarrega o WhatsApp Web por alguns segundos. Se o disparo estiver enviando ou prestes a enviar, a bolha pede para esperar um instante.</p>
+      </div>
     </section>
 
     <section id="respostas">
@@ -528,12 +547,12 @@
 
       <h3>Onde ver</h3>
       <ul>
-        <li><strong>Na bolha, aba Agendamentos:</strong> o funil do seu login, com botões para ver Hoje, 7 dias, 30 dias e Total.</li>
+        <li><strong>Na bolha, aba Funil:</strong> o funil do seu login, com botões para ver Hoje, 7 dias, 30 dias e Total.</li>
         <li><strong>Na bolha, aba Respostas:</strong> uma faixa com o resumo dos últimos 7 dias.</li>
         <li><strong>No painel de agendamentos (site), aba Visão Geral:</strong> a operação inteira da empresa, com todos os operadores. Veja <a href="#crm">Agendamentos e CRM</a>.</li>
       </ul>
       <figure class="shot estreita">
-        <img src="assets/manual/bolha-funil.jpg" alt="Funil na aba Agendamentos da bolha, com as etapas e o histórico da operação" width="440" height="620" loading="lazy">
+        <img src="assets/manual/bolha-funil.jpg" alt="Funil na bolha, com as etapas e o histórico da operação" width="440" height="620" loading="lazy">
         <figcaption>O funil na bolha, com o histórico das contagens anteriores.</figcaption>
       </figure>
 
@@ -551,7 +570,13 @@
       <p class="dek">Onde ficam as reuniões marcadas e a visão geral da operação.</p>
 
       <h3>Agendar pela bolha</h3>
-      <p>Com a conversa aberta, vá na aba <strong>Agendar</strong>, preencha data, horário, empresa e link da reunião, e salve. O lead passa para a etapa Agendado. Na aba <strong>Agendamentos</strong> você atualiza o status, a data, o link e as observações de cada um, e usa o botão <strong>Confirmação de agendamento</strong> para montar a mensagem de confirmação.</p>
+      <p>Com a conversa aberta, vá na aba <strong>Agendar</strong>, preencha data, horário, empresa e link da reunião, e salve. O lead passa para a etapa Agendado. Se o contato já está na sua agenda, a aba mostra o agendamento dele para você alterar, em vez de um formulário em branco.</p>
+      <p>Na aba <strong>Agenda</strong> ficam todos os seus agendamentos, da entrevista mais próxima para a mais distante, com busca e os filtros "Em aberto" e "Todos". Clique num cartão para abrir e alterar etapa, data, link e observação. Cada cartão tem três botões:</p>
+      <ul>
+        <li><strong>💬 Abrir conversa:</strong> vai para a conversa do candidato.</li>
+        <li><strong>✅ Confirmação:</strong> escreve na conversa dele a mensagem com dia, horário e link, para você conferir e enviar.</li>
+        <li><strong>📨 Aviso p/ responsável:</strong> copia a mensagem para quem vai atender, com o nome e o WhatsApp do candidato, o dia, o horário e o link.</li>
+      </ul>
 
       <h3>Kanban</h3>
       <p>O Kanban da extensão mostra todos os seus leads por etapa: Novo, Enviado, Respondeu, Sem interesse, Agendado, Contratado, Desistiu, Cancelado, Encerrado e Excluído. Arraste o cartão para mudar de etapa.</p>
@@ -643,11 +668,11 @@
       <h2><span class="num">10</span> Rotina recomendada</h2>
       <p class="dek">Um dia típico com a ferramenta.</p>
       <ol class="steps">
-        <li><strong>De manhã:</strong> ligue o computador, abra o Chrome e deixe o WhatsApp Web conectado. O disparo começa sozinho entre 7h00 e 7h50.</li>
+        <li><strong>De manhã:</strong> ligue o computador, abra o Chrome e deixe o WhatsApp Web conectado. O disparo começa sozinho entre 7h00 e 7h50. Abra a aba Agenda e resolva o bloco "Para hoje": remarque os atrasados e confirme as entrevistas de hoje e de amanhã.</li>
         <li><strong>Ao longo do dia:</strong> responda quem respondeu, sempre pela bolha. Use a primeira resposta para quem confirmou o contato e a resposta de proposta para quem quer saber mais.</li>
         <li><strong>Lead interessado:</strong> agende pela aba Agendar e envie a confirmação.</li>
         <li><strong>Lead que pediu para falar depois:</strong> programe uma mensagem pela aba Programar.</li>
-        <li><strong>Fim do dia:</strong> olhe o funil na aba Agendamentos, a lista de "Não enviados" no popup e os avisos de mensagem programada.</li>
+        <li><strong>Fim do dia:</strong> atualize a etapa das entrevistas que aconteceram, olhe a aba Funil, a lista de "Não enviados" no popup e os avisos de mensagem programada.</li>
         <li><strong>Uma vez por semana:</strong> compare "responderam" com "receberam a proposta" e "agendaram". É ali que aparece o que ajustar no texto.</li>
       </ol>
     </section>
@@ -680,7 +705,7 @@
       </details>
       <details>
         <summary>Zeraram os números do meu funil. Perdi os dados?</summary>
-        <p>Não. O administrador iniciou uma nova contagem. Os números anteriores estão no "Histórico da operação", na aba Agendamentos da bolha, e nenhum lead foi apagado.</p>
+        <p>Não. O administrador iniciou uma nova contagem. Os números anteriores estão no "Histórico da operação", na aba Funil da bolha, e nenhum lead foi apagado.</p>
       </details>
       <details>
         <summary>O que acontece se eu pausar o disparo?</summary>
