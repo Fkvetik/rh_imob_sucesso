@@ -66,7 +66,6 @@ export default async function handler(req, res) {
         case 'alterar_status_usuario': return await alterarStatusUsuario(res, headers, body);
         case 'resetar_senha_usuario':  return await resetarSenhaUsuario(res, headers, SERVICE_KEY, body);
         case 'excluir_usuario':        return await excluirUsuario(res, headers, SERVICE_KEY, body);
-        case 'nova_operacao_usuario':  return await novaOperacaoUsuario(res, headers, body);
         default:                       return send(res, 400, { error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao });
       }
     }
@@ -240,25 +239,6 @@ async function resetarSenhaUsuario(res, headers, serviceKey, body) {
   // Diferente do /api/contas (Novos Talentos): esse projeto não tem coluna
   // pra guardar uma cópia de referência da senha — só o Auth mesmo guarda.
   return send(res, 200, { ok: true });
-}
-
-// "Nova operação" de um operador: move para o arquivo os corretores que ele
-// liberou (função rhi_admin_nova_operacao, SQL OPER_3). Voltam a aparecer
-// na busca da empresa e o saldo do plano volta junto.
-async function novaOperacaoUsuario(res, headers, body) {
-  const email = String(body.email || '').trim();
-  if (!email) return send(res, 400, { error: 'email', message: 'Informe o e-mail do operador no Banco de Corretores.' });
-  const r = await fetch(`${SB_URL}/rest/v1/rpc/rhi_admin_nova_operacao`, {
-    method: 'POST', headers, body: JSON.stringify({ p_email: email, p_nota: body.nota || null })
-  });
-  const data = await r.json().catch(() => null);
-  if (!r.ok) {
-    const msg = (data && (data.message || data.hint)) || `HTTP ${r.status}`;
-    const falta = r.status === 404 || /rhi_admin_nova_operacao/.test(msg);
-    return send(res, 502, { error: 'supabase', message: falta ? 'O banco de Corretores ainda não tem a função da nova operação (rode o SQL OPER_3).' : msg });
-  }
-  if (!data || data.ok === false) return send(res, 400, { error: 'nova_operacao', message: (data && data.error) || 'Não foi possível concluir.' });
-  return send(res, 200, data);
 }
 
 async function excluirUsuario(res, headers, serviceKey, body) {

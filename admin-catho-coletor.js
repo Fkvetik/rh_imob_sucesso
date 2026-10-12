@@ -973,7 +973,6 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
-        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger novaOperacaoBtn" style="padding:4px 8px;font-size:11px" title="Encerra a operação deste operador: arquiva os leads dele e devolve à busca o que ele liberou, para ele poder escolher e abordar de novo os mesmos contatos. Nada é apagado.">🔄 Nova operação</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
     </tr>
@@ -984,59 +983,6 @@ function renderUsuarios(list) {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
   });
   aplicarBadgesColeta(); // já aplica o que tiver em cache, sem esperar o próximo poll
-
-  // "Nova operação": recomeça a operação de UM operador. Arquiva os leads
-  // dele (Coletor), devolve à busca o que ele liberou no Banco de Talentos e
-  // no Banco de Corretores, e manda a extensão dele limpar a trava de "já
-  // recebeu mensagem". Contratados, "sem interesse" e agendados continuam
-  // bloqueados. Nada é apagado: tudo vai para tabelas de arquivo.
-  tbody.querySelectorAll(".novaOperacaoBtn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const nome = btn.dataset.nome, login = btn.dataset.login;
-      if (!confirm(`Começar uma NOVA OPERAÇÃO para ${nome}?\n\nO que acontece, só para este operador:\n• Os leads dele são arquivados e saem da base ativa.\n• O que ele liberou no Banco de Corretores e no Banco de Talentos volta a aparecer na busca, e o saldo do plano volta junto.\n• O funil recomeça do zero (os números atuais ficam no histórico).\n• A extensão dele deixa de bloquear quem já recebeu mensagem.\n\nContinuam bloqueados: contratados, quem disse que não tem interesse e quem está com entrevista agendada.\nNada é apagado. Os outros operadores da empresa não são afetados.`)) return;
-      if (!confirm(`ATENÇÃO — risco para o número de WhatsApp de ${nome}\n\nDepois disto, as MESMAS pessoas poderão receber uma segunda abordagem do mesmo número. É o cenário que mais gera denúncia de spam.\n\nRecomendado: mudar o texto de abordagem antes de recomeçar e voltar em ritmo baixo.\n\nConfirma a nova operação?`)) return;
-      const nota = prompt("O que foi a operação que está sendo encerrada? (opcional — fica no histórico)\nEx.: \"região Zona Sul, proposta de agosto\"", "");
-      if (nota === null) return;
-      btn.disabled = true;
-      const original = btn.textContent;
-      btn.textContent = "Reiniciando...";
-      const linhas = [];
-      try {
-        // 1) Coletor: funil + leads + comando para a extensão (tudo ou nada)
-        const r1 = await rpc("rpc_admin_nova_operacao", { p_admin_password: ADMIN_PASS, p_login: login, p_nota: nota || null });
-        if (!r1 || !r1.ok) {
-          alert("❌ Nada foi alterado.\n\n" + ((r1 && (r1.error || r1.message)) || "Não foi possível iniciar a nova operação. Se o SQL OPER_1 ainda não foi rodado no catho-coletor, rode-o primeiro."));
-          return;
-        }
-        linhas.push(`✅ Leads: ${r1.leads_arquivados || 0} arquivados · ${r1.leads_mantidos || 0} continuam bloqueados (contratados, sem interesse, agendados)`);
-        linhas.push("✅ Funil: nova contagem iniciada");
-        linhas.push("✅ Extensão: comando enviado (limpa a trava em até 3 minutos, com o Chrome dele aberto)");
-
-        // 2) Banco de Talentos
-        if (r1.email_plataforma) {
-          try {
-            const r2 = await apiContas({ acao: "nova_operacao_usuario", email: r1.email_plataforma, conta_id: r1.conta_id_plataforma || null, nota: nota || null });
-            linhas.push(`✅ Banco de Talentos: ${r2.consumos_devolvidos || 0} contatos devolvidos à busca · ${r2.mantidos_bloqueados || 0} continuam bloqueados`);
-          } catch (e) { linhas.push("⚠️ Banco de Talentos: NÃO foi reiniciado — " + e.message); }
-        } else linhas.push("– Banco de Talentos: este operador não tem acesso vinculado");
-
-        // 3) Banco de Corretores CRECI
-        if (r1.email_rhi) {
-          try {
-            const r3 = await apiContasRhi({ acao: "nova_operacao_usuario", email: r1.email_rhi, nota: nota || null });
-            linhas.push(`✅ Banco de Corretores: ${r3.consumos_devolvidos || 0} contatos devolvidos à busca · ${r3.mantidos_bloqueados || 0} continuam bloqueados`);
-          } catch (e) { linhas.push("⚠️ Banco de Corretores: NÃO foi reiniciado — " + e.message); }
-        } else linhas.push("– Banco de Corretores: este operador não tem acesso vinculado");
-
-        alert(`Nova operação de ${nome} (nº ${r1.operacao})\n\n` + linhas.join("\n") + "\n\nAntes de recomeçar: espere 3 minutos, confira o texto de abordagem e só então libere os contatos de novo.");
-      } catch (e) {
-        alert("❌ " + e.message + (linhas.length ? "\n\nO que já tinha sido feito:\n" + linhas.join("\n") : ""));
-      } finally {
-        btn.disabled = false;
-        btn.textContent = original;
-      }
-    });
-  });
 
   // "Nova contagem" do funil (abordados → responderam → proposta → agendaram).
   // Fica só aqui no painel: a tela /agendamentos também é aberta pelo cliente.
