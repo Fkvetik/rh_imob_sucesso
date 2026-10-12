@@ -11,6 +11,7 @@
 //   criar_usuario (cria login no Supabase Auth + registra na conta)
 //   editar_usuario, alterar_status_usuario, resetar_senha_usuario, excluir_usuario
 //   editar_plano
+//   nova_operacao_usuario (devolve à busca o que UM operador liberou — SQL OPER_2)
 
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const PRODUTO = 'NOVOS_TALENTOS';
@@ -76,6 +77,7 @@ export default async function handler(req, res) {
         case 'resetar_senha_usuario':  return await resetarSenhaUsuario(res, headers, SERVICE_KEY, body, contaId);
         case 'excluir_usuario':        return await excluirUsuario(res, headers, SERVICE_KEY, body, contaId);
         case 'editar_plano':           return await editarPlano(res, headers, body, contaId);
+        case 'nova_operacao_usuario':  return await novaOperacaoUsuario(res, headers, body, contaId);
         default:                       return send(res, 400, { error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao });
       }
     }
@@ -340,6 +342,27 @@ async function excluirUsuario(res, headers, serviceKey, body, contaId) {
 }
 
 // ───────────────────────── PLANOS ─────────────────────────
+
+// "Nova operação" de um operador: move para o arquivo os consumos e as
+// abordagens dele (função nt_admin_nova_operacao, SQL OPER_2). Os talentos
+// voltam a aparecer na busca da empresa e o saldo do plano volta junto.
+async function novaOperacaoUsuario(res, headers, body, contaId) {
+  const email = String(body.email || '').trim();
+  if (!email) return send(res, 400, { error: 'email', message: 'Informe o e-mail do operador na plataforma.' });
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/nt_admin_nova_operacao`, {
+    method: 'POST', headers,
+    // admin restrito a uma empresa só mexe em operador dessa empresa
+    body: JSON.stringify({ p_email: email, p_conta_id: contaId || body.conta_id || null, p_nota: body.nota || null })
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok) {
+    const msg = (data && (data.message || data.hint)) || `HTTP ${r.status}`;
+    const falta = r.status === 404 || /nt_admin_nova_operacao/.test(msg);
+    return send(res, 502, { error: 'supabase', message: falta ? 'O banco Novos Talentos ainda não tem a função da nova operação (rode o SQL OPER_2).' : msg });
+  }
+  if (!data || data.ok === false) return send(res, 400, { error: 'nova_operacao', message: (data && data.error) || 'Não foi possível concluir.' });
+  return send(res, 200, data);
+}
 
 async function editarPlano(res, headers, body, contaId) {
   if (contaId) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o super-admin pode editar planos (afeta todas as empresas que usam esse plano).' });
