@@ -139,7 +139,11 @@
 
   function firstName(value) {
     const base = String(value || '').split('@')[0].replace(/[._-]+/g, ' ');
-    return normalize(base).split(' ')[0] || 'Profissional';
+    // A base do CRECI traz o nome todo em maiúsculas ("CRISTINA APARECIDA…").
+    // Na mensagem vai só o primeiro nome, com a primeira letra maiúscula.
+    const primeiro = normalize(base).split(' ')[0] || '';
+    if (!primeiro) return 'Profissional';
+    return primeiro.charAt(0).toLocaleUpperCase('pt-BR') + primeiro.slice(1).toLocaleLowerCase('pt-BR');
   }
 
   function isAdminProfile() {
