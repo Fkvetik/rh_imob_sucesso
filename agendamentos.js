@@ -111,11 +111,59 @@ async function loadAll() {
   await Promise.all([loadAgendamentos(), loadDashboard(), loadColunas().then(renderBoard)]);
 }
 
+// ===== Contato pelo WhatsApp (SQL AGEND_3) =====
+// Cada clique no 💬 grava "WhatsApp aberto pelo painel" no histórico do
+// cartão. Registra o CLIQUE: mostra que a conversa foi aberta, não que uma
+// mensagem foi enviada. Sem o SQL, o 💬 continua abrindo o WhatsApp normalmente.
+let CONTATOS = {}; // id do agendamento -> { ultimo, total }
+async function carregarContatos() {
+  try {
+    const r = await rpc("rpc_admin_ultimos_contatos", { p_admin_password: ADMIN_PASS });
+    if (r && r.ok) { CONTATOS = {}; (r.contatos || []).forEach(c => { CONTATOS[c.id] = c; }); }
+  } catch (_) { /* banco ainda sem o AGEND_3 */ }
+}
+function registrarContato(id) {
+  if (!id) return;
+  const agora = new Date().toISOString();
+  const c = CONTATOS[id] || { total: 0 };
+  CONTATOS[id] = { id, ultimo: agora, total: (Number(c.total) || 0) + 1 };
+  setTimeout(renderBoard, 300); // depois do clique: redesenhar antes cancelaria a abertura do link
+  rpc("rpc_admin_registrar_contato", { p_admin_password: ADMIN_PASS, p_id: id }).catch(() => {});
+}
+// Um ouvinte só para todos os 💬 da página (cartões, lista do dia, janela do cartão).
+document.addEventListener("click", (e) => {
+  const link = e.target.closest && e.target.closest("a[data-wa-ag]");
+  if (link) registrarContato(Number(link.dataset.waAg));
+}, true);
+
+function quandoCurto(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const hoje = new Date(); const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1);
+  const hora = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === hoje.toDateString()) return "hoje, " + hora;
+  if (d.toDateString() === ontem.toDateString()) return "ontem, " + hora;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + ", " + hora;
+}
+// Entrevista em aberto, hoje ou amanhã, sem contato registrado nas 48 horas
+// antes dela: é quem corre o risco de chegar na entrevista sem ninguém ter chamado.
+function semContatoAntes(a) {
+  if (!STATUS_ABERTOS.includes(String(a.status || "AGENDADO").toUpperCase())) return false;
+  const d = new Date(a.data_agendamento);
+  if (isNaN(d.getTime())) return false;
+  const agora = new Date();
+  const fimAmanha = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 2);
+  if (d < agora || d >= fimAmanha) return false;
+  const c = CONTATOS[a.id];
+  return !c || !c.ultimo || new Date(c.ultimo).getTime() < d.getTime() - 48 * 3600000;
+}
+
 async function loadAgendamentos() {
   try {
     const resp = await rpc("rpc_admin_list_agendamentos", { p_admin_password: ADMIN_PASS });
     if (!resp.ok) { alert("Sessão expirou: " + resp.error); location.reload(); return; }
     agendamentos = resp.agendamentos || [];
+    await carregarContatos();
     renderBoard();
   } catch (e) {
     alert("Falha ao carregar agendamentos: " + e.message);
@@ -676,6 +724,10 @@ function renderCard(a) {
     + (String(a.status || "").toUpperCase() !== "PRESENCIAL" && passouPor(a, "PRESENCIAL") ? `<span class="badge2 presencial">🏢 agendou presencial</span>` : "");
   const atrasado = isAtrasado(a);
   const badgeAtrasado = atrasado ? `<span class="badge-atrasado">⚠️ Atrasado</span>` : "";
+  const contato = CONTATOS[a.id];
+  const linhaContato = semContatoAntes(a)
+    ? `<div class="contato-alerta">📵 Entrevista ${new Date(a.data_agendamento).toDateString() === new Date().toDateString() ? "hoje" : "amanhã"} sem contato registrado</div>`
+    : (contato && contato.ultimo ? `<div class="contato-ok">💬 último contato: ${esc(quandoCurto(contato.ultimo))}${Number(contato.total) > 1 ? " · " + contato.total + " vezes" : ""}</div>` : "");
   const wa = waLink(a.telefone);
   const linkReuniaoUrl = normalizeUrl(a.link_reuniao);
   const meetIcon = linkReuniaoUrl
@@ -691,14 +743,14 @@ function renderCard(a) {
     <div class="agcard${atrasado ? " atrasado" : ""}" draggable="true" data-id="${a.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
         <div class="nome">${esc(a.nome_candidato||"—")}</div>
-        <div style="display:flex;gap:4px">${meetIcon}${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" title="Abrir WhatsApp">💬</a>` : ""}</div>
+        <div style="display:flex;gap:4px">${meetIcon}${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm wa-stop" data-wa-ag="${a.id}" title="Abrir WhatsApp (fica registrado no histórico)">💬</a>` : ""}</div>
       </div>
       <div class="empresa-badge" style="display:inline-block;margin:2px 0;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:${empresaColor(a.empresa)}">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
       ${meetBtn}
       ${obs}
-      ${reag}${badgeAtrasado}
+      ${reag}${badgeAtrasado}${linhaContato}
     </div>`;
 }
 
@@ -723,7 +775,7 @@ function openDayModal(iso, label) {
             <div class="nome">${esc(a.nome_candidato||"—")}</div>
             <div class="sub">${esc(a.telefone||"—")} • ${esc(a.empresa||"—")} • ${esc(fmtData(a.data_agendamento))}</div>
           </div>
-          ${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm" title="Abrir WhatsApp">💬</a>` : ""}
+          ${wa ? `<a href="${wa}" target="_blank" class="wa-btn-sm" data-wa-ag="${a.id}" title="Abrir WhatsApp (fica registrado no histórico)">💬</a>` : ""}
         </div>`
       }).join("")
     : '<div class="chart-empty">Nenhum agendamento nesse dia</div>'
@@ -742,6 +794,7 @@ function openEditModal(id) {
   $("mSubInfo").textContent = `${a.telefone||"—"} • ${a.empresa||"—"} • operador: ${a.nome_operador||a.login||"—"}`;
   const wa = waLink(a.telefone);
   $("mWaLink").href = wa || "#";
+  $("mWaLink").dataset.waAg = String(a.id);
   $("mWaLink").style.pointerEvents = wa ? "" : "none";
   $("mWaLink").style.opacity = wa ? "" : ".4";
   $("mStatus").innerHTML = COLUMNS.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join("");
@@ -763,6 +816,7 @@ function openEditModal(id) {
       $("mHistorico").innerHTML = h.length
         ? h.map(x => {
             const nome = s => { const c = COLUMNS.find(c => c.id === s); return c ? c.label : (s || "—"); };
+            if (!x.status_novo) return `<div class="hist-item">${esc(x.motivo || "Registro")}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
             return `<div class="hist-item">${esc(nome(x.status_anterior))} → <b>${esc(nome(x.status_novo))}</b>${x.data_agendamento ? " · entrevista em " + esc(fmtData(x.data_agendamento)) : ""}${x.motivo ? " — " + esc(x.motivo) : ""}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
           }).join("")
         : '<small style="color:#aaa">Sem mudanças registradas ainda</small>';
