@@ -948,7 +948,9 @@ async function loadUsuarios() {
   }
 }
 
+let USUARIOS_COLETOR_CACHE = []; // para o "Entregar para" dos filtros
 function renderUsuarios(list) {
+  USUARIOS_COLETOR_CACHE = list || [];
   const tbody = $("listaUsuarios");
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
@@ -1150,14 +1152,37 @@ async function carregarFiltrosOperador(login) {
   if (!painel) return;
   painel.innerHTML = "<small>Carregando filtros...</small>";
   try {
-    const resp = await rpc("rpc_admin_listar_filtros", { p_admin_password: ADMIN_PASS, p_login: login });
-    renderFiltrosOperador(login, Array.isArray(resp) ? resp : []);
+    const [resp, dest] = await Promise.all([
+      rpc("rpc_admin_listar_filtros", { p_admin_password: ADMIN_PASS, p_login: login }),
+      // Destinos dos filtros (SQL DEST_1). Sem o SQL, o seletor não aparece.
+      rpc("rpc_admin_destinos_filtros", { p_admin_password: ADMIN_PASS, p_login: login }).catch(() => null)
+    ]);
+    const destinos = (dest && dest.ok) ? Object.fromEntries((dest.destinos || []).map(d => [String(d.id), d.destino_login])) : null;
+    renderFiltrosOperador(login, Array.isArray(resp) ? resp : [], destinos);
   } catch (e) {
     painel.innerHTML = `<small style="color:#c2410c">❌ ${esc(e.message)}</small>`;
   }
 }
 
-function renderFiltrosOperador(login, filtros) {
+// Filtro com destino: o filtro roda no computador deste login (com a Catho
+// dele), mas os contatos coletados entram na fila do login escolhido em
+// "Entregar para", que dispara pelo próprio WhatsApp. Não vão para o pool.
+function seletorDestino_(login, f, destinos) {
+  if (!destinos) return "";
+  const atual = destinos[String(f.id)] || "";
+  const opcoes = USUARIOS_COLETOR_CACHE
+    .filter(u => u.login !== login && (u.ativo || u.login === atual))
+    .map(u => `<option value="${esc(u.login)}" ${u.login === atual ? "selected" : ""}>${esc(u.nome_operador || u.login)} (${esc(u.login)})</option>`).join("");
+  return `<div style="margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <label style="font-size:11px;font-weight:700;color:${atual ? "#5b21b6" : "#555"}">📦 Entregar para:</label>
+      <select class="destinoFiltroSel" data-id="${esc(f.id)}" style="font-size:11px;padding:3px 6px;max-width:260px">
+        <option value="">Própria fila (${esc(login)})</option>${opcoes}
+      </select>
+      ${atual ? '<small style="color:#5b21b6">coleta aqui, o disparo é no computador do cliente</small>' : ""}
+    </div>`;
+}
+
+function renderFiltrosOperador(login, filtros, destinos) {
   const painel = document.querySelector(`.filtrosPainel[data-login="${CSS.escape(login)}"]`);
   if (!painel) return;
 
@@ -1171,6 +1196,7 @@ function renderFiltrosOperador(login, filtros) {
           <div style="min-width:0;flex:1">
             <a href="${esc(f.link)}" target="_blank" style="font-size:12px;word-break:break-all">${esc(f.link)}</a>
             <div style="font-size:11px;color:#888;margin-top:2px">Páginas: ${f.paginas} • Coletados: ${f.coletados || 0} • Última coleta: ${ultima}${f.ultimo_erro ? ' • ⚠️ ' + esc(f.ultimo_erro) : ''}</div>
+            ${seletorDestino_(login, f, destinos)}
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
             <span class="badge ${f.pausado ? 'pausado' : ''}">${f.pausado ? 'PAUSADO' : 'ATIVO'}</span>
@@ -1256,6 +1282,25 @@ function renderFiltrosOperador(login, filtros) {
       } catch (e) {
         alert("❌ " + e.message);
         btn.disabled = false;
+      }
+    });
+  });
+
+  painel.querySelectorAll(".destinoFiltroSel").forEach(sel => {
+    sel.addEventListener("change", async () => {
+      const destino = sel.value;
+      const nome = sel.options[sel.selectedIndex].textContent;
+      if (destino && !confirm(`Entregar os contatos deste filtro para ${nome}?\n\nA coleta continua no computador de "${login}" (com a Catho dele). Os contatos entram na fila de ${nome}, que dispara pelo WhatsApp dele. Eles não vão para o pool nem para a fila de "${login}".`)) {
+        carregarFiltrosOperador(login); return;
+      }
+      sel.disabled = true;
+      try {
+        const r = await rpc("rpc_admin_definir_destino_filtro", { p_admin_password: ADMIN_PASS, p_login: login, p_id: sel.dataset.id, p_destino: destino || null });
+        if (r && r.ok === false) throw new Error(r.error || "Falha ao salvar");
+        carregarFiltrosOperador(login);
+      } catch (e) {
+        alert("❌ " + e.message);
+        carregarFiltrosOperador(login);
       }
     });
   });
