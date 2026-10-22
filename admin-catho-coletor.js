@@ -1157,8 +1157,12 @@ async function carregarFiltrosOperador(login) {
       // Destinos dos filtros (SQL DEST_1). Sem o SQL, o seletor não aparece.
       rpc("rpc_admin_destinos_filtros", { p_admin_password: ADMIN_PASS, p_login: login }).catch(() => null)
     ]);
-    const destinos = (dest && dest.ok) ? Object.fromEntries((dest.destinos || []).map(d => [String(d.id), d.destino_login])) : null;
-    renderFiltrosOperador(login, Array.isArray(resp) ? resp : [], destinos);
+    const destinos = (dest && dest.ok) ? Object.fromEntries((dest.destinos || []).filter(d => d.destino_login).map(d => [String(d.id), d.destino_login])) : null;
+    // Horário próprio de cada filtro (SQL DEST_2). Sem o SQL, o campo não aparece.
+    const horarios = (dest && dest.ok && (dest.destinos || []).some(d => "horario" in d)) || (dest && dest.ok && !(dest.destinos || []).length)
+      ? Object.fromEntries((dest.destinos || []).filter(d => d.horario).map(d => [String(d.id), d.horario])) : null;
+    const usuario = USUARIOS_COLETOR_CACHE.find(u => u.login === login);
+    renderFiltrosOperador(login, Array.isArray(resp) ? resp : [], destinos, horarios, usuario && usuario.horario_coleta);
   } catch (e) {
     painel.innerHTML = `<small style="color:#c2410c">❌ ${esc(e.message)}</small>`;
   }
@@ -1182,7 +1186,20 @@ function seletorDestino_(login, f, destinos) {
     </div>`;
 }
 
-function renderFiltrosOperador(login, filtros, destinos) {
+// Horário próprio do filtro: roda nesse horário, todo dia, no computador do
+// login dono do filtro. Vazio = segue o horário do login.
+function seletorHorario_(f, horarios, horarioLogin) {
+  if (!horarios) return "";
+  const atual = horarios[String(f.id)] || "";
+  return `<div style="margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <label style="font-size:11px;font-weight:700;color:${atual ? "#5b21b6" : "#555"}">⏰ Horário deste filtro:</label>
+      <input type="time" class="horarioFiltroInp" data-id="${esc(f.id)}" value="${esc(atual)}" style="font-size:11px;padding:2px 6px;width:auto">
+      ${atual ? `<button type="button" class="ghost limparHorarioFiltroBtn" data-id="${esc(f.id)}" style="padding:2px 7px;font-size:10px">usar o do login</button>`
+               : `<small style="color:#888">${horarioLogin ? "vazio = segue o horário do login (" + esc(horarioLogin) + ")" : "vazio = só roda manualmente (o login não tem horário)"}</small>`}
+    </div>`;
+}
+
+function renderFiltrosOperador(login, filtros, destinos, horarios, horarioLogin) {
   const painel = document.querySelector(`.filtrosPainel[data-login="${CSS.escape(login)}"]`);
   if (!painel) return;
 
@@ -1197,6 +1214,7 @@ function renderFiltrosOperador(login, filtros, destinos) {
             <a href="${esc(f.link)}" target="_blank" style="font-size:12px;word-break:break-all">${esc(f.link)}</a>
             <div style="font-size:11px;color:#888;margin-top:2px">Páginas: ${f.paginas} • Coletados: ${f.coletados || 0} • Última coleta: ${ultima}${f.ultimo_erro ? ' • ⚠️ ' + esc(f.ultimo_erro) : ''}</div>
             ${seletorDestino_(login, f, destinos)}
+            ${seletorHorario_(f, horarios, horarioLogin)}
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
             <span class="badge ${f.pausado ? 'pausado' : ''}">${f.pausado ? 'PAUSADO' : 'ATIVO'}</span>
@@ -1303,6 +1321,23 @@ function renderFiltrosOperador(login, filtros, destinos) {
         carregarFiltrosOperador(login);
       }
     });
+  });
+
+  const salvarHorario = async (id, horario, el) => {
+    if (el) el.disabled = true;
+    try {
+      const r = await rpc("rpc_admin_definir_horario_filtro", { p_admin_password: ADMIN_PASS, p_login: login, p_id: id, p_horario: horario || null });
+      if (r && r.ok === false) throw new Error(r.error || "Falha ao salvar");
+    } catch (e) {
+      alert("❌ " + e.message);
+    }
+    carregarFiltrosOperador(login);
+  };
+  painel.querySelectorAll(".horarioFiltroInp").forEach(inp => {
+    inp.addEventListener("change", () => { if (inp.value) salvarHorario(inp.dataset.id, inp.value, inp); });
+  });
+  painel.querySelectorAll(".limparHorarioFiltroBtn").forEach(btn => {
+    btn.addEventListener("click", () => salvarHorario(btn.dataset.id, null, btn));
   });
 
   painel.querySelectorAll(".excluirFiltroAdminBtn").forEach(btn => {
