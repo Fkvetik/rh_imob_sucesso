@@ -251,6 +251,7 @@
       <li><a href="#funil">7. Funil e resultados</a></li>
       <li><a href="#crm">8. Agendamentos e CRM</a></li>
       <li><a href="#numero">9. Proteção do número</a></li>
+      <li><a href="/guia-whatsapp-business">↗ Guia do WhatsApp</a></li>
       <li><a href="#rotina">10. Rotina recomendada</a></li>
       <li><a href="#faq">Perguntas frequentes</a></li>
     </ol>
@@ -632,6 +633,11 @@
       <h2><span class="num">09</span> Proteção do número</h2>
       <p class="dek">O WhatsApp restringe números que mandam muita mensagem para quem não os conhece. A ferramenta trabalha para reduzir esse risco, mas ele nunca é zero.</p>
 
+      <div class="card tip">
+        <span class="tag">Antes de começar</span>
+        <p>Vai usar um número novo ou ainda não passou para o WhatsApp Business? Leia o <a href="/guia-whatsapp-business"><strong>Guia do WhatsApp para abordagem</strong></a>: por que usar o WhatsApp Business, a diferença entre número maturado e número novo, e o passo a passo dos primeiros dias.</p>
+      </div>
+
       <h3>O que a ferramenta faz</h3>
       <ul>
         <li>Espera um intervalo entre os envios e nunca envia no mesmo instante em que escreve.</li>
@@ -659,7 +665,7 @@
       <h3>O que depende de você</h3>
       <ul>
         <li><strong>Prefira o intervalo Seguro.</strong> Deixe o Agressivo para quando precisar mesmo de volume.</li>
-        <li><strong>Número novo ou recém-desbloqueado:</strong> use o Aquecimento por alguns dias.</li>
+        <li><strong>Número novo ou recém-desbloqueado:</strong> use o Aquecimento por alguns dias. O passo a passo está no <a href="/guia-whatsapp-business">Guia do WhatsApp</a>.</li>
         <li><strong>Revise a lista antes de disparar.</strong> Tire contato errado e número duplicado.</li>
         <li><strong>Se o WhatsApp mostrar algum aviso de restrição,</strong> pare o disparo. Insistir costuma transformar um aviso em bloqueio longo.</li>
       </ul>
@@ -748,7 +754,7 @@
     toggle.setAttribute('aria-expanded', 'false');
   }));
 
-  const links = Array.from(document.querySelectorAll('nav.toc a'));
+  const links = Array.from(document.querySelectorAll('nav.toc a[href^="#"]')); // só os do próprio manual
   const sections = links.map(a => document.querySelector(a.getAttribute('href')));
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {

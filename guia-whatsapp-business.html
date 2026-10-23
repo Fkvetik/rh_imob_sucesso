@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia do WhatsApp para abordagem — RH IMOB</title>
+<meta name="description" content="Por que usar o WhatsApp Business, a diferença entre número maturado e número novo, e como preparar o WhatsApp para abordar 30 a 50 pessoas por dia com a extensão RH IMOB.">
+<meta name="robots" content="noindex, follow">
+<meta property="og:title" content="Guia do WhatsApp para abordagem — RH IMOB">
+<meta property="og:description" content="WhatsApp Business, número maturado × número novo e o passo a passo para começar com segurança.">
+<meta property="og:type" content="article">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+  :root{
+    --bg:#faf8fc; --surface:#ffffff; --surface-2:#f4effa;
+    --ink:#1f1330; --ink-muted:#675e76; --ink-faint:#9b90ab;
+    --purple:#5b21b6; --purple-dark:#3b0764; --purple-light:#ede9fe;
+    --orange:#f97316; --orange-dark:#c2410c; --orange-light:#fff1e6;
+    --line:#e4dcf0;
+    --good:#0f7a4a; --good-bg:#e7f6ee;
+    --warn:#b45309; --warn-bg:#fef3e0;
+    --bad:#b42318; --bad-bg:#fdecea;
+    --radius:14px;
+    --serif: ui-serif, Iowan Old Style, Palatino Linotype, Palatino, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#140b21; --surface:#1c1130; --surface-2:#241a38;
+      --ink:#f1ecf9; --ink-muted:#b3a6c4; --ink-faint:#7c7190;
+      --purple:#b494f5; --purple-dark:#cdb8fa; --purple-light:#2c1f47;
+      --orange:#fb923c; --orange-dark:#fdba74; --orange-light:#3a2513;
+      --line:#332648;
+      --good:#4fd695; --good-bg:#123527;
+      --warn:#f2b155; --warn-bg:#3a2a10;
+      --bad:#f19a8f; --bad-bg:#3a1714;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#140b21; --surface:#1c1130; --surface-2:#241a38;
+    --ink:#f1ecf9; --ink-muted:#b3a6c4; --ink-faint:#7c7190;
+    --purple:#b494f5; --purple-dark:#cdb8fa; --purple-light:#2c1f47;
+    --orange:#fb923c; --orange-dark:#fdba74; --orange-light:#3a2513;
+    --line:#332648;
+    --good:#4fd695; --good-bg:#123527;
+    --warn:#f2b155; --warn-bg:#3a2a10;
+    --bad:#f19a8f; --bad-bg:#3a1714;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased}
+  a{color:var(--purple)}
+  :focus-visible{outline:2px solid var(--orange); outline-offset:2px}
+  h1,h2,h3{font-family:var(--serif); font-weight:600; text-wrap:balance; color:var(--ink)}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--orange-dark); font-weight:600}
+
+  .topbar{position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--line)}
+  .topbar img{width:34px; height:34px; border-radius:9px; flex-shrink:0; object-fit:cover; background:#fff; border:1px solid var(--line)}
+  .topbar strong{font-size:14px; display:block; line-height:1.2}
+  .topbar span{font-size:12px; color:var(--ink-muted)}
+
+  main{max-width:760px; margin:0 auto; padding:32px 16px 80px}
+  .intro h1{font-size:clamp(26px,5vw,36px); margin:10px 0 12px; line-height:1.15}
+  .intro p.lede{font-size:16.5px; color:var(--ink-muted); margin:0 0 22px}
+
+  .resumo{background:var(--purple-light); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin:0 0 40px}
+  .resumo .tag{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; color:var(--purple-dark); display:block; margin-bottom:8px}
+  .resumo ol{margin:0; padding-left:20px}
+  .resumo li{margin-bottom:6px; font-size:15.5px}
+  .resumo li:last-child{margin-bottom:0}
+
+  section{scroll-margin-top:72px; margin-bottom:48px}
+  section h2{font-size:23px; margin:0 0 6px; line-height:1.25}
+  section > .dek{color:var(--ink-muted); font-size:15px; margin:0 0 18px}
+  section h3{font-size:17px; margin:24px 0 8px}
+  section p{margin:0 0 14px; font-size:15.5px}
+  section ul, section ol{margin:0 0 16px; padding-left:22px; font-size:15.5px}
+  section li{margin-bottom:7px}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin:18px 0}
+  .card .tag{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; display:block; margin-bottom:6px}
+  .card p:last-child, .card ul:last-child{margin-bottom:0}
+  .card.tip{border-left:3px solid var(--good); background:var(--good-bg)} .card.tip .tag{color:var(--good)}
+  .card.warn{border-left:3px solid var(--warn); background:var(--warn-bg)} .card.warn .tag{color:var(--warn)}
+  .card.bad{border-left:3px solid var(--bad); background:var(--bad-bg)} .card.bad .tag{color:var(--bad)}
+
+  .tblwrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; margin:16px 0; background:var(--surface)}
+  table{width:100%; border-collapse:collapse; font-size:14.5px; min-width:520px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); font-weight:600; background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  td:first-child{font-weight:600}
+
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0}
+  @media (max-width:620px){ .grid-2{grid-template-columns:1fr} }
+  .feature{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px}
+  .feature b{display:block; font-size:14.5px; margin-bottom:3px}
+  .feature span{font-size:14px; color:var(--ink-muted)}
+
+  .steps{counter-reset:step; list-style:none; padding:0; margin:16px 0}
+  .steps li{counter-increment:step; position:relative; padding:2px 0 18px 40px; font-size:15.5px}
+  .steps li::before{content:counter(step); position:absolute; left:0; top:0; width:27px; height:27px; border-radius:50%; background:var(--purple); color:#fff; font-family:var(--mono); font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center}
+  .steps li:not(:last-child)::after{content:""; position:absolute; left:13px; top:27px; bottom:0; width:1px; background:var(--line)}
+  :root[data-theme="dark"] .steps li::before{color:#140b21}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .steps li::before{color:#140b21} }
+
+  .msgdemo{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin:16px 0; font-size:14.5px}
+  .msgdemo .bolha{background:var(--good-bg); border-radius:10px 10px 10px 2px; padding:9px 12px; margin:6px 0; max-width:92%}
+  .msgdemo small{color:var(--ink-muted); font-family:var(--mono); font-size:11px}
+
+  .cta{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px; text-align:center; margin-top:40px}
+  .cta p{margin:0 0 12px; color:var(--ink-muted)}
+  .btn{display:inline-block; background:var(--purple); color:#fff; text-decoration:none; font-weight:700; padding:11px 20px; border-radius:10px; margin:4px}
+  .btn.ghost{background:transparent; color:var(--purple); border:1px solid var(--line)}
+  :root[data-theme="dark"] .btn:not(.ghost){color:#140b21}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn:not(.ghost){color:#140b21} }
+  footer{text-align:center; color:var(--ink-faint); font-size:12.5px; padding:0 16px 40px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <img src="assets/favicon.svg" alt="RH IMOB">
+  <div><strong>RH IMOB</strong><span>Guia do WhatsApp para abordagem</span></div>
+</header>
+
+<main>
+  <div class="intro">
+    <span class="eyebrow">Antes de começar a abordar</span>
+    <h1>Como preparar o WhatsApp para abordar 30 a 50 pessoas por dia</h1>
+    <p class="lede">Este guia explica por que recomendamos o WhatsApp Business, qual a diferença entre usar um número que você já usa e um número novo, e o que fazer nos primeiros dias para trabalhar com segurança.</p>
+  </div>
+
+  <div class="resumo">
+    <span class="tag">Resumo em 3 pontos</span>
+    <ol>
+      <li><strong>Use o WhatsApp Business</strong>, com o perfil da empresa preenchido.</li>
+      <li><strong>Prefira um número que você já usa há tempo</strong>, com conversas normais. Número novo funciona, mas precisa de alguns dias de aquecimento.</li>
+      <li><strong>30 a 50 abordagens por dia não é disparo em massa:</strong> cada mensagem é personalizada e sai uma por vez, com intervalo de vários minutos.</li>
+    </ol>
+  </div>
+
+  <section id="massa">
+    <h2>30 a 50 mensagens por dia é disparo em massa?</h2>
+    <p class="dek">Não. Disparo em massa é mandar centenas de mensagens iguais em poucos minutos. A abordagem com a extensão RH IMOB funciona de outro jeito.</p>
+    <ul>
+      <li><strong>Cada mensagem é personalizada.</strong> A extensão coloca o nome de cada pessoa, a saudação certa para o horário (bom dia, boa tarde) e sorteia entre as variações de texto que você cadastrou. As mensagens não saem idênticas como num disparo em massa.</li>
+      <li><strong>Uma mensagem por vez, com intervalo.</strong> No modo recomendado (Seguro), a extensão espera de 10 a 15 minutos entre um envio e outro. Num dia cheio, isso dá cerca de 50 abordagens.</li>
+      <li><strong>Horários que mudam todo dia.</strong> O início, o almoço e o fim do expediente são sorteados a cada dia, para o padrão não se repetir. No domingo não há envio, e no sábado só de manhã.</li>
+      <li><strong>Ninguém recebe a abordagem duas vezes.</strong> Um número que já recebeu mensagem não recebe de novo, mesmo que apareça outra vez na base.</li>
+    </ul>
+    <div class="msgdemo">
+      <small>Exemplo: a mesma abordagem para duas pessoas</small>
+      <div class="bolha">Bom dia, Carla! Aqui é a Mariana. Encontrei seu contato em uma busca por profissionais do mercado imobiliário. Este número ainda pertence a você?</div>
+      <div class="bolha">Boa tarde, Roberto! Obrigada pelo seu tempo. Vi seu perfil profissional e queria confirmar se este contato continua sendo seu.</div>
+    </div>
+    <p>Na prática, o ritmo é parecido com o de um recrutador que escreve uma mensagem a cada 10 ou 15 minutos ao longo do dia.</p>
+    <div class="card warn">
+      <span class="tag">Importante</span>
+      <p>Nenhum ritmo dá garantia total. O WhatsApp não divulga as regras exatas que usa para restringir números. O que reduz o risco é o conjunto: número com histórico, perfil completo, mensagens personalizadas, intervalo de vários minutos e pessoas que respondem em vez de bloquear.</p>
+    </div>
+  </section>
+
+  <section id="chip">
+    <h2>Número que você já usa × número novo</h2>
+    <p class="dek">A diferença está no histórico. Um número que existe há meses, com conversas de ida e volta, se comporta como o de uma pessoa ou empresa real. Um número recém-ativado ainda não tem nada disso.</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th></th><th>Número que você já usa (maturado)</th><th>Número novo</th></tr></thead>
+        <tbody>
+          <tr><td>Histórico</td><td>Meses de conversas, contatos salvos, grupos</td><td>Nenhum</td></tr>
+          <tr><td>Primeiras abordagens</td><td>Parecem a continuação do uso normal</td><td>As primeiras mensagens já são para desconhecidos, o padrão que mais chama atenção</td></tr>
+          <tr><td>Como começar</td><td>Modo <b>Seguro</b> (10 a 15 min entre envios)</td><td>Modo <b>Aquecimento</b> (12 a 20 min) por alguns dias, com volume baixo</td></tr>
+          <tr><td>Risco nas primeiras semanas</td><td>Menor</td><td>Maior, até o número ganhar histórico</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card tip">
+      <span class="tag">Nossa recomendação</span>
+      <p>Se você já tem um número que usa para trabalho há algum tempo, use esse. Se ele está no WhatsApp comum, dá para passar para o WhatsApp Business mantendo as conversas (veja o passo a passo abaixo).</p>
+    </div>
+  </section>
+
+  <section id="business">
+    <h2>É verdade que o WhatsApp Business é melhor?</h2>
+    <p class="dek">Sim, mas não pelo motivo que muita gente imagina.</p>
+    <div class="card bad">
+      <span class="tag">Mito</span>
+      <p>"O WhatsApp Business protege contra bloqueio." Não protege. As regras contra spam valem para o WhatsApp comum e para o Business.</p>
+    </div>
+    <p>O ganho real está em duas coisas:</p>
+    <h3>1. Quem recebe vê uma empresa de verdade</h3>
+    <p>No Business você monta um <strong>perfil comercial</strong>: nome da empresa, descrição, categoria, site, e-mail, endereço e horário de atendimento. Quando alguém recebe uma mensagem de um número desconhecido, um perfil completo passa confiança. A pessoa tende a responder ou ignorar, em vez de bloquear e denunciar. Bloqueios e denúncias de quem recebe estão entre os sinais que mais pesam contra um número.</p>
+    <h3>2. Ferramentas que organizam o atendimento</h3>
+    <div class="grid-2">
+      <div class="feature"><b>Etiquetas</b><span>Marque as conversas por etapa: novo contato, interessado, agendado.</span></div>
+      <div class="feature"><b>Mensagem de saudação</b><span>Resposta automática para quem fala com você pela primeira vez.</span></div>
+      <div class="feature"><b>Mensagem de ausência</b><span>Avisa fora do horário que você responde depois.</span></div>
+      <div class="feature"><b>Separação do pessoal</b><span>O WhatsApp Business é um aplicativo à parte. Seu WhatsApp pessoal continua separado.</span></div>
+    </div>
+    <p>O WhatsApp Business é gratuito e funciona no WhatsApp Web, que é onde a extensão RH IMOB trabalha.</p>
+  </section>
+
+  <section id="passo">
+    <h2>Passo a passo para começar</h2>
+    <h3>Se você vai usar um número que já tem</h3>
+    <ol class="steps">
+      <li><strong>Instale o WhatsApp Business</strong> no celular (Google Play ou App Store) e entre com o seu número. O próprio aplicativo oferece mover a conta do WhatsApp comum mantendo as conversas. Um número fica em um aplicativo por vez.</li>
+      <li><strong>Preencha o perfil comercial:</strong> foto ou logotipo, nome da empresa, descrição, categoria, site e horário.</li>
+      <li><strong>Conecte o WhatsApp Web</strong> no computador onde a extensão está instalada.</li>
+      <li><strong>Comece no modo Seguro</strong> (10 a 15 minutos entre envios).</li>
+    </ol>
+    <h3>Se você vai criar um número do zero</h3>
+    <ol class="steps">
+      <li><strong>Ative o chip</strong> e instale o WhatsApp Business com ele.</li>
+      <li><strong>Monte o perfil completo antes de qualquer abordagem:</strong> foto, nome da empresa, descrição, site e horário. Um perfil vazio passa desconfiança.</li>
+      <li><strong>Use o número normalmente por alguns dias:</strong> salve contatos, converse com pessoas que você conhece, entre em grupos do seu ramo, receba e responda mensagens. O objetivo é o número ganhar histórico de uso real.</li>
+      <li><strong>Comece a abordar no modo Aquecimento</strong> (12 a 20 minutos entre envios), com poucas abordagens por dia. Aumente aos poucos.</li>
+      <li><strong>Passe para o modo Seguro</strong> quando o número estiver respondendo bem e sem nenhum aviso do WhatsApp.</li>
+    </ol>
+    <div class="card warn">
+      <span class="tag">Se aparecer um aviso de restrição</span>
+      <p>Pare o disparo na hora e espere. Insistir costuma transformar um aviso curto em um bloqueio longo. Quando voltar, recomece no modo Aquecimento.</p>
+    </div>
+  </section>
+
+  <section id="dia-a-dia">
+    <h2>Boas práticas no dia a dia</h2>
+    <ul>
+      <li><strong>Responda rápido quem responder.</strong> Conversa de ida e volta é o melhor sinal de uso legítimo.</li>
+      <li><strong>Revise a lista antes de disparar.</strong> Tire contatos errados e números repetidos.</li>
+      <li><strong>Não coloque link na primeira mensagem.</strong> Primeiro confirme que o número é da pessoa. O link vem depois, se ela tiver interesse.</li>
+      <li><strong>Fique no ritmo normal.</strong> A extensão avisa quando o dia passa de 80 abordagens (atenção) e de 120 (recomendado parar por hoje).</li>
+      <li><strong>Respeite quem não quer.</strong> Se a pessoa disser que não tem interesse, agradeça e não insista.</li>
+      <li><strong>Mantenha o WhatsApp Web conectado</strong> e o computador ligado nos horários de envio.</li>
+    </ul>
+  </section>
+
+  <div class="cta">
+    <p>Ficou alguma dúvida para configurar o seu WhatsApp?</p>
+    <a class="btn" href="https://www.rhimob.com.br/">Falar com a RH IMOB</a>
+    <a class="btn ghost" href="https://www.rhimob.com.br/manual">Manual da extensão</a>
+  </div>
+</main>
+<footer>RH IMOB · Recrutamento para o mercado imobiliário</footer>
+</body>
+</html>
