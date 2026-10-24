@@ -66,6 +66,9 @@ export default async function handler(req, res) {
             return send(res, 403, { error: 'sem_permissao', message: 'Só o administrador da RH IMOB altera status e validade da empresa.' });
           }
           return await editarConta(res, headers, body);
+        case 'excluir_conta':
+          if (check.contaId) return send(res, 403, { error: 'sem_permissao', message: 'Apenas o administrador da RH IMOB pode excluir empresas.' });
+          return await excluirConta(res, headers, SERVICE_KEY, body);
         case 'criar_usuario':          return await criarUsuario(res, headers, SERVICE_KEY, body);
         case 'editar_usuario':         return await editarUsuario(res, headers, body);
         case 'alterar_status_usuario': return await alterarStatusUsuario(res, headers, body);
@@ -150,6 +153,43 @@ async function editarConta(res, headers, body) {
   });
   if (!r.ok) return supabaseErr(res, r);
   return send(res, 200, { ok: true });
+}
+
+// Exclui a empresa, os usuários dela e os logins no Auth. Se ela já liberou
+// contatos, só segue com apagar_historico (confirmado no painel) — confere
+// ANTES de apagar qualquer coisa, pra não sobrar empresa sem usuários.
+async function excluirConta(res, headers, serviceKey, body) {
+  const id = body.conta_id;
+  if (!id) return send(res, 400, { error: 'validacao', message: 'conta_id é obrigatório.' });
+  const q = encodeURIComponent(id);
+
+  const rCons = await fetch(`${SB_URL}/rest/v1/lead_consumos?select=conta_id&conta_id=eq.${q}`, { headers: { ...headers, Prefer: 'count=exact', Range: '0-0' } });
+  const historico = Number(((rCons.headers.get('content-range') || '').split('/')[1]) || 0);
+  if (historico && !body.apagar_historico) {
+    return send(res, 409, { error: 'tem_historico', historico, message: `TEM_HISTORICO:${historico}` });
+  }
+  if (historico) {
+    const rDelCons = await fetch(`${SB_URL}/rest/v1/lead_consumos?conta_id=eq.${q}`, { method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' } });
+    if (!rDelCons.ok) return supabaseErr(res, rDelCons);
+  }
+
+  const rUsu = await fetch(`${SB_URL}/rest/v1/usuarios_conta?select=auth_user_id&conta_id=eq.${q}`, { headers });
+  const usuarios = rUsu.ok ? await rUsu.json() : [];
+  const rDelUsu = await fetch(`${SB_URL}/rest/v1/usuarios_conta?conta_id=eq.${q}`, { method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' } });
+  if (!rDelUsu.ok) return supabaseErr(res, rDelUsu);
+  for (const u of usuarios) {
+    if (u.auth_user_id) {
+      await fetch(`${SB_URL}/auth/v1/admin/users/${u.auth_user_id}`, {
+        method: 'DELETE', headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
+      }).catch(() => {});
+    }
+  }
+
+  // Se ainda houver outra tabela presa à empresa, o banco recusa e a
+  // mensagem diz qual — não mascaramos.
+  const r = await fetch(`${SB_URL}/rest/v1/contas?id=eq.${q}`, { method: 'DELETE', headers: { ...headers, Prefer: 'return=minimal' } });
+  if (!r.ok) return supabaseErr(res, r);
+  return send(res, 200, { ok: true, usuarios_removidos: usuarios.length, historico_removido: historico });
 }
 
 // ───────────────────────── USUÁRIOS ─────────────────────────

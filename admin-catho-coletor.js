@@ -565,6 +565,7 @@ function renderContasRhi() {
       <td style="white-space:nowrap">
         <button class="salvarLimRhiBtn" data-conta="${esc(c.id)}" style="padding:4px 8px;font-size:11px">Salvar</button>
         <button class="${ativa ? 'danger' : 'secondary'} statusContaRhiBtn" data-conta="${esc(c.id)}" data-status="${esc(c.status||'')}" data-nome="${esc(c.nome_empresa||c.id)}" style="padding:4px 8px;font-size:11px">${ativa ? 'Desativar' : 'Ativar'}</button>
+        <button class="danger excluirContaRhiBtn" data-conta="${esc(c.id)}" data-nome="${esc(c.nome_empresa||c.id)}" style="padding:4px 8px;font-size:11px">🗑 Excluir</button>
       </td>
     </tr>`;
   }).join("");
@@ -587,6 +588,31 @@ function renderContasRhi() {
       } catch (e) {
         $("contasRhiEditMsg").textContent = "❌ " + e.message;
       } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  // "Desativar" é o caminho seguro (reversível). "Excluir" é definitivo —
+  // para empresa com quem não se trabalha mais.
+  tbody.querySelectorAll(".excluirContaRhiBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const nome = btn.dataset.nome;
+      if (!confirm(`Excluir definitivamente "${nome}" do Banco de Corretores CRECI?\n\nRemove a empresa e os usuários/logins dela. Não dá pra desfazer. Se pode voltar a trabalhar com ela, prefira "Desativar".`)) return;
+      btn.disabled = true;
+      try {
+        try {
+          await apiContasRhi({ acao: "excluir_conta", conta_id: btn.dataset.conta });
+        } catch (e) {
+          const m = String(e.message).match(/^TEM_HISTORICO:(\d+)/);
+          if (!m) throw e;
+          if (!confirm(`"${nome}" já liberou ${m[1]} contato(s). Para excluir, esse histórico de consumo também é apagado.\n\nExcluir mesmo assim?`)) { btn.disabled = false; return; }
+          await apiContasRhi({ acao: "excluir_conta", conta_id: btn.dataset.conta, apagar_historico: true });
+        }
+        await loadContasRhi();
+        loadUsuariosRhi();
+      } catch (e) {
+        alert("❌ " + e.message);
         btn.disabled = false;
       }
     });
