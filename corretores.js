@@ -221,6 +221,23 @@
     });
     const profile = rows?.[0] || null;
     if (!profile || String(profile.status || '').toUpperCase() !== 'ATIVO') return null;
+    // Empresa vencida/desativada não entra. A trava de verdade está no banco
+    // (nenhum contato é liberado); aqui é só para avisar o motivo certo.
+    state.motivoBloqueio = '';
+    try {
+      const contas = await api('contas', { select: 'status,data_fim', id: `eq.${profile.conta_id}`, limit: 1 });
+      const c = contas?.[0];
+      if (c) {
+        const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+        const fim = c.data_fim ? String(c.data_fim).slice(0, 10) : null;
+        // Só barra quem o banco já marcou como inativa (o job do vencimento
+        // faz isso no dia seguinte ao fim) — a data sozinha não derruba ninguém.
+        const ativa = String(c.status || '').toUpperCase() === 'ATIVA';
+        if (!ativa && fim && fim < hoje) state.motivoBloqueio = `O acesso da sua empresa expirou em ${formatDateBR(fim)}. Fale com a RH IMOB para renovar.`;
+        else if (!ativa) state.motivoBloqueio = 'O acesso da sua empresa está inativo. Fale com a RH IMOB.';
+        if (state.motivoBloqueio) return null;
+      }
+    } catch (_) { /* sem permissão de leitura: o banco continua barrando a liberação */ }
     state.profile = profile;
     return profile;
   }
@@ -286,12 +303,14 @@
     }
     const profile = await loadUserProfile();
     if (!profile) {
+      const motivo = state.motivoBloqueio;
       const client = getSupabaseClient();
       if (client) await client.auth.signOut();
       state.session = null;
       state.profile = null;
       state.frases = DEFAULT_FRASES.slice();
       updateAuthUI();
+      if (motivo) { openLoginModal(); setLoginMessage(motivo, 'error'); }
       return false;
     }
     await loadFrases();
@@ -608,6 +627,8 @@
     if (/LIMITE_DE_ACESSOS_DO_PLANO_ESGOTADO/i.test(message)) {
       return 'Seu plano atingiu o limite de acessos contratados. Fale com a RH IMOB para renovar ou fazer upgrade.';
     }
+    const expirou = String(message).match(/expirou em \d{2}\/\d{2}\/\d{4}/);
+    if (expirou) return `O acesso da sua empresa ${expirou[0]}. Fale com a RH IMOB para renovar.`;
     if (/USUARIO_SEM_CONTA_ATIVA|CONTA_INATIVA/i.test(message)) {
       return 'Seu usuário ou plano não está ativo. Fale com o administrador do plano ou com a RH IMOB.';
     }

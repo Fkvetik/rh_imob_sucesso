@@ -182,7 +182,7 @@ function renderContas() {
   const tbody = $("listaContas");
   if (!tbody) return;
   if (!CONTAS_CACHE.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhuma conta carregada.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><small>Nenhuma conta carregada.</small></td></tr>';
     return;
   }
   tbody.innerHTML = CONTAS_CACHE.map(c => {
@@ -193,6 +193,7 @@ function renderContas() {
     <tr>
       <td>${esc(c.nome_conta || c.conta_id)}<br><small style="color:#999">${esc(c.conta_id)}</small></td>
       <td><span class="badge ${c.status === 'ATIVA' ? '' : 'bloqueado'}">${esc(c.status || '-')}</span></td>
+      <td>${celulaValidadeConta(c, 'nt')}</td>
       <td${perto ? ' style="color:#c2410c;font-weight:700"' : ''}>${consumido}${limite ? ' / ' + limite : ''}</td>
       <td><input class="limTotal" data-conta="${esc(c.conta_id)}" type="number" min="0" value="${limite}" style="width:90px;margin:0"></td>
       <td><input class="limUser" data-conta="${esc(c.conta_id)}" type="number" min="0" value="${c.limite_por_usuario ?? 0}" style="width:90px;margin:0"></td>
@@ -203,6 +204,11 @@ function renderContas() {
       </td>
     </tr>`;
   }).join("");
+
+  tbody.querySelectorAll(".validadeContaBtn").forEach(btn => {
+    btn.addEventListener("click", () => editarValidadeConta(btn.dataset.tipo, btn.dataset.conta, btn.dataset.modo));
+  });
+  renderAvisosValidade();
 
   tbody.querySelectorAll(".salvarLimBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -541,7 +547,7 @@ function renderContasRhi() {
   const tbody = $("listaContasRhi");
   if (!tbody) return;
   if (!CONTAS_RHI_CACHE.length) {
-    tbody.innerHTML = '<tr><td colspan="5"><small>Nenhuma empresa cadastrada ainda.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhuma empresa cadastrada ainda.</small></td></tr>';
     return;
   }
   tbody.innerHTML = CONTAS_RHI_CACHE.map(c => {
@@ -553,6 +559,7 @@ function renderContasRhi() {
     <tr>
       <td>${esc(c.nome_empresa || c.id)}<br><small style="color:#999">${esc(c.id)}</small></td>
       <td><span class="badge ${ativa ? '' : 'bloqueado'}">${esc(c.status || '-')}</span></td>
+      <td>${celulaValidadeConta(c, 'rhi')}</td>
       <td${perto ? ' style="color:#c2410c;font-weight:700"' : ''}>${consumido}${limite ? ' / ' + limite : ''}</td>
       <td><input class="limLeadsRhi" data-conta="${esc(c.id)}" type="number" min="0" value="${limite}" style="width:100px;margin:0"></td>
       <td style="white-space:nowrap">
@@ -561,6 +568,11 @@ function renderContasRhi() {
       </td>
     </tr>`;
   }).join("");
+
+  tbody.querySelectorAll(".validadeContaBtn").forEach(btn => {
+    btn.addEventListener("click", () => editarValidadeConta(btn.dataset.tipo, btn.dataset.conta, btn.dataset.modo));
+  });
+  renderAvisosValidade();
 
   tbody.querySelectorAll(".salvarLimRhiBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -619,6 +631,7 @@ $("btnSalvarEmpresaRhi")?.addEventListener("click", async () => {
       telefone: $("rncTelefone").value.trim(),
       limite_leads: $("rncLimLeads").value,
       usuarios_contratados: $("rncUsuarios").value,
+      ...validadeInicial($("rncValidade").value),
       status: "ATIVA"
     });
     $("novaEmpresaRhiMsg").textContent = "✅ Empresa criada.";
@@ -824,6 +837,7 @@ $("btnSalvarEmpresa")?.addEventListener("click", async () => {
       limite_total: $("ncLimTotal").value,
       limite_por_usuario: $("ncLimUser").value,
       usuarios_contratados: $("ncUsuarios").value,
+      ...validadeInicial($("ncValidade").value),
       status: "ATIVA"
     });
     $("novaEmpresaMsg").textContent = "✅ Empresa criada. Agora crie os acessos dos operadores nela.";
@@ -940,9 +954,13 @@ $("btnEntrar").addEventListener("click", async () => {
 
 async function loadUsuarios() {
   try {
-    const resp = await rpc("rpc_admin_list_usuarios", { p_admin_password: ADMIN_PASS });
+    const [resp] = await Promise.all([
+      rpc("rpc_admin_list_usuarios", { p_admin_password: ADMIN_PASS }),
+      loadValidadeOperadores()
+    ]);
     if (!resp.ok) { alert("Sessão expirou: " + resp.error); location.reload(); return; }
     renderUsuarios(resp.usuarios || []);
+    renderAvisosValidade();
   } catch (e) {
     alert("Falha ao carregar: " + e.message);
   }
@@ -953,7 +971,7 @@ function renderUsuarios(list) {
   USUARIOS_COLETOR_CACHE = list || [];
   const tbody = $("listaUsuarios");
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
     return;
   }
   tbody.innerHTML = list.map(u => `
@@ -961,6 +979,8 @@ function renderUsuarios(list) {
       <td>${esc(u.login)}<br><small class="statusColetaBadge" data-login-badge="${esc(u.login)}"></small></td>
       <td>${esc(u.nome_operador)}</td>
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
+      <td>${celulaValidadeOperador(u)}</td>
+      <td>${celulaUsoOperador(u)}</td>
       <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
       <td>${u.email_plataforma
             ? `<small>🔗 ${esc(u.email_plataforma)}<br>
@@ -978,11 +998,14 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
     </tr>
-    <tr class="filtrosRow hide" data-login-row="${esc(u.login)}"><td colspan="6"><div class="filtrosPainel" data-login="${esc(u.login)}"></div></td></tr>
+    <tr class="filtrosRow hide" data-login-row="${esc(u.login)}"><td colspan="8"><div class="filtrosPainel" data-login="${esc(u.login)}"></div></td></tr>
   `).join('');
 
   tbody.querySelectorAll(".filtrosBtn").forEach(btn => {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
+  });
+  tbody.querySelectorAll(".validadeOperBtn").forEach(btn => {
+    btn.addEventListener("click", () => editarValidadeOperador(btn.dataset.login, btn.dataset.modo));
   });
   aplicarBadgesColeta(); // já aplica o que tiver em cache, sem esperar o próximo poll
 
@@ -1423,6 +1446,15 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
     });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
 
+    const novo = !USUARIOS_COLETOR_CACHE.some(u => String(u.login).toLowerCase() === login.toLowerCase());
+    if (novo && VALIDADE_PODE_EDITAR) {
+      const p = $("fValidade").value;
+      const v = await rpc("rpc_admin_definir_validade", {
+        p_admin_password: ADMIN_PASS, p_login: login,
+        p_inicio: hojeBR(), p_fim: p === "sem" ? null : somarPeriodo(hojeBR(), p)
+      }).catch(e => ({ ok: false, error: e.message }));
+      if (!v.ok) { $("formMsg").textContent = "⚠️ Operador salvo, mas a validade não: " + v.error; loadUsuarios(); return; }
+    }
 
     $("formMsg").textContent = "✅ Salvo.";
     $("btnLimparForm").click();
@@ -1689,6 +1721,250 @@ enterSubmete(["fLogin", "fSenha", "fNome", "fHorario", "fEmailPlataforma", "fLim
 enterSubmete(["ncNome", "ncLimTotal", "ncLimUser", "ncUsuarios"], "btnSalvarEmpresa");
 enterSubmete(["puNome", "puEmail", "puSenha"], "btnSalvarUsuarioPlataforma");
 enterSubmete(["admLogin", "admSenha", "admNome", "admOperadorLogin"], "btnSalvarAdmin");
+
+// ===== Validade de acesso (operadores + empresas das plataformas) =====
+// Datas "AAAA-MM-DD" no dia de Brasília. O acesso vale até o fim do dia
+// final; no dia seguinte o próprio banco bloqueia (SQL ACESSO_1 e ACESSO_2) —
+// este painel só mostra, avisa e renova. Data final vazia = sem vencimento.
+let VALIDADE_OPER = {};          // login -> linha de rpc_admin_validade_usuarios
+let VALIDADE_HOJE = null;        // "hoje" do banco (evita relógio errado do PC)
+let VALIDADE_PODE_EDITAR = false;
+let VALIDADE_ERRO = "";
+const AVISAR_DIAS_ANTES = 3;
+
+function hojeBR() {
+  return VALIDADE_HOJE || new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+}
+function dataBR(iso) {
+  if (!iso) return "—";
+  const [a, m, d] = String(iso).slice(0, 10).split("-");
+  return `${d}/${m}/${a}`;
+}
+function diasAte(iso) {
+  return Math.round((Date.parse(String(iso).slice(0, 10) + "T00:00:00Z") - Date.parse(hojeBR() + "T00:00:00Z")) / 86400000);
+}
+// "30:d" = 30 dias, "12:m" = 12 meses. 31/01 + 1 mês = 28/02 (não pula pra março).
+function somarPeriodo(iso, periodo) {
+  const [n, u] = String(periodo).split(":");
+  const d = new Date(String(iso).slice(0, 10) + "T00:00:00Z");
+  if (u === "m") {
+    const dia = d.getUTCDate();
+    d.setUTCDate(1);
+    d.setUTCMonth(d.getUTCMonth() + Number(n));
+    const ultimo = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    d.setUTCDate(Math.min(dia, ultimo));
+  } else {
+    d.setUTCDate(d.getUTCDate() + Number(n));
+  }
+  return d.toISOString().slice(0, 10);
+}
+function validadeInicial(periodo) {
+  return { data_inicio: hojeBR(), data_fim: periodo === "sem" ? null : somarPeriodo(hojeBR(), periodo) };
+}
+function seloValidade(fim) {
+  if (!fim) return { nivel: "sem", html: '<span class="selo sem">⚫ Sem vencimento</span>' };
+  const dias = diasAte(fim);
+  if (dias < 0) return { nivel: "vencido", dias, html: `<span class="selo vencido">🔴 Venceu em ${dataBR(fim)}</span>` };
+  if (dias <= AVISAR_DIAS_ANTES) {
+    const quando = dias === 0 ? "Vence hoje" : `Vence em ${dias} dia${dias > 1 ? "s" : ""}`;
+    return { nivel: "logo", dias, html: `<span class="selo logo">🟡 ${quando}</span>` };
+  }
+  return { nivel: "ok", dias, html: `<span class="selo ok">🟢 ${dias} dias</span>` };
+}
+function botoesValidade(attrs) {
+  if (!VALIDADE_PODE_EDITAR) return "";
+  return `<br><button ${attrs} data-modo="renovar" style="padding:3px 7px;font-size:10px;margin-top:4px">🔄 Renovar</button>
+    <button ${attrs} data-modo="editar" class="ghost" style="padding:3px 7px;font-size:10px;margin-top:4px">📅 Datas</button>`;
+}
+
+async function loadValidadeOperadores() {
+  try {
+    const r = await rpc("rpc_admin_validade_usuarios", { p_admin_password: ADMIN_PASS });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    VALIDADE_HOJE = r.hoje || null;
+    VALIDADE_PODE_EDITAR = !!r.pode_editar;
+    VALIDADE_OPER = {};
+    (r.usuarios || []).forEach(v => { VALIDADE_OPER[v.login] = v; });
+    VALIDADE_ERRO = "";
+  } catch (e) {
+    VALIDADE_ERRO = /rpc_admin_validade_usuarios|function|não existe|does not exist|404/i.test(e.message)
+      ? "Falta rodar o SQL ACESSO_1 no Supabase do Coletor."
+      : e.message;
+    // empresas das plataformas não dependem desse SQL: super-admin edita igual
+    VALIDADE_PODE_EDITAR = !!(CURRENT_ADMIN && !CURRENT_ADMIN.conta_id_plataforma && CURRENT_ADMIN.nivel !== "agendamentos");
+  }
+  const box = $("fValidadeBox");
+  if (box) box.classList.toggle("hide", !VALIDADE_PODE_EDITAR);
+}
+
+function celulaValidadeOperador(u) {
+  if (VALIDADE_ERRO) return `<small style="color:#999">${esc(VALIDADE_ERRO)}</small>`;
+  const v = VALIDADE_OPER[u.login];
+  if (!v) return '<small style="color:#999">—</small>';
+  const s = seloValidade(v.acesso_fim);
+  const periodo = v.acesso_fim ? `<br><small style="color:#666">${dataBR(v.acesso_inicio)} → ${dataBR(v.acesso_fim)}</small>` : "";
+  const motivo = v.bloqueado_por_vencimento ? '<br><small style="color:#991b1b">bloqueado por vencimento</small>' : "";
+  return s.html + periodo + motivo + botoesValidade(`data-login="${esc(u.login)}" class="validadeOperBtn"`);
+}
+
+function celulaUsoOperador(u) {
+  const v = VALIDADE_OPER[u.login];
+  if (!v || !v.uso) return '<small style="color:#999">—</small>';
+  const x = v.uso, temPeriodo = !!v.acesso_inicio;
+  const n = (tot, per) => `<b>${tot || 0}</b>${temPeriodo ? ` <span style="color:#888">(${per || 0})</span>` : ""}`;
+  return `<small style="white-space:nowrap;line-height:1.6">
+    📤 Abordados: ${n(x.abordados_total, x.abordados_periodo)}<br>
+    🧩 Banco de Talentos: ${n(x.banco_total, x.banco_periodo)}<br>
+    🏘️ CRECI: ${n(x.creci_total, x.creci_periodo)}<br>
+    🔎 Catho: ${n(x.catho_total, x.catho_periodo)}
+    ${temPeriodo ? `<br><span style="color:#888">(entre parênteses: desde ${dataBR(v.acesso_inicio)})</span>` : ""}
+  </small>`;
+}
+
+function celulaValidadeConta(c, tipo) {
+  const s = seloValidade(c.data_fim);
+  const periodo = c.data_fim ? `<br><small style="color:#666">${dataBR(c.data_inicio)} → ${dataBR(c.data_fim)}</small>` : "";
+  const id = tipo === "nt" ? c.conta_id : c.id;
+  return s.html + periodo + botoesValidade(`data-tipo="${tipo}" data-conta="${esc(id)}" class="validadeContaBtn"`);
+}
+
+// ---------- diálogo: renovar / definir datas ----------
+function dialogoValidade({ titulo, inicio, fim, modo }) {
+  let dlg = $("dlgValidade");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "dlgValidade";
+    dlg.innerHTML = `
+      <h3 id="dvTitulo" style="margin:0 0 4px;font-size:15px"></h3>
+      <div id="dvSub" style="font-size:12px;color:#666;margin-bottom:10px"></div>
+      <label>Início do acesso</label><input id="dvInicio" type="date">
+      <label>Período</label>
+      <select id="dvPeriodo">
+        <option value="30:d">30 dias</option><option value="3:m">3 meses</option>
+        <option value="6:m">6 meses</option><option value="12:m">12 meses (anual)</option>
+        <option value="livre">Escolher a data final</option><option value="sem">Sem vencimento</option>
+      </select>
+      <label>Acesso vale até (inclusive)</label><input id="dvFim" type="date">
+      <div id="dvMsg" class="msg"></div>
+      <div class="btns" style="margin-top:12px">
+        <button id="dvSalvar">💾 Salvar</button>
+        <button id="dvCancelar" class="ghost">Cancelar</button>
+      </div>`;
+    document.body.appendChild(dlg);
+  }
+  const ini = $("dvInicio"), per = $("dvPeriodo"), fimEl = $("dvFim"), msg = $("dvMsg");
+  const hoje = hojeBR();
+  const vencido = fim && fim < hoje;
+  // Renovar: soma a partir do fim atual (não perde dias já pagos); se já
+  // venceu, recomeça hoje. Datas: soma a partir do início.
+  const base = () => modo === "renovar" ? (fim && !vencido ? fim : hoje) : (ini.value || hoje);
+  const recalcular = () => {
+    if (per.value === "sem") { fimEl.value = ""; fimEl.disabled = true; return; }
+    fimEl.disabled = false;
+    if (per.value !== "livre") fimEl.value = somarPeriodo(base(), per.value);
+  };
+  $("dvTitulo").textContent = (modo === "renovar" ? "🔄 Renovar — " : "📅 Validade — ") + titulo;
+  $("dvSub").textContent = fim
+    ? `Hoje: ${vencido ? "venceu em" : "vale até"} ${dataBR(fim)}.` + (modo === "renovar" ? (vencido ? " A renovação conta a partir de hoje." : " A renovação soma a partir dessa data.") : "")
+    : "Hoje: sem vencimento.";
+  ini.value = modo === "renovar" && (vencido || !inicio) ? hoje : (inicio || hoje);
+  ini.disabled = modo === "renovar";
+  per.value = modo === "editar" && !fim ? "sem" : (modo === "editar" ? "livre" : "30:d");
+  fimEl.value = fim || "";
+  msg.textContent = "";
+  if (modo === "renovar") recalcular(); else { fimEl.disabled = per.value === "sem"; }
+  per.onchange = recalcular;
+  ini.onchange = () => { if (per.value !== "livre") recalcular(); };
+  fimEl.oninput = () => { per.value = "livre"; };
+
+  return new Promise(resolve => {
+    $("dvCancelar").onclick = () => { dlg.close(); resolve(null); };
+    dlg.onclose = () => resolve(null);
+    $("dvSalvar").onclick = () => {
+      const novoIni = ini.value || hoje;
+      const novoFim = per.value === "sem" ? null : (fimEl.value || null);
+      if (per.value !== "sem" && !novoFim) { msg.textContent = "❌ Escolha a data final (ou \"Sem vencimento\")."; return; }
+      if (novoFim && novoFim < novoIni) { msg.textContent = "❌ A data final não pode ser antes do início."; return; }
+      if (novoFim && novoFim < hoje && !confirm(`A data final (${dataBR(novoFim)}) já passou — o acesso será bloqueado agora. Continuar?`)) return;
+      dlg.onclose = null;
+      dlg.close();
+      resolve({ inicio: novoIni, fim: novoFim });
+    };
+    dlg.showModal();
+  });
+}
+
+async function editarValidadeOperador(login, modo) {
+  const v = VALIDADE_OPER[login] || {};
+  const u = USUARIOS_COLETOR_CACHE.find(x => x.login === login) || {};
+  const r = await dialogoValidade({ titulo: u.nome_operador || login, inicio: v.acesso_inicio, fim: v.acesso_fim, modo });
+  if (!r) return;
+  try {
+    const resp = await rpc("rpc_admin_definir_validade", { p_admin_password: ADMIN_PASS, p_login: login, p_inicio: r.inicio, p_fim: r.fim });
+    if (!resp.ok) { alert("❌ " + resp.error); return; }
+    await loadUsuarios();
+  } catch (e) {
+    alert("❌ " + e.message);
+  }
+}
+
+async function editarValidadeConta(tipo, contaId, modo) {
+  const cache = tipo === "nt" ? CONTAS_CACHE : CONTAS_RHI_CACHE;
+  const c = cache.find(x => String(tipo === "nt" ? x.conta_id : x.id) === String(contaId));
+  if (!c) return;
+  const fimAtual = c.data_fim ? String(c.data_fim).slice(0, 10) : null;
+  const iniAtual = c.data_inicio ? String(c.data_inicio).slice(0, 10) : null;
+  const r = await dialogoValidade({ titulo: c.nome_conta || c.nome_empresa || contaId, inicio: iniAtual, fim: fimAtual, modo });
+  if (!r) return;
+  const payload = { acao: "editar_conta", conta_id: contaId, data_inicio: r.inicio, data_fim: r.fim };
+  // Empresa que caiu por vencimento volta a ficar ATIVA quando a nova data
+  // ainda vale. Desativada à mão (sem estar vencida) continua desativada.
+  const caiuPorVencimento = String(c.status || "").toUpperCase() !== "ATIVA" && fimAtual && fimAtual < hojeBR();
+  if (caiuPorVencimento && (!r.fim || r.fim >= hojeBR())) payload.status = "ATIVA";
+  try {
+    if (tipo === "nt") { await apiContas(payload); await loadContasPlataforma(); }
+    else { await apiContasRhi(payload); await loadContasRhi(); }
+  } catch (e) {
+    alert("❌ " + e.message);
+  }
+}
+
+// ---------- aviso no topo: vence em até 3 dias ou já venceu ----------
+function renderAvisosValidade() {
+  const box = $("avisosValidade");
+  if (!box) return;
+  const itens = [];
+  const add = (fim, nome, onde, abrir) => {
+    const s = seloValidade(fim);
+    if (s.nivel !== "logo" && s.nivel !== "vencido") return;
+    if (s.nivel === "vencido" && s.dias < -30) return; // vencido há mais de 30 dias: já não é novidade
+    itens.push({ dias: s.dias, html: `${s.html} <b>${esc(nome)}</b> <small style="color:#666">${onde} · até ${dataBR(fim)}</small>`, abrir });
+  };
+  USUARIOS_COLETOR_CACHE.forEach(u => {
+    const v = VALIDADE_OPER[u.login];
+    if (v && v.acesso_fim) add(v.acesso_fim, u.nome_operador || u.login, "operador da extensão", () => editarValidadeOperador(u.login, "renovar"));
+  });
+  CONTAS_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_conta || c.conta_id, "empresa · Novos Talentos", () => editarValidadeConta("nt", c.conta_id, "renovar")); });
+  CONTAS_RHI_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_empresa || c.id, "empresa · Corretores CRECI", () => editarValidadeConta("rhi", c.id, "renovar")); });
+  itens.sort((a, b) => a.dias - b.dias);
+  box.classList.toggle("hide", !itens.length);
+  if (!itens.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<h3 style="margin:0 0 6px;font-size:14px">⏳ Acessos vencendo (${itens.length})</h3>
+    <small style="color:#92400e">Sem renovação, o bloqueio é automático no dia seguinte ao vencimento.</small>`;
+  itens.forEach(it => {
+    const d = document.createElement("div");
+    d.className = "item";
+    d.innerHTML = it.html;
+    if (VALIDADE_PODE_EDITAR) {
+      const b = document.createElement("button");
+      b.textContent = "🔄 Renovar";
+      b.style.cssText = "padding:3px 8px;font-size:11px;margin-left:auto";
+      b.addEventListener("click", it.abrir);
+      d.appendChild(b);
+    }
+    box.appendChild(d);
+  });
+}
 
 // Se já tinha sessão de admin aberta (mesma aba), pula a tela de login.
 if (ADMIN_PASS) {

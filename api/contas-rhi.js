@@ -31,7 +31,7 @@ async function senhaDeAdminValida(senha) {
       return { valida: false, motivo: `Falha ao verificar senha (HTTP ${r.status} do Coletor): ${t.slice(0, 200)}` };
     }
     const data = await r.json();
-    if (data && data.ok === true) return { valida: true };
+    if (data && data.ok === true) return { valida: true, contaId: data.conta_id_plataforma || null };
     return { valida: false, motivo: 'Senha de admin incorreta.' };
   } catch (e) {
     return { valida: false, motivo: 'Falha de rede ao verificar senha: ' + String(e && e.message || e) };
@@ -60,7 +60,12 @@ export default async function handler(req, res) {
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
       switch (body.acao) {
         case 'criar_conta':            return await criarConta(res, headers, body);
-        case 'editar_conta':           return await editarConta(res, headers, body);
+        case 'editar_conta':
+          // Validade e status só a RH IMOB mexe — senão a própria empresa se renovava.
+          if (check.contaId && (body.status != null || body.data_inicio !== undefined || body.data_fim !== undefined)) {
+            return send(res, 403, { error: 'sem_permissao', message: 'Só o administrador da RH IMOB altera status e validade da empresa.' });
+          }
+          return await editarConta(res, headers, body);
         case 'criar_usuario':          return await criarUsuario(res, headers, SERVICE_KEY, body);
         case 'editar_usuario':         return await editarUsuario(res, headers, body);
         case 'alterar_status_usuario': return await alterarStatusUsuario(res, headers, body);

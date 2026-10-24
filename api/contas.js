@@ -140,6 +140,8 @@ async function criarConta(res, headers, body, contaIdAdmin) {
     limite_total: numOrNull(body.limite_total),
     limite_por_usuario: numOrNull(body.limite_por_usuario),
     usuarios_contratados: numOrNull(body.usuarios_contratados),
+    data_inicio: body.data_inicio || null,
+    data_fim: body.data_fim || null,
     observacao: body.observacao || null,
     updated_at: new Date().toISOString()
   };
@@ -155,6 +157,10 @@ async function criarConta(res, headers, body, contaIdAdmin) {
 async function editarConta(res, headers, body, contaId) {
   if (!body.conta_id) return send(res, 400, { error: 'validacao', message: 'conta_id é obrigatório.' });
   if (contaId && body.conta_id !== contaId) return send(res, 403, { error: 'sem_permissao', message: 'Sem permissão sobre essa empresa.' });
+  // Validade e status só a RH IMOB mexe — senão a própria empresa se renovava.
+  if (contaId && (body.status != null || body.data_inicio !== undefined || body.data_fim !== undefined)) {
+    return send(res, 403, { error: 'sem_permissao', message: 'Só o administrador da RH IMOB altera status e validade da empresa.' });
+  }
   const patch = { updated_at: new Date().toISOString() };
   if (body.nome_conta != null) patch.nome_conta = String(body.nome_conta).trim();
   if (body.plano_tipo != null) patch.plano_tipo = body.plano_tipo;
@@ -164,6 +170,8 @@ async function editarConta(res, headers, body, contaId) {
   if (body.limite_por_usuario !== undefined) patch.limite_por_usuario = numOrNull(body.limite_por_usuario);
   if (body.usuarios_contratados !== undefined) patch.usuarios_contratados = numOrNull(body.usuarios_contratados);
   if (body.observacao !== undefined) patch.observacao = body.observacao || null;
+  if (body.data_inicio !== undefined) patch.data_inicio = body.data_inicio || null;
+  if (body.data_fim !== undefined) patch.data_fim = body.data_fim || null;
 
   const r = await fetch(`${SB_URL}/rest/v1/nt_contas?conta_id=eq.${encodeURIComponent(body.conta_id)}`, {
     method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)

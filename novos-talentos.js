@@ -517,6 +517,29 @@
     return unwrapRpcObject(data);
   }
 
+  // Empresa vencida/desativada não entra. A trava de verdade está no banco
+  // (nenhum contato é liberado); aqui é só para avisar o motivo certo. Se a
+  // leitura falhar por permissão, segue — o banco continua barrando.
+  async function checarValidadeConta(client, contaId) {
+    if (!contaId) return;
+    let c = null;
+    try {
+      const { data } = await client.from('nt_contas').select('status,data_fim').eq('conta_id', contaId).maybeSingle();
+      c = data;
+    } catch (_) { return; }
+    if (!c) return;
+    const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+    const fim = c.data_fim ? String(c.data_fim).slice(0, 10) : null;
+    // Só barra quem o banco já marcou como inativa (o job do vencimento faz
+    // isso no dia seguinte ao fim) — a data sozinha não derruba ninguém aqui.
+    if (String(c.status || '').toUpperCase() === 'ATIVA') return;
+    if (fim && fim < hoje) {
+      const [a, m, d] = fim.split('-');
+      throw new Error(`O acesso da sua empresa expirou em ${d}/${m}/${a}. Fale com a RH IMOB para renovar.`);
+    }
+    throw new Error('O acesso da sua empresa está inativo. Fale com a RH IMOB.');
+  }
+
   async function loadContext() {
     const client = getClient();
     if (!client) throw new Error('Configuração da plataforma indisponível.');
@@ -525,12 +548,14 @@
     try {
       const ctx = await rpcOne('nt_app_context_json_v11', {});
       if (ctx) {
+        await checarValidadeConta(client, ctx.conta_id);
         state.context = ctx;
         updateSummary();
         updateHeader();
         return ctx;
       }
     } catch (err) {
+      if (/expirou em|está inativo/.test(String(err && err.message))) throw err;
       console.warn('[NT] contexto RPC indisponível, tentando leitura direta:', err);
     }
 
@@ -558,7 +583,10 @@
       .maybeSingle();
 
     if (contaError) throw contaError;
-    if (!conta) throw new Error('Conta não localizada ou inativa.');
+    if (!conta) {
+      await checarValidadeConta(client, userLink.conta_id);
+      throw new Error('Conta não localizada ou inativa.');
+    }
 
     const { count } = await client
       .from('nt_talento_consumos')
