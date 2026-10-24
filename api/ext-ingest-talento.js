@@ -16,6 +16,13 @@ export default async function handler(req, res) {
   if (!lead || typeof lead !== 'object' || Array.isArray(lead)) return send(res, 400, { ok: false, error: 'Lead inválido' });
   if (JSON.stringify(lead).length > 60000) return send(res, 413, { ok: false, error: 'Lead grande demais' });
 
+  // O pool é a base de currículos da Catho. Corretores CRECI (rhi://, Instagram),
+  // CSV (upload:) e contatos que já vieram do pool (nt://) não viram talento —
+  // vale mesmo para versões antigas da extensão que ainda mandam tudo.
+  if (!/^https?:\/\/(www\.)?catho\.com\.br\/curriculos\//i.test(String(lead.PerfilURL || ''))) {
+    return send(res, 200, { ok: true, ignorado: true, motivo: 'Só currículos da Catho entram no pool' });
+  }
+
   const service = NT.service();
   if (!service) return send(res, 500, { ok: false, error: 'Chave de serviço não configurada' });
 
