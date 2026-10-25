@@ -1178,6 +1178,9 @@ async function refreshStatusColeta() {
 function iniciarPollingStatusColeta() {
   STATUS_COLETA_FALHAS = 0;
   refreshStatusColeta();
+  loadMaquinas();
+  if (MAQUINAS_INTERVAL) clearInterval(MAQUINAS_INTERVAL);
+  MAQUINAS_INTERVAL = setInterval(() => { if (!document.hidden) loadMaquinas(); }, 60000);
   if (STATUS_COLETA_INTERVAL) clearInterval(STATUS_COLETA_INTERVAL);
   STATUS_COLETA_INTERVAL = setInterval(refreshStatusColeta, 20000);
 }
@@ -2062,6 +2065,72 @@ function renderAvisosValidade() {
 // Se já tinha sessão de admin aberta (mesma aba), pula a tela de login.
 if (ADMIN_PASS) {
   fazerLogin(ADMIN_PASS).catch(() => {});
+}
+
+// ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
+let MAQUINAS_INTERVAL = null;
+const ONLINE_ATE_MIN = 10; // a extensão manda sinal a cada 3 min
+
+function compararVersao(a, b) {
+  const pa = String(a || "0").split(".").map(Number), pb = String(b || "0").split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+function tempoDesde(min) {
+  if (min == null) return "";
+  if (min < 1) return "agora";
+  if (min < 60) return `há ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 48) return `há ${h} h`;
+  return `há ${Math.floor(h / 24)} dias`;
+}
+
+async function loadMaquinas() {
+  const tbody = $("listaMaquinas");
+  if (!tbody) return;
+  let r;
+  try {
+    r = await rpc("rpc_admin_saude", { p_admin_password: ADMIN_PASS });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6"><small>${/rpc_admin_saude|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+    return;
+  }
+  const lista = r.maquinas || [];
+  const versaoMaisNova = lista.reduce((m, x) => x.versao && compararVersao(x.versao, m) > 0 ? x.versao : m, "0");
+  let online = 0, atencao = 0;
+  tbody.innerHTML = lista.map(m => {
+    const nunca = m.minutos_sem_sinal == null;
+    const on = !nunca && m.minutos_sem_sinal <= ONLINE_ATE_MIN;
+    if (on) online++;
+    const situacao = nunca ? '<span class="selo sem">⚪ Nunca conectou</span><br><small>extensão antiga ou não logada</small>'
+      : on ? `<span class="selo ok">🟢 Online</span><br><small>${tempoDesde(m.minutos_sem_sinal)}${m.coletando ? " · coletando" : ""}</small>`
+      : `<span class="selo vencido">🔴 Offline</span><br><small>último sinal ${tempoDesde(m.minutos_sem_sinal)}</small>`;
+    const velha = m.versao && compararVersao(m.versao, versaoMaisNova) < 0;
+    const versao = !m.versao ? "—" : velha ? `<span class="selo logo">⚠️ ${esc(m.versao)}</span><br><small>atualizar para ${esc(versaoMaisNova)}</small>` : esc(m.versao);
+    const whats = m.whatsapp_aberto == null ? "—" : m.whatsapp_aberto ? "✅ aberto" : "❌ fechado";
+    const disparo = !m.disparo ? "—"
+      : m.disparo === "rodando" ? `▶️ rodando<br><small>fila: ${m.fila || 0}</small>`
+      : m.disparo === "pausado" ? `⏸ pausado<br><small>${esc(m.pausa_motivo || "")}${m.fila ? " · fila: " + m.fila : ""}</small>`
+      : `⏹ parado${m.fila ? `<br><small>fila: ${m.fila}</small>` : ""}`;
+    let coleta = "—";
+    if (m.ultima_coleta_em) {
+      const quando = new Date(m.ultima_coleta_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+      const problema = m.ultima_coleta_erro || m.ultima_coleta_falhas;
+      coleta = `${problema ? "⚠️" : "✅"} ${quando}<br><small>${m.ultima_coleta_encontrados || 0} achados · ${m.ultima_coleta_entregues || 0} na fila${m.ultima_coleta_erro ? "<br>" + esc(m.ultima_coleta_erro) : ""}</small>`;
+    }
+    if (velha || (m.ultima_coleta_erro) || (on && m.whatsapp_aberto === false && m.disparo === "rodando")) atencao++;
+    return `<tr>
+      <td><b>${esc(m.nome || m.login)}</b><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
+      <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}</td><td>${coleta}</td>
+    </tr>`;
+  }).join("") || '<tr><td colspan="6"><small>Nenhum operador ativo.</small></td></tr>';
+  const resumo = $("maquinasResumo");
+  if (resumo) resumo.innerHTML = `<span class="selo ok">🟢 ${online} online</span> <span class="selo sem">${lista.length - online} sem sinal agora</span>`
+    + (atencao ? ` <span class="selo logo">⚠️ ${atencao} pedem atenção</span>` : "");
 }
 
 // Resposta visual a todo clique em botão (pulso rápido) — o "carregando" é o

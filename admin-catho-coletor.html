@@ -396,6 +396,15 @@
     </div><!-- /tabCreci -->
 
     <div class="tabpanel hide" id="tabOperadores">
+    <div class="card" id="cardMaquinas">
+      <h3 style="margin-top:0;font-size:14px">🖥 Máquinas — extensões ligadas agora</h3>
+      <small>Cada extensão logada avisa a cada 3 minutos que está viva. Atualiza sozinho a cada minuto.</small>
+      <div id="maquinasResumo" style="margin-top:10px"></div>
+      <table>
+        <thead><tr><th>Operador</th><th>Situação</th><th>Versão</th><th>WhatsApp</th><th>Disparo</th><th>Última coleta</th></tr></thead>
+        <tbody id="listaMaquinas"><tr><td colspan="6"><small>Carregando...</small></td></tr></tbody>
+      </table>
+    </div>
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">📄 Planilha mãe da Catho (espelho de leads)</h3>
       <small>Toda vez que alguém roda a coleta da Catho ou libera um contato do Pool (Banco de Talentos), o lead é espelhado aqui automaticamente — o Supabase é a fonte de verdade, isso é só pra quem prefere olhar pela planilha.</small>
@@ -567,7 +576,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261025visual"></script>
+<script src="admin-catho-coletor.js?v=20261025maquinas"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
