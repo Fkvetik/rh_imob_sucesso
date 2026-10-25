@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Resumo do período — RH IMOB</title>
+<link rel="icon" href="favicon.svg">
+<style>
+  :root{--roxo:#4b178b;--roxo-esc:#2b124d;--laranja:#f08a24;--texto:#231a30;--suave:#6b6478;--borda:#ece8f3;--fundo:#f7f5fb}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--texto);background:var(--fundo)}
+  .barra{display:flex;gap:10px;align-items:end;flex-wrap:wrap;max-width:900px;margin:16px auto 0;padding:0 16px}
+  .barra label{font-size:11px;color:var(--suave);display:block;margin-bottom:3px}
+  .barra input{padding:7px 9px;border:1px solid #d9d3e6;border-radius:8px;font:inherit;font-size:13px}
+  .barra button{padding:8px 14px;border:0;border-radius:8px;background:var(--roxo);color:#fff;font-weight:600;font-size:13px;cursor:pointer}
+  .barra button.sec{background:#fff;color:var(--roxo);border:1px solid var(--roxo)}
+  .folha{max-width:900px;margin:16px auto 32px;background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(43,18,77,.08);overflow:hidden}
+  .topo{background:linear-gradient(120deg,var(--roxo-esc),var(--roxo));color:#fff;padding:24px 28px;display:flex;gap:18px;align-items:center}
+  .topo img{width:52px;height:52px;border-radius:10px;background:#fff}
+  .topo h1{margin:0;font-size:20px}
+  .topo p{margin:4px 0 0;opacity:.85;font-size:13px}
+  .corpo{padding:24px 28px}
+  h2{font-size:14px;color:var(--roxo);margin:26px 0 12px;text-transform:uppercase;letter-spacing:.04em}
+  h2:first-child{margin-top:0}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .kpi{border:1px solid var(--borda);border-radius:12px;padding:14px}
+  .kpi .n{font-size:28px;font-weight:800;color:var(--roxo-esc);font-variant-numeric:tabular-nums}
+  .kpi .t{font-size:12px;color:var(--suave);margin-top:2px}
+  .kpi .p{font-size:12px;color:var(--laranja);font-weight:700;margin-top:6px}
+  .funil{display:flex;flex-direction:column;gap:8px}
+  .etapa{display:grid;grid-template-columns:150px 1fr 70px;gap:10px;align-items:center;font-size:13px}
+  .etapa .b{height:22px;border-radius:6px;background:var(--roxo);min-width:2px}
+  .etapa .v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+  .semanas{display:flex;align-items:flex-end;gap:6px;height:140px;border-bottom:1px solid var(--borda);padding-top:16px}
+  .sem{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--suave)}
+  .sem .b{width:100%;max-width:46px;background:var(--laranja);border-radius:5px 5px 0 0}
+  .sem .q{font-weight:700;color:var(--texto);margin-bottom:3px}
+  .rot{display:flex;gap:6px}.rot span{flex:1;text-align:center;font-size:10px;color:var(--suave);padding-top:4px}
+  .nota{font-size:12px;color:var(--suave);margin-top:22px;line-height:1.5}
+  .msg{max-width:900px;margin:40px auto;padding:0 16px;text-align:center;color:var(--suave)}
+  @media (max-width:600px){.etapa{grid-template-columns:110px 1fr 50px}.topo,.corpo{padding:18px}}
+  @media print{body{background:#fff}.barra{display:none}.folha{box-shadow:none;margin:0;max-width:none;border-radius:0}
+    .topo{-webkit-print-color-adjust:exact;print-color-adjust:exact}.etapa .b,.sem .b{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="barra" id="barra">
+  <div><label for="de">De</label><input type="date" id="de"></div>
+  <div><label for="ate">Até</label><input type="date" id="ate"></div>
+  <button id="btnAtualizar">Atualizar</button>
+  <button id="btnImprimir" class="sec">🖨 Imprimir / salvar PDF</button>
+</div>
+<div id="saida"><div class="msg">Carregando...</div></div>
+
+<script>
+// Resumo de um cliente (operador) num período — aberto pelo painel admin
+// (botão 📊 Resumo). Usa a mesma sessão de admin do painel; números vêm do
+// SQL RESUMO_1 (rpc_admin_resumo_cliente).
+(function(){
+  const SUPABASE_URL = "https://lrejfhsomfxyaoshmpzz.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y";
+  const $ = id => document.getElementById(id);
+  const q = new URLSearchParams(location.search);
+  const login = q.get("login") || "";
+  const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+  const menos30 = (() => { const d = new Date(hoje + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() - 29); return d.toISOString().slice(0, 10); })();
+  $("de").value = q.get("de") || menos30;
+  $("ate").value = q.get("ate") || hoje;
+
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const num = n => Number(n || 0).toLocaleString("pt-BR");
+  const pct = (a, b) => b ? Math.round(a / b * 100) + "%" : "—";
+  const dataBR = iso => { if (!iso) return "—"; const [a, m, d] = String(iso).slice(0, 10).split("-"); return `${d}/${m}/${a}`; };
+
+  function senha() {
+    let s = "";
+    try { s = sessionStorage.getItem("catho_admin_pass") || ""; } catch (_) {}
+    return s;
+  }
+
+  async function carregar() {
+    if (!login) { $("saida").innerHTML = '<div class="msg">Abra este resumo pelo painel admin (botão 📊 Resumo do operador).</div>'; return; }
+    const pass = senha();
+    if (!pass) { $("saida").innerHTML = '<div class="msg">Sessão de admin não encontrada nesta aba. Abra o resumo pelo botão 📊 Resumo no painel admin.</div>'; return; }
+    $("saida").innerHTML = '<div class="msg">Carregando...</div>';
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rpc_admin_resumo_cliente`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+        body: JSON.stringify({ p_admin_password: pass, p_login: login, p_de: $("de").value, p_ate: $("ate").value })
+      });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error((d && (d.error || d.message)) || ("HTTP " + r.status));
+      render(d);
+    } catch (e) {
+      $("saida").innerHTML = `<div class="msg">❌ ${esc(e.message)}</div>`;
+    }
+  }
+
+  function render(d) {
+    const n = d.numeros || {};
+    const recebidos = (n.recebidos_catho || 0) + (n.recebidos_banco || 0) + (n.recebidos_creci || 0) + (n.recebidos_outros || 0);
+    const etapas = [
+      ["Abordados", n.abordados], ["Responderam", n.responderam],
+      ["Receberam a proposta", n.proposta], ["Agendaram", n.agendaram]
+    ];
+    const maxEtapa = Math.max(1, ...etapas.map(e => e[1] || 0));
+    const semanas = d.por_semana || [];
+    const maxSem = Math.max(1, ...semanas.map(s => s.abordados || 0));
+    document.title = `Resumo — ${d.nome || d.login} — ${dataBR(d.de)} a ${dataBR(d.ate)}`;
+
+    $("saida").innerHTML = `
+    <div class="folha">
+      <div class="topo">
+        <img src="assets/rhimob-logo.jpg" alt="RH IMOB">
+        <div>
+          <h1>Resumo do período — ${esc(d.nome || d.login)}</h1>
+          <p>${dataBR(d.de)} a ${dataBR(d.ate)} · Extensão RH IMOB Aceleradora</p>
+        </div>
+      </div>
+      <div class="corpo">
+        <h2>Resultado</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="n">${num(recebidos)}</div><div class="t">contatos recebidos</div></div>
+          <div class="kpi"><div class="n">${num(n.abordados)}</div><div class="t">abordados no WhatsApp</div></div>
+          <div class="kpi"><div class="n">${num(n.responderam)}</div><div class="t">responderam</div><div class="p">${pct(n.responderam, n.abordados)} dos abordados</div></div>
+          <div class="kpi"><div class="n">${num(n.agendaram)}</div><div class="t">agendaram</div><div class="p">${pct(n.agendaram, n.abordados)} dos abordados</div></div>
+        </div>
+
+        <h2>Funil</h2>
+        <div class="funil">
+          ${etapas.map(([t, v]) => `<div class="etapa"><span>${t}</span><div class="b" style="width:${Math.round((v || 0) / maxEtapa * 100)}%"></div><span class="v">${num(v)}</span></div>`).join("")}
+        </div>
+
+        <h2>Contatos recebidos por origem</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="n">${num(n.recebidos_catho)}</div><div class="t">Catho (filtros)</div></div>
+          <div class="kpi"><div class="n">${num(n.recebidos_banco)}</div><div class="t">Banco de Talentos</div></div>
+          <div class="kpi"><div class="n">${num(n.recebidos_creci)}</div><div class="t">Corretores CRECI</div></div>
+          ${n.recebidos_outros ? `<div class="kpi"><div class="n">${num(n.recebidos_outros)}</div><div class="t">outras origens (planilha, Instagram)</div></div>` : ""}
+        </div>
+
+        ${semanas.length ? `
+        <h2>Abordagens por semana</h2>
+        <div class="semanas">${semanas.map(s => `<div class="sem"><span class="q">${num(s.abordados)}</span><div class="b" style="height:${Math.max(2, Math.round((s.abordados || 0) / maxSem * 100))}%"></div></div>`).join("")}</div>
+        <div class="rot">${semanas.map(s => `<span>${dataBR(s.semana).slice(0, 5)}</span>`).join("")}</div>` : ""}
+
+        <p class="nota">
+          ${d.acesso_fim ? `Acesso contratado: ${dataBR(d.acesso_inicio)} a ${dataBR(d.acesso_fim)}.<br>` : ""}
+          Contagens por data do evento no período (horário de Brasília). "Responderam", "proposta" e "agendaram" contam as pessoas que chegaram a essa etapa dentro do período.
+        </p>
+      </div>
+    </div>`;
+  }
+
+  $("btnAtualizar").addEventListener("click", carregar);
+  $("btnImprimir").addEventListener("click", () => window.print());
+  carregar();
+})();
+</script>
+</body>
+</html>

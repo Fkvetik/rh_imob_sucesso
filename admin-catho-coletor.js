@@ -1027,6 +1027,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
+        <button data-login="${esc(u.login)}" class="ghost resumoBtn" style="padding:4px 8px;font-size:11px" title="Resumo do período para mandar ao cliente (imprime ou salva em PDF)">📊 Resumo</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
     </tr>
@@ -1035,6 +1036,16 @@ function renderUsuarios(list) {
 
   tbody.querySelectorAll(".filtrosBtn").forEach(btn => {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
+  });
+  // Resumo do período (resumo-cliente.html). window.open sem noopener leva a
+  // sessão de admin desta aba junto (sessionStorage).
+  tbody.querySelectorAll(".resumoBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const v = VALIDADE_OPER[btn.dataset.login] || {};
+      const hoje = hojeBR();
+      const de = v.acesso_inicio && v.acesso_inicio <= hoje ? v.acesso_inicio : somarPeriodo(hoje, "-29:d");
+      window.open(`resumo-cliente.html?login=${encodeURIComponent(btn.dataset.login)}&de=${de}&ate=${hoje}`, "_blank");
+    });
   });
   tbody.querySelectorAll(".validadeOperBtn").forEach(btn => {
     btn.addEventListener("click", () => editarValidadeOperador(btn.dataset.login, btn.dataset.modo));
