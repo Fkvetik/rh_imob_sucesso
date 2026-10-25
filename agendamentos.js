@@ -171,6 +171,7 @@ async function loadAgendamentos() {
 }
 
 async function loadDashboard() {
+  loadValidadeEquipe(); // não espera: a faixa aparece quando chegar
   try {
     const [resp, taxa, ritmo, jornada] = await Promise.all([
       rpc("rpc_admin_dashboard", { p_admin_password: ADMIN_PASS }),
@@ -998,3 +999,40 @@ if (ADMIN_PASS) {
     })
     .catch(() => {});
 }
+
+
+// ===== Visão Geral: validade do acesso da equipe + imprimir =====
+// A faixa aparece só para login de empresa (cliente): o administrador da RH
+// IMOB vê e renova a validade no painel admin. Sem os SQLs ACESSO_1, nada aparece.
+async function loadValidadeEquipe() {
+  const el = document.getElementById("validadeEquipe");
+  if (!el) return;
+  try {
+    const [quem, v] = await Promise.all([
+      rpc("rpc_admin_verificar_senha", { p_admin_password: ADMIN_PASS, p_login: null }),
+      rpc("rpc_admin_validade_usuarios", { p_admin_password: ADMIN_PASS })
+    ]);
+    if (!quem || !quem.ok || !quem.conta_id_plataforma || !v || !v.ok) { el.innerHTML = ""; return; }
+    const fins = (v.usuarios || []).map(u => u.acesso_fim).filter(Boolean).sort();
+    if (!fins.length) { el.innerHTML = ""; return; }
+    const fim = fins[0]; // o primeiro a vencer
+    const hoje = v.hoje || new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+    const dias = Math.round((Date.parse(fim + "T00:00:00Z") - Date.parse(hoje + "T00:00:00Z")) / 86400000);
+    const [a, m, d] = fim.split("-");
+    const data = `${d}/${m}/${a}`;
+    const varios = new Set(fins).size > 1 ? " (o primeiro operador a vencer)" : "";
+    let cls, txt, sub;
+    if (dias < 0) { cls = "vencido"; txt = `⛔ O acesso da sua equipe venceu em ${data}${varios}.`; sub = "Fale com a RH IMOB para renovar e voltar a usar."; }
+    else if (dias <= 3) { cls = "logo"; txt = `⏳ O acesso da sua equipe ${dias === 0 ? "vence hoje" : `vence em ${dias} dia${dias > 1 ? "s" : ""}`} (${data})${varios}.`; sub = "Fale com a RH IMOB para renovar sem interrupção."; }
+    else { cls = "ok"; txt = `✅ Acesso da sua equipe válido até ${data} (${dias} dias)${varios}.`; sub = ""; }
+    el.innerHTML = `<div class="vg-validade ${cls}">${txt}${sub ? `<small>${sub}</small>` : ""}</div>`;
+  } catch (_) {
+    el.innerHTML = "";
+  }
+}
+
+document.getElementById("btnImprimirVG")?.addEventListener("click", () => {
+  const cab = document.getElementById("vgPrintCab");
+  if (cab) cab.textContent = "RH IMOB — Visão Geral · " + new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+  window.print();
+});
