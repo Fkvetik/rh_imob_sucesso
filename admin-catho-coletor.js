@@ -982,7 +982,8 @@ async function loadUsuarios() {
   try {
     const [resp] = await Promise.all([
       rpc("rpc_admin_list_usuarios", { p_admin_password: ADMIN_PASS }),
-      loadValidadeOperadores()
+      loadValidadeOperadores(),
+      loadFiltrosAtrasados()
     ]);
     if (!resp.ok) { alert("Sessão expirou: " + resp.error); location.reload(); return; }
     renderUsuarios(resp.usuarios || []);
@@ -1955,6 +1956,23 @@ async function editarValidadeConta(tipo, contaId, modo) {
   }
 }
 
+// ---------- filtros com horário que não rodaram hoje (SQL COLETA_1) ----------
+let FILTROS_ATRASADOS = [];
+async function loadFiltrosAtrasados() {
+  try {
+    const r = await rpc("rpc_admin_filtros_atrasados", { p_admin_password: ADMIN_PASS });
+    FILTROS_ATRASADOS = (r && r.ok && r.filtros) || [];
+  } catch (e) {
+    FILTROS_ATRASADOS = []; // sem o SQL ainda: só não mostra o aviso
+  }
+}
+function abrirFiltrosDoOperador(login) {
+  document.querySelector('[data-tab="tabOperadores"]')?.click();
+  const row = document.querySelector(`.filtrosRow[data-login-row="${CSS.escape(login)}"]`);
+  if (row && row.classList.contains("hide")) toggleFiltrosPanel(login);
+  setTimeout(() => (row || $("listaUsuarios"))?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
+}
+
 // ---------- aviso no topo: vence em até 3 dias ou já venceu ----------
 function renderAvisosValidade() {
   const box = $("avisosValidade");
@@ -1973,10 +1991,43 @@ function renderAvisosValidade() {
   CONTAS_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_conta || c.conta_id, "empresa · Novos Talentos", () => editarValidadeConta("nt", c.conta_id, "renovar")); });
   CONTAS_RHI_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_empresa || c.id, "empresa · Corretores CRECI", () => editarValidadeConta("rhi", c.id, "renovar")); });
   itens.sort((a, b) => a.dias - b.dias);
-  box.classList.toggle("hide", !itens.length);
-  if (!itens.length) { box.innerHTML = ""; return; }
-  box.innerHTML = `<h3 style="margin:0 0 6px;font-size:14px">⏳ Acessos vencendo (${itens.length})</h3>
-    <small style="color:#92400e">Sem renovação, o bloqueio é automático no dia seguinte ao vencimento.</small>`;
+  const filtros = FILTROS_ATRASADOS.map(f => {
+    const ult = f.ultima_coleta ? new Date(f.ultima_coleta).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "nunca";
+    const oque = f.motivo === "erro"
+      ? `<span class="selo vencido">⚠️ Rodou com erro</span>`
+      : `<span class="selo logo">⏰ Não rodou hoje</span>`;
+    const para = f.destino_login ? ` → ${esc(f.destino_login)}` : "";
+    const detalhe = f.motivo === "erro" ? esc(String(f.ultimo_erro || "").slice(0, 120)) : `última coleta: ${ult}`;
+    return { html: `${oque} <b>${esc(f.nome_operador || f.login)}</b> <small style="color:#666">filtro das ${esc(f.horario)}${para} · ${detalhe}</small>`, login: f.login };
+  });
+  const total = itens.length + filtros.length;
+  box.classList.toggle("hide", !total);
+  if (!total) { box.innerHTML = ""; return; }
+  box.innerHTML = `<h3 style="margin:0 0 6px;font-size:14px">⏳ Avisos (${total})</h3>`;
+  if (filtros.length) {
+    const h = document.createElement("small");
+    h.style.cssText = "display:block;color:#92400e;margin-top:4px";
+    h.textContent = "Filtros com horário que não coletaram hoje — confira se o Chrome do operador está aberto, com a Catho logada.";
+    box.appendChild(h);
+    filtros.forEach(f => {
+      const d = document.createElement("div");
+      d.className = "item";
+      d.innerHTML = f.html;
+      const b = document.createElement("button");
+      b.textContent = "📋 Ver filtro";
+      b.className = "ghost";
+      b.style.cssText = "padding:3px 8px;font-size:11px;margin-left:auto";
+      b.addEventListener("click", () => abrirFiltrosDoOperador(f.login));
+      d.appendChild(b);
+      box.appendChild(d);
+    });
+  }
+  if (itens.length) {
+    const h = document.createElement("small");
+    h.style.cssText = "display:block;color:#92400e;margin-top:8px";
+    h.textContent = "Acessos vencendo — sem renovação, o bloqueio é automático no dia seguinte ao vencimento.";
+    box.appendChild(h);
+  }
   itens.forEach(it => {
     const d = document.createElement("div");
     d.className = "item";
