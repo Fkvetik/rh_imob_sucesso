@@ -28,6 +28,7 @@ function showApp() {
   loadAuditLog();
   loadLogsExtensao();
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
+  loadContratos();
   // Banco de Corretores CRECI é só da RH IMOB: admin de empresa não vê a aba.
   const superAdmin = !(CURRENT_ADMIN && CURRENT_ADMIN.conta_id_plataforma);
   document.querySelector('[data-tab="tabCreci"]')?.classList.toggle("hide", !superAdmin);
@@ -1875,7 +1876,7 @@ function celulaValidadeConta(c, tipo) {
 }
 
 // ---------- diálogo: renovar / definir datas ----------
-function dialogoValidade({ titulo, inicio, fim, modo }) {
+function dialogoValidade({ titulo, inicio, fim, modo, valorSugerido }) {
   let dlg = $("dlgValidade");
   if (!dlg) {
     dlg = document.createElement("dialog");
@@ -1891,6 +1892,18 @@ function dialogoValidade({ titulo, inicio, fim, modo }) {
         <option value="livre">Escolher a data final</option><option value="sem">Sem vencimento</option>
       </select>
       <label>Acesso vale até (inclusive)</label><input id="dvFim" type="date">
+      <div id="dvPagtoBox" style="margin-top:6px;padding-top:8px;border-top:1px dashed #e4dbe8">
+        <label>Registrar no histórico de contratos</label>
+        <select id="dvPagto">
+          <option value="pago">✅ Pago (gera recibo)</option>
+          <option value="receber">⏳ A receber</option>
+          <option value="nao">Não registrar</option>
+        </select>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1"><label>Valor (R$)</label><input id="dvValor" type="number" min="0" step="0.01" placeholder="999,00"></div>
+          <div style="flex:1"><label>Forma</label><select id="dvForma"><option>Pix</option><option>Boleto</option><option>Cartão</option><option>Transferência</option><option>Dinheiro</option></select></div>
+        </div>
+      </div>
       <div id="dvMsg" class="msg"></div>
       <div class="btns" style="margin-top:12px">
         <button id="dvSalvar">💾 Salvar</button>
@@ -1918,6 +1931,12 @@ function dialogoValidade({ titulo, inicio, fim, modo }) {
   per.value = modo === "editar" && !fim ? "sem" : (modo === "editar" ? "livre" : "30:d");
   fimEl.value = fim || "";
   msg.textContent = "";
+  // valor/pagamento: só faz sentido na renovação; sugere o valor do último contrato
+  const pagtoBox = $("dvPagtoBox"), pagto = $("dvPagto"), valorEl = $("dvValor");
+  pagtoBox.classList.toggle("hide", modo !== "renovar" || !VALIDADE_PODE_EDITAR);
+  pagto.value = "pago";
+  valorEl.value = valorSugerido != null ? valorSugerido : "";
+  $("dvForma").value = "Pix";
   if (modo === "renovar") recalcular(); else { fimEl.disabled = per.value === "sem"; }
   per.onchange = recalcular;
   ini.onchange = () => { if (per.value !== "livre") recalcular(); };
@@ -1932,9 +1951,12 @@ function dialogoValidade({ titulo, inicio, fim, modo }) {
       if (per.value !== "sem" && !novoFim) { msg.textContent = "❌ Escolha a data final (ou \"Sem vencimento\")."; return; }
       if (novoFim && novoFim < novoIni) { msg.textContent = "❌ A data final não pode ser antes do início."; return; }
       if (novoFim && novoFim < hoje && !confirm(`A data final (${dataBR(novoFim)}) já passou — o acesso será bloqueado agora. Continuar?`)) return;
+      const registrar = modo === "renovar" && !pagtoBox.classList.contains("hide") && pagto.value !== "nao";
+      if (registrar && !(Number(valorEl.value) > 0) && !confirm("Registrar o contrato sem valor?")) return;
       dlg.onclose = null;
       dlg.close();
-      resolve({ inicio: novoIni, fim: novoFim });
+      resolve({ inicio: novoIni, fim: novoFim,
+        contrato: registrar ? { valor: valorEl.value || null, forma_pagamento: $("dvForma").value, pago_em: pagto.value === "pago" ? hoje : null } : null });
     };
     dlg.showModal();
   });
@@ -1943,11 +1965,14 @@ function dialogoValidade({ titulo, inicio, fim, modo }) {
 async function editarValidadeOperador(login, modo) {
   const v = VALIDADE_OPER[login] || {};
   const u = USUARIOS_COLETOR_CACHE.find(x => x.login === login) || {};
-  const r = await dialogoValidade({ titulo: u.nome_operador || login, inicio: v.acesso_inicio, fim: v.acesso_fim, modo });
+  const r = await dialogoValidade({ titulo: u.nome_operador || login, inicio: v.acesso_inicio, fim: v.acesso_fim, modo,
+    valorSugerido: ultimoValor("operador", login) });
   if (!r) return;
   try {
     const resp = await rpc("rpc_admin_definir_validade", { p_admin_password: ADMIN_PASS, p_login: login, p_inicio: r.inicio, p_fim: r.fim });
     if (!resp.ok) { alert("❌ " + resp.error); return; }
+    if (r.contrato) await registrarContrato({ ...r.contrato, cliente_tipo: "operador", cliente_id: login,
+      cliente_nome: u.nome_operador || login, inicio: renovacaoInicio(v.acesso_fim, r.inicio), fim: r.fim });
     await loadUsuarios();
   } catch (e) {
     alert("❌ " + e.message);
@@ -1960,7 +1985,9 @@ async function editarValidadeConta(tipo, contaId, modo) {
   if (!c) return;
   const fimAtual = c.data_fim ? String(c.data_fim).slice(0, 10) : null;
   const iniAtual = c.data_inicio ? String(c.data_inicio).slice(0, 10) : null;
-  const r = await dialogoValidade({ titulo: c.nome_conta || c.nome_empresa || contaId, inicio: iniAtual, fim: fimAtual, modo });
+  const tipoContrato = tipo === "nt" ? "empresa_nt" : "empresa_rhi";
+  const r = await dialogoValidade({ titulo: c.nome_conta || c.nome_empresa || contaId, inicio: iniAtual, fim: fimAtual, modo,
+    valorSugerido: ultimoValor(tipoContrato, contaId) });
   if (!r) return;
   const payload = { acao: "editar_conta", conta_id: contaId, data_inicio: r.inicio, data_fim: r.fim };
   // Empresa que caiu por vencimento volta a ficar ATIVA quando a nova data
@@ -1968,8 +1995,11 @@ async function editarValidadeConta(tipo, contaId, modo) {
   const caiuPorVencimento = String(c.status || "").toUpperCase() !== "ATIVA" && fimAtual && fimAtual < hojeBR();
   if (caiuPorVencimento && (!r.fim || r.fim >= hojeBR())) payload.status = "ATIVA";
   try {
-    if (tipo === "nt") { await apiContas(payload); await loadContasPlataforma(); }
-    else { await apiContasRhi(payload); await loadContasRhi(); }
+    if (tipo === "nt") { await apiContas(payload); }
+    else { await apiContasRhi(payload); }
+    if (r.contrato) await registrarContrato({ ...r.contrato, cliente_tipo: tipoContrato, cliente_id: String(contaId),
+      cliente_nome: c.nome_conta || c.nome_empresa || contaId, inicio: renovacaoInicio(fimAtual, r.inicio), fim: r.fim });
+    if (tipo === "nt") await loadContasPlataforma(); else await loadContasRhi();
   } catch (e) {
     alert("❌ " + e.message);
   }
@@ -1997,18 +2027,18 @@ function renderAvisosValidade() {
   const box = $("avisosValidade");
   if (!box) return;
   const itens = [];
-  const add = (fim, nome, onde, abrir) => {
+  const add = (fim, nome, onde, abrir, cliente) => {
     const s = seloValidade(fim);
     if (s.nivel !== "logo" && s.nivel !== "vencido") return;
     if (s.nivel === "vencido" && s.dias < -30) return; // vencido há mais de 30 dias: já não é novidade
-    itens.push({ dias: s.dias, html: `${s.html} <b>${esc(nome)}</b> <small style="color:#666">${onde} · até ${dataBR(fim)}</small>`, abrir });
+    itens.push({ dias: s.dias, html: `${s.html} <b>${esc(nome)}</b> <small style="color:#666">${onde} · até ${dataBR(fim)}</small>`, abrir, cliente: { ...cliente, nome, fim } });
   };
   USUARIOS_COLETOR_CACHE.forEach(u => {
     const v = VALIDADE_OPER[u.login];
-    if (v && v.acesso_fim) add(v.acesso_fim, u.nome_operador || u.login, "operador da extensão", () => editarValidadeOperador(u.login, "renovar"));
+    if (v && v.acesso_fim) add(v.acesso_fim, u.nome_operador || u.login, "operador da extensão", () => editarValidadeOperador(u.login, "renovar"), { tipo: "operador", id: u.login });
   });
-  CONTAS_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_conta || c.conta_id, "empresa · Novos Talentos", () => editarValidadeConta("nt", c.conta_id, "renovar")); });
-  CONTAS_RHI_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_empresa || c.id, "empresa · Corretores CRECI", () => editarValidadeConta("rhi", c.id, "renovar")); });
+  CONTAS_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_conta || c.conta_id, "empresa · Novos Talentos", () => editarValidadeConta("nt", c.conta_id, "renovar"), { tipo: "empresa_nt", id: c.conta_id }); });
+  CONTAS_RHI_CACHE.forEach(c => { if (c.data_fim) add(String(c.data_fim).slice(0, 10), c.nome_empresa || c.id, "empresa · Corretores CRECI", () => editarValidadeConta("rhi", c.id, "renovar"), { tipo: "empresa_rhi", id: c.id }); });
   itens.sort((a, b) => a.dias - b.dias);
   const filtros = FILTROS_ATRASADOS.map(f => {
     const ult = f.ultima_coleta ? new Date(f.ultima_coleta).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "nunca";
@@ -2052,9 +2082,16 @@ function renderAvisosValidade() {
     d.className = "item";
     d.innerHTML = it.html;
     if (VALIDADE_PODE_EDITAR) {
+      const m = document.createElement("button");
+      m.textContent = "📋 Mensagem";
+      m.className = "ghost";
+      m.title = "Copia a mensagem de renovação para colar no WhatsApp/e-mail do cliente";
+      m.style.cssText = "padding:3px 8px;font-size:11px;margin-left:auto";
+      m.addEventListener("click", () => copiarMensagemRenovacao(it.cliente, m));
+      d.appendChild(m);
       const b = document.createElement("button");
       b.textContent = "🔄 Renovar";
-      b.style.cssText = "padding:3px 8px;font-size:11px;margin-left:auto";
+      b.style.cssText = "padding:3px 8px;font-size:11px";
       b.addEventListener("click", it.abrir);
       d.appendChild(b);
     }
@@ -2067,8 +2104,157 @@ if (ADMIN_PASS) {
   fazerLogin(ADMIN_PASS).catch(() => {});
 }
 
+// ===== Contratos e pagamentos (SQL CONTRATOS_1) =====
+// Registro de cada renovação (período, valor, pago/a receber), recibo e a
+// mensagem de renovação pronta para o cliente. Só o super-admin vê.
+let CONTRATOS_CACHE = [];
+let EMITENTE = null;
+const SERVICO_POR_TIPO = {
+  operador: "Extensão RH IMOB Aceleradora",
+  empresa_nt: "Plataforma Novos Talentos",
+  empresa_rhi: "Banco de Corretores CRECI"
+};
+const brl = (v) => v == null || v === "" ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+function ultimoValor(tipo, id) {
+  const c = CONTRATOS_CACHE.find(x => x.cliente_tipo === tipo && String(x.cliente_id) === String(id) && x.valor != null);
+  return c ? Number(c.valor) : null;
+}
+// período pago desta renovação: emenda no fim anterior (se ainda valia) ou começa hoje
+function renovacaoInicio(fimAntigo, inicioDialogo) {
+  const hoje = hojeBR();
+  if (fimAntigo && fimAntigo >= hoje) return somarPeriodo(fimAntigo, "1:d");
+  return inicioDialogo && inicioDialogo >= hoje ? inicioDialogo : hoje;
+}
+
+async function registrarContrato(dados) {
+  try {
+    const r = await rpc("rpc_admin_registrar_contrato", { p_admin_password: ADMIN_PASS,
+      p_dados: { ...dados, servico: SERVICO_POR_TIPO[dados.cliente_tipo] || "" } });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    await loadContratos();
+    if (dados.pago_em && confirm("✅ Renovado e registrado como pago.\n\nAbrir o recibo agora?")) abrirRecibo(r.id);
+  } catch (e) {
+    alert("⚠️ A validade foi salva, mas o contrato não entrou no histórico: " +
+      (/rpc_admin_registrar_contrato|function|404/i.test(e.message) ? "falta rodar o SQL CONTRATOS_1." : e.message));
+  }
+}
+
+function abrirRecibo(id) {
+  window.open(`recibo.html?id=${encodeURIComponent(id)}`, "_blank"); // sem noopener: leva a sessão de admin
+}
+
+async function loadContratos() {
+  const tbody = $("listaContratos");
+  if (!tbody) return;
+  const card = $("cardContratos");
+  const superAdmin = CURRENT_ADMIN && !CURRENT_ADMIN.conta_id_plataforma && CURRENT_ADMIN.nivel !== "agendamentos";
+  if (card) card.classList.toggle("hide", !superAdmin);
+  if (!superAdmin) return;
+  try {
+    const [r, e] = await Promise.all([
+      rpc("rpc_admin_listar_contratos", { p_admin_password: ADMIN_PASS }),
+      EMITENTE ? Promise.resolve(null) : rpc("rpc_admin_emitente", { p_admin_password: ADMIN_PASS }).catch(() => null)
+    ]);
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    CONTRATOS_CACHE = r.contratos || [];
+    if (e && e.ok) EMITENTE = e.emitente;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6"><small>${/rpc_admin_listar_contratos|function|404/i.test(err.message) ? "Falta rodar o SQL CONTRATOS_1 no Supabase do Coletor." : esc(err.message)}</small></td></tr>`;
+    return;
+  }
+  renderContratos();
+}
+
+function renderContratos() {
+  const tbody = $("listaContratos");
+  const mes = hojeBR().slice(0, 7);
+  const recebidoMes = CONTRATOS_CACHE.filter(c => c.pago_em && String(c.pago_em).slice(0, 7) === mes).reduce((t, c) => t + Number(c.valor || 0), 0);
+  const aReceber = CONTRATOS_CACHE.filter(c => !c.pago_em);
+  const totalReceber = aReceber.reduce((t, c) => t + Number(c.valor || 0), 0);
+  const resumo = $("contratosResumo");
+  if (resumo) resumo.innerHTML = `<span class="selo ok">💵 Recebido no mês: ${brl(recebidoMes)}</span> `
+    + `<span class="selo ${aReceber.length ? "logo" : "sem"}">⏳ A receber: ${brl(totalReceber)} (${aReceber.length})</span>`;
+  if (!CONTRATOS_CACHE.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><small>Nenhum contrato registrado ainda. Eles entram aqui quando você usa 🔄 Renovar com "Pago" ou "A receber".</small></td></tr>';
+    return;
+  }
+  tbody.innerHTML = CONTRATOS_CACHE.map(c => `
+    <tr>
+      <td><b>${esc(c.cliente_nome || c.cliente_id)}</b><br><small>${esc(c.cliente_tipo === "operador" ? c.cliente_id : (c.cliente_tipo === "empresa_nt" ? "empresa · Novos Talentos" : "empresa · CRECI"))}</small></td>
+      <td><small>${esc(c.servico || "")}</small></td>
+      <td>${dataBR(c.inicio)} → ${c.fim ? dataBR(c.fim) : "sem vencimento"}</td>
+      <td><b>${brl(c.valor)}</b></td>
+      <td>${c.pago_em ? `<span class="selo ok">✅ Pago ${dataBR(c.pago_em)}</span><br><small>${esc(c.forma_pagamento || "")}</small>`
+                      : `<span class="selo logo">⏳ A receber</span>`}</td>
+      <td style="white-space:nowrap">
+        ${c.pago_em ? `<button class="ghost reciboBtn" data-id="${c.id}" style="padding:4px 8px;font-size:11px">🧾 Recibo</button>`
+                    : `<button class="secondary pagoBtn" data-id="${c.id}" style="padding:4px 8px;font-size:11px">✅ Marcar pago</button>`}
+        <button class="danger excluirContratoBtn" data-id="${c.id}" style="padding:4px 8px;font-size:11px">Excluir</button>
+      </td>
+    </tr>`).join("");
+
+  tbody.querySelectorAll(".reciboBtn").forEach(b => b.addEventListener("click", () => abrirRecibo(b.dataset.id)));
+  tbody.querySelectorAll(".pagoBtn").forEach(b => b.addEventListener("click", async () => {
+    const forma = prompt("Forma de pagamento:", "Pix");
+    if (forma === null) return;
+    b.disabled = true;
+    try {
+      const r = await rpc("rpc_admin_atualizar_contrato", { p_admin_password: ADMIN_PASS, p_id: Number(b.dataset.id), p_dados: { pago_em: hojeBR(), forma_pagamento: forma || "Pix" } });
+      if (!r.ok) throw new Error(r.error || "não atualizou");
+      await loadContratos();
+      if (confirm("✅ Marcado como pago. Abrir o recibo?")) abrirRecibo(b.dataset.id);
+    } catch (e) { alert("❌ " + e.message); b.disabled = false; }
+  }));
+  tbody.querySelectorAll(".excluirContratoBtn").forEach(b => b.addEventListener("click", async () => {
+    if (!confirm("Excluir este registro do histórico? (A validade do acesso não muda.)")) return;
+    b.disabled = true;
+    try {
+      const r = await rpc("rpc_admin_atualizar_contrato", { p_admin_password: ADMIN_PASS, p_id: Number(b.dataset.id), p_dados: { excluir: true } });
+      if (!r.ok) throw new Error(r.error || "não excluiu");
+      await loadContratos();
+    } catch (e) { alert("❌ " + e.message); b.disabled = false; }
+  }));
+}
+
+// Mensagem de renovação pronta para colar no WhatsApp/e-mail do cliente
+async function copiarMensagemRenovacao(cliente, btn) {
+  if (!EMITENTE) await loadContratos();
+  const servico = SERVICO_POR_TIPO[cliente.tipo] || "nossa plataforma";
+  const dias = diasAte(cliente.fim);
+  const quando = dias < 0 ? `venceu em ${dataBR(cliente.fim)}`
+    : dias === 0 ? `vence hoje (${dataBR(cliente.fim)})`
+    : `vence em ${dias} dia${dias > 1 ? "s" : ""} (${dataBR(cliente.fim)})`;
+  const ult = CONTRATOS_CACHE.find(x => x.cliente_tipo === cliente.tipo && String(x.cliente_id) === String(cliente.id) && x.valor != null);
+  const linhas = [
+    `Olá, ${cliente.nome}! Tudo bem?`,
+    ``,
+    `Seu acesso à ${servico} ${quando}.`,
+    dias < 0 ? `Para voltar a usar, é só renovar.` : `Para continuar sem interrupção, é só renovar.`
+  ];
+  if (ult) {
+    const meses = ult.inicio && ult.fim ? Math.round(diasEntreDatas(ult.inicio, ult.fim) / 30) : 0;
+    linhas.push(`Valor da renovação${meses >= 1 ? ` (${meses === 12 ? "anual" : meses + (meses > 1 ? " meses" : " mês")})` : ""}: ${brl(ult.valor)}.`);
+  }
+  if (EMITENTE && EMITENTE.pix) linhas.push(``, `Pagamento via Pix: ${EMITENTE.pix}`);
+  linhas.push(``, `Assim que o pagamento for confirmado, eu renovo o acesso e envio o recibo.`, `Qualquer dúvida, estou à disposição.`, ``, (EMITENTE && EMITENTE.assinatura) || "RH IMOB");
+  const texto = linhas.join("\n");
+  try {
+    await navigator.clipboard.writeText(texto);
+    const antes = btn.textContent;
+    btn.textContent = "✅ Copiada";
+    setTimeout(() => { btn.textContent = antes; }, 2000);
+  } catch (_) {
+    prompt("Copie a mensagem:", texto);
+  }
+}
+function diasEntreDatas(a, b) {
+  return Math.round((Date.parse(String(b).slice(0, 10) + "T00:00:00Z") - Date.parse(String(a).slice(0, 10) + "T00:00:00Z")) / 86400000);
+}
+
 // ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
 let MAQUINAS_INTERVAL = null;
+const COMANDO_DISPARO_PENDENTE = {}; // login -> comando enviado e ainda não confirmado pelo sinal de vida
 const ONLINE_ATE_MIN = 10; // a extensão manda sinal a cada 3 min
 
 function compararVersao(a, b) {
@@ -2116,6 +2302,15 @@ async function loadMaquinas() {
       : m.disparo === "rodando" ? `▶️ rodando<br><small>fila: ${m.fila || 0}</small>`
       : m.disparo === "pausado" ? `⏸ pausado<br><small>${esc(m.pausa_motivo || "")}${m.fila ? " · fila: " + m.fila : ""}</small>`
       : `⏹ parado${m.fila ? `<br><small>fila: ${m.fila}</small>` : ""}`;
+    // controle remoto (chega na máquina em até 3 min, como o "Rodar agora")
+    if ((COMANDO_DISPARO_PENDENTE[m.login] === "PAUSAR_DISPARO" && m.disparo === "pausado")
+      || (COMANDO_DISPARO_PENDENTE[m.login] === "RETOMAR_DISPARO" && m.disparo === "rodando")) delete COMANDO_DISPARO_PENDENTE[m.login];
+    const pendente = COMANDO_DISPARO_PENDENTE[m.login];
+    const controle = !m.versao || compararVersao(m.versao, "3.14.1") < 0 ? ""
+      : pendente ? `<br><small style="color:#92400e">⏳ ${pendente === "PAUSAR_DISPARO" ? "pausando" : "retomando"}… (até 3 min)</small>`
+      : m.disparo === "rodando"
+        ? `<br><button class="danger disparoRemotoBtn" data-login="${esc(m.login)}" data-tipo="PAUSAR_DISPARO" style="padding:3px 8px;font-size:11px;margin-top:4px">⏸ Pausar</button>`
+        : `<br><button class="secondary disparoRemotoBtn" data-login="${esc(m.login)}" data-tipo="RETOMAR_DISPARO" style="padding:3px 8px;font-size:11px;margin-top:4px">▶️ ${m.disparo === "pausado" ? "Retomar" : "Iniciar"}</button>`;
     let coleta = "—";
     if (m.ultima_coleta_em) {
       const quando = new Date(m.ultima_coleta_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -2125,9 +2320,22 @@ async function loadMaquinas() {
     if (velha || (m.ultima_coleta_erro) || (on && m.whatsapp_aberto === false && m.disparo === "rodando")) atencao++;
     return `<tr>
       <td><b>${esc(m.nome || m.login)}</b><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
-      <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}</td><td>${coleta}</td>
+      <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}${controle}</td><td>${coleta}</td>
     </tr>`;
   }).join("") || '<tr><td colspan="6"><small>Nenhum operador ativo.</small></td></tr>';
+  tbody.querySelectorAll(".disparoRemotoBtn").forEach(b => b.addEventListener("click", async () => {
+    const pausar = b.dataset.tipo === "PAUSAR_DISPARO";
+    const m = lista.find(x => x.login === b.dataset.login) || {};
+    if (!confirm(`${pausar ? "Pausar" : "Retomar"} o disparo de ${m.nome || b.dataset.login}?\n\nA extensão recebe o comando em até 3 minutos (precisa estar online).`)) return;
+    b.disabled = true;
+    try {
+      const r = await rpc("rpc_admin_definir_comando", { p_admin_password: ADMIN_PASS, p_login: b.dataset.login, p_comando: { tipo: b.dataset.tipo } });
+      if (r && r.ok === false) throw new Error(r.error || "não enviado");
+      COMANDO_DISPARO_PENDENTE[b.dataset.login] = b.dataset.tipo;
+      setTimeout(() => { delete COMANDO_DISPARO_PENDENTE[b.dataset.login]; loadMaquinas(); }, 4 * 60 * 1000);
+      loadMaquinas();
+    } catch (e) { alert("❌ " + e.message); b.disabled = false; }
+  }));
   const resumo = $("maquinasResumo");
   if (resumo) resumo.innerHTML = `<span class="selo ok">🟢 ${online} online</span> <span class="selo sem">${lista.length - online} sem sinal agora</span>`
     + (atencao ? ` <span class="selo logo">⚠️ ${atencao} pedem atenção</span>` : "");

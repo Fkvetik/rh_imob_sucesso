@@ -478,6 +478,15 @@
     </div><!-- /tabOperadores -->
 
     <div class="tabpanel hide" id="tabAdmin">
+    <div class="card" id="cardContratos">
+      <h3 style="margin-top:0;font-size:14px">💰 Contratos e pagamentos</h3>
+      <small>Cada "🔄 Renovar" pode registrar aqui o período, o valor e se já foi pago. O recibo sai daqui.</small>
+      <div id="contratosResumo" style="margin-top:10px"></div>
+      <table>
+        <thead><tr><th>Cliente</th><th>Serviço</th><th>Período</th><th>Valor</th><th>Pagamento</th><th></th></tr></thead>
+        <tbody id="listaContratos"><tr><td colspan="6"><small>Carregando...</small></td></tr></tbody>
+      </table>
+    </div>
     <div class="card">
       <h3 style="margin-top:0;font-size:14px">🔐 Administradores</h3>
       <label>Login</label>
@@ -576,7 +585,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261025maquinas"></script>
+<script src="admin-catho-coletor.js?v=20261025disparo"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

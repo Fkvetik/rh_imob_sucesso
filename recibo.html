@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Recibo — RH IMOB</title>
+<link rel="icon" href="favicon.svg">
+<style>
+  :root{--roxo:#4b178b;--texto:#231a30;--suave:#6b6478;--borda:#e6e1ee}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Georgia,"Times New Roman",serif;color:var(--texto);background:#f4f2f7}
+  .barra{max-width:760px;margin:16px auto 0;padding:0 16px;display:flex;gap:8px;font-family:system-ui,Arial,sans-serif}
+  .barra button{padding:8px 14px;border:1px solid var(--roxo);border-radius:8px;background:var(--roxo);color:#fff;font-weight:600;cursor:pointer}
+  .folha{max-width:760px;margin:16px auto 32px;background:#fff;padding:48px 56px;border:1px solid var(--borda);border-radius:6px}
+  .cab{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid var(--roxo);padding-bottom:16px}
+  .cab h1{margin:0;font-size:30px;letter-spacing:.12em;color:var(--roxo)}
+  .cab .num{font-family:system-ui,Arial,sans-serif;font-size:13px;color:var(--suave);text-align:right}
+  .valor{font-family:system-ui,Arial,sans-serif;font-size:22px;font-weight:800;background:#f3eefa;color:var(--roxo);padding:8px 14px;border-radius:6px;display:inline-block;margin-top:6px}
+  p.texto{font-size:17px;line-height:1.9;margin:28px 0;text-align:justify}
+  .dados{font-family:system-ui,Arial,sans-serif;font-size:13px;color:var(--suave);line-height:1.7}
+  .assin{margin-top:64px;text-align:center}
+  .assin .linha{width:320px;max-width:100%;border-top:1px solid var(--texto);margin:0 auto 6px}
+  .assin small{font-family:system-ui,Arial,sans-serif;color:var(--suave)}
+  .msg{max-width:760px;margin:40px auto;text-align:center;font-family:system-ui,Arial,sans-serif;color:var(--suave);padding:0 16px}
+  @media (max-width:600px){.folha{padding:28px 22px}.cab h1{font-size:24px}}
+  @media print{body{background:#fff}.barra{display:none}.folha{border:0;margin:0;max-width:none;padding:24px 8px}}
+</style>
+</head>
+<body>
+<div class="barra"><button id="btnImprimir">🖨 Imprimir / salvar PDF</button></div>
+<div id="saida"><div class="msg">Carregando...</div></div>
+<script>
+// Recibo de um contrato registrado no painel (💰 Contratos e pagamentos).
+// Abre pelo painel admin (mesma sessão); dados do emitente vêm do banco
+// (SQL CONTRATOS_1), não ficam neste arquivo.
+(function(){
+  const SUPABASE_URL = "https://lrejfhsomfxyaoshmpzz.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const dataBR = iso => { if (!iso) return ""; const [a, m, d] = String(iso).slice(0, 10).split("-"); return `${d}/${m}/${a}`; };
+  const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  const dataExtenso = iso => { const [a, m, d] = String(iso).slice(0, 10).split("-"); return `${Number(d)} de ${MESES[Number(m) - 1]} de ${a}`; };
+
+  // valor por extenso (reais e centavos) — até bilhões
+  function extenso(valor) {
+    const U = ["","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","quatorze","quinze","dezesseis","dezessete","dezoito","dezenove"];
+    const D = ["","","vinte","trinta","quarenta","cinquenta","sessenta","setenta","oitenta","noventa"];
+    const C = ["","cento","duzentos","trezentos","quatrocentos","quinhentos","seiscentos","setecentos","oitocentos","novecentos"];
+    const ate999 = n => {
+      if (n === 0) return "";
+      if (n === 100) return "cem";
+      const c = Math.floor(n / 100), r = n % 100, partes = [];
+      if (c) partes.push(C[c]);
+      if (r < 20) { if (r) partes.push(U[r]); }
+      else { partes.push(D[Math.floor(r / 10)] + (r % 10 ? " e " + U[r % 10] : "")); }
+      return partes.join(" e ");
+    };
+    const inteiro = n => {
+      if (n === 0) return "zero";
+      const grupos = [["bilhão","bilhões",1e9],["milhão","milhões",1e6],["mil","mil",1e3],["","",1]];
+      const partes = []; let resto = n;
+      for (const [s, p, base] of grupos) {
+        const q = Math.floor(resto / base); resto %= base;
+        if (!q) continue;
+        if (base === 1e3 && q === 1) partes.push("mil");
+        else partes.push(ate999(q) + (s ? " " + (q > 1 ? p : s) : ""));
+      }
+      // "e" antes do último grupo quando ele é < 100 ou centena redonda
+      if (partes.length > 1) {
+        const ult = n % 1000;
+        if (ult && (ult < 100 || ult % 100 === 0)) { const u = partes.pop(); return partes.join(" ") + " e " + u; }
+      }
+      return partes.join(" ");
+    };
+    const total = Math.round(Number(valor) * 100);
+    const reais = Math.floor(total / 100), cent = total % 100;
+    const partes = [];
+    if (reais) partes.push(inteiro(reais) + (reais === 1 ? " real" : (reais % 1e6 === 0 ? " de reais" : " reais")));
+    if (cent) partes.push(inteiro(cent) + (cent === 1 ? " centavo" : " centavos"));
+    return partes.join(" e ") || "zero real";
+  }
+
+  async function carregar() {
+    const id = new URLSearchParams(location.search).get("id");
+    let pass = "";
+    try { pass = sessionStorage.getItem("catho_admin_pass") || ""; } catch (_) {}
+    if (!id || !pass) { $("saida").innerHTML = '<div class="msg">Abra o recibo pelo painel admin (💰 Contratos e pagamentos → 🧾 Recibo).</div>'; return; }
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rpc_admin_recibo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+        body: JSON.stringify({ p_admin_password: pass, p_id: Number(id) })
+      });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error((d && (d.error || d.message)) || "HTTP " + r.status);
+      render(d.contrato, d.emitente || {});
+    } catch (e) {
+      $("saida").innerHTML = `<div class="msg">❌ ${esc(e.message)}</div>`;
+    }
+  }
+
+  function render(c, e) {
+    const valor = Number(c.valor || 0);
+    const valorBR = valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const periodo = c.fim ? `no período de ${dataBR(c.inicio)} a ${dataBR(c.fim)}` : `a partir de ${dataBR(c.inicio)}`;
+    const dataPg = c.pago_em || new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+    document.title = `Recibo ${c.id} — ${c.cliente_nome || c.cliente_id}`;
+    $("saida").innerHTML = `
+    <div class="folha">
+      <div class="cab">
+        <div><h1>RECIBO</h1><div class="valor">${valorBR}</div></div>
+        <div class="num">Nº ${String(c.id).padStart(5, "0")}<br>${dataBR(dataPg)}</div>
+      </div>
+      <p class="texto">
+        Recebi de <b>${esc(c.cliente_nome || c.cliente_id)}</b> a importância de <b>${valorBR}</b>
+        (${esc(extenso(valor))}), referente ao acesso à <b>${esc(c.servico || "")}</b> ${periodo}${c.forma_pagamento ? `, pago via ${esc(c.forma_pagamento)}` : ""}.
+        ${c.observacao ? esc(c.observacao) : ""}
+      </p>
+      <p class="texto" style="margin-top:0">Para clareza, firmo o presente recibo.</p>
+      <p class="texto" style="text-align:right;margin:0">${esc(e.cidade_uf || "")}${e.cidade_uf ? ", " : ""}${dataExtenso(dataPg)}.</p>
+      <div class="assin">
+        <div class="linha"></div>
+        <b>${esc(e.razao_social || "")}</b><br>
+        <small>${esc(e.documento || "")}</small>
+      </div>
+      <div class="dados" style="margin-top:36px">${e.pix ? `Chave Pix: ${esc(e.pix)}` : ""}</div>
+    </div>`;
+  }
+
+  $("btnImprimir").addEventListener("click", () => window.print());
+  carregar();
+})();
+</script>
+</body>
+</html>
