@@ -20,6 +20,7 @@
 
   const PRODUCT_CODE = 'NOVOS_TALENTOS';
   const PAGE_SIZE = 24;
+  const LIMITE_SEM_LOGIN = 72; // mesmo número do SQL NT_VITRINE_4
   const FALLBACK_LIMIT = 5000;
 
   let sb = null;
@@ -1229,9 +1230,23 @@ const canal = isLogged
       state.offset += list.length;
 
       const more = $('#maisBtn');
-      if (more) more.hidden = state.offset >= state.total || !list.length;
+      // Sem login o banco entrega só as 3 primeiras páginas (SQL NT_VITRINE_4).
+      const travadoSemLogin = !(state.session && state.context) && state.offset >= LIMITE_SEM_LOGIN && state.total > state.offset;
+      if (more) more.hidden = state.offset >= state.total || !list.length || travadoSemLogin;
 
-      status(`${formatNumber(state.total)} talentos disponíveis para os filtros atuais. Exibindo ${formatNumber(Math.min(state.offset, state.total))}.`);
+      status(`${formatNumber(state.total)} talentos disponíveis para os filtros atuais. Exibindo ${formatNumber(Math.min(state.offset, state.total))}.`
+        + (travadoSemLogin ? ' Entre na sua conta para ver todos.' : ''));
+      if (travadoSemLogin) {
+        const grid = $('#cardsGrid');
+        if (grid && !grid.querySelector('.nt-cta-login')) {
+          const cta = document.createElement('div');
+          cta.className = 'nt-empty nt-cta-login';
+          cta.style.gridColumn = '1 / -1';
+          cta.innerHTML = `Você está vendo ${formatNumber(state.offset)} de ${formatNumber(state.total)} talentos. <button type="button" class="nt-mini-action">Entrar para ver todos</button>`;
+          cta.querySelector('button').addEventListener('click', openLoginModal);
+          grid.appendChild(cta);
+        }
+      }
     } catch (err) {
       console.error('[NT] search error:', err);
       const msg = friendlyError(err);

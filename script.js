@@ -74,6 +74,19 @@
     return Array.isArray(rows) ? rows.length : 0;
   }
 
+  // Total da vitrine Novos Talentos: visitante não lê mais a tabela direto
+  // (SQL NT_VITRINE_4), então pergunta à função nt_total_vitrine.
+  async function totalVitrineNT(cfg) {
+    const base = cfg.url.replace(/\/$/, '');
+    const response = await fetch(`${base}/rest/v1/rpc/nt_total_vitrine`, {
+      method: 'POST',
+      headers: supabaseHeaders(cfg, { 'Content-Type': 'application/json' }),
+      body: '{}'
+    });
+    if (!response.ok) return countSupabaseRows(cfg, 'nt_talentos_publicos', 'produto_codigo=eq.NOVOS_TALENTOS&ativo=eq.true');
+    return Number(await response.json());
+  }
+
   function formatInteger(value) {
     const number = Number(value || 0);
     return number.toLocaleString('pt-BR');
@@ -120,7 +133,7 @@
 
     if (ntCfg) {
       Promise.allSettled([
-        countSupabaseRows(ntCfg, 'nt_talentos_publicos', 'produto_codigo=eq.NOVOS_TALENTOS&ativo=eq.true'),
+        totalVitrineNT(ntCfg),
         countSupabaseRows(ntCfg, 'nt_filtro_cidade'),
         countSupabaseRows(ntCfg, 'nt_filtro_cidade_metro')
       ]).then(([total, cidades, metro]) => {

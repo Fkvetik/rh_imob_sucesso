@@ -547,7 +547,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config-novos-talentos.js?v=20260720filtros"></script>
-  <script src="novos-talentos.js?v=20261024validade"></script>
+  <script src="novos-talentos.js?v=20261025vitrine"></script>
   <script src="planos-render.js?v=20260719"></script>
   <script>
     (function(){
@@ -555,11 +555,12 @@
       if (!cfg.enabled || !cfg.url || !cfg.publishableKey) return;
       var els = document.querySelectorAll('[data-nt-talentos]');
       if (!els.length) return;
-      fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/nt_talentos_publicos?select=cidade&produto_codigo=eq.NOVOS_TALENTOS&ativo=eq.true&limit=1', {
-        headers: { apikey: cfg.publishableKey, Authorization: 'Bearer ' + cfg.publishableKey, Prefer: 'count=exact' }
-      }).then(function(r){
-        var range = r.headers.get('content-range') || '';
-        var total = parseInt(range.split('/')[1], 10);
+      fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/nt_total_vitrine', {
+        method: 'POST',
+        headers: { apikey: cfg.publishableKey, Authorization: 'Bearer ' + cfg.publishableKey, 'Content-Type': 'application/json' },
+        body: '{}'
+      }).then(function(r){ return r.ok ? r.json() : null; }).then(function(v){
+        var total = parseInt(v, 10);
         if (!isFinite(total) || !total) return;
         var label = Math.floor(total / 1000) + ' mil';
         els.forEach(function(el){ el.textContent = label; });
