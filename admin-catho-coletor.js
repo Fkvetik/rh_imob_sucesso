@@ -994,6 +994,7 @@ async function loadUsuarios() {
     if (!resp.ok) { alert("Sessão expirou: " + resp.error); location.reload(); return; }
     renderUsuarios(resp.usuarios || []);
     renderAvisosValidade();
+    preencherOperadoresRanking();
   } catch (e) {
     alert("Falha ao carregar: " + e.message);
   }
@@ -2251,6 +2252,57 @@ async function copiarMensagemRenovacao(cliente, btn) {
 function diasEntreDatas(a, b) {
   return Math.round((Date.parse(String(b).slice(0, 10) + "T00:00:00Z") - Date.parse(String(a).slice(0, 10) + "T00:00:00Z")) / 86400000);
 }
+
+// ===== Ranking de mensagens (SQL RANKING_1) =====
+function preencherOperadoresRanking() {
+  const sel = $("rkLogin");
+  if (!sel) return;
+  const atual = sel.value;
+  sel.innerHTML = '<option value="">Todos</option>' + USUARIOS_COLETOR_CACHE
+    .map(u => `<option value="${esc(u.login)}">${esc(u.nome_operador || u.login)}</option>`).join("");
+  sel.value = atual;
+}
+async function loadRanking() {
+  const tbody = $("listaRanking");
+  tbody.innerHTML = '<tr><td colspan="5"><small>Calculando...</small></td></tr>';
+  try {
+    const r = await rpc("rpc_admin_ranking_mensagens", { p_admin_password: ADMIN_PASS, p_login: $("rkLogin").value || null,
+      p_dias: Number($("rkDias").value), p_min: Number($("rkMin").value) });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    const lista = r.modelos || [];
+    if (!lista.length) {
+      tbody.innerHTML = `<tr><td colspan="5"><small>Nenhuma mensagem com pelo menos ${r.minimo} envios no período. Diminua o mínimo ou aumente o período.</small></td></tr>`;
+      return;
+    }
+    const maxAg = Math.max(0.1, ...lista.map(m => m.taxa_agendamento));
+    const maxResp = Math.max(0.1, ...lista.map(m => m.taxa_resposta));
+    const barra = (v, max, cor) => `<div style="height:6px;border-radius:3px;background:#f1ecf4;margin-top:4px;width:120px"><div style="height:6px;border-radius:3px;background:${cor};width:${Math.round(v / max * 100)}%"></div></div>`;
+    tbody.innerHTML = lista.map((m, i) => `
+      <tr>
+        <td style="font-weight:800;color:${i === 0 ? "#b45309" : "#6b5a72"}">${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</td>
+        <td style="max-width:520px"><div style="white-space:pre-wrap;font-size:12px;line-height:1.45;max-height:4.4em;overflow:hidden" class="rkTexto">${esc(m.modelo)}</div>
+          <button class="ghost rkVer" style="padding:2px 6px;font-size:10px;margin-top:3px">ver inteira</button>
+          <button class="ghost rkCopiar" style="padding:2px 6px;font-size:10px;margin-top:3px">📋 copiar</button>
+          ${m.operadores > 1 ? `<small style="margin-left:4px">${m.operadores} operadores</small>` : ""}</td>
+        <td><b>${m.enviados}</b></td>
+        <td><b>${m.taxa_resposta}%</b> <small>(${m.responderam})</small>${barra(m.taxa_resposta, maxResp, "#6C0070")}</td>
+        <td><b>${m.taxa_agendamento}%</b> <small>(${m.agendaram})</small>${barra(m.taxa_agendamento, maxAg, "#F89A45")}</td>
+      </tr>`).join("");
+    tbody.querySelectorAll(".rkVer").forEach(b => b.addEventListener("click", () => {
+      const t = b.parentElement.querySelector(".rkTexto");
+      const aberto = t.style.maxHeight === "none";
+      t.style.maxHeight = aberto ? "4.4em" : "none";
+      b.textContent = aberto ? "ver inteira" : "recolher";
+    }));
+    tbody.querySelectorAll(".rkCopiar").forEach((b, i) => b.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(lista[i].modelo); b.textContent = "✅ copiada"; setTimeout(() => { b.textContent = "📋 copiar"; }, 1500); }
+      catch (_) { prompt("Copie a mensagem:", lista[i].modelo); }
+    }));
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5"><small>${/rpc_admin_ranking_mensagens|function|404/i.test(e.message) ? "Falta rodar o SQL RANKING_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+  }
+}
+$("btnRanking")?.addEventListener("click", loadRanking);
 
 // ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
 let MAQUINAS_INTERVAL = null;

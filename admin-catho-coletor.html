@@ -396,6 +396,20 @@
     </div><!-- /tabCreci -->
 
     <div class="tabpanel hide" id="tabOperadores">
+    <div class="card" id="cardRanking">
+      <h3 style="margin-top:0;font-size:14px">🏆 Mensagens que mais convertem</h3>
+      <small>Primeira mensagem enviada a cada pessoa, com o nome trocado por {nome}. Ordem: quem mais agenda, depois quem mais recebe resposta. Só entram mensagens com envios suficientes para a taxa valer.</small>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:8px">
+        <div style="flex:2;min-width:200px"><label>Operador</label><select id="rkLogin"><option value="">Todos</option></select></div>
+        <div style="flex:1;min-width:120px"><label>Período</label><select id="rkDias"><option value="30">30 dias</option><option value="90" selected>90 dias</option><option value="180">180 dias</option><option value="365">1 ano</option></select></div>
+        <div style="flex:1;min-width:120px"><label>Mínimo de envios</label><select id="rkMin"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select></div>
+        <button id="btnRanking" class="secondary" style="margin-bottom:4px">🔎 Ver ranking</button>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Mensagem</th><th>Enviados</th><th>Responderam</th><th>Agendaram</th></tr></thead>
+        <tbody id="listaRanking"><tr><td colspan="5"><small>Escolha e clique em Ver ranking.</small></td></tr></tbody>
+      </table>
+    </div>
     <div class="card" id="cardMaquinas">
       <h3 style="margin-top:0;font-size:14px">🖥 Máquinas — extensões ligadas agora</h3>
       <small>Cada extensão logada avisa a cada 3 minutos que está viva. Atualiza sozinho a cada minuto.</small>
@@ -585,7 +599,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261025disparo"></script>
+<script src="admin-catho-coletor.js?v=20261025ranking"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
