@@ -1814,10 +1814,10 @@ function seloValidade(fim) {
   }
   return { nivel: "ok", dias, html: `<span class="selo ok">🟢 ${dias} dias</span>` };
 }
-function botoesValidade(attrs) {
+function botoesValidade(attrs, classe) {
   if (!VALIDADE_PODE_EDITAR) return "";
-  return `<br><button ${attrs} data-modo="renovar" style="padding:3px 7px;font-size:10px;margin-top:4px">🔄 Renovar</button>
-    <button ${attrs} data-modo="editar" class="ghost" style="padding:3px 7px;font-size:10px;margin-top:4px">📅 Datas</button>`;
+  return `<br><button ${attrs} class="${classe}" data-modo="renovar" style="padding:3px 7px;font-size:10px;margin-top:4px">🔄 Renovar</button>
+    <button ${attrs} class="ghost ${classe}" data-modo="editar" style="padding:3px 7px;font-size:10px;margin-top:4px">📅 Datas</button>`;
 }
 
 async function loadValidadeOperadores() {
@@ -1847,7 +1847,7 @@ function celulaValidadeOperador(u) {
   const s = seloValidade(v.acesso_fim);
   const periodo = v.acesso_fim ? `<br><small style="color:#666">${dataBR(v.acesso_inicio)} → ${dataBR(v.acesso_fim)}</small>` : "";
   const motivo = v.bloqueado_por_vencimento ? '<br><small style="color:#991b1b">bloqueado por vencimento</small>' : "";
-  return s.html + periodo + motivo + botoesValidade(`data-login="${esc(u.login)}" class="validadeOperBtn"`);
+  return s.html + periodo + motivo + botoesValidade(`data-login="${esc(u.login)}"`, "validadeOperBtn");
 }
 
 function celulaUsoOperador(u) {
@@ -1868,7 +1868,7 @@ function celulaValidadeConta(c, tipo) {
   const s = seloValidade(c.data_fim);
   const periodo = c.data_fim ? `<br><small style="color:#666">${dataBR(c.data_inicio)} → ${dataBR(c.data_fim)}</small>` : "";
   const id = tipo === "nt" ? c.conta_id : c.id;
-  return s.html + periodo + botoesValidade(`data-tipo="${tipo}" data-conta="${esc(id)}" class="validadeContaBtn"`);
+  return s.html + periodo + botoesValidade(`data-tipo="${tipo}" data-conta="${esc(id)}"`, "validadeContaBtn");
 }
 
 // ---------- diálogo: renovar / definir datas ----------
@@ -2063,3 +2063,13 @@ function renderAvisosValidade() {
 if (ADMIN_PASS) {
   fazerLogin(ADMIN_PASS).catch(() => {});
 }
+
+// Resposta visual a todo clique em botão (pulso rápido) — o "carregando" é o
+// disabled que cada ação já liga enquanto espera o servidor (ver CSS).
+document.addEventListener("click", (e) => {
+  const b = e.target.closest && e.target.closest("button");
+  if (!b || b.disabled) return;
+  b.classList.remove("clicado");
+  void b.offsetWidth; // reinicia a animação
+  b.classList.add("clicado");
+}, true);

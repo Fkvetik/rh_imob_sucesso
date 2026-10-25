@@ -15,7 +15,7 @@
   header{background:linear-gradient(135deg,var(--rh-purple-dark),var(--rh-purple));color:#fff;padding:16px 24px}
   header h1{font-size:16px;margin:0}
   header img.logo{height:32px;border-radius:6px;background:#fff;padding:2px}
-  main{max-width:1040px;margin:24px auto;padding:0 16px}
+  main{max-width:1280px;margin:24px auto;padding:0 16px}
   #loginCard{max-width:420px;margin:0 auto}
   .tabbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:0;background:#fbfafc;padding:10px 0;z-index:10}
   .tabbar button{background:#fff;color:var(--rh-purple-dark);border:1px solid #e4dbe8;font-weight:700;padding:10px 16px;border-radius:10px}
@@ -48,6 +48,48 @@
   .hide{display:none !important}
   small{color:#666}
   h3{color:var(--rh-purple-dark)}
+
+  /* ===== Visual 2 (25/10/2026): botões com contorno e resposta ao clique,
+     tabelas mais legíveis. Cor = tipo de ação:
+       roxo cheio = principal (salvar, criar)   laranja = executar/atualizar
+       contorno roxo = abrir/editar/ver          contorno vermelho = bloquear/excluir */
+  button{font-weight:600;line-height:1.2;border:1px solid var(--rh-purple);
+    transition:background-color .15s,box-shadow .15s,transform .08s,color .15s,border-color .15s}
+  button:hover{box-shadow:0 2px 8px rgba(108,0,112,.22)}
+  button:active{transform:scale(.96)}
+  button:focus-visible{outline:3px solid rgba(248,154,69,.6);outline-offset:2px}
+  button:disabled{opacity:.55;cursor:progress;transform:none;box-shadow:none}
+  button.secondary{border-color:var(--rh-orange-dark)}
+  button.secondary:hover{box-shadow:0 2px 8px rgba(224,132,47,.3)}
+  button.ghost{background:#fff;color:var(--rh-purple-dark);border:1px solid #cdb8d3}
+  button.ghost:hover{background:var(--rh-purple-light);border-color:var(--rh-purple)}
+  button.danger{background:#fff;color:#a11212;border:1px solid #e3a3a3}
+  button.danger:hover{background:#a11212;color:#fff;border-color:#a11212;box-shadow:0 2px 8px rgba(161,18,18,.25)}
+  button.clicado{animation:clique .35s ease}
+  @keyframes clique{0%{box-shadow:0 0 0 0 rgba(108,0,112,.45)}100%{box-shadow:0 0 0 8px rgba(108,0,112,0)}}
+  .tabbar button{border:1px solid #e4dbe8;box-shadow:none}
+  .tabbar button:hover{border-color:var(--rh-purple)}
+  .tabbar button.active{box-shadow:0 3px 10px rgba(108,0,112,.25)}
+
+  .card{border-color:#ece6f0;box-shadow:0 1px 3px rgba(35,26,48,.05)}
+  .card > h3:first-child{padding-left:10px;border-left:4px solid var(--rh-orange)}
+  input:hover,select:hover{border-color:#b9a6c0}
+
+  table{border:1px solid #efe9f2;border-radius:10px;overflow:hidden;border-collapse:separate;border-spacing:0}
+  th{background:#f7f2f8;color:#6b5a72;font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;border-bottom:1px solid #e9e1ec}
+  td{vertical-align:middle;border-bottom:1px solid #f2edf4}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:not(.filtrosRow):hover td{background:#fcf8fd}
+  td button{margin:2px 2px 2px 0;white-space:nowrap}
+  /* coluna de ações dos operadores larga o bastante pra 2-3 botões por linha */
+  #listaUsuarios > tr > td:last-child{min-width:250px}
+  #listaUsuarios > tr > td:first-child{min-width:140px;max-width:200px;word-break:break-word}
+  .card{overflow-x:auto} /* tela estreita: a tabela rola de lado em vez de cortar */
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-weight:700;background:#e7f8ee;color:#166534}
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .badge.bloqueado{background:#fff1e6;color:#b45309}
+  .msg:not(:empty){padding:8px 10px;border-radius:8px;background:#f7f2f8}
   .pass-wrap{position:relative}
   .pass-wrap input{padding-right:38px}
   .pass-eye{position:absolute;right:2px;top:50%;transform:translateY(-50%);height:32px;width:32px;padding:0;background:transparent;color:#888;font-size:15px;line-height:1}
@@ -525,7 +567,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261025resumo"></script>
+<script src="admin-catho-coletor.js?v=20261025visual"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
