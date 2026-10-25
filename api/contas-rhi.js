@@ -52,6 +52,11 @@ export default async function handler(req, res) {
   if (!check.valida) {
     return send(res, 401, { error: 'auth', message: check.motivo });
   }
+  // Admin de empresa cliente não gerencia o banco CRECI (as empresas e
+  // usuários dela ficam no painel da própria plataforma /corretores).
+  if (check.contaId) {
+    return send(res, 403, { error: 'sem_permissao', message: 'Apenas o administrador da RH IMOB gerencia o Banco de Corretores CRECI.' });
+  }
 
   const headers = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' };
 

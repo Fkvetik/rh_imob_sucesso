@@ -28,8 +28,13 @@ function showApp() {
   loadAuditLog();
   loadLogsExtensao();
   loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
-  loadContasRhi().then(() => { loadUsuariosRhi(); });
-  loadCidadesExportarContatos();
+  // Banco de Corretores CRECI é só da RH IMOB: admin de empresa não vê a aba.
+  const superAdmin = !(CURRENT_ADMIN && CURRENT_ADMIN.conta_id_plataforma);
+  document.querySelector('[data-tab="tabCreci"]')?.classList.toggle("hide", !superAdmin);
+  if (superAdmin) {
+    loadContasRhi().then(() => { loadUsuariosRhi(); });
+    loadCidadesExportarContatos();
+  }
   loadUsuariosEnriquecimento();
 }
 

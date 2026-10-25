@@ -24,7 +24,7 @@ async function senhaDeAdminValida(senha) {
       return { valida: false, motivo: `Falha ao verificar senha (HTTP ${r.status} do Coletor): ${t.slice(0, 200)}` };
     }
     const data = await r.json();
-    if (data && data.ok === true) return { valida: true };
+    if (data && data.ok === true) return { valida: true, contaId: data.conta_id_plataforma || null };
     return { valida: false, motivo: 'Senha de admin incorreta.' };
   } catch (e) {
     return { valida: false, motivo: 'Falha de rede ao verificar senha: ' + String(e && e.message || e) };
@@ -44,6 +44,8 @@ export default async function handler(req, res) {
 
   const check = await senhaDeAdminValida(token);
   if (!check.valida) return json(res, 401, { error: 'auth', message: check.motivo });
+  // Só o administrador da RH IMOB exporta a base CRECI (admin de empresa não).
+  if (check.contaId) return json(res, 403, { error: 'sem_permissao', message: 'Apenas o administrador da RH IMOB exporta contatos do Banco de Corretores CRECI.' });
 
   const headers = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
 
