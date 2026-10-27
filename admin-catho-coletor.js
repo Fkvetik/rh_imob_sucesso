@@ -2304,6 +2304,81 @@ async function loadRanking() {
 }
 $("btnRanking")?.addEventListener("click", loadRanking);
 
+// ===== Base qualificada (zona e tipo marcados na bolha — SQL QUALI_1) =====
+const BQ_ZONA = { NORTE: "Norte", SUL: "Sul", LESTE: "Leste", OESTE: "Oeste", CENTRO: "Centro" };
+const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", ADVOGADO: "Advogado", OUTRO: "Outro" };
+let BQ_LINHAS = [];
+const bqData = (iso) => iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
+async function loadBaseQualificada() {
+  const tbody = $("listaBaseQuali");
+  tbody.innerHTML = '<tr><td colspan="7"><small>Buscando...</small></td></tr>';
+  $("btnBaseQualiCsv").disabled = true;
+  try {
+    const r = await rpc("rpc_admin_base_qualificada", { p_admin_password: ADMIN_PASS, p_filtros: {
+      cidade: $("bqCidade").value, zona: $("bqZona").value, tipo: $("bqTipo").value,
+      nao_abordado_dias: $("bqDias").value, busca: $("bqBusca").value.trim(), limite: 2000 } });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    // cidades disponíveis (mantém a escolhida)
+    const sel = $("bqCidade"), atual = sel.value;
+    sel.innerHTML = '<option value="">Todas</option>' + (r.cidades || []).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+    sel.value = atual;
+    BQ_LINHAS = r.linhas || [];
+    const pz = r.por_zona || {}, pt = r.por_tipo || {};
+    const pilula = (t) => `<span style="display:inline-block;background:#f1ecf4;color:#6C0070;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:0 4px 4px 0">${t}</span>`;
+    $("bqResumo").innerHTML = pilula(`${r.total} profissionais`) +
+      Object.keys(BQ_ZONA).filter(z => pz[z]).map(z => pilula(`${BQ_ZONA[z]}: ${pz[z]}`)).join("") +
+      Object.keys(pt).map(t => pilula(`${BQ_TIPO[t] || "Sem tipo"}: ${pt[t]}`)).join("") +
+      (r.total > BQ_LINHAS.length ? `<small>Mostrando os ${BQ_LINHAS.length} mais recentes.</small>` : "");
+    if (!BQ_LINHAS.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><small>Ninguém com esses filtros ainda. As marcações aparecem aqui conforme os operadores clicam na zona/tipo na bolha (extensão 3.15.0 ou mais nova).</small></td></tr>';
+    } else {
+      tbody.innerHTML = BQ_LINHAS.map(l => `
+        <tr>
+          <td>${esc(l.nome || "—")}${l.empresas_marcaram > 1 ? ` <small title="Empresas que marcaram esta pessoa">(${l.empresas_marcaram} empresas)</small>` : ""}</td>
+          <td>${esc(l.telefone || "")}</td>
+          <td>${esc(l.cidade || "—")}</td>
+          <td>${(l.zonas || []).map(z => BQ_ZONA[z] || z).join(", ") || "—"}</td>
+          <td>${esc(BQ_TIPO[l.tipo] || "—")}</td>
+          <td>${bqData(l.ultima_abordagem)}</td>
+          <td>${esc(l.marcado_por || "")}${l.empresa ? `<br><small>${esc(l.empresa)}</small>` : ""}<br><small>${bqData(l.atualizado_em)}</small></td>
+        </tr>`).join("");
+      $("btnBaseQualiCsv").disabled = false;
+    }
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7"><small>${/rpc_admin_base_qualificada|function|404/i.test(e.message) ? "Falta rodar o SQL QUALI_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+  }
+  loadQualiOperadores();
+}
+async function loadQualiOperadores() {
+  const tbody = $("listaQualiOperadores");
+  try {
+    const r = await rpc("rpc_admin_qualificacao_operadores", { p_admin_password: ADMIN_PASS, p_dias: 30 });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    const ops = (r.operadores || []).filter(o => o.abordados > 0);
+    tbody.innerHTML = ops.length ? ops.map(o => `
+      <tr><td>${esc(o.nome || o.login)}</td><td>${o.abordados}</td><td>${o.qualificados}</td>
+        <td><b style="color:${o.pct >= 50 ? "#1a7a3d" : o.pct >= 20 ? "#b45309" : "#b91c1c"}">${o.pct}%</b></td></tr>`).join("")
+      : '<tr><td colspan="4"><small>Nenhuma abordagem nos últimos 30 dias.</small></td></tr>';
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4"><small>${esc(e.message)}</small></td></tr>`;
+  }
+}
+function exportarBaseQualificada() {
+  const q = (v) => { const s = String(v == null ? "" : v); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const linhas = [["Nome", "Telefone", "Cidade", "Zonas", "Tipo", "Última abordagem", "Marcado por", "Marcado em"]]
+    .concat(BQ_LINHAS.map(l => [l.nome, l.telefone, l.cidade, (l.zonas || []).map(z => BQ_ZONA[z] || z).join(" / "),
+      BQ_TIPO[l.tipo] || "", bqData(l.ultima_abordagem).replace("—", ""), l.marcado_por, bqData(l.atualizado_em)]));
+  const csv = "﻿" + linhas.map(l => l.map(q).join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = `base-qualificada-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$("btnBaseQuali")?.addEventListener("click", loadBaseQualificada);
+$("btnBaseQualiCsv")?.addEventListener("click", exportarBaseQualificada);
+$("bqBusca")?.addEventListener("keydown", (e) => { if (e.key === "Enter") loadBaseQualificada(); });
+
 // ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
 let MAQUINAS_INTERVAL = null;
 const COMANDO_DISPARO_PENDENTE = {}; // login -> comando enviado e ainda não confirmado pelo sinal de vida

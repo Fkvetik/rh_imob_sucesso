@@ -410,6 +410,30 @@
         <tbody id="listaRanking"><tr><td colspan="5"><small>Escolha e clique em Ver ranking.</small></td></tr></tbody>
       </table>
     </div>
+    <div class="card" id="cardBaseQuali">
+      <h3 style="margin-top:0;font-size:14px">📍 Base qualificada — zona e tipo dos profissionais</h3>
+      <small>O que os operadores marcam na bolha do WhatsApp durante a conversa. Use para montar listas sem precisar abordar de novo. Cada empresa vê só as marcações dela.</small>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:8px">
+        <div style="flex:2;min-width:160px"><label>Cidade</label><select id="bqCidade"><option value="">Todas</option></select></div>
+        <div style="flex:1;min-width:110px"><label>Zona</label><select id="bqZona"><option value="">Todas</option><option value="NORTE">Norte</option><option value="SUL">Sul</option><option value="LESTE">Leste</option><option value="OESTE">Oeste</option><option value="CENTRO">Centro</option></select></div>
+        <div style="flex:1;min-width:120px"><label>Tipo</label><select id="bqTipo"><option value="">Todos</option><option value="CORRETOR">Corretor</option><option value="IMOBILIARIA">Imobiliária</option><option value="ADVOGADO">Advogado</option><option value="OUTRO">Outro</option></select></div>
+        <div style="flex:1;min-width:140px"><label>Não abordado há</label><select id="bqDias"><option value="">Tanto faz</option><option value="30">30+ dias</option><option value="60">60+ dias</option><option value="90">90+ dias</option></select></div>
+        <div style="flex:2;min-width:160px"><label>Nome ou telefone</label><input id="bqBusca" type="text" placeholder="opcional"></div>
+        <button id="btnBaseQuali" class="secondary" style="margin-bottom:4px">🔎 Buscar</button>
+        <button id="btnBaseQualiCsv" class="ghost" style="margin-bottom:4px" disabled>⬇️ Exportar planilha</button>
+      </div>
+      <div id="bqResumo" style="margin-top:10px"></div>
+      <table>
+        <thead><tr><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Zona</th><th>Tipo</th><th>Última abordagem</th><th>Marcado por</th></tr></thead>
+        <tbody id="listaBaseQuali"><tr><td colspan="7"><small>Escolha os filtros e clique em Buscar.</small></td></tr></tbody>
+      </table>
+      <h4 style="font-size:13px;margin:14px 0 4px">Quanto cada operador está qualificando (últimos 30 dias)</h4>
+      <small>Dos contatos que o operador abordou, quantos já têm zona marcada.</small>
+      <table>
+        <thead><tr><th>Operador</th><th>Abordados</th><th>Com zona</th><th>%</th></tr></thead>
+        <tbody id="listaQualiOperadores"><tr><td colspan="4"><small>Aparece ao clicar em Buscar.</small></td></tr></tbody>
+      </table>
+    </div>
     <div class="card" id="cardMaquinas">
       <h3 style="margin-top:0;font-size:14px">🖥 Máquinas — extensões ligadas agora</h3>
       <small>Cada extensão logada avisa a cada 3 minutos que está viva. Atualiza sozinho a cada minuto.</small>
@@ -599,7 +623,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261025ranking"></script>
+<script src="admin-catho-coletor.js?v=20261027quali"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
