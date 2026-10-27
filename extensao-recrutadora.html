@@ -33,7 +33,7 @@
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Chrome",
     "description": "Extensão para Google Chrome que automatiza a coleta de contatos, organiza candidatos ou clientes num painel Kanban e dispara abordagem via WhatsApp de forma automática — para recrutamento ou prospecção de vendas.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+    "offers": { "@type": "AggregateOffer", "lowPrice": "799", "highPrice": "999", "priceCurrency": "BRL", "offerCount": "3" },
     "publisher": { "@type": "Organization", "name": "RH IMOB", "sameAs": "https://www.rhimob.com.br" }
   }
   </script>
@@ -84,6 +84,30 @@
     .ext-form-note { font-size: .78rem; opacity: .65; margin-top: 12px; }
     .ext-store-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--white); color: var(--purple-900); border: 1.5px solid var(--purple-100); border-radius: 14px; padding: 13px 22px; font-weight: 700; font-size: .92rem; text-decoration: none; margin-top: 18px; transition: transform .15s, box-shadow .15s; }
     .ext-store-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+    .ext-planos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1000px; margin: 44px auto 0; align-items: stretch; }
+    @media (max-width: 860px) { .ext-planos-grid { grid-template-columns: 1fr; max-width: 400px; } }
+    .ext-plano { background: var(--white); border: 1.5px solid var(--line); border-radius: 20px; padding: 30px 24px 26px; display: flex; flex-direction: column; position: relative; }
+    .ext-plano--top { border-color: var(--purple-700); box-shadow: 0 10px 34px -12px rgba(76,29,149,.35); }
+    .ext-plano-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--orange-600); color: #fff; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 5px 12px; border-radius: 100px; white-space: nowrap; }
+    .ext-plano-nome { font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--purple-700); }
+    .ext-plano-de { font-size: .85rem; color: var(--muted); text-decoration: line-through; margin-top: 10px; }
+    .ext-plano-preco { display: flex; align-items: baseline; gap: 4px; margin: 2px 0 4px; }
+    .ext-plano-preco strong { font-size: 2.3rem; font-weight: 900; color: var(--purple-900); letter-spacing: -.03em; }
+    .ext-plano-preco span { font-size: .85rem; color: var(--muted); }
+    .ext-plano-total { font-size: .85rem; color: var(--purple-900); font-weight: 600; margin: 0; }
+    .ext-plano-eco { display: inline-block; background: #e9f8ef; color: #17733d; font-size: .78rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; margin-top: 8px; align-self: flex-start; }
+    .ext-plano-regra { font-size: .8rem; color: var(--muted); line-height: 1.55; margin: 14px 0 20px; flex: 1; }
+    .ext-plano-btn { display: block; width: 100%; text-align: center; padding: 13px 18px; border-radius: 12px; font-size: .95rem; font-weight: 700; border: 1.5px solid var(--purple-700); background: var(--white); color: var(--purple-700); cursor: pointer; font-family: inherit; }
+    .ext-plano--top .ext-plano-btn { background: var(--purple-700); color: #fff; }
+    .ext-plano-btn:hover { opacity: .9; }
+    .ext-inclui { max-width: 1000px; margin: 28px auto 0; background: var(--white); border: 1px solid var(--line); border-radius: 20px; padding: 26px 28px; }
+    .ext-inclui h3 { font-size: 1rem; font-weight: 800; color: var(--purple-900); margin: 0 0 14px; }
+    .ext-inclui ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px 26px; }
+    @media (max-width: 720px) { .ext-inclui ul { grid-template-columns: 1fr; } }
+    .ext-inclui li { display: flex; gap: 8px; font-size: .88rem; color: var(--purple-900); line-height: 1.45; }
+    .ext-inclui li::before { content: '✓'; color: var(--purple-700); font-weight: 900; flex-shrink: 0; }
+    .ext-inclui-nota { font-size: .8rem; color: var(--muted); line-height: 1.6; margin: 16px 0 0; }
+    .ext-plano-escolhido { font-size: .9rem; font-weight: 700; background: rgba(255,255,255,.14); border-radius: 10px; padding: 8px 12px; margin: 0 auto 12px; max-width: 380px; display: none; }
     .reveal { opacity: 0; transform: translateY(22px); transition: opacity .55s, transform .55s; }
     .reveal.visible { opacity: 1; transform: none; }
   </style>
@@ -114,7 +138,7 @@
         <a href="/#como-funciona">Como funciona</a>
         <a href="/#contato">Contato</a>
       <a href="/blog">Blog</a><a href="/leiloes">Leilões</a></nav>
-      <a class="btn btn-cta btn-header" href="#contato">Quero conhecer</a>
+      <a class="btn btn-cta btn-header" href="#planos">Ver planos</a>
     </div>
   </header>
 
@@ -202,6 +226,62 @@
       </div>
     </section>
 
+    <section class="section-pad" id="planos">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-kicker">Planos</span>
+          <h2>Dois acessos pelo preço de um — e mais desconto no semestral e no anual.</h2>
+          <p>Todos os planos incluem 2 logins e a ferramenta completa. Muda só o período e o desconto.</p>
+        </div>
+        <div class="ext-planos-grid">
+          <div class="ext-plano reveal">
+            <span class="ext-plano-nome">Mensal</span>
+            <span class="ext-plano-de">R$&nbsp;1.998/mês</span>
+            <div class="ext-plano-preco"><strong>R$&nbsp;999</strong><span>/mês</span></div>
+            <p class="ext-plano-total">2 acessos · cobrança mensal</p>
+            <span class="ext-plano-eco">2º login grátis</span>
+            <p class="ext-plano-regra">Sem fidelidade: cancele quando quiser, sem multa. O mês já pago não é reembolsado.</p>
+            <button type="button" class="ext-plano-btn" data-plano="Mensal — R$ 999/mês">Quero o mensal</button>
+          </div>
+          <div class="ext-plano ext-plano--top reveal">
+            <span class="ext-plano-badge">Mais vantajoso</span>
+            <span class="ext-plano-nome">Anual · 20% off</span>
+            <span class="ext-plano-de">R$&nbsp;999/mês</span>
+            <div class="ext-plano-preco"><strong>R$&nbsp;799</strong><span>/mês</span></div>
+            <p class="ext-plano-total">R$&nbsp;9.588 por 12 meses, no cartão de crédito</p>
+            <span class="ext-plano-eco">Economize R$&nbsp;2.400 no ano</span>
+            <p class="ext-plano-regra">Contratação por 12 meses fechados. Sem multa, mas o valor pago corresponde ao ano inteiro: não há cancelamento com reembolso antes do fim do período.</p>
+            <button type="button" class="ext-plano-btn" data-plano="Anual — R$ 799/mês (R$ 9.588/ano)">Quero o anual</button>
+          </div>
+          <div class="ext-plano reveal">
+            <span class="ext-plano-nome">Semestral · 10% off</span>
+            <span class="ext-plano-de">R$&nbsp;999/mês</span>
+            <div class="ext-plano-preco"><strong>R$&nbsp;899</strong><span>/mês</span></div>
+            <p class="ext-plano-total">R$&nbsp;5.394 por 6 meses, no cartão de crédito</p>
+            <span class="ext-plano-eco">Economize R$&nbsp;600 no semestre</span>
+            <p class="ext-plano-regra">Contratação por 6 meses fechados. Sem multa, mas o valor pago corresponde ao semestre inteiro: não há cancelamento com reembolso antes do fim do período.</p>
+            <button type="button" class="ext-plano-btn" data-plano="Semestral — R$ 899/mês (R$ 5.394/semestre)">Quero o semestral</button>
+          </div>
+        </div>
+        <div class="ext-inclui reveal">
+          <h3>Incluído em todos os planos</h3>
+          <ul>
+            <li>2 logins de operador + painel do administrador</li>
+            <li>Coleta automática de currículos na Catho</li>
+            <li>Banco Novos Talentos (talentos comerciais em início de carreira)</li>
+            <li>Banco de corretores com CRECI ativo</li>
+            <li>Importação da sua própria lista por CSV (com cidade)</li>
+            <li>CRM Kanban com histórico de cada contato</li>
+            <li>Primeira abordagem automática no WhatsApp, com intervalo entre envios</li>
+            <li>Mensagens separadas para corretores e para novos talentos</li>
+            <li>Respostas rápidas e base qualificada por região e perfil</li>
+            <li>Instalação e configuração feitas pela RH IMOB com a sua equipe</li>
+          </ul>
+          <p class="ext-inclui-nota">Os bancos Novos Talentos e Corretores também são vendidos como plataformas avulsas; na extensão, já fazem parte da ferramenta. A assinatura da Catho é da sua empresa — se ainda não tiver, a RH IMOB disponibiliza o acesso à parte.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="section-pad" style="background:var(--off);">
       <div class="container">
         <div class="section-head reveal">
@@ -213,6 +293,8 @@
           <details class="reveal"><summary>De onde vêm os currículos coletados?</summary><p>Da Catho, a partir de um filtro de busca que você configura uma vez (cargo, região, etc.). A extensão coleta os currículos que aparecem nesse filtro automaticamente.</p></details>
           <details class="reveal"><summary>Preciso saber programar ou mexer com sistema?</summary><p>Não. A instalação é feita pela RH IMOB junto com você, e o uso do dia a dia é só acompanhar o painel Kanban e o WhatsApp.</p></details>
           <details class="reveal"><summary>Isso substitui o serviço completo de recrutamento da RH IMOB?</summary><p>Não — é um complemento. A RH IMOB oferece o serviço de ponta a ponta (triagem, entrevista, indicação), e a extensão é a ferramenta que automatiza a parte de captação e primeiro contato para quem quer ter esse processo internamente.</p></details>
+          <details class="reveal"><summary>Posso cancelar o plano semestral ou anual antes do fim?</summary><p>O semestral e o anual são contratados por período fechado, com desconto justamente por isso. Não há multa, mas também não há reembolso: o valor pago corresponde ao período inteiro, e o acesso continua liberado até o fim dele. Se preferir liberdade total, o mensal pode ser cancelado a qualquer momento.</p></details>
+          <details class="reveal"><summary>Os bancos de Novos Talentos e de corretores com CRECI estão inclusos?</summary><p>Sim. Fora da extensão, cada banco é uma plataforma com valor próprio. Na extensão, os dois já fazem parte da ferramenta, sem custo adicional.</p></details>
         </div>
       </div>
     </section>
@@ -221,6 +303,7 @@
       <div class="container">
         <h2 class="reveal">Quer ver a extensão funcionando na sua imobiliária?</h2>
         <p class="reveal">Deixa seu contato — a Mariana te chama no WhatsApp e mostra como funciona.</p>
+        <p class="ext-plano-escolhido" id="ext-plano-escolhido"></p>
         <form id="extForm" class="ext-form reveal" novalidate>
           <input type="text" id="ext-nome" placeholder="Seu nome" required />
           <input type="text" id="ext-empresa" placeholder="Nome da imobiliária/empresa" required />
@@ -296,13 +379,24 @@
         var body = {
           session_id: extSessionId + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
           nome: row.nome, whatsapp: row.whatsapp, empresa: row.empresa,
-          tipo: 'empresa', origem: 'Extensão Recrutadora (extensao-recrutadora.html)',
+          tipo: 'empresa', origem: 'Extensão Recrutadora (extensao-recrutadora.html)' + (planoEscolhido ? ' — plano ' + planoEscolhido : ''),
           pagina: location.href, enviou_whatsapp: !!enviou
         };
         fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) }).catch(function(){});
       }
       var form = document.getElementById('extForm');
       if (!form) return;
+      var planoEscolhido = '';
+      document.querySelectorAll('.ext-plano-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          planoEscolhido = btn.getAttribute('data-plano') || '';
+          var aviso = document.getElementById('ext-plano-escolhido');
+          if (aviso) { aviso.textContent = 'Plano escolhido: ' + planoEscolhido; aviso.style.display = 'block'; }
+          if (window.gtag) gtag('event', 'ext_plano_click', { plano: planoEscolhido });
+          document.getElementById('contato').scrollIntoView({ behavior: 'smooth' });
+          setTimeout(function(){ var n = document.getElementById('ext-nome'); if (n) n.focus({ preventScroll: true }); }, 600);
+        });
+      });
       ['ext-nome','ext-empresa','ext-wpp'].forEach(function(id){
         var el = document.getElementById(id);
         if (el) el.addEventListener('blur', function(){
@@ -322,6 +416,7 @@
         salvarExtLead({ nome: nome, empresa: empresa, whatsapp: wpp }, true);
         var msg = encodeURIComponent(
           'Olá, Mariana! Vim pelo site e quero conhecer a extensão recrutadora da RH IMOB.\n\n' +
+          (planoEscolhido ? 'Plano de interesse: ' + planoEscolhido + '\n' : '') +
           'Nome: ' + nome + '\nEmpresa: ' + empresa + '\nMeu WhatsApp: ' + wpp
         );
         if (window.gtag) gtag('event', 'ext_lead_envio', { pagina: 'extensao-recrutadora' });
