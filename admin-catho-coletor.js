@@ -1003,6 +1003,7 @@ async function loadUsuarios() {
 let USUARIOS_COLETOR_CACHE = []; // para o "Entregar para" dos filtros
 function renderUsuarios(list) {
   USUARIOS_COLETOR_CACHE = list || [];
+  crPreencherOperadores();
   const tbody = $("listaUsuarios");
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="8"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
@@ -2447,6 +2448,117 @@ $("btnBaseQuali")?.addEventListener("click", () => loadBaseQualificada());
 $("btnBaseQualiFila")?.addEventListener("click", enviarBaseQualiParaFila);
 $("btnBaseQualiCsv")?.addEventListener("click", exportarBaseQualificada);
 $("bqBusca")?.addEventListener("keydown", (e) => { if (e.key === "Enter") loadBaseQualificada(); });
+// ===== Corretores CRECI → fila do operador (/api/admin-creci + SQL CRECI_ADM_1) =====
+// O servidor usa o acesso do próprio operador ao banco CRECI: a busca esconde
+// quem a empresa dele já liberou e o consumo cai no limite da empresa dele.
+async function adminCreci(body) {
+  const r = await fetch("/api/admin-creci", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ senha: ADMIN_PASS, ...body })
+  });
+  const d = await r.json().catch(() => null);
+  if (!d) throw new Error("Resposta inválida do servidor (HTTP " + r.status + ")");
+  if (!d.ok) throw new Error(d.error || "Falhou");
+  return d;
+}
+function crPreencherOperadores() {
+  const sel = $("crOperador");
+  if (!sel) return;
+  const atual = sel.value;
+  sel.innerHTML = '<option value="">Escolha o operador</option>' + (USUARIOS_COLETOR_CACHE || [])
+    .filter(u => u.ativo !== false)
+    .map(u => `<option value="${esc(u.login)}">${esc(u.nome_operador || u.login)}</option>`).join("");
+  sel.value = atual;
+}
+function crFiltros() {
+  return { cidade: $("crCidade").value || null, ano: $("crAno").value || null, cargo: $("crCargo").value || null };
+}
+function crOpcoesHtml(lista, campo, rotuloTodos) {
+  const total = (lista || []).reduce((s, x) => s + (Number(x.total) || 0), 0);
+  return `<option value="">${rotuloTodos}${total ? " (" + total + ")" : ""}</option>` + (lista || [])
+    .map(x => `<option value="${esc(x[campo])}">${esc(x[campo])}${x.total != null ? " (" + x.total + ")" : ""}</option>`).join("");
+}
+async function crCarregar() {
+  const login = $("crOperador").value;
+  if (!login) { alert("Escolha o operador."); return; }
+  const btn = $("btnCrCarregar");
+  btn.disabled = true; btn.textContent = "Carregando…";
+  $("crResumo").innerHTML = ""; $("crAndamento").innerHTML = "";
+  try {
+    const d = await adminCreci({ acao: "contexto", login });
+    $("crCidade").innerHTML = crOpcoesHtml(d.cidades, "cidade", "Todas");
+    $("crFiltros").style.display = "";
+    await crAtualizarOpcoes();
+  } catch (e) {
+    $("crFiltros").style.display = "none";
+    alert("⚠️ " + e.message);
+  }
+  btn.disabled = false; btn.textContent = "Carregar filtros";
+}
+async function crAtualizarOpcoes() {
+  const login = $("crOperador").value;
+  if (!login) return;
+  const f = crFiltros();
+  try {
+    const d = await adminCreci({ acao: "opcoes", login, cidade: f.cidade, ano: f.ano, cargo: f.cargo });
+    const ano = $("crAno").value, cargo = $("crCargo").value;
+    $("crAno").innerHTML = crOpcoesHtml(d.anos, "ano", "Todos");
+    $("crCargo").innerHTML = crOpcoesHtml(d.cargos, "cargo", "Todos");
+    $("crAno").value = ano; $("crCargo").value = cargo;
+  } catch (_) { /* sem contagem: os filtros continuam valendo */ }
+  if (!$("crCampanha").dataset.editado) {
+    $("crCampanha").value = "Corretores CRECI" + (f.cidade ? " — " + f.cidade : "") + (f.ano ? " — " + f.ano : "");
+  }
+}
+async function crContar() {
+  const login = $("crOperador").value;
+  if (!login) return;
+  $("crResumo").textContent = "Contando…";
+  try {
+    const d = await adminCreci({ acao: "contar", login, filtros: crFiltros() });
+    $("crResumo").innerHTML = `<b>${d.total}</b> corretor(es) disponíveis neste filtro para a empresa deste operador.`;
+  } catch (e) { $("crResumo").textContent = "⚠️ " + e.message; }
+}
+async function crEnviar() {
+  const login = $("crOperador").value;
+  const nome = $("crOperador").selectedOptions[0]?.textContent || login;
+  const qtd = Math.min(Math.max(parseInt($("crQtd").value, 10) || 0, 1), 500);
+  if (!login) { alert("Escolha o operador."); return; }
+  const campanha = $("crCampanha").value.trim() || "Corretores CRECI";
+  if (!confirm(`Liberar até ${qtd} corretor(es) e colocar na fila de ${nome}?\n\nCampanha: "${campanha}"\n\nCada corretor é descontado do limite da empresa dele.`)) return;
+  const btn = $("btnCrEnviar");
+  btn.disabled = true;
+  const tot = { liberados: 0, na_fila: 0, ja_estavam: 0, falhas: 0 };
+  let aviso = null, erro = null;
+  try {
+    while (tot.liberados < qtd) {
+      $("crAndamento").textContent = `Liberando… ${tot.liberados} de ${qtd}`;
+      const d = await adminCreci({ acao: "enviar", login, filtros: crFiltros(), campanha, lote: Math.min(25, qtd - tot.liberados) });
+      ["liberados", "na_fila", "ja_estavam", "falhas"].forEach(k => { tot[k] += Number(d[k]) || 0; });
+      if (d.aviso) aviso = d.aviso;
+      // Acabou o filtro, o limite, ou nada saiu neste lote: para (não fica tentando os mesmos).
+      if (d.acabou || !d.liberados) break;
+    }
+  } catch (e) { erro = e.message; }
+  btn.disabled = false;
+  $("crAndamento").innerHTML =
+    `✅ <b>${tot.na_fila}</b> corretor(es) entraram na fila de ${esc(nome)}` +
+    (tot.ja_estavam ? ` · ${tot.ja_estavam} já estavam na fila` : "") +
+    (tot.falhas ? ` · ${tot.falhas} falharam` : "") +
+    (tot.liberados < qtd && !erro ? ` · o filtro tinha menos corretores disponíveis que o pedido` : "") +
+    (aviso ? `<br>⚠️ ${esc(aviso)}` : "") +
+    (erro ? `<br>⚠️ Parou por erro: ${esc(erro)}` : "") +
+    (tot.na_fila ? `<br><small>A extensão de ${esc(nome)} começa o disparo em até 3 minutos (precisa estar aberta e logada).</small>` : "");
+  crContar();
+}
+$("crOperador")?.addEventListener("focus", crPreencherOperadores);
+$("crOperador")?.addEventListener("change", () => { $("crFiltros").style.display = "none"; $("crCampanha").dataset.editado = ""; });
+$("btnCrCarregar")?.addEventListener("click", crCarregar);
+["crCidade", "crAno", "crCargo"].forEach(id => $(id)?.addEventListener("change", () => { $("crResumo").innerHTML = ""; crAtualizarOpcoes(); }));
+$("crCampanha")?.addEventListener("input", () => { $("crCampanha").dataset.editado = "1"; });
+$("btnCrContar")?.addEventListener("click", crContar);
+$("btnCrEnviar")?.addEventListener("click", crEnviar);
 // ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
 let MAQUINAS_INTERVAL = null;
 const COMANDO_DISPARO_PENDENTE = {}; // login -> comando enviado e ainda não confirmado pelo sinal de vida

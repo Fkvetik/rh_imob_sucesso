@@ -441,6 +441,30 @@
         <tbody id="listaQualiOperadores"><tr><td colspan="4"><small>Aparece ao clicar em Buscar.</small></td></tr></tbody>
       </table>
     </div>
+    <div class="card" id="cardCreciFila">
+      <h3 style="margin-top:0;font-size:14px">🏘️ Corretores CRECI → fila do operador</h3>
+      <small>Você filtra o banco de Corretores CRECI e os corretores entram na fila do operador escolhido; a extensão dele dispara pelo WhatsApp daquele computador em até 3 minutos. Usa o acesso do operador ao banco: só aparecem corretores que a empresa dele ainda não liberou, e cada um é descontado do limite da empresa dele.</small>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:8px">
+        <div style="flex:2;min-width:180px"><label>Operador</label><select id="crOperador"><option value="">Escolha o operador</option></select></div>
+        <button id="btnCrCarregar" class="secondary" style="margin-bottom:4px">Carregar filtros</button>
+      </div>
+      <div id="crFiltros" style="display:none">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:6px">
+          <div style="flex:2;min-width:160px"><label>Cidade</label><select id="crCidade"><option value="">Todas</option></select></div>
+          <div style="flex:1;min-width:120px"><label>Ano de inscrição</label><select id="crAno"><option value="">Todos</option></select></div>
+          <div style="flex:2;min-width:160px"><label>Perfil / cargo</label><select id="crCargo"><option value="">Todos</option></select></div>
+          <button id="btnCrContar" class="secondary" style="margin-bottom:4px">🔎 Ver quantos tem</button>
+        </div>
+        <div id="crResumo" style="margin-top:8px;font-size:13px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:6px 0 4px;padding:8px 10px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
+          <div style="flex:2;min-width:180px"><label>Nome da campanha</label><input id="crCampanha" type="text" placeholder="Corretores CRECI"></div>
+          <div style="flex:1;min-width:100px"><label>Quantos (até 500)</label><input id="crQtd" type="number" min="1" max="500" value="50"></div>
+          <button id="btnCrEnviar" class="secondary" style="margin-bottom:4px">➕ Enviar para a fila</button>
+          <small style="flex-basis:100%">Eles recebem as frases de Corretores (configuradas na extensão do operador). O operador precisa estar com a extensão aberta e logada no computador dele.</small>
+        </div>
+        <div id="crAndamento" style="font-size:13px;margin-top:4px"></div>
+      </div>
+    </div>
     <div class="card" id="cardMaquinas">
       <h3 style="margin-top:0;font-size:14px">🖥 Máquinas — extensões ligadas agora</h3>
       <small>Cada extensão logada avisa a cada 3 minutos que está viva. Atualiza sozinho a cada minuto.</small>
@@ -630,7 +654,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261027quali2"></script>
+<script src="admin-catho-coletor.js?v=20261027creci1"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

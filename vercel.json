@@ -26,6 +26,9 @@
     },
     "api/mercado-corretores.js": {
       "includeFiles": "data/mercado-corretores.json"
+    },
+    "api/admin-creci.js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [
