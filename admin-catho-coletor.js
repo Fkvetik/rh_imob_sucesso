@@ -2308,27 +2308,58 @@ $("btnRanking")?.addEventListener("click", loadRanking);
 const BQ_ZONA = { NORTE: "Norte", SUL: "Sul", LESTE: "Leste", OESTE: "Oeste", CENTRO: "Centro" };
 const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", ADVOGADO: "Advogado", OUTRO: "Outro" };
 let BQ_LINHAS = [];
+const BQ_POR_PAGINA = 100;
+let BQ_FILTROS = null, BQ_TOTAL = 0, BQ_PAGINA = 0;
 const bqData = (iso) => iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
-async function loadBaseQualificada() {
+function bqFiltrosTela() {
+  return { cidade: $("bqCidade").value, zona: $("bqZona").value, tipo: $("bqTipo").value,
+    nao_abordado_dias: $("bqDias").value, busca: $("bqBusca").value.trim() };
+}
+function bqRenderPaginas() {
+  const box = $("bqPaginas");
+  const paginas = Math.ceil(BQ_TOTAL / BQ_POR_PAGINA);
+  if (paginas <= 1) { box.innerHTML = ""; return; }
+  box.innerHTML = `<button class="ghost" id="bqAnt" ${BQ_PAGINA === 0 ? "disabled" : ""}>◀ Anterior</button>
+    <small>Página <b>${BQ_PAGINA + 1}</b> de ${paginas}</small>
+    <button class="ghost" id="bqProx" ${BQ_PAGINA >= paginas - 1 ? "disabled" : ""}>Próxima ▶</button>`;
+  $("bqAnt").addEventListener("click", () => loadBaseQualificada(BQ_PAGINA - 1));
+  $("bqProx").addEventListener("click", () => loadBaseQualificada(BQ_PAGINA + 1));
+}
+function bqPreencherDestinos() {
+  // mesma lista de operadores do painel (já respeita a empresa do admin)
+  const dest = $("bqDestino");
+  if (!dest) return;
+  const atual = dest.value;
+  dest.innerHTML = '<option value="">Escolha o operador</option>' + (USUARIOS_COLETOR_CACHE || [])
+    .filter(u => u.ativo !== false)
+    .map(u => `<option value="${esc(u.login)}">${esc(u.nome_operador || u.login)}</option>`).join("");
+  dest.value = atual;
+}
+// pagina: número da página; sem número = nova busca com os filtros da tela
+async function loadBaseQualificada(pagina) {
+  const novaBusca = typeof pagina !== "number";
+  if (novaBusca) { BQ_FILTROS = bqFiltrosTela(); BQ_PAGINA = 0; } else { BQ_PAGINA = pagina; }
   const tbody = $("listaBaseQuali");
   tbody.innerHTML = '<tr><td colspan="7"><small>Buscando...</small></td></tr>';
   $("btnBaseQualiCsv").disabled = true;
   try {
     const r = await rpc("rpc_admin_base_qualificada", { p_admin_password: ADMIN_PASS, p_filtros: {
-      cidade: $("bqCidade").value, zona: $("bqZona").value, tipo: $("bqTipo").value,
-      nao_abordado_dias: $("bqDias").value, busca: $("bqBusca").value.trim(), limite: 2000 } });
+      ...BQ_FILTROS, limite: BQ_POR_PAGINA, offset: BQ_PAGINA * BQ_POR_PAGINA } });
     if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
     // cidades disponíveis (mantém a escolhida)
     const sel = $("bqCidade"), atual = sel.value;
     sel.innerHTML = '<option value="">Todas</option>' + (r.cidades || []).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
     sel.value = atual;
     BQ_LINHAS = r.linhas || [];
+    BQ_TOTAL = r.total || 0;
     const pz = r.por_zona || {}, pt = r.por_tipo || {};
     const pilula = (t) => `<span style="display:inline-block;background:#f1ecf4;color:#6C0070;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:0 4px 4px 0">${t}</span>`;
     $("bqResumo").innerHTML = pilula(`${r.total} profissionais`) +
       Object.keys(BQ_ZONA).filter(z => pz[z]).map(z => pilula(`${BQ_ZONA[z]}: ${pz[z]}`)).join("") +
-      Object.keys(pt).map(t => pilula(`${BQ_TIPO[t] || "Sem tipo"}: ${pt[t]}`)).join("") +
-      (r.total > BQ_LINHAS.length ? `<small>Mostrando os ${BQ_LINHAS.length} mais recentes.</small>` : "");
+      Object.keys(pt).map(t => pilula(`${BQ_TIPO[t] || "Sem tipo"}: ${pt[t]}`)).join("");
+    bqRenderPaginas();
+    bqPreencherDestinos();
+    $("bqFila").style.display = BQ_TOTAL ? "flex" : "none";
     if (!BQ_LINHAS.length) {
       tbody.innerHTML = '<tr><td colspan="7"><small>Ninguém com esses filtros ainda. As marcações aparecem aqui conforme os operadores clicam na zona/tipo na bolha (extensão 3.15.0 ou mais nova).</small></td></tr>';
     } else {
@@ -2345,9 +2376,9 @@ async function loadBaseQualificada() {
       $("btnBaseQualiCsv").disabled = false;
     }
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7"><small>${/rpc_admin_base_qualificada|function|404/i.test(e.message) ? "Falta rodar o SQL QUALI_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><small>${/rpc_admin_base_qualificada|function|404/i.test(e.message) ? "Falta rodar o SQL QUALI_1 / QUALI_2 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
   }
-  loadQualiOperadores();
+  if (novaBusca) loadQualiOperadores();
 }
 async function loadQualiOperadores() {
   const tbody = $("listaQualiOperadores");
@@ -2363,10 +2394,29 @@ async function loadQualiOperadores() {
     tbody.innerHTML = `<tr><td colspan="4"><small>${esc(e.message)}</small></td></tr>`;
   }
 }
-function exportarBaseQualificada() {
+// Exporta TUDO o que bate com o filtro (não só a página), buscando em lotes de 1000.
+async function exportarBaseQualificada() {
+  const btn = $("btnBaseQualiCsv");
+  const rotulo = btn.textContent;
+  btn.disabled = true;
+  const todas = [];
+  try {
+    for (let off = 0; off < BQ_TOTAL; off += 1000) {
+      btn.textContent = `Exportando ${Math.min(off + 1000, BQ_TOTAL)} de ${BQ_TOTAL}...`;
+      const r = await rpc("rpc_admin_base_qualificada", { p_admin_password: ADMIN_PASS, p_filtros: { ...BQ_FILTROS, limite: 1000, offset: off } });
+      if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+      todas.push(...(r.linhas || []));
+      if (!(r.linhas || []).length) break;
+    }
+  } catch (e) {
+    alert("Não consegui exportar tudo: " + e.message);
+    btn.textContent = rotulo; btn.disabled = false;
+    return;
+  }
+  btn.textContent = rotulo; btn.disabled = false;
   const q = (v) => { const s = String(v == null ? "" : v); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const linhas = [["Nome", "Telefone", "Cidade", "Zonas", "Tipo", "Última abordagem", "Marcado por", "Marcado em"]]
-    .concat(BQ_LINHAS.map(l => [l.nome, l.telefone, l.cidade, (l.zonas || []).map(z => BQ_ZONA[z] || z).join(" / "),
+    .concat(todas.map(l => [l.nome, l.telefone, l.cidade, (l.zonas || []).map(z => BQ_ZONA[z] || z).join(" / "),
       BQ_TIPO[l.tipo] || "", bqData(l.ultima_abordagem).replace("—", ""), l.marcado_por, bqData(l.atualizado_em)]));
   const csv = "﻿" + linhas.map(l => l.map(q).join(";")).join("\n");
   const a = document.createElement("a");
@@ -2375,10 +2425,28 @@ function exportarBaseQualificada() {
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
-$("btnBaseQuali")?.addEventListener("click", loadBaseQualificada);
+async function enviarBaseQualiParaFila() {
+  const login = $("bqDestino").value;
+  const qtd = Math.min(Math.max(parseInt($("bqQtd").value, 10) || 0, 1), 500);
+  if (!login) { alert("Escolha o operador."); return; }
+  if (!confirm(`Colocar até ${qtd} contato(s) deste recorte na fila de ${login}?`)) return;
+  const btn = $("btnBaseQualiFila");
+  btn.disabled = true;
+  try {
+    const r = await rpc("rpc_admin_quali_para_fila", { p_admin_password: ADMIN_PASS, p_login: login, p_filtros: BQ_FILTROS || bqFiltrosTela(), p_quantidade: qtd });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    alert(`✅ ${r.na_fila} contato(s) entraram na fila de ${login}.` +
+      (r.bloqueados_outra_empresa ? `\n${r.bloqueados_outra_empresa} ficaram de fora: outra empresa falou com eles nos últimos 30 dias.` : "") +
+      (r.na_fila === 0 && !r.bloqueados_outra_empresa ? "\nNinguém disponível: todos já foram abordados pela empresa nos últimos 30 dias ou já estão na fila." : ""));
+  } catch (e) {
+    alert(/rpc_admin_quali_para_fila|function|404/i.test(e.message) ? "Falta rodar o SQL QUALI_2 no Supabase do Coletor." : "⚠️ " + e.message);
+  }
+  btn.disabled = false;
+}
+$("btnBaseQuali")?.addEventListener("click", () => loadBaseQualificada());
+$("btnBaseQualiFila")?.addEventListener("click", enviarBaseQualiParaFila);
 $("btnBaseQualiCsv")?.addEventListener("click", exportarBaseQualificada);
 $("bqBusca")?.addEventListener("keydown", (e) => { if (e.key === "Enter") loadBaseQualificada(); });
-
 // ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
 let MAQUINAS_INTERVAL = null;
 const COMANDO_DISPARO_PENDENTE = {}; // login -> comando enviado e ainda não confirmado pelo sinal de vida

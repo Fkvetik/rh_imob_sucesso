@@ -423,10 +423,17 @@
         <button id="btnBaseQualiCsv" class="ghost" style="margin-bottom:4px" disabled>⬇️ Exportar planilha</button>
       </div>
       <div id="bqResumo" style="margin-top:10px"></div>
+      <div id="bqFila" style="display:none;gap:8px;flex-wrap:wrap;align-items:end;margin:6px 0 4px;padding:8px 10px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
+        <div style="flex:2;min-width:180px"><label>Colocar este recorte na fila de</label><select id="bqDestino"><option value="">Escolha o operador</option></select></div>
+        <div style="flex:1;min-width:100px"><label>Quantos (até 500)</label><input id="bqQtd" type="number" min="1" max="500" value="50"></div>
+        <button id="btnBaseQualiFila" class="secondary" style="margin-bottom:4px">➕ Enviar para a fila</button>
+        <small style="flex-basis:100%">Só entra quem a empresa do operador não abordou nos últimos 30 dias (ou o período do filtro, se maior). Quem outra empresa abordou em 30 dias fica de fora. O operador precisa da extensão 3.16.0.</small>
+      </div>
       <table>
         <thead><tr><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Zona</th><th>Tipo</th><th>Última abordagem</th><th>Marcado por</th></tr></thead>
         <tbody id="listaBaseQuali"><tr><td colspan="7"><small>Escolha os filtros e clique em Buscar.</small></td></tr></tbody>
       </table>
+      <div id="bqPaginas" style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:8px"></div>
       <h4 style="font-size:13px;margin:14px 0 4px">Quanto cada operador está qualificando (últimos 30 dias)</h4>
       <small>Dos contatos que o operador abordou, quantos já têm zona marcada.</small>
       <table>
@@ -623,7 +630,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261027quali"></script>
+<script src="admin-catho-coletor.js?v=20261027quali2"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
