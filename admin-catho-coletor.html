@@ -435,10 +435,10 @@
       </table>
       <div id="bqPaginas" style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:8px"></div>
       <h4 style="font-size:13px;margin:14px 0 4px">Quanto cada operador está qualificando (últimos 30 dias)</h4>
-      <small>Dos contatos que o operador abordou, quantos já têm zona marcada.</small>
+      <small>Dos contatos que o operador abordou: quantos já têm o tipo marcado (corretor, imobiliária…) e quantos têm a zona — só com zona conta como qualificado (%).</small>
       <table>
-        <thead><tr><th>Operador</th><th>Abordados</th><th>Com zona</th><th>%</th></tr></thead>
-        <tbody id="listaQualiOperadores"><tr><td colspan="4"><small>Aparece ao clicar em Buscar.</small></td></tr></tbody>
+        <thead><tr><th>Operador</th><th>Abordados</th><th>Com tipo</th><th>Com zona</th><th>% qualificado</th></tr></thead>
+        <tbody id="listaQualiOperadores"><tr><td colspan="5"><small>Aparece ao clicar em Buscar.</small></td></tr></tbody>
       </table>
     </div>
     <div class="card" id="cardCreciFila">
@@ -655,7 +655,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261027opnova1"></script>
+<script src="admin-catho-coletor.js?v=20261027quali3"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

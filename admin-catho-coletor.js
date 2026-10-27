@@ -1178,10 +1178,14 @@ async function refreshStatusColeta() {
   }
 }
 
+let BQ_AUTO_CARREGADA = false;
 function iniciarPollingStatusColeta() {
   STATUS_COLETA_FALHAS = 0;
   refreshStatusColeta();
   loadMaquinas();
+  // Base qualificada já aberta com tudo (e a lista de cidades preenchida),
+  // sem precisar clicar em Buscar na primeira vez.
+  if (!BQ_AUTO_CARREGADA) { BQ_AUTO_CARREGADA = true; loadBaseQualificada(); }
   if (MAQUINAS_INTERVAL) clearInterval(MAQUINAS_INTERVAL);
   MAQUINAS_INTERVAL = setInterval(() => { if (!document.hidden) loadMaquinas(); }, 60000);
   if (STATUS_COLETA_INTERVAL) clearInterval(STATUS_COLETA_INTERVAL);
@@ -2395,10 +2399,13 @@ async function loadQualiOperadores() {
     const r = await rpc("rpc_admin_qualificacao_operadores", { p_admin_password: ADMIN_PASS, p_dias: 30 });
     if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
     const ops = (r.operadores || []).filter(o => o.abordados > 0);
+    // com_tipo vem do SQL QUALI_3; sem ele, a coluna fica com "—".
+    const cor = p => p >= 50 ? "#1a7a3d" : p >= 20 ? "#b45309" : "#b91c1c";
     tbody.innerHTML = ops.length ? ops.map(o => `
-      <tr><td>${esc(o.nome || o.login)}</td><td>${o.abordados}</td><td>${o.qualificados}</td>
-        <td><b style="color:${o.pct >= 50 ? "#1a7a3d" : o.pct >= 20 ? "#b45309" : "#b91c1c"}">${o.pct}%</b></td></tr>`).join("")
-      : '<tr><td colspan="4"><small>Nenhuma abordagem nos últimos 30 dias.</small></td></tr>';
+      <tr><td>${esc(o.nome || o.login)}</td><td>${o.abordados}</td>
+        <td>${o.com_tipo != null ? o.com_tipo : "—"}</td><td>${o.qualificados}</td>
+        <td><b style="color:${cor(o.pct)}">${o.pct}%</b></td></tr>`).join("")
+      : '<tr><td colspan="5"><small>Nenhuma abordagem nos últimos 30 dias.</small></td></tr>';
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="4"><small>${esc(e.message)}</small></td></tr>`;
   }
