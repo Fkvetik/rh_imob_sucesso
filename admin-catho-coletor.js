@@ -1301,6 +1301,7 @@ function renderFiltrosOperador(login, filtros, destinos, horarios, horarioLogin)
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <button type="button" class="secondary rodarAgoraBtn">▶ Rodar agora (coleta + disparo)</button>
       <button type="button" class="danger zerarFilaBtn">🗑 Zerar fila (reiniciar operação)</button>
+      <button type="button" class="secondary operacaoNovaBtn" title="Encerra os contatos que ficaram em Novo, zera a fila e começa uma nova contagem do funil">🔄 Começar operação nova</button>
       <small style="color:#888">O computador/Chrome do operador precisa estar aberto — o comando é consumido em até 3min.</small>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1346,6 +1347,13 @@ function renderFiltrosOperador(login, filtros, destinos, horarios, horarioLogin)
       btn.disabled = false;
       btn.textContent = original;
     }
+  });
+
+  painel.querySelector(".operacaoNovaBtn")?.addEventListener("click", async (ev) => {
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    try { await comecarOperacaoNova(login, login); }
+    finally { btn.disabled = false; }
   });
 
   painel.querySelector(".addFiltroAdminBtn")?.addEventListener("click", async (ev) => {
@@ -2448,6 +2456,35 @@ $("btnBaseQuali")?.addEventListener("click", () => loadBaseQualificada());
 $("btnBaseQualiFila")?.addEventListener("click", enviarBaseQualiParaFila);
 $("btnBaseQualiCsv")?.addEventListener("click", exportarBaseQualificada);
 $("bqBusca")?.addEventListener("keydown", (e) => { if (e.key === "Enter") loadBaseQualificada(); });
+// ===== Começar operação nova (SQL OPNOVA_1) =====
+// Antes de um lote novo: os contatos que ficaram em "Novo" (nunca receberam
+// mensagem) vão para "Encerrado", a fila da máquina do operador é zerada e,
+// se escolhido, começa uma nova contagem do funil. Quem já recebeu mensagem
+// ou está em conversa não é tocado.
+async function comecarOperacaoNova(login, nome, opts) {
+  opts = opts || {};
+  if (!opts.semPerguntar && !confirm(`Começar uma operação nova para ${nome}?\n\n• Os contatos dele que ficaram em "Novo" (nunca receberam mensagem) vão para "Encerrado". Nada é apagado.\n• A fila da extensão dele é zerada (em até 3 min).\n• Quem já recebeu mensagem ou está em conversa continua como está e não recebe de novo.\n\nDepois disso, coloque o lote novo na fila.`)) return false;
+  const novaContagem = opts.novaContagem != null ? opts.novaContagem
+    : confirm(`Começar também uma NOVA CONTAGEM do funil de ${nome}? (recomendado)\n\nOK = sim: os números recomeçam do zero e a contagem atual fica guardada no histórico.\nCancelar = não: mantém a contagem atual.`);
+  try {
+    const r = await rpc("rpc_admin_encerrar_novos", { p_admin_password: ADMIN_PASS, p_login: login });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    await rpc("rpc_admin_definir_comando", { p_admin_password: ADMIN_PASS, p_login: login, p_comando: { tipo: "ZERAR_FILA" } });
+    let contagem = false, avisoContagem = "";
+    if (novaContagem) {
+      const c = await rpc("rpc_admin_reiniciar_funil", { p_admin_password: ADMIN_PASS, p_login: login, p_nota: "Operação nova" }).catch(e => ({ ok: false, error: e.message }));
+      contagem = !!(c && c.ok);
+      if (!contagem) avisoContagem = "\n• ⚠️ A nova contagem do funil não foi feita: " + ((c && c.error) || "sem resposta");
+    }
+    if (!opts.semAviso) alert(`✅ Operação nova para ${nome}.\n\n• ${r.encerrados} contato(s) que estavam em "Novo" foram para "Encerrado".\n• A fila da extensão dele é zerada em até 3 minutos.` +
+      (contagem ? "\n• Nova contagem do funil iniciada." : "") + avisoContagem + "\n\nAgora é só colocar o lote novo na fila.");
+    return { ok: true, encerrados: r.encerrados, contagem };
+  } catch (e) {
+    alert(/rpc_admin_encerrar_novos|function|404/i.test(e.message) ? "Falta rodar o SQL OPNOVA_1 no Supabase do Coletor." : "❌ " + e.message);
+    return false;
+  }
+}
+
 // ===== Corretores CRECI → fila do operador (/api/admin-creci + SQL CRECI_ADM_1) =====
 // O servidor usa o acesso do próprio operador ao banco CRECI: a busca esconde
 // quem a empresa dele já liberou e o consumo cai no limite da empresa dele.
@@ -2526,9 +2563,19 @@ async function crEnviar() {
   const qtd = Math.min(Math.max(parseInt($("crQtd").value, 10) || 0, 1), 500);
   if (!login) { alert("Escolha o operador."); return; }
   const campanha = $("crCampanha").value.trim() || "Corretores CRECI";
-  if (!confirm(`Liberar até ${qtd} corretor(es) e colocar na fila de ${nome}?\n\nCampanha: "${campanha}"\n\nCada corretor é descontado do limite da empresa dele.`)) return;
+  const opNova = $("crOpNova").checked;
+  if (!confirm(`Liberar até ${qtd} corretor(es) e colocar na fila de ${nome}?\n\nCampanha: "${campanha}"\n\nCada corretor é descontado do limite da empresa dele.` +
+    (opNova ? `\n\nAntes, começa uma operação nova: os contatos dele que ficaram em "Novo" vão para "Encerrado", a fila dele é zerada e o funil recomeça a contagem.` : ""))) return;
   const btn = $("btnCrEnviar");
   btn.disabled = true;
+  let opNovaTxt = "";
+  if (opNova) {
+    $("crAndamento").textContent = "Começando a operação nova…";
+    const o = await comecarOperacaoNova(login, nome, { semPerguntar: true, novaContagem: true, semAviso: true });
+    if (!o) { btn.disabled = false; $("crAndamento").textContent = ""; return; }
+    opNovaTxt = `🔄 Operação nova: ${o.encerrados} contato(s) antigos em "Novo" foram para "Encerrado"${o.contagem ? " e o funil recomeçou a contagem" : ""}.<br>`;
+    $("crOpNova").checked = false;
+  }
   const tot = { liberados: 0, na_fila: 0, ja_estavam: 0, falhas: 0 };
   let aviso = null, erro = null;
   try {
@@ -2542,7 +2589,7 @@ async function crEnviar() {
     }
   } catch (e) { erro = e.message; }
   btn.disabled = false;
-  $("crAndamento").innerHTML =
+  $("crAndamento").innerHTML = opNovaTxt +
     `✅ <b>${tot.na_fila}</b> corretor(es) entraram na fila de ${esc(nome)}` +
     (tot.ja_estavam ? ` · ${tot.ja_estavam} já estavam na fila` : "") +
     (tot.falhas ? ` · ${tot.falhas} falharam` : "") +

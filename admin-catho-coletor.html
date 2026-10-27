@@ -460,6 +460,7 @@
           <div style="flex:2;min-width:180px"><label>Nome da campanha</label><input id="crCampanha" type="text" placeholder="Corretores CRECI"></div>
           <div style="flex:1;min-width:100px"><label>Quantos (até 500)</label><input id="crQtd" type="number" min="1" max="500" value="50"></div>
           <button id="btnCrEnviar" class="secondary" style="margin-bottom:4px">➕ Enviar para a fila</button>
+          <label style="flex-basis:100%;display:flex;gap:6px;align-items:center;font-weight:600;margin-top:2px"><input id="crOpNova" type="checkbox" style="width:auto;margin:0"> 🔄 Começar operação nova antes (encerra os "Novo" que sobraram, zera a fila dele e recomeça a contagem do funil)</label>
           <small style="flex-basis:100%">Eles recebem as frases de Corretores (configuradas na extensão do operador). O operador precisa estar com a extensão aberta e logada no computador dele.</small>
         </div>
         <div id="crAndamento" style="font-size:13px;margin-top:4px"></div>
@@ -654,7 +655,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261027creci1"></script>
+<script src="admin-catho-coletor.js?v=20261027opnova1"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
