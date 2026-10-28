@@ -1185,7 +1185,7 @@ function iniciarPollingStatusColeta() {
   loadMaquinas();
   // Base qualificada já aberta com tudo (e a lista de cidades preenchida),
   // sem precisar clicar em Buscar na primeira vez.
-  if (!BQ_AUTO_CARREGADA) { BQ_AUTO_CARREGADA = true; loadBaseQualificada(); }
+  if (!BQ_AUTO_CARREGADA) { BQ_AUTO_CARREGADA = true; loadBaseQualificada(); loadSites(); }
   if (MAQUINAS_INTERVAL) clearInterval(MAQUINAS_INTERVAL);
   MAQUINAS_INTERVAL = setInterval(() => { if (!document.hidden) loadMaquinas(); }, 60000);
   if (STATUS_COLETA_INTERVAL) clearInterval(STATUS_COLETA_INTERVAL);
@@ -2463,6 +2463,82 @@ $("btnBaseQuali")?.addEventListener("click", () => loadBaseQualificada());
 $("btnBaseQualiFila")?.addEventListener("click", enviarBaseQualiParaFila);
 $("btnBaseQualiCsv")?.addEventListener("click", exportarBaseQualificada);
 $("bqBusca")?.addEventListener("keydown", (e) => { if (e.key === "Enter") loadBaseQualificada(); });
+// ===== Sites de corretores (SQL SITES_1) =====
+const SITE_BASE = "https://www.rhimob.com.br";
+let SITES_CACHE = [];
+function siteUrls(s) {
+  const site = `${SITE_BASE}/corretor/${s.cidade_slug}/${s.nome_slug}`;
+  return { site, previa: `${site}?t=${s.token_edicao}`, painel: `${SITE_BASE}/meu-site?t=${s.token_edicao}` };
+}
+async function loadSites() {
+  const tbody = $("listaSites");
+  if (!tbody) return;
+  try {
+    const r = await rpc("rpc_admin_sites", { p_admin_password: ADMIN_PASS });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    SITES_CACHE = r.sites || [];
+    $("stOperadores").innerHTML = (r.operadores || []).map(o =>
+      `<label style="display:flex;gap:5px;align-items:center;margin:0;font-weight:600"><input type="checkbox" data-site-op="${esc(o.login)}" ${o.pode ? "checked" : ""} style="width:auto;margin:0"> ${esc(o.nome || o.login)}</label>`).join("")
+      || "<small>Nenhum operador ativo.</small>";
+    $("stOperadores").querySelectorAll("[data-site-op]").forEach(cb => cb.addEventListener("change", async () => {
+      cb.disabled = true;
+      try {
+        const x = await rpc("rpc_admin_definir_pode_criar_site", { p_admin_password: ADMIN_PASS, p_login: cb.dataset.siteOp, p_pode: cb.checked });
+        if (!x || !x.ok) throw new Error((x && x.error) || "não salvou");
+      } catch (e) { cb.checked = !cb.checked; alert("❌ " + e.message); }
+      cb.disabled = false;
+    }));
+    const rot = { RASCUNHO: '<span style="color:#b45309;font-weight:700">Rascunho</span>', PUBLICADO: '<span style="color:#1a7a3d;font-weight:700">No ar</span>', DESATIVADO: '<span style="color:#999;font-weight:700">Desativado</span>' };
+    tbody.innerHTML = SITES_CACHE.length ? SITES_CACHE.map(s => {
+      const u = siteUrls(s);
+      return `<tr><td><b>${esc(s.nome)}</b><br><small>${esc(s.telefone)}</small></td><td>${esc(s.cidade)}</td><td>${rot[s.status] || esc(s.status)}</td><td>${s.fotos}</td>
+        <td><small>${esc(s.criado_por || "—")}<br>${s.criado_em ? new Date(s.criado_em).toLocaleDateString("pt-BR") : ""}</small></td>
+        <td style="white-space:nowrap">
+          <a href="${esc(s.status === "PUBLICADO" ? u.site : u.previa)}" target="_blank" rel="noopener" class="ghost" style="font-size:12px">👀 Ver</a>
+          <button type="button" class="ghost" data-site-copiar="${s.id}" style="font-size:12px">🔗 Link do painel</button>
+          ${s.status === "DESATIVADO"
+            ? `<button type="button" class="ghost" data-site-status="${s.id}" data-novo="RASCUNHO" style="font-size:12px">Reativar</button>`
+            : `<button type="button" class="ghost" data-site-status="${s.id}" data-novo="DESATIVADO" style="font-size:12px;color:#b91c1c">Desativar</button>`}
+        </td></tr>`;
+    }).join("") : '<tr><td colspan="6"><small>Nenhum site criado ainda.</small></td></tr>';
+    tbody.querySelectorAll("[data-site-copiar]").forEach(b => b.addEventListener("click", () => {
+      const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteCopiar);
+      if (s) navigator.clipboard.writeText(siteUrls(s).painel).then(() => { b.textContent = "✅ Copiado"; setTimeout(() => { b.textContent = "🔗 Link do painel"; }, 1500); });
+    }));
+    tbody.querySelectorAll("[data-site-status]").forEach(b => b.addEventListener("click", async () => {
+      if (b.dataset.novo === "DESATIVADO" && !confirm("Desativar este site? Ele sai do ar e o painel do corretor deixa de abrir.")) return;
+      b.disabled = true;
+      try {
+        const x = await rpc("rpc_admin_site_status", { p_admin_password: ADMIN_PASS, p_id: Number(b.dataset.siteStatus), p_status: b.dataset.novo });
+        if (!x || !x.ok) throw new Error((x && x.error) || "não salvou");
+        loadSites();
+      } catch (e) { alert("❌ " + e.message); b.disabled = false; }
+    }));
+  } catch (e) {
+    const falta = /rpc_admin_sites|function|404/i.test(e.message);
+    tbody.innerHTML = `<tr><td colspan="6"><small>${falta ? "Falta rodar o SQL SITES_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+    if ($("stOperadores")) $("stOperadores").innerHTML = "";
+  }
+}
+async function criarSiteAdmin() {
+  const nome = $("stNome").value.trim(), tel = $("stTel").value.trim(), cidade = $("stCidade").value.trim();
+  if (!nome || !tel || !cidade) { alert("Preencha nome, WhatsApp e cidade."); return; }
+  const btn = $("btnStCriar");
+  btn.disabled = true;
+  try {
+    const r = await rpc("rpc_admin_site_criar", { p_admin_password: ADMIN_PASS, p_telefone: tel, p_nome: nome, p_cidade: cidade });
+    if (!r || !r.ok) throw new Error((r && r.error) || "não criou");
+    const u = siteUrls(r);
+    $("stResultado").innerHTML = `${r.ja_existia ? "ℹ️ Este WhatsApp já tinha site." : "✅ Site criado (rascunho)."} Painel do corretor: <a href="${esc(u.painel)}" target="_blank" rel="noopener">${esc(u.painel)}</a> · <a href="${esc(u.previa)}" target="_blank" rel="noopener">Prévia</a>`;
+    $("stNome").value = ""; $("stTel").value = ""; $("stCidade").value = "";
+    loadSites();
+  } catch (e) {
+    alert(/rpc_admin_site_criar|function|404/i.test(e.message) ? "Falta rodar o SQL SITES_1 no Supabase do Coletor." : "❌ " + e.message);
+  }
+  btn.disabled = false;
+}
+$("btnStCriar")?.addEventListener("click", criarSiteAdmin);
+
 // ===== Começar operação nova (SQL OPNOVA_1) =====
 // Antes de um lote novo: os contatos que ficaram em "Novo" (nunca receberam
 // mensagem) vão para "Encerrado", a fila da máquina do operador é zerada e,

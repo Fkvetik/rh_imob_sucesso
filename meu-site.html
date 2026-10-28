@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Meu site — RH IMOB</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--roxo:#2b124d;--roxo2:#5b21b6;--lilas:#f4eefb;--txt:#1f1530;--muted:#6b5e7e;--line:#e6ddf1;--bg:#f7f4fb;--ok:#16a34a;--erro:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--txt);background:var(--bg);padding-bottom:90px}
+  header{background:var(--roxo);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+  header img{width:32px;height:32px;border-radius:50%}
+  header strong{display:block;font-size:15px}
+  header span{font-size:12px;opacity:.8}
+  .wrap{max-width:720px;margin:0 auto;padding:14px 16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:16px;margin:0 0 4px;color:var(--roxo)}
+  .card > small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:12px;line-height:1.45}
+  label{display:block;font-size:12.5px;font-weight:700;color:#3a2d4d;margin:10px 0 4px}
+  input[type=text],textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:#fff}
+  textarea{min-height:110px;resize:vertical}
+  input:focus,textarea:focus{outline:2px solid #c4b5fd;border-color:#a78bfa}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none}
+  .btn-prim{background:var(--roxo2);color:#fff}
+  .btn-ok{background:var(--ok);color:#fff}
+  .btn-sec{background:var(--lilas);color:var(--roxo2)}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:#3a2d4d}
+  .btn-mini{padding:6px 9px;font-size:12px;border-radius:8px}
+  .btn:disabled{opacity:.55;cursor:default}
+  .linha{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .status{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:5px 10px}
+  .status.rasc{background:#fff4e0;color:#8a5300}
+  .status.pub{background:#e6f7ec;color:#11692f}
+  .url{font-size:13px;color:var(--roxo2);word-break:break-all;margin:8px 0}
+  .fotoum{display:flex;gap:12px;align-items:center}
+  .fotoum .prev{width:84px;height:84px;border-radius:50%;background:var(--lilas);overflow:hidden;flex-shrink:0;display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center}
+  .fotoum .prev.capa{width:140px;height:84px;border-radius:12px}
+  .fotoum img{width:100%;height:100%;object-fit:cover}
+  .album{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px;background:#fcfaff}
+  .album-top{display:flex;gap:8px;align-items:center}
+  .album-top input{flex:1}
+  .fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+  .foto{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--lilas)}
+  .foto img{width:100%;height:100%;object-fit:cover}
+  .foto .tag{position:absolute;left:4px;top:4px;background:var(--roxo2);color:#fff;font-size:10px;font-weight:800;border-radius:6px;padding:2px 6px}
+  .foto .acts{position:absolute;right:4px;bottom:4px;display:flex;gap:4px}
+  .foto .acts button{border:0;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 6px;cursor:pointer}
+  .add{aspect-ratio:1;border:2px dashed #cdbbe6;border-radius:10px;display:grid;place-items:center;color:var(--roxo2);font-weight:800;font-size:13px;cursor:pointer;text-align:center;background:#fff}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;justify-content:center;z-index:5}
+  .barra .btn{flex:1;max-width:340px}
+  .msg{font-size:13px;margin-top:6px}
+  .msg.ok{color:var(--ok)} .msg.erro{color:var(--erro)}
+  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#1f1530;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;max-width:90vw;text-align:center}
+  #toast.on{opacity:1}
+  .carregando{text-align:center;color:var(--muted);padding:40px 0}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <img src="/assets/rhimob-logo.jpg" alt="">
+  <div><strong>Meu site de corretor</strong><span>Parceria RH IMOB</span></div>
+</header>
+
+<div class="wrap" id="app"><div class="carregando">Carregando seu site…</div></div>
+
+<div class="barra" id="barra" style="display:none">
+  <button class="btn btn-prim" id="btnSalvar" type="button">💾 Salvar alterações</button>
+</div>
+<div id="toast"></div>
+<input type="file" id="arquivo" accept="image/*">
+<input type="file" id="arquivos" accept="image/*" multiple>
+
+<script>
+(function(){
+  // Projeto do Coletor (chave pública; tudo passa pelas funções rpc_site_* do SQL SITES_1).
+  var SB = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
+  var T = (new URLSearchParams(location.search).get('t') || '').replace(/[^a-f0-9]/g, '');
+  var S = null, sujo = false, ocupado = 0;
+  var app = document.getElementById('app');
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('on'); }, 3200); }
+  function rpc(nome, body){
+    return fetch(SB + '/rest/v1/rpc/' + nome, { method:'POST', headers:{ apikey:KEY, Authorization:'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+      .then(function(r){ return r.json(); });
+  }
+  function urlSite(){ return 'https://www.rhimob.com.br/corretor/' + S.cidade_slug + '/' + S.nome_slug; }
+  function marcaSujo(){ sujo = true; $('btnSalvar').textContent = '💾 Salvar alterações •'; }
+
+  // Reduz a foto no próprio celular (até 1600 px, JPG) antes de enviar.
+  function reduzir(file){
+    return new Promise(function(ok, falha){
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        var max = 1600, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        ok(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); falha(new Error('Não consegui abrir essa imagem')); };
+      img.src = url;
+    });
+  }
+  function enviarFoto(file){
+    return reduzir(file).then(function(dataUrl){
+      return fetch('/api/site-foto', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ t: T, imagem: dataUrl }) })
+        .then(function(r){ return r.json(); });
+    }).then(function(d){ if (!d || !d.ok) throw new Error((d && d.error) || 'Falha ao enviar'); return d.url; });
+  }
+  function escolher(multiplo){
+    return new Promise(function(ok){
+      var inp = $(multiplo ? 'arquivos' : 'arquivo');
+      inp.value = '';
+      inp.onchange = function(){ ok([].slice.call(inp.files || [])); };
+      inp.click();
+    });
+  }
+  function ocupar(d){ ocupado += d; $('btnSalvar').disabled = ocupado > 0; }
+
+  function render(){
+    var pub = S.status === 'PUBLICADO';
+    var albuns = S.albuns || [];
+    app.innerHTML =
+      '<div class="card">' +
+        '<div class="linha" style="justify-content:space-between"><h2>' + esc(S.nome) + '</h2>' +
+        '<span class="status ' + (pub ? 'pub' : 'rasc') + '">' + (pub ? '● No ar' : '● Rascunho — só você vê') + '</span></div>' +
+        '<div class="url">' + esc(urlSite()) + '</div>' +
+        '<div class="linha">' +
+          '<a class="btn btn-sec btn-mini" target="_blank" rel="noopener" href="' + esc(urlSite() + (pub ? '' : '?t=' + T)) + '">👀 Ver meu site</a>' +
+          (pub ? '<button class="btn btn-ghost btn-mini" id="btnCopiar" type="button">🔗 Copiar link</button>' +
+                 '<button class="btn btn-ghost btn-mini" id="btnDespublicar" type="button">Tirar do ar</button>'
+               : '<button class="btn btn-ok btn-mini" id="btnPublicar" type="button">🚀 Publicar meu site</button>') +
+        '</div>' +
+        (pub ? '' : '<small style="margin:10px 0 0">Seu site só fica público quando você clicar em <b>Publicar</b>. Antes disso, ninguém encontra a página.</small>') +
+      '</div>' +
+
+      '<div class="card"><h2>Seus dados</h2><small>Aparecem no topo do site. O botão de WhatsApp usa o número ' + esc(formataTel(S.telefone)) + '.</small>' +
+        '<label for="fNome">Nome</label><input type="text" id="fNome" maxlength="80" value="' + esc(S.nome) + '">' +
+        '<label for="fCreci">CRECI (opcional)</label><input type="text" id="fCreci" maxlength="30" placeholder="Ex.: 123456-F" value="' + esc(S.creci) + '">' +
+        '<label for="fBio">Sobre você</label><textarea id="fBio" maxlength="1200" placeholder="Conte há quanto tempo atua, em quais regiões e com que tipo de imóvel trabalha.">' + esc(S.bio) + '</textarea>' +
+      '</div>' +
+
+      '<div class="card"><h2>Fotos do topo</h2><small>A capa é a foto grande do topo. Se não escolher, usamos a primeira foto do primeiro imóvel.</small>' +
+        '<div class="fotoum"><div class="prev">' + (S.foto_url ? '<img src="' + esc(S.foto_url) + '" alt="">' : 'Sua foto') + '</div>' +
+          '<div class="linha"><button class="btn btn-sec btn-mini" type="button" id="btnFoto">📷 ' + (S.foto_url ? 'Trocar' : 'Colocar') + ' sua foto</button>' +
+          (S.foto_url ? '<button class="btn btn-ghost btn-mini" type="button" id="btnFotoTirar">Tirar</button>' : '') + '</div></div>' +
+        '<div class="fotoum" style="margin-top:12px"><div class="prev capa">' + (S.capa_url ? '<img src="' + esc(S.capa_url) + '" alt="">' : 'Capa') + '</div>' +
+          '<div class="linha"><button class="btn btn-sec btn-mini" type="button" id="btnCapa">🖼 ' + (S.capa_url ? 'Trocar' : 'Colocar') + ' capa</button>' +
+          (S.capa_url ? '<button class="btn btn-ghost btn-mini" type="button" id="btnCapaTirar">Tirar</button>' : '') + '</div></div>' +
+      '</div>' +
+
+      '<div class="card"><h2>Seus imóveis</h2><small>Cada álbum é um imóvel: dê um nome (ex.: "Apartamento 2 dormitórios — Centro") e coloque as fotos. A primeira foto é a capa do álbum.</small>' +
+        '<div id="albuns">' + albuns.map(albumHtml).join('') + '</div>' +
+        (albuns.length < 12 ? '<button class="btn btn-prim" type="button" id="btnNovoAlbum" style="margin-top:12px;width:100%">➕ Novo imóvel (álbum)</button>' : '') +
+      '</div>' +
+
+      '<div class="card"><h2>Redes sociais</h2><small>Cole o link ou o @. As que você preencher aparecem no rodapé do site.</small>' +
+        '<label for="fIg">Instagram</label><input type="text" id="fIg" placeholder="@seuperfil" value="' + esc(S.instagram) + '">' +
+        '<label for="fFb">Facebook</label><input type="text" id="fFb" placeholder="facebook.com/suapagina" value="' + esc(S.facebook) + '">' +
+        '<label for="fLi">LinkedIn</label><input type="text" id="fLi" placeholder="https://www.linkedin.com/in/..." value="' + esc(S.linkedin) + '">' +
+        '<label for="fYt">YouTube</label><input type="text" id="fYt" placeholder="https://www.youtube.com/@..." value="' + esc(S.youtube) + '">' +
+      '</div>';
+    $('barra').style.display = '';
+    ligar();
+  }
+  function albumHtml(a, i){
+    return '<div class="album" data-i="' + i + '">' +
+      '<div class="album-top"><input type="text" class="aTitulo" maxlength="80" placeholder="Nome do imóvel" value="' + esc(a.titulo) + '">' +
+      '<button class="btn btn-ghost btn-mini aExcluir" type="button" title="Apagar este álbum">🗑</button></div>' +
+      '<div class="fotos">' + (a.fotos || []).map(function(f, k){
+        return '<div class="foto"><img src="' + esc(f) + '" alt="" loading="lazy">' + (k === 0 ? '<span class="tag">Capa</span>' : '') +
+          '<div class="acts">' + (k > 0 ? '<button type="button" data-capa="' + k + '" title="Usar como capa">★</button>' : '') +
+          '<button type="button" data-tirar="' + k + '" title="Tirar foto">✕</button></div></div>';
+      }).join('') +
+      ((a.fotos || []).length < 30 ? '<div class="add aAdd">＋ Fotos</div>' : '') + '</div></div>';
+  }
+  function formataTel(t){ var d = String(t || '').replace(/\D/g, '').replace(/^55/, ''); return d.length >= 10 ? '(' + d.slice(0, 2) + ') ' + d.slice(2, d.length - 4) + '-' + d.slice(-4) : d; }
+
+  function lerCampos(){
+    if (!$('fNome')) return;
+    S.nome = $('fNome').value.trim() || S.nome; S.creci = $('fCreci').value.trim(); S.bio = $('fBio').value.trim();
+    S.instagram = $('fIg').value.trim(); S.facebook = $('fFb').value.trim(); S.linkedin = $('fLi').value.trim(); S.youtube = $('fYt').value.trim();
+    document.querySelectorAll('.album').forEach(function(el){ var a = S.albuns[+el.dataset.i]; if (a) a.titulo = el.querySelector('.aTitulo').value.trim(); });
+  }
+  function rerender(){ lerCampos(); render(); }
+
+  function ligar(){
+    app.querySelectorAll('input[type=text],textarea').forEach(function(el){ el.addEventListener('input', marcaSujo); });
+    $('btnPublicar') && ($('btnPublicar').onclick = function(){ publicar(true); });
+    $('btnDespublicar') && ($('btnDespublicar').onclick = function(){ if (confirm('Tirar o site do ar? Ele volta a ser rascunho.')) publicar(false); });
+    $('btnCopiar') && ($('btnCopiar').onclick = function(){ navigator.clipboard.writeText(urlSite()).then(function(){ toast('🔗 Link copiado'); }); });
+    $('btnFoto').onclick = function(){ umaFoto('foto_url'); };
+    $('btnCapa').onclick = function(){ umaFoto('capa_url'); };
+    $('btnFotoTirar') && ($('btnFotoTirar').onclick = function(){ lerCampos(); S.foto_url = null; marcaSujo(); render(); });
+    $('btnCapaTirar') && ($('btnCapaTirar').onclick = function(){ lerCampos(); S.capa_url = null; marcaSujo(); render(); });
+    $('btnNovoAlbum') && ($('btnNovoAlbum').onclick = function(){
+      lerCampos(); S.albuns.push({ titulo: '', fotos: [] }); render();
+      var els = document.querySelectorAll('.album'); var ult = els[els.length - 1];
+      if (ult) { ult.scrollIntoView({ behavior:'smooth', block:'center' }); ult.querySelector('.aTitulo').focus(); }
+    });
+    document.querySelectorAll('.album').forEach(function(el){
+      var i = +el.dataset.i, a = S.albuns[i];
+      el.querySelector('.aExcluir').onclick = function(){ if (!confirm('Apagar este álbum e as fotos dele?')) return; lerCampos(); S.albuns.splice(i, 1); marcaSujo(); render(); };
+      var add = el.querySelector('.aAdd'); if (add) add.onclick = function(){ fotosNoAlbum(i); };
+      el.querySelectorAll('[data-tirar]').forEach(function(b){ b.onclick = function(){ lerCampos(); a.fotos.splice(+b.dataset.tirar, 1); marcaSujo(); render(); }; });
+      el.querySelectorAll('[data-capa]').forEach(function(b){ b.onclick = function(){ lerCampos(); var f = a.fotos.splice(+b.dataset.capa, 1)[0]; a.fotos.unshift(f); marcaSujo(); render(); }; });
+    });
+  }
+
+  function umaFoto(campo){
+    escolher(false).then(function(fs){
+      if (!fs.length) return;
+      lerCampos(); ocupar(1); toast('Enviando foto…');
+      enviarFoto(fs[0]).then(function(url){ S[campo] = url; marcaSujo(); render(); toast('✅ Foto pronta — lembre de salvar'); })
+        .catch(function(e){ toast('⚠️ ' + e.message); }).then(function(){ ocupar(-1); });
+    });
+  }
+  function fotosNoAlbum(i){
+    escolher(true).then(function(fs){
+      if (!fs.length) return;
+      lerCampos();
+      var a = S.albuns[i], cabe = Math.max(0, 30 - a.fotos.length), lista = fs.slice(0, cabe), feitas = 0, erros = 0;
+      if (fs.length > cabe) toast('Cada álbum aceita até 30 fotos.');
+      ocupar(1);
+      lista.reduce(function(p, f){
+        return p.then(function(){
+          toast('Enviando foto ' + (feitas + erros + 1) + ' de ' + lista.length + '…');
+          return enviarFoto(f).then(function(url){ a.fotos.push(url); feitas++; }).catch(function(){ erros++; });
+        });
+      }, Promise.resolve()).then(function(){
+        ocupar(-1); marcaSujo(); render();
+        toast(erros ? '⚠️ ' + feitas + ' enviada(s), ' + erros + ' com erro' : '✅ ' + feitas + ' foto(s) prontas — lembre de salvar');
+      });
+    });
+  }
+
+  function salvar(){
+    lerCampos();
+    var dados = { nome:S.nome, creci:S.creci, bio:S.bio, foto_url:S.foto_url || '', capa_url:S.capa_url || '',
+      instagram:S.instagram, facebook:S.facebook, linkedin:S.linkedin, youtube:S.youtube,
+      albuns:(S.albuns || []).map(function(a){ return { titulo:a.titulo || '', fotos:a.fotos || [] }; }) };
+    var semFoto = dados.albuns.filter(function(a){ return !a.fotos.length; }).length;
+    $('btnSalvar').disabled = true; $('btnSalvar').textContent = 'Salvando…';
+    return rpc('rpc_site_salvar', { p_token_edicao:T, p_dados:dados }).then(function(d){
+      if (!d || !d.ok) throw new Error((d && d.error) || 'Não consegui salvar');
+      sujo = false; $('btnSalvar').textContent = '💾 Salvar alterações';
+      if (semFoto) { S.albuns = S.albuns.filter(function(a){ return a.fotos && a.fotos.length; }); render(); }
+      toast(semFoto ? '✅ Salvo. Álbuns sem foto não foram guardados.' : '✅ Salvo');
+    }).catch(function(e){ $('btnSalvar').textContent = '💾 Salvar alterações •'; toast('⚠️ ' + e.message); throw e; })
+      .then(function(){ $('btnSalvar').disabled = ocupado > 0; }, function(e){ $('btnSalvar').disabled = ocupado > 0; throw e; });
+  }
+  function publicar(sim){
+    var antes = sujo ? salvar() : Promise.resolve();
+    antes.then(function(){ return rpc('rpc_site_publicar', { p_token_edicao:T, p_publicar:sim }); }).then(function(d){
+      if (!d || !d.ok) throw new Error((d && d.error) || 'Não consegui');
+      S.status = d.status; render();
+      toast(sim ? '🚀 Seu site está no ar!' : 'Seu site voltou a ser rascunho.');
+    }).catch(function(e){ toast('⚠️ ' + e.message); });
+  }
+
+  $('btnSalvar').onclick = function(){ salvar().catch(function(){}); };
+  window.addEventListener('beforeunload', function(e){ if (sujo) { e.preventDefault(); e.returnValue = ''; } });
+
+  if (!T) { app.innerHTML = '<div class="card"><h2>Link incompleto</h2><small>Abra o link exatamente como você recebeu pelo WhatsApp.</small></div>'; return; }
+  rpc('rpc_site_meu', { p_token_edicao:T }).then(function(d){
+    if (!d || !d.ok) { app.innerHTML = '<div class="card"><h2>Não deu para abrir</h2><small>' + esc((d && (d.error || d.message)) || 'Link inválido.') + '</small></div>'; return; }
+    S = d.site; S.albuns = Array.isArray(S.albuns) ? S.albuns : []; render();
+  }).catch(function(){ app.innerHTML = '<div class="card"><h2>Sem conexão</h2><small>Verifique a internet e recarregue a página.</small></div>'; });
+})();
+</script>
+</body>
+</html>

@@ -466,6 +466,22 @@
         <div id="crAndamento" style="font-size:13px;margin-top:4px"></div>
       </div>
     </div>
+    <div class="card" id="cardSites">
+      <h3 style="margin-top:0;font-size:14px">🌐 Sites de corretores — rhimob.com.br/corretor/cidade/nome</h3>
+      <small>O site nasce como rascunho (só abre pelo link) e fica público quando o corretor clica em Publicar no painel dele. Crie por aqui ou pela bolha do WhatsApp, nos operadores liberados abaixo.</small>
+      <div style="margin-top:8px"><label style="margin:0">Operadores que podem criar sites pela bolha</label><div id="stOperadores" style="display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:6px;font-size:13px"><small>Carregando…</small></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:12px 0 4px;padding:8px 10px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
+        <div style="flex:2;min-width:160px"><label>Nome do corretor</label><input id="stNome" type="text" placeholder="Nome completo"></div>
+        <div style="flex:1;min-width:130px"><label>WhatsApp</label><input id="stTel" type="text" placeholder="(15) 99999-9999"></div>
+        <div style="flex:1;min-width:130px"><label>Cidade</label><input id="stCidade" type="text" placeholder="Sorocaba"></div>
+        <button id="btnStCriar" class="secondary" style="margin-bottom:4px">➕ Criar site</button>
+      </div>
+      <div id="stResultado" style="font-size:13px;margin:4px 0"></div>
+      <table>
+        <thead><tr><th>Corretor</th><th>Cidade</th><th>Situação</th><th>Fotos</th><th>Criado por</th><th>Ações</th></tr></thead>
+        <tbody id="listaSites"><tr><td colspan="6"><small>Carregando…</small></td></tr></tbody>
+      </table>
+    </div>
     <div class="card" id="cardMaquinas">
       <h3 style="margin-top:0;font-size:14px">🖥 Máquinas — extensões ligadas agora</h3>
       <small>Cada extensão logada avisa a cada 3 minutos que está viva. Atualiza sozinho a cada minuto.</small>
@@ -655,7 +671,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261027quali3"></script>
+<script src="admin-catho-coletor.js?v=20261028sites1"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

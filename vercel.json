@@ -59,6 +59,10 @@
     {
       "source": "/vaga/:slug",
       "destination": "/api/vaga?slug=:slug"
+    },
+    {
+      "source": "/corretor/:cidade/:nome",
+      "destination": "/api/corretor-site?cidade=:cidade&nome=:nome"
     }
   ],
   "headers": [
