@@ -53,6 +53,23 @@ function render(s, prev, url) {
   const desc = (s.bio ? String(s.bio).replace(/\s+/g, ' ').slice(0, 155)
     : `${prof.t} em ${s.cidade}${atuaEm ? ' (' + atuaEm + ')' : ''}. Fale com ${primeiro} pelo WhatsApp.`);
   const ogImg = capa || foto || (albuns[0] && urlOk(albuns[0].fotos[0])) || '';
+  // Vaga para corretores (imobiliária / gerente de vendas, SQL SITES_4).
+  const vaga = (s.vaga && s.vaga.aberta && (s.profissao === 'IMOBILIARIA' || s.profissao === 'GERENTE')) ? s.vaga : null;
+  const waVaga = vaga && tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá! Vi a vaga de corretor na página de ${s.nome} (RH IMOB) e tenho interesse.`)}` : '';
+  const vagaHtml = !vaga ? '' : `
+  <section><h2>💼 Estamos contratando corretores</h2>
+    <div class="vaga">
+      ${vaga.vagas ? `<div class="vaga-num">${esc(vaga.vagas)} vaga${vaga.vagas > 1 ? 's' : ''} aberta${vaga.vagas > 1 ? 's' : ''}</div>` : ''}
+      <dl>
+        ${vaga.horario ? `<dt>Horário</dt><dd>${esc(vaga.horario)}</dd>` : ''}
+        ${vaga.beneficios ? `<dt>Benefícios</dt><dd>${esc(vaga.beneficios)}</dd>` : ''}
+        ${vaga.comissao ? `<dt>Comissão</dt><dd>${esc(vaga.comissao)}</dd>` : ''}
+        ${vaga.perfil ? `<dt>Perfil</dt><dd>${esc(vaga.perfil)}</dd>` : ''}
+      </dl>
+      ${vaga.descricao ? `<p>${esc(vaga.descricao)}</p>` : ''}
+      ${waVaga ? `<a class="btn btn-wa" href="${esc(waVaga)}" target="_blank" rel="noopener">${ICON.wa} Quero me candidatar</a>` : ''}
+    </div>
+  </section>`;
   const waMsg = encodeURIComponent(`Olá, ${primeiro}! Vi seu site e quero falar sobre imóveis.`);
   const wa = tel ? `https://wa.me/${tel}?text=${waMsg}` : '';
   const redes = [
@@ -104,6 +121,13 @@ ${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
   @media(min-width:760px){.banner strong{font-size:38px}.banner span{font-size:16px}}
   .atua{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .atua b{font-size:12px;font-weight:700;background:var(--lilas);color:var(--roxo2);border-radius:999px;padding:4px 10px}
+  .vaga{background:#fff;border:1px solid #f3d9a4;border-left:4px solid var(--laranja);border-radius:16px;padding:18px}
+  .vaga-num{display:inline-block;background:#fff4e6;color:#9a4a00;font-weight:800;font-size:13px;border-radius:999px;padding:4px 12px;margin-bottom:10px}
+  .vaga dl{margin:0 0 12px;display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px}
+  .vaga dt{font-weight:700;color:var(--roxo)}
+  .vaga dd{margin:0;color:#3a2d4d}
+  @media(max-width:480px){.vaga dl{grid-template-columns:1fr}.vaga dd{margin-bottom:4px}}
+  .vaga p{margin:0 0 12px;color:#3a2d4d;white-space:pre-line}
   .perfil{max-width:960px;margin:-64px auto 0;padding:0 18px;position:relative;z-index:1}
   .cartao{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 18px 40px -24px rgba(43,18,77,.35);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
   .avatar{width:96px;height:96px;border-radius:50%;flex-shrink:0;border:4px solid #fff;box-shadow:0 6px 16px rgba(43,18,77,.25);background:var(--roxo2);color:#fff;display:grid;place-items:center;font-size:30px;font-weight:800;overflow:hidden;margin-top:-52px}
@@ -183,6 +207,7 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
 
 <main>
   ${s.bio ? `<section><h2>Sobre</h2><div class="bio">${esc(s.bio)}</div></section>` : ''}
+  ${vagaHtml}
   <section>
     <h2>Imóveis</h2>
     ${albuns.length ? `<div class="albuns">${albuns.map((a, i) => `
