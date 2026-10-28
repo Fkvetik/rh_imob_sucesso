@@ -390,6 +390,7 @@
       var msgs = [
         {text:"⚡ +5.000 profissionais colocados · base de corretores com CRECI ativo", link:"Quero uma proposta →", href:"#proposta"},
         {text:"⏱ Setup em 7 dias · Primeiros candidatos com interesse na 1ª semana · 100% online", link:"Ver como funciona →", href:"#como-funciona"},
+        {text:"🧩 Do jeito que cabe na sua operação: plataformas, ferramenta ou operação completa", link:"Ver planos →", href:"#simulador"},
         {text:"💬 \"A melhor empresa de R&S que existe\" — John Wayne, Marketing Imobiliário", link:"Ver depoimentos →", href:"#depoimentos"}
       ];
       var i=0, t=document.getElementById("announce-text"), l=document.getElementById("announce-link");
@@ -413,12 +414,11 @@
 
       <nav class="main-nav" id="menu-principal" aria-label="Menu principal">
         <a href="#como-funciona">Como funciona</a>
-        <a href="/plataformas">Plataformas</a>
-        <a href="/noticias">Notícias</a>
+        <a href="#simulador">Planos</a>
+        <a href="#depoimentos">Resultados</a>
         <a href="#faq">Perguntas</a>
-        <a href="/vagas">Vagas</a><a href="/incorporadoras">Incorporadoras</a><a href="/mercado-corretores">Mercado</a>
-        <a href="/carreira">Carreira</a>
-      <a href="/blog">Blog</a><a href="/leiloes">Leilões</a></nav>
+        <a href="/vagas" style="opacity:.75">Sou corretor · Vagas</a>
+      </nav>
 
       <a class="btn btn-cta btn-header js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana. Vim pelo site da RH IMOB e quero entender como vocês podem ajudar minha empresa a contratar profissionais imobiliários.">Sou empresa — quero contratar</a>
     </div>
@@ -432,13 +432,13 @@
         <div class="gateway-copy reveal">
           <div class="eyebrow"><span></span> Recrutamento imobiliário · São Paulo, Rio de Janeiro e todo o Brasil</div>
           <h1>Contrate corretores qualificados sem perder seu tempo com triagem.</h1>
-          <p class="hero-subtitle">Cansado de candidato que some antes da entrevista? A RH IMOB busca, filtra e apresenta corretores, lideranças e novos talentos em reunião online — com assistente dedicada, banco de <span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">128 mil+</span> profissionais e processo organizado do diagnóstico à entrega.</p>
+          <p class="hero-subtitle">Cansado de candidato que some antes da entrevista? A RH IMOB busca, filtra e apresenta corretores, lideranças e novos talentos em reunião online — com assistente dedicada, banco de <span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">120 mil+</span> profissionais e processo organizado do diagnóstico à entrega.</p>
 
           <div class="hero-direct-cta">
             <a class="btn btn-cta btn-xl" href="#proposta" data-lead-wired="1" data-journey="empresa" data-origem="Home hero" onclick="event.preventDefault();window.RHLead&&window.RHLead.open('empresa',this)">
               Quero uma proposta →
             </a>
-            <p class="hero-price-hint">⚡ Diagnóstico gratuito, sem compromisso · Plataformas a partir de R$ 249/mês · Operação RH IMOB a partir de R$ 1.999/mês</p>
+            <p class="hero-price-hint">⚡ Diagnóstico gratuito, sem compromisso · Plataformas a partir de R$ 249/mês · Ferramenta a partir de R$ 799/mês · Operação RH IMOB a partir de R$ 1.999/mês</p>
             <div class="gateway-secondary-links">
               <a href="#como-funciona">Como funciona</a>
               <span>·</span>
@@ -450,7 +450,7 @@
 
           <div class="hero-numbers">
             <div class="hero-number"><strong>+5.000</strong><span>Profissionais colocados</span></div>
-            <div class="hero-number"><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">128 mil+</strong><span>Profissionais mapeados</span></div>
+            <div class="hero-number"><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">120 mil+</strong><span>Profissionais mapeados</span></div>
             <div class="hero-number"><strong data-rhimob-metric="corretores_cidades">19</strong><span>Cidades disponíveis</span></div>
           </div>
 
@@ -505,12 +505,6 @@
             <div><strong>Leandro — Diretor Comercial</strong><span>GKI Imóveis · Pinheiros, SP</span></div>
           </div>
         </div>
-        <div class="proof-numbers">
-          <div><strong>+5.000</strong><span>profissionais colocados</span></div>
-          <div><strong data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">128 mil+</strong><span>profissionais mapeados</span></div>
-          <div><strong data-rhimob-metric="corretores_cidades">19</strong><span>cidades disponíveis</span></div>
-          <div><strong>7 dias</strong><span>para setup completo</span></div>
-        </div>
       </div>
     </section>
 
@@ -519,7 +513,7 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="section-kicker">Para quem é esse serviço</span>
-          <h2>RH imobiliário não é recrutamento genérico — e não é para todo mundo.</h2>
+          <h2>RH imobiliário não é recrutamento genérico.</h2>
           <p>A RH IMOB atende imobiliárias, incorporadoras, construtoras e gestores comerciais que precisam contratar com método, escala e rastreabilidade — e, quando é o caso, estruturar do zero o RH imobiliário da operação.</p>
         </div>
         <div class="qual-grid">
@@ -543,9 +537,6 @@
             <h3>Sem RH estruturado — ou sobrecarregado</h3>
             <p>Empresas que ainda não têm um RH imobiliário montado, ou cuja equipe interna não domina a linguagem do setor. A RH IMOB vira o braço de recrutamento da sua operação.</p>
           </div>
-        </div>
-        <div class="qual-anti reveal">
-          <strong>Este serviço não é para:</strong> freelancers individuais buscando um corretor para uma venda pontual · startups sem operação mínima estabelecida · empresas que precisam de apenas 1 profissional sem prazo definido. Prazo mínimo de operação: 2 meses.
         </div>
       </div>
     </section>
@@ -572,7 +563,7 @@
             </div>
             <div class="incluso-item">
               <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
-              <div><strong>Banco de dados segmentado</strong><small><span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">128 mil+</span> corretores ativos e novos talentos filtrados por cidade, cargo, ano de inscrição e perfil comercial</small></div>
+              <div><strong>Banco de dados segmentado</strong><small><span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">120 mil+</span> corretores ativos e novos talentos filtrados por cidade, cargo, ano de inscrição e perfil comercial</small></div>
             </div>
             <div class="incluso-item">
               <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
@@ -669,36 +660,35 @@
 
         <div class="plan-grid reveal">
           <div class="plan-card">
-            <span class="plan-badge">Plataforma Novos Talentos</span>
-            <h3 class="plan-title">Acesse a base de novos talentos</h3>
-            <p class="plan-desc">Profissionais em início de carreira com interesse no mercado imobiliário. Seu time filtra e faz a abordagem.</p>
+            <span class="plan-badge">Você faz</span>
+            <h3 class="plan-title">Acesse as bases e aborde com o seu time</h3>
+            <p class="plan-desc">Seu time filtra, libera os contatos e faz a abordagem. Bases atualizadas todos os dias.</p>
             <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 249/mês</strong></div></div>
             <ul class="plan-list">
-              <li>R$ 249/mês se você já assina a Catho</li>
-              <li>R$ 649/mês se não assina — o acesso é nosso</li>
-              <li>Filtros por cidade, bairro, perfil e metrô</li>
+              <li><b>Novos talentos</b> — mais de <span data-rhimob-metric="nt_total_rounded" data-format="rounded-mil">120 mil</span> profissionais comerciais em início de carreira, por cidade, bairro, perfil e metrô · a partir de R$ 249/mês</li>
+              <li><b>Corretores com CRECI ativo</b> — mais de <span data-rhimob-metric="corretores_total" data-format="rounded-mil">80 mil</span>, por cidade, ano de inscrição e perfil · a partir de R$ 499/mês</li>
               <li>Mensal, sem fidelidade</li>
             </ul>
-            <a class="btn btn-cta btn-full plan-btn-outline" href="/novos-talentos#planos">Ver planos Novos Talentos →</a>
+            <a class="btn btn-cta btn-full plan-btn-outline" href="/plataformas">Ver as plataformas →</a>
           </div>
           <div class="plan-card">
-            <span class="plan-badge">Plataforma Corretores</span>
-            <h3 class="plan-title">Acesse a base de corretores com CRECI ativo</h3>
-            <p class="plan-desc">Banco de <span data-rhimob-metric="corretores_total" data-format="rounded-mil">85 mil</span> corretores com CRECI ativo. Seu time libera os contatos e faz a abordagem.</p>
-            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 499/mês</strong></div></div>
+            <span class="plan-badge">Você faz com a nossa ferramenta</span>
+            <h3 class="plan-title">Automatize a captação e o primeiro contato</h3>
+            <p class="plan-desc">Extensão para Chrome: capta candidatos, faz a primeira abordagem no WhatsApp sozinha e organiza tudo num CRM. Seu time só conversa com quem respondeu.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 799/mês</strong><span class="plan-unit">2 acessos inclusos</span></div></div>
             <ul class="plan-list">
-              <li>Starter: 500 contatos/mês — R$ 499</li>
-              <li>Pro: 1.000 contatos/mês — R$ 999</li>
-              <li>Ilimitado: contatos ilimitados — R$ 1.499</li>
-              <li>Mensal, sem fidelidade</li>
+              <li>Bases de corretores e de novos talentos inclusas</li>
+              <li>Bolha no WhatsApp: etapa do lead, respostas rápidas e agenda</li>
+              <li>Mensal R$ 999 · semestral R$ 899/mês · anual R$ 799/mês</li>
+              <li>Instalação e configuração feitas pela RH IMOB</li>
             </ul>
-            <a class="btn btn-cta btn-full plan-btn-outline" href="/corretores#planos">Ver planos Corretores →</a>
+            <a class="btn btn-cta btn-full plan-btn-outline" href="/extensao-recrutadora#planos">Conhecer a ferramenta →</a>
           </div>
           <div class="plan-card plan-card--custom">
-            <span class="plan-badge">Operação RH IMOB · Mais completo</span>
+            <span class="plan-badge">A RH IMOB faz por você · Mais completo</span>
             <h3 class="plan-title">A RH IMOB conduz o processo por você</h3>
-            <p class="plan-desc">Geramos a demanda, abordamos, fazemos a triagem e entregamos os candidatos em entrevista online — volume dimensionado para você contratar cerca de 5 profissionais por mês.</p>
-            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 1.999/mês</strong><span class="plan-unit">volume para contratar ≈ 5 profissionais por mês</span></div></div>
+            <p class="plan-desc">Geramos a demanda, abordamos, fazemos a triagem e entregamos os candidatos em entrevista online. Você só conversa com quem já está alinhado à sua proposta.</p>
+            <div class="plan-price-row"><div><span class="plan-from">a partir de</span><strong>R$ 1.999/mês</strong></div></div>
             <ul class="plan-list">
               <li><b>R$ 1.999/mês</b> — sua assistente cuida do retorno com os interessados</li>
               <li><b>R$ 3.499/mês</b> — assistente dedicada da RH IMOB + headhunter</li>
@@ -708,11 +698,7 @@
             <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e quero entender a operação RH IMOB (R$ 1.999/mês com a nossa assistente ou R$ 3.499/mês com assistente dedicada).">Quero a operação RH IMOB →</a>
           </div>
         </div>
-        <p class="plan-footnote">Plataformas: planos mensais, sem fidelidade; usuários adicionais pelo valor da assinatura. Operação RH IMOB: prazo mínimo de 2 meses; geramos um volume de candidatos bem maior que a meta, dimensionado para sua empresa contratar cerca de 5 profissionais por mês conforme avança nas entrevistas — trabalhamos com essa margem para garantir a qualidade da entrega. Volumes maiores e tráfego pago (Meta/Google Ads) sob consulta. Somos RH: geramos a demanda e entregamos os candidatos em entrevista — a decisão de contratar é sempre da empresa.</p>
-            <a class="btn btn-cta btn-full js-whatsapp" href="#" data-type="empresa" data-message="Olá, Mariana! Vim pelo site da RH IMOB e preciso de um volume maior que 10 corretores/mês.">Falar sobre volume maior →</a>
-          </div>
-        </div>
-        <p class="plan-footnote">O valor por corretor considera o volume cheio do plano. Prazo mínimo de operação: 2 meses. Para urgência, é possível somar tráfego pago (Meta/Google Ads) à operação — fale com a gente para incluir.</p>
+        <p class="plan-footnote">⚡ Em qualquer caminho, o primeiro passo é um <b>diagnóstico gratuito e sem compromisso</b>. Plataformas e ferramenta: mensais, sem fidelidade no mensal. Operação RH IMOB: prazo mínimo de 2 meses; volumes maiores e tráfego pago (Meta/Google Ads) sob consulta. Somos RH: geramos a demanda e entregamos os candidatos em entrevista — a decisão de contratar é sempre da empresa.</p>
 
         <div class="incluso-box reveal" style="margin-top: 32px;">
           <p class="incluso-label">A operação RH IMOB inclui</p>
@@ -880,6 +866,10 @@
           <div class="faq-item">
             <button class="faq-q" aria-expanded="false">O que acontece depois que preencho o formulário?<span class="faq-icon">+</span></button>
             <div class="faq-a" role="region"><p>Nossa equipe lê sua demanda e entra em contato pelo WhatsApp em até <strong>1 dia útil</strong> para agendar uma conversa de diagnóstico. Nessa conversa, entendemos sua operação e apresentamos o formato de apoio mais adequado. Sem compromisso nessa primeira etapa.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" aria-expanded="false">Para quem o serviço é indicado?<span class="faq-icon">+</span></button>
+            <div class="faq-a" role="region"><p>A operação RH IMOB atende imobiliárias, incorporadoras, construtoras e gestores comerciais com demanda contínua de contratação, com <strong>prazo mínimo de 2 meses</strong>. Não é o formato ideal para quem busca um corretor para uma venda pontual ou precisa de apenas 1 profissional sem prazo definido — nesses casos, as plataformas ou a ferramenta costumam fazer mais sentido.</p></div>
           </div>
           <div class="faq-item">
             <button class="faq-q" aria-expanded="false">Quais perfis a RH IMOB recruta?<span class="faq-icon">+</span></button>
@@ -1152,7 +1142,7 @@
     })();
   </script>
   <script src="/supabase-config-novos-talentos.js?v=20260721leadengine"></script>
-  <script src="/script.js?v=20261025vitrine"></script>
+  <script src="/script.js?v=20261028marcos"></script>
   <script src="/assets/share-art.js"></script>
 </body>
 </html>

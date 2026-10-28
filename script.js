@@ -97,6 +97,9 @@
     if (!number) return '57 mil+';
     // Math.floor, não ceil: "X mil+" promete "pelo menos X mil" — arredondar
     // pra cima inflava o número (84.147 virava "85 mil+", que é falso).
+    // Acima de 20 mil, mostra o marco de 10 em 10 mil (134.512 -> "130 mil+"):
+    // o número não precisa ser exato e fica igual em todas as páginas.
+    if (number >= 20000) return `${Math.floor(number / 10000) * 10} mil+`;
     if (number >= 1000) return `${Math.floor(number / 1000)} mil+`;
     return `${formatInteger(number)}+`;
   }

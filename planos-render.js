@@ -100,7 +100,8 @@
   function atualizarStats(j) {
     var n = j && j.total_talentos;
     if (isFinite(n) && n > 0) {
-      var txt = n >= 1000 ? (Math.floor(n / 1000) + ' mil') : String(n);
+      // marco de 10 em 10 mil acima de 20 mil (mesma regra do script.js)
+      var txt = n >= 20000 ? (Math.floor(n / 10000) * 10 + ' mil') : n >= 1000 ? (Math.floor(n / 1000) + ' mil') : String(n);
       document.querySelectorAll('[data-nt-talentos]').forEach(function (el) { el.textContent = txt; });
     }
     var pmin = j && j.preco_min;
