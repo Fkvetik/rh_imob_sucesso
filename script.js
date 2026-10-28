@@ -74,6 +74,19 @@
     return Array.isArray(rows) ? rows.length : 0;
   }
 
+  // Total de talentos da plataforma Novos Talentos — o mesmo número da página
+  // /novos-talentos (vem de /api/planos-publicos). Se a API falhar, usa o
+  // total da vitrine pública.
+  async function totalNT(cfg) {
+    try {
+      const r = await fetch('/api/planos-publicos');
+      const j = r.ok ? await r.json() : null;
+      const n = Number(j && j.total_talentos);
+      if (Number.isFinite(n) && n > 0) return n;
+    } catch (_) {}
+    return totalVitrineNT(cfg);
+  }
+
   // Total da vitrine Novos Talentos: visitante não lê mais a tabela direto
   // (SQL NT_VITRINE_4), então pergunta à função nt_total_vitrine.
   async function totalVitrineNT(cfg) {
@@ -136,7 +149,7 @@
 
     if (ntCfg) {
       Promise.allSettled([
-        totalVitrineNT(ntCfg),
+        totalNT(ntCfg),
         countSupabaseRows(ntCfg, 'nt_filtro_cidade'),
         countSupabaseRows(ntCfg, 'nt_filtro_cidade_metro')
       ]).then(([total, cidades, metro]) => {
