@@ -27,14 +27,31 @@ function naoEncontrado() {
 <body><div><h1 style="font-size:22px">Esta página não está disponível</h1><p>O site pode ainda não ter sido publicado pelo corretor.</p><p><a href="${BASE}/">Conhecer a RH IMOB</a></p></div></body></html>`;
 }
 
+const PROF = {
+  CORRETOR:    { t: 'Corretor(a) de imóveis', reg: 'CRECI' },
+  IMOBILIARIA: { t: 'Imobiliária', reg: 'CRECI' },
+  ADVOGADO:    { t: 'Advogado(a) imobiliário', reg: 'OAB' },
+  ARQUITETO:   { t: 'Arquiteto(a)', reg: 'CAU' },
+  ENGENHEIRO:  { t: 'Engenheiro(a)', reg: 'CREA' },
+  OUTRO:       { t: 'Profissional do mercado imobiliário', reg: 'Registro' }
+};
+const ZONA = { NORTE: 'Zona Norte', SUL: 'Zona Sul', LESTE: 'Zona Leste', OESTE: 'Zona Oeste', CENTRO: 'Centro' };
+
 function render(s, prev, url) {
   const tel = soDigitos(s.telefone);
   const primeiro = String(s.nome || '').split(' ')[0];
   const albuns = Array.isArray(s.albuns) ? s.albuns.filter(a => a && Array.isArray(a.fotos) && a.fotos.length) : [];
-  const capa = urlOk(s.capa_url) || (albuns[0] && urlOk(albuns[0].fotos[0])) || '';
+  // Capa: a imagem que o profissional subir; sem ela, o banner padrão da parceria.
+  const capa = urlOk(s.capa_url);
   const foto = urlOk(s.foto_url);
-  const titulo = `${s.nome} — Corretor de imóveis em ${s.cidade}`;
-  const desc = (s.bio ? String(s.bio).replace(/\s+/g, ' ').slice(0, 155) : `Fale com ${primeiro} sobre imóveis em ${s.cidade}. Atendimento pelo WhatsApp.`);
+  const prof = PROF[s.profissao] || PROF.CORRETOR;
+  const zonas = (Array.isArray(s.zonas) ? s.zonas : []).map(z => ZONA[z]).filter(Boolean);
+  const bairros = Array.isArray(s.bairros) ? s.bairros.filter(Boolean) : [];
+  const atuaEm = [zonas.join(' · '), bairros.join(', ')].filter(Boolean).join(' — ');
+  const titulo = `${s.nome} — ${prof.t} em ${s.cidade}`;
+  const desc = (s.bio ? String(s.bio).replace(/\s+/g, ' ').slice(0, 155)
+    : `${prof.t} em ${s.cidade}${atuaEm ? ' (' + atuaEm + ')' : ''}. Fale com ${primeiro} pelo WhatsApp.`);
+  const ogImg = capa || foto || (albuns[0] && urlOk(albuns[0].fotos[0])) || '';
   const waMsg = encodeURIComponent(`Olá, ${primeiro}! Vi seu site e quero falar sobre imóveis.`);
   const wa = tel ? `https://wa.me/${tel}?text=${waMsg}` : '';
   const redes = [
@@ -55,7 +72,7 @@ ${prev ? '<meta name="robots" content="noindex, nofollow">' : `<link rel="canoni
 <meta property="og:type" content="profile">
 <meta property="og:title" content="${esc(titulo)}">
 <meta property="og:description" content="${esc(desc)}">
-${capa || foto ? `<meta property="og:image" content="${esc(capa || foto)}">` : ''}
+${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
 <meta name="theme-color" content="#2b124d">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
@@ -75,6 +92,17 @@ ${capa || foto ? `<meta property="og:image" content="${esc(capa || foto)}">` : '
   .capa img{width:100%;height:100%;object-fit:cover;display:block}
   .capa::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,8,38,0) 40%,rgba(20,8,38,.55))}
   @media(min-width:760px){.capa{height:340px}}
+  /* Banner padrão (sem capa própria): marca, nome, profissão e região, sempre legível */
+  .capa.padrao{background:radial-gradient(120% 140% at 100% 0%,#f97316 0%,rgba(249,115,22,0) 45%),linear-gradient(135deg,#1c0a36 0%,#3b1872 55%,#6d28d9 100%)}
+  .capa.padrao::before{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;border:40px solid rgba(255,255,255,.06)}
+  .capa.padrao::after{background:none}
+  .banner{position:absolute;left:0;right:0;top:0;bottom:64px;display:flex;flex-direction:column;justify-content:center;padding:0 22px;max-width:960px;margin:0 auto;color:#fff;z-index:1}
+  .banner small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fed7aa}
+  .banner strong{display:block;font-size:26px;line-height:1.15;margin:6px 0 4px;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+  .banner span{font-size:14px;color:#e9ddff}
+  @media(min-width:760px){.banner strong{font-size:38px}.banner span{font-size:16px}}
+  .atua{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .atua b{font-size:12px;font-weight:700;background:var(--lilas);color:var(--roxo2);border-radius:999px;padding:4px 10px}
   .perfil{max-width:960px;margin:-64px auto 0;padding:0 18px;position:relative;z-index:1}
   .cartao{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 18px 40px -24px rgba(43,18,77,.35);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
   .avatar{width:96px;height:96px;border-radius:50%;flex-shrink:0;border:4px solid #fff;box-shadow:0 6px 16px rgba(43,18,77,.25);background:var(--roxo2);color:#fff;display:grid;place-items:center;font-size:30px;font-weight:800;overflow:hidden;margin-top:-52px}
@@ -129,19 +157,21 @@ ${prev ? `<div class="prev">👀 <b>Prévia do seu site</b> — ainda não está
 <header class="top">
   <a class="marca" href="${BASE}/" target="_blank" rel="noopener">
     <img src="/assets/rhimob-logo.jpg" alt="RH IMOB">
-    <span><strong>RH IMOB</strong>Parceria com corretores</span>
+    <span><strong>RH IMOB</strong>Parceria com profissionais</span>
   </a>
-  <span class="selo">Corretor parceiro</span>
+  <span class="selo">Profissional parceiro</span>
 </header>
 
-<div class="capa">${capa ? `<img src="${esc(capa)}" alt="">` : ''}</div>
+${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
+  : `<div class="capa padrao"><div class="banner"><small>${esc(prof.t)} · ${esc(s.cidade)}</small><strong>${esc(s.nome)}</strong>${atuaEm ? `<span>${esc(atuaEm)}</span>` : '<span>Atendimento pelo WhatsApp</span>'}</div></div>`}
 
 <div class="perfil">
   <div class="cartao">
     <div class="avatar">${foto ? `<img src="${esc(foto)}" alt="${esc(s.nome)}">` : esc(iniciais)}</div>
     <div class="quem">
       <h1>${esc(s.nome)}</h1>
-      <p>Corretor de imóveis · ${esc(s.cidade)}${s.creci ? ` · CRECI ${esc(s.creci)}` : ''}</p>
+      <p>${esc(prof.t)} · ${esc(s.cidade)}${s.creci ? ` · ${esc(prof.reg)} ${esc(s.creci)}` : ''}</p>
+      ${zonas.length || bairros.length ? `<div class="atua">${zonas.map(z => `<b>${esc(z)}</b>`).join('')}${bairros.map(b => `<b>${esc(b)}</b>`).join('')}</div>` : ''}
     </div>
     <div class="acoes">
       ${wa ? `<a class="btn btn-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa} Falar no WhatsApp</a>` : ''}

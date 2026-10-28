@@ -2319,7 +2319,7 @@ $("btnRanking")?.addEventListener("click", loadRanking);
 
 // ===== Base qualificada (zona e tipo marcados na bolha — SQL QUALI_1) =====
 const BQ_ZONA = { NORTE: "Norte", SUL: "Sul", LESTE: "Leste", OESTE: "Oeste", CENTRO: "Centro" };
-const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", ADVOGADO: "Advogado", OUTRO: "Outro" };
+const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", ADVOGADO: "Advogado", ARQUITETO: "Arquiteto", ENGENHEIRO: "Engenheiro", OUTRO: "Outro" };
 let BQ_LINHAS = [];
 const BQ_POR_PAGINA = 100;
 let BQ_FILTROS = null, BQ_TOTAL = 0, BQ_PAGINA = 0;
@@ -2538,6 +2538,26 @@ async function criarSiteAdmin() {
   btn.disabled = false;
 }
 $("btnStCriar")?.addEventListener("click", criarSiteAdmin);
+// CRECI dos corretores liberados antes do SQL SITES_2 (busca no banco CRECI, sem gastar cota).
+async function buscarCreciAntigos() {
+  const btn = $("btnStCreci"), out = $("stCreciRes");
+  btn.disabled = true;
+  let gravados = 0, ignorar = [], erro = null;
+  try {
+    for (let volta = 0; volta < 100; volta++) {
+      out.textContent = `Buscando… ${gravados} CRECI guardado(s)`;
+      const r = await fetch("/api/admin-creci", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senha: ADMIN_PASS, acao: "creci_antigos", ignorar }) }).then(x => x.json());
+      if (!r || !r.ok) throw new Error((r && r.error) || "falhou");
+      gravados += r.gravados || 0;
+      ignorar = ignorar.concat(r.nao_achados || []);
+      if (r.acabou || (!r.gravados && !(r.nao_achados || []).length)) break;
+    }
+  } catch (e) { erro = /rpc_admin_creci_pendentes|SITES_2/i.test(e.message) ? "Falta rodar o SQL SITES_2 no Supabase do Coletor." : e.message; }
+  out.innerHTML = `✅ ${gravados} CRECI guardado(s)` + (ignorar.length ? ` · ${ignorar.length} contato(s) sem CRECI no banco` : "") + (erro ? `<br>⚠️ ${esc(erro)}` : "");
+  btn.disabled = false;
+}
+$("btnStCreci")?.addEventListener("click", buscarCreciAntigos);
 
 // ===== Começar operação nova (SQL OPNOVA_1) =====
 // Antes de um lote novo: os contatos que ficaram em "Novo" (nunca receberam
