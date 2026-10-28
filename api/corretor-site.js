@@ -30,6 +30,7 @@ function naoEncontrado() {
 const PROF = {
   CORRETOR:    { t: 'Corretor(a) de imóveis', reg: 'CRECI' },
   IMOBILIARIA: { t: 'Imobiliária', reg: 'CRECI' },
+  GERENTE:     { t: 'Gerente de vendas', reg: 'CRECI' },
   ADVOGADO:    { t: 'Advogado(a) imobiliário', reg: 'OAB' },
   ARQUITETO:   { t: 'Arquiteto(a)', reg: 'CAU' },
   ENGENHEIRO:  { t: 'Engenheiro(a)', reg: 'CREA' },

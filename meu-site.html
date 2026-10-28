@@ -89,8 +89,8 @@
     return fetch(SB + '/rest/v1/rpc/' + nome, { method:'POST', headers:{ apikey:KEY, Authorization:'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
       .then(function(r){ return r.json(); });
   }
-  var PROFS = [['CORRETOR','Corretor(a) de imóveis'],['IMOBILIARIA','Imobiliária'],['ADVOGADO','Advogado(a)'],['ARQUITETO','Arquiteto(a)'],['ENGENHEIRO','Engenheiro(a)'],['OUTRO','Outro']];
-  var REGS = { CORRETOR:'CRECI', IMOBILIARIA:'CRECI', ADVOGADO:'OAB', ARQUITETO:'CAU', ENGENHEIRO:'CREA', OUTRO:'Registro profissional' };
+  var PROFS = [['CORRETOR','Corretor(a) de imóveis'],['IMOBILIARIA','Imobiliária'],['GERENTE','Gerente de vendas'],['ADVOGADO','Advogado(a)'],['ARQUITETO','Arquiteto(a)'],['ENGENHEIRO','Engenheiro(a)'],['OUTRO','Outro']];
+  var REGS = { CORRETOR:'CRECI', IMOBILIARIA:'CRECI', GERENTE:'CRECI', ADVOGADO:'OAB', ARQUITETO:'CAU', ENGENHEIRO:'CREA', OUTRO:'Registro profissional' };
   var ZONAS = [['NORTE','Zona Norte'],['SUL','Zona Sul'],['LESTE','Zona Leste'],['OESTE','Zona Oeste'],['CENTRO','Centro']];
   function regDe(p){ return REGS[p] || 'CRECI'; }
   function urlSite(){ return 'https://www.rhimob.com.br/corretor/' + S.cidade_slug + '/' + S.nome_slug; }
@@ -142,6 +142,7 @@
                : '<button class="btn btn-ok btn-mini" id="btnPublicar" type="button">🚀 Publicar meu site</button>') +
         '</div>' +
         (pub ? '' : '<small style="margin:10px 0 0">Seu site só fica público quando você clicar em <b>Publicar</b>. Antes disso, ninguém encontra a página.</small>') +
+        '<small style="margin:8px 0 0;color:#11692f;font-weight:700">✓ Sua página é gratuita.</small>' +
       '</div>' +
 
       '<div class="card"><h2>Seus dados</h2><small>Aparecem no topo do site. O botão de WhatsApp usa o número ' + esc(formataTel(S.telefone)) + '.</small>' +
