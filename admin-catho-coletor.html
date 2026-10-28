@@ -441,6 +441,19 @@
         <tbody id="listaQualiOperadores"><tr><td colspan="5"><small>Aparece ao clicar em Buscar.</small></td></tr></tbody>
       </table>
     </div>
+    <div class="card" id="cardContratando">
+      <h3 style="margin-top:0;font-size:14px">🧲 Contratando agora — imobiliárias e empresas que precisam de corretores</h3>
+      <small>Quem o operador marcou com o chip 🧲 Contratando na bolha do WhatsApp. São os clientes para a Operação RH IMOB e as plataformas.</small>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:8px">
+        <div style="flex:1;min-width:180px"><label>Cidade</label><select id="ctCidade"><option value="">Todas</option></select></div>
+        <button id="btnContratando" class="secondary" style="margin-bottom:4px">↻ Atualizar</button>
+      </div>
+      <div id="ctResumo" style="margin-top:8px"></div>
+      <table>
+        <thead><tr><th>Empresa / contato</th><th>Cidade</th><th>Vagas</th><th>Marcado por</th><th>Desde</th><th></th></tr></thead>
+        <tbody id="listaContratando"><tr><td colspan="6"><small>Carregando…</small></td></tr></tbody>
+      </table>
+    </div>
     <div class="card" id="cardCreciFila">
       <h3 style="margin-top:0;font-size:14px">🏘️ Corretores CRECI → fila do operador</h3>
       <small>Você filtra o banco de Corretores CRECI e os corretores entram na fila do operador escolhido; a extensão dele dispara pelo WhatsApp daquele computador em até 3 minutos. Usa o acesso do operador ao banco: só aparecem corretores que a empresa dele ainda não liberou, e cada um é descontado do limite da empresa dele.</small>
@@ -672,7 +685,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261028gerente"></script>
+<script src="admin-catho-coletor.js?v=20261028contrat"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

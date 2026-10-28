@@ -1185,7 +1185,7 @@ function iniciarPollingStatusColeta() {
   loadMaquinas();
   // Base qualificada já aberta com tudo (e a lista de cidades preenchida),
   // sem precisar clicar em Buscar na primeira vez.
-  if (!BQ_AUTO_CARREGADA) { BQ_AUTO_CARREGADA = true; loadBaseQualificada(); loadSites(); }
+  if (!BQ_AUTO_CARREGADA) { BQ_AUTO_CARREGADA = true; loadBaseQualificada(); loadSites(); loadContratando(); }
   if (MAQUINAS_INTERVAL) clearInterval(MAQUINAS_INTERVAL);
   MAQUINAS_INTERVAL = setInterval(() => { if (!document.hidden) loadMaquinas(); }, 60000);
   if (STATUS_COLETA_INTERVAL) clearInterval(STATUS_COLETA_INTERVAL);
@@ -2558,6 +2558,35 @@ async function buscarCreciAntigos() {
   btn.disabled = false;
 }
 $("btnStCreci")?.addEventListener("click", buscarCreciAntigos);
+
+// ===== Contratando agora (SQL CONTRAT_1) =====
+async function loadContratando() {
+  const tbody = $("listaContratando");
+  if (!tbody) return;
+  try {
+    const r = await rpc("rpc_admin_contratando", { p_admin_password: ADMIN_PASS, p_cidade: $("ctCidade").value || null });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    const sel = $("ctCidade"), atual = sel.value;
+    sel.innerHTML = '<option value="">Todas</option>' + (r.cidades || []).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+    sel.value = atual;
+    const linhas = r.linhas || [];
+    const vagas = linhas.reduce((s, l) => s + (Number(l.vagas) || 0), 0);
+    $("ctResumo").innerHTML = linhas.length
+      ? `<span style="display:inline-block;background:#fdf2e3;color:#8a4b00;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;margin-right:6px">${linhas.length} empresa(s) contratando</span>` + (vagas ? `<span style="display:inline-block;background:#fdf2e3;color:#8a4b00;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">${vagas} vaga(s) informada(s)</span>` : "") : "";
+    tbody.innerHTML = linhas.length ? linhas.map(l => {
+      const tel = String(l.telefone || "").replace(/D/g, "");
+      const wa = tel ? `https://wa.me/${tel.startsWith("55") ? tel : "55" + tel}` : "";
+      return `<tr><td><b>${esc(l.nome || "—")}</b><br><small>${esc(BQ_TIPO[l.tipo] || l.tipo || "")}</small></td><td>${esc(l.cidade || "—")}</td>
+        <td>${l.vagas ? `<b>${l.vagas}</b>` : '<small style="color:#999">não informou</small>'}</td>
+        <td><small>${esc(l.marcado_por || "—")}</small></td><td><small>${l.desde ? new Date(l.desde).toLocaleDateString("pt-BR") : ""}</small></td>
+        <td>${wa ? `<a href="${esc(wa)}" target="_blank" rel="noopener" style="font-size:12px">💬 WhatsApp</a>` : ""}</td></tr>`;
+    }).join("") : '<tr><td colspan="6"><small>Ninguém marcado como contratando ainda.</small></td></tr>';
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6"><small>${/rpc_admin_contratando|function|404/i.test(e.message) ? "Falta rodar o SQL CONTRAT_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+  }
+}
+$("btnContratando")?.addEventListener("click", loadContratando);
+$("ctCidade")?.addEventListener("change", loadContratando);
 
 // ===== Começar operação nova (SQL OPNOVA_1) =====
 // Antes de um lote novo: os contatos que ficaram em "Novo" (nunca receberam
