@@ -36,6 +36,9 @@ const PROF = {
   ENGENHEIRO:  { t: 'Engenheiro(a)', reg: 'CREA' },
   OUTRO:       { t: 'Profissional do mercado imobiliário', reg: 'Registro' }
 };
+const FINALIDADE = { VENDA: 'Venda', LOCACAO: 'Locação' };
+const TIPO_IMOVEL = { APARTAMENTO: 'Apartamento', CASA: 'Casa', SOBRADO: 'Sobrado', COBERTURA: 'Cobertura', TERRENO: 'Terreno',
+  SALA: 'Sala comercial', LOJA: 'Loja', GALPAO: 'Galpão', CHACARA: 'Chácara', OUTRO: 'Imóvel' };
 const ZONA = { NORTE: 'Zona Norte', SUL: 'Zona Sul', LESTE: 'Zona Leste', OESTE: 'Zona Oeste', CENTRO: 'Centro' };
 
 function render(s, prev, url) {
@@ -77,7 +80,25 @@ function render(s, prev, url) {
     ['li', urlOk(s.linkedin), 'LinkedIn'], ['yt', urlOk(s.youtube), 'YouTube']
   ].filter(r => r[1]);
   const iniciais = String(s.nome || '?').split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase();
-  const dadosAlbuns = JSON.stringify(albuns.map(a => ({ t: a.titulo || '', f: a.fotos.filter(urlOk) }))).replace(/</g, '\\u003c');
+  // Ficha de cada imóvel (SQL SITES_5). Álbuns antigos não têm ficha: só título e fotos.
+  const fichas = albuns.map(a => {
+    const specs = [
+      a.dorm ? `${a.dorm} dorm` : '', a.suites ? `${a.suites} suíte${a.suites > 1 ? 's' : ''}` : '',
+      a.vagas ? `${a.vagas} vaga${a.vagas > 1 ? 's' : ''}` : '', a.area ? `${Number(a.area).toLocaleString('pt-BR')} m²` : '', a.bairro || ''
+    ].filter(Boolean).join(' · ');
+    const temFicha = !!(a.finalidade || a.tipo || a.preco || specs || a.descricao);
+    const preco = a.preco ? 'R$ ' + Number(a.preco).toLocaleString('pt-BR') + (a.finalidade === 'LOCACAO' ? '/mês' : '') : (temFicha ? 'Sob consulta' : '');
+    const nomeImovel = a.titulo || TIPO_IMOVEL[a.tipo] || 'imóvel';
+    return {
+      titulo: a.titulo || TIPO_IMOVEL[a.tipo] || 'Imóvel', fin: FINALIDADE[a.finalidade] || '', tipo: TIPO_IMOVEL[a.tipo] || '',
+      preco, specs, desc: a.descricao || '',
+      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá, ${primeiro}! Vi o ${nomeImovel} no seu site e quero mais informações.`)}` : ''
+    };
+  });
+  const dadosAlbuns = JSON.stringify(albuns.map((a, k) => ({
+    t: fichas[k].titulo, f: a.fotos.filter(urlOk), l: Array.isArray(a.legendas) ? a.legendas : [],
+    fin: fichas[k].fin, tipo: fichas[k].tipo, preco: fichas[k].preco, specs: fichas[k].specs, desc: fichas[k].desc, wa: fichas[k].wa
+  }))).replace(/</g, '\\u003c');
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -175,6 +196,18 @@ ${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
   .lb-thumbs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px 14px}
   .lb-thumbs img{width:64px;height:48px;object-fit:cover;border-radius:6px;opacity:.55;cursor:pointer;flex-shrink:0}
   .lb-thumbs img.on{opacity:1;outline:2px solid #fff}
+  .album .img{position:relative}
+  .album .fin{position:absolute;left:10px;top:10px;background:var(--roxo);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
+  .album .preco{display:block;font-size:17px;font-weight:800;color:var(--roxo2);margin-bottom:2px}
+  .album .specs{display:block;font-size:12.5px;color:#3a2d4d;margin:2px 0}
+  .lb-leg{color:#fff;text-align:center;font-size:14px;padding:6px 16px 0}
+  .lb-info{max-height:34vh;overflow:auto;padding:8px 16px 0;color:#fff;max-width:760px;width:100%;margin:0 auto}
+  .lb-info .btn{width:100%;justify-content:center;margin:8px 0 2px}
+  .lb-ficha .tags{display:flex;gap:6px;margin-bottom:6px}
+  .lb-ficha .tags b{font-size:11px;background:rgba(255,255,255,.16);border-radius:999px;padding:3px 9px}
+  .lb-ficha .p{font-size:20px;font-weight:800}
+  .lb-ficha .s{font-size:13px;opacity:.9;margin-top:2px}
+  .lb-ficha .d{font-size:13px;opacity:.85;margin-top:6px;white-space:pre-line}
 </style>
 </head>
 <body>
@@ -212,8 +245,13 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
     <h2>Imóveis</h2>
     ${albuns.length ? `<div class="albuns">${albuns.map((a, i) => `
       <button class="album" type="button" data-album="${i}">
-        <div class="img"><img src="${esc(a.fotos[0])}" alt="${esc(a.titulo || 'Imóvel')}" loading="lazy"></div>
-        <div class="info"><strong>${esc(a.titulo || 'Imóvel')}</strong><small>${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}</small></div>
+        <div class="img"><img src="${esc(a.fotos[0])}" alt="${esc(fichas[i].titulo)}" loading="lazy">${fichas[i].fin ? `<span class="fin">${esc(fichas[i].fin)}</span>` : ''}</div>
+        <div class="info">
+          ${fichas[i].preco ? `<span class="preco">${esc(fichas[i].preco)}</span>` : ''}
+          <strong>${esc(fichas[i].titulo)}</strong>
+          ${fichas[i].specs ? `<span class="specs">${esc(fichas[i].specs)}</span>` : ''}
+          <small>${fichas[i].tipo ? esc(fichas[i].tipo) + ' · ' : ''}${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}</small>
+        </div>
       </button>`).join('')}</div>`
       : `<div class="vazio">Em breve, os imóveis de ${esc(primeiro)} aparecem aqui.${wa ? ` Enquanto isso, <a href="${esc(wa)}" target="_blank" rel="noopener"><b>fale pelo WhatsApp</b></a>.` : ''}</div>`}
   </section>
@@ -229,16 +267,26 @@ ${wa ? `<a class="btn btn-wa fixo" href="${esc(wa)}" target="_blank" rel="noopen
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Fotos do imóvel">
   <div class="lb-top"><span id="lbTitulo"></span><button type="button" id="lbFechar" aria-label="Fechar">×</button></div>
   <div class="lb-img"><button class="lb-nav ant" type="button" id="lbAnt" aria-label="Anterior">‹</button><img id="lbFoto" alt=""><button class="lb-nav prox" type="button" id="lbProx" aria-label="Próxima">›</button></div>
+  <div class="lb-leg" id="lbLeg"></div>
+  <div class="lb-info" id="lbInfo"></div>
   <div class="lb-thumbs" id="lbThumbs"></div>
 </div>
 <script>
 (function(){
   var A = ${dadosAlbuns}, lb = document.getElementById('lb'), foto = document.getElementById('lbFoto'),
-      thumbs = document.getElementById('lbThumbs'), tit = document.getElementById('lbTitulo'), al = null, i = 0, x0 = null;
+      thumbs = document.getElementById('lbThumbs'), tit = document.getElementById('lbTitulo'), al = null, i = 0, x0 = null,
+      leg = document.getElementById('lbLeg'), info = document.getElementById('lbInfo');
+  function txt(s){ var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
   function mostra(n){ if(!al) return; i = (n + al.f.length) % al.f.length; foto.src = al.f[i];
     tit.textContent = (al.t || 'Imóvel') + ' · ' + (i + 1) + '/' + al.f.length;
+    leg.textContent = al.l[i] || ''; leg.style.display = al.l[i] ? '' : 'none';
     [].forEach.call(thumbs.children, function(t, k){ t.className = k === i ? 'on' : ''; }); }
   function abre(n){ al = A[n]; if(!al) return; thumbs.innerHTML = '';
+    var tags = [al.fin, al.tipo].filter(Boolean).map(function(t){ return '<b>' + txt(t) + '</b>'; }).join('');
+    info.innerHTML = (al.preco || al.specs || al.desc || tags ? '<div class="lb-ficha">' + (tags ? '<div class="tags">' + tags + '</div>' : '') +
+      (al.preco ? '<div class="p">' + txt(al.preco) + '</div>' : '') + (al.specs ? '<div class="s">' + txt(al.specs) + '</div>' : '') +
+      (al.desc ? '<div class="d">' + txt(al.desc) + '</div>' : '') + '</div>' : '') +
+      (al.wa ? '<a class="btn btn-wa" target="_blank" rel="noopener" href="' + al.wa + '">Tenho interesse neste imóvel</a>' : '');
     al.f.forEach(function(u, k){ var t = document.createElement('img'); t.src = u; t.alt = ''; t.loading = 'lazy'; t.onclick = function(){ mostra(k); }; thumbs.appendChild(t); });
     lb.classList.add('aberto'); document.body.style.overflow = 'hidden'; mostra(0); }
   function fecha(){ lb.classList.remove('aberto'); document.body.style.overflow = ''; }

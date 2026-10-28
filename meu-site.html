@@ -47,6 +47,11 @@
   .foto .tag{position:absolute;left:4px;top:4px;background:var(--roxo2);color:#fff;font-size:10px;font-weight:800;border-radius:6px;padding:2px 6px}
   .foto .acts{position:absolute;right:4px;bottom:4px;display:flex;gap:4px}
   .foto .acts button{border:0;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 6px;cursor:pointer}
+  .ficha{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .ficha select,.ficha input,.ficha textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px;background:#fff}
+  .ficha textarea{grid-column:1/-1;min-height:60px}
+  .ficha .nums{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .foto .leg{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:10px;padding:14px 5px 22px;line-height:1.2}
   .add{aspect-ratio:1;border:2px dashed #cdbbe6;border-radius:10px;display:grid;place-items:center;color:var(--roxo2);font-weight:800;font-size:13px;cursor:pointer;text-align:center;background:#fff}
   .barra{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;justify-content:center;z-index:5}
   .barra .btn{flex:1;max-width:340px}
@@ -191,7 +196,7 @@
           (S.capa_url ? '<button class="btn btn-ghost btn-mini" type="button" id="btnCapaTirar">Tirar</button>' : '') + '</div></div>' +
       '</div>' +
 
-      '<div class="card"><h2>Seus imóveis</h2><small>Cada álbum é um imóvel: dê um nome (ex.: "Apartamento 2 dormitórios — Centro") e coloque as fotos. A primeira foto é a capa do álbum.</small>' +
+      '<div class="card"><h2>Seus imóveis</h2><small>Cada imóvel tem um nome, a ficha (venda ou locação, tipo, preço, bairro, quartos, vagas e m²) e as fotos. Tudo é opcional: preencha o que souber. A primeira foto é a capa; toque em ✎ para escrever uma legenda na foto.</small>' +
         '<div id="albuns">' + albuns.map(albumHtml).join('') + '</div>' +
         (albuns.length < 12 ? '<button class="btn btn-prim" type="button" id="btnNovoAlbum" style="margin-top:12px;width:100%">➕ Novo imóvel (álbum)</button>' : '') +
       '</div>' +
@@ -205,13 +210,30 @@
     $('barra').style.display = '';
     ligar();
   }
+  // Ficha do imóvel (SQL SITES_5): tudo opcional; preço vazio = "Sob consulta".
+  var TIPOS_IMOVEL = [['APARTAMENTO','Apartamento'],['CASA','Casa'],['SOBRADO','Sobrado'],['COBERTURA','Cobertura'],['TERRENO','Terreno'],
+    ['SALA','Sala comercial'],['LOJA','Loja'],['GALPAO','Galpão'],['CHACARA','Chácara'],['OUTRO','Outro']];
+  function opcoes(lista, atual, vazio){
+    return '<option value="">' + vazio + '</option>' + lista.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === atual ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
+  }
+  function num(cls, ph, v, max){ return '<input type="number" class="' + cls + '" min="0" max="' + max + '" placeholder="' + ph + '" value="' + esc(v == null ? '' : v) + '">'; }
   function albumHtml(a, i){
+    var leg = a.legendas || [];
     return '<div class="album" data-i="' + i + '">' +
-      '<div class="album-top"><input type="text" class="aTitulo" maxlength="80" placeholder="Nome do imóvel" value="' + esc(a.titulo) + '">' +
-      '<button class="btn btn-ghost btn-mini aExcluir" type="button" title="Apagar este álbum">🗑</button></div>' +
+      '<div class="album-top"><input type="text" class="aTitulo" maxlength="80" placeholder="Ex.: Apartamento no Campolim" value="' + esc(a.titulo) + '">' +
+      '<button class="btn btn-ghost btn-mini aExcluir" type="button" title="Apagar este imóvel">🗑</button></div>' +
+      '<div class="ficha">' +
+        '<select class="aFin">' + opcoes([['VENDA','Venda'],['LOCACAO','Locação']], a.finalidade, 'Venda ou locação?') + '</select>' +
+        '<select class="aTipo">' + opcoes(TIPOS_IMOVEL, a.tipo, 'Tipo do imóvel') + '</select>' +
+        '<input type="text" class="aPreco" inputmode="numeric" placeholder="Preço (vazio = Sob consulta)" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '">' +
+        '<input type="text" class="aBairro" maxlength="60" placeholder="Bairro" value="' + esc(a.bairro) + '">' +
+        '<div class="nums">' + num('aDorm', 'Dorm.', a.dorm, 99) + num('aSuites', 'Suítes', a.suites, 99) + num('aVagas', 'Vagas', a.vagas, 99) + num('aArea', 'm²', a.area, 999999) + '</div>' +
+        '<textarea class="aDesc" maxlength="600" placeholder="Descrição curta (opcional): lazer, localização, diferenciais…">' + esc(a.descricao) + '</textarea>' +
+      '</div>' +
       '<div class="fotos">' + (a.fotos || []).map(function(f, k){
         return '<div class="foto"><img src="' + esc(f) + '" alt="" loading="lazy">' + (k === 0 ? '<span class="tag">Capa</span>' : '') +
-          '<div class="acts">' + (k > 0 ? '<button type="button" data-capa="' + k + '" title="Usar como capa">★</button>' : '') +
+          (leg[k] ? '<span class="leg">' + esc(leg[k]) + '</span>' : '') +
+          '<div class="acts"><button type="button" data-leg="' + k + '" title="Legenda da foto">✎</button>' + (k > 0 ? '<button type="button" data-capa="' + k + '" title="Usar como capa">★</button>' : '') +
           '<button type="button" data-tirar="' + k + '" title="Tirar foto">✕</button></div></div>';
       }).join('') +
       ((a.fotos || []).length < 30 ? '<div class="add aAdd">＋ Fotos</div>' : '') + '</div></div>';
@@ -229,7 +251,12 @@
     }
     S.bairros = $('fBairros').value.split(/[,;\n]/).map(function(b){ return b.trim(); }).filter(Boolean);
     S.instagram = $('fIg').value.trim(); S.facebook = $('fFb').value.trim(); S.linkedin = $('fLi').value.trim(); S.youtube = $('fYt').value.trim();
-    document.querySelectorAll('.album').forEach(function(el){ var a = S.albuns[+el.dataset.i]; if (a) a.titulo = el.querySelector('.aTitulo').value.trim(); });
+    document.querySelectorAll('.album').forEach(function(el){
+      var a = S.albuns[+el.dataset.i]; if (!a) return;
+      var v = function(c){ var x = el.querySelector('.' + c); return x ? x.value.trim() : ''; };
+      a.titulo = v('aTitulo'); a.finalidade = v('aFin'); a.tipo = v('aTipo'); a.preco = v('aPreco').replace(/\D/g, '');
+      a.bairro = v('aBairro'); a.dorm = v('aDorm'); a.suites = v('aSuites'); a.vagas = v('aVagas'); a.area = v('aArea'); a.descricao = v('aDesc');
+    });
   }
   function rerender(){ lerCampos(); render(); }
 
@@ -261,8 +288,16 @@
       var i = +el.dataset.i, a = S.albuns[i];
       el.querySelector('.aExcluir').onclick = function(){ if (!confirm('Apagar este álbum e as fotos dele?')) return; lerCampos(); S.albuns.splice(i, 1); marcaSujo(); render(); };
       var add = el.querySelector('.aAdd'); if (add) add.onclick = function(){ fotosNoAlbum(i); };
-      el.querySelectorAll('[data-tirar]').forEach(function(b){ b.onclick = function(){ lerCampos(); a.fotos.splice(+b.dataset.tirar, 1); marcaSujo(); render(); }; });
-      el.querySelectorAll('[data-capa]').forEach(function(b){ b.onclick = function(){ lerCampos(); var f = a.fotos.splice(+b.dataset.capa, 1)[0]; a.fotos.unshift(f); marcaSujo(); render(); }; });
+      el.querySelectorAll('select,input[type=number]').forEach(function(x){ x.addEventListener('change', marcaSujo); });
+      // a legenda anda junto com a foto (tirar, virar capa)
+      var legs = function(){ a.legendas = (a.legendas || []).slice(0, a.fotos.length); while (a.legendas.length < a.fotos.length) a.legendas.push(''); return a.legendas; };
+      el.querySelectorAll('[data-tirar]').forEach(function(b){ b.onclick = function(){ lerCampos(); var k = +b.dataset.tirar; legs().splice(k, 1); a.fotos.splice(k, 1); marcaSujo(); render(); }; });
+      el.querySelectorAll('[data-capa]').forEach(function(b){ b.onclick = function(){ lerCampos(); var k = +b.dataset.capa; var l = legs().splice(k, 1)[0]; a.legendas.unshift(l); var f = a.fotos.splice(k, 1)[0]; a.fotos.unshift(f); marcaSujo(); render(); }; });
+      el.querySelectorAll('[data-leg]').forEach(function(b){ b.onclick = function(){
+        lerCampos(); var k = +b.dataset.leg, l = legs();
+        var t = prompt('Legenda desta foto (ex.: Sala integrada, Suíte com closet):', l[k] || '');
+        if (t === null) return;
+        l[k] = t.trim().slice(0, 80); marcaSujo(); render(); }; });
     });
   }
 
@@ -298,7 +333,9 @@
     var dados = { nome:S.nome, creci:S.creci, bio:S.bio, foto_url:S.foto_url || '', capa_url:S.capa_url || '',
       profissao:S.profissao || 'CORRETOR', zonas:S.zonas || [], bairros:S.bairros || [], vaga:S.vaga || null,
       instagram:S.instagram, facebook:S.facebook, linkedin:S.linkedin, youtube:S.youtube,
-      albuns:(S.albuns || []).map(function(a){ return { titulo:a.titulo || '', fotos:a.fotos || [] }; }) };
+      albuns:(S.albuns || []).map(function(a){ return { titulo:a.titulo || '', fotos:a.fotos || [], legendas:a.legendas || [],
+        finalidade:a.finalidade || '', tipo:a.tipo || '', preco:a.preco || '', bairro:a.bairro || '',
+        dorm:a.dorm || '', suites:a.suites || '', vagas:a.vagas || '', area:a.area || '', descricao:a.descricao || '' }; }) };
     var semFoto = dados.albuns.filter(function(a){ return !a.fotos.length; }).length;
     $('btnSalvar').disabled = true; $('btnSalvar').textContent = 'Salvando…';
     return rpc('rpc_site_salvar', { p_token_edicao:T, p_dados:dados }).then(function(d){
