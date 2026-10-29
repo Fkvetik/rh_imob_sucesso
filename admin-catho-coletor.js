@@ -2804,13 +2804,15 @@ async function loadMaquinas() {
       coleta = `${problema ? "⚠️" : "✅"} ${quando}<br><small>${m.ultima_coleta_encontrados || 0} achados · ${m.ultima_coleta_entregues || 0} na fila${m.ultima_coleta_erro ? "<br>" + esc(m.ultima_coleta_erro) : ""}</small>`;
     }
     if (velha || (m.ultima_coleta_erro) || (on && m.whatsapp_aberto === false && m.disparo === "rodando")) atencao++;
-    return `<tr data-maq="${esc(m.login)}">
-      <td class="usoAbrir" data-login="${esc(m.login)}" title="Ver o relatório de uso da extensão" style="cursor:pointer"><b>${esc(m.nome || m.login)}</b> <small style="color:#6C0070">📊 ${USO_ABERTO === m.login ? "fechar" : "uso"}</small><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
+    return `<tr data-maq="${esc(m.login)}" class="usoAbrir" title="Clique para ver o relatório de uso da extensão" style="cursor:pointer${USO_ABERTO === m.login ? ";background:#faf7fc" : ""}">
+      <td><b>${esc(m.nome || m.login)}</b> <small style="color:#6C0070">📊 ${USO_ABERTO === m.login ? "fechar" : "uso"}</small><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
       <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}${controle}</td><td>${coleta}</td>
     </tr>`;
   }).join("") || '<tr><td colspan="6"><small>Nenhum operador ativo.</small></td></tr>';
-  tbody.querySelectorAll(".usoAbrir").forEach(td => td.addEventListener("click", () => {
-    USO_ABERTO = USO_ABERTO === td.dataset.login ? null : td.dataset.login;
+  // a linha toda abre/fecha o relatório; os botões da linha (Pausar/Iniciar) seguem só com a função deles
+  tbody.querySelectorAll(".usoAbrir").forEach(tr => tr.addEventListener("click", (e) => {
+    if (e.target.closest("button, a, select, input")) return;
+    USO_ABERTO = USO_ABERTO === tr.dataset.maq ? null : tr.dataset.maq;
     loadMaquinas();
   }));
   if (USO_ABERTO) usoMostrar(tbody, lista.find(x => x.login === USO_ABERTO));
