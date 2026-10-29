@@ -27,7 +27,7 @@ function showApp() {
   loadAdmins();
   loadAuditLog();
   loadLogsExtensao();
-  loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); });
+  loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); loadChips(); }); // chips depois das contas: nomes das empresas
   loadContratos();
   // Banco de Corretores CRECI é só da RH IMOB: admin de empresa não vê a aba.
   const superAdmin = !(CURRENT_ADMIN && CURRENT_ADMIN.conta_id_plataforma);
@@ -2321,6 +2321,104 @@ $("btnRanking")?.addEventListener("click", loadRanking);
 // ===== Base qualificada (zona e tipo marcados na bolha — SQL QUALI_1) =====
 const BQ_ZONA = { NORTE: "Norte", SUL: "Sul", LESTE: "Leste", OESTE: "Oeste", CENTRO: "Centro" };
 const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", GERENTE: "Gerente de vendas", ADVOGADO: "Advogado", ARQUITETO: "Arquiteto", ENGENHEIRO: "Engenheiro", PARCERIA: "Parceria", OUTRO: "Outro" };
+
+// ===== Chips da bolha (SQL CHIPS_1): o admin cria, renomeia, ordena e esconde =====
+let CH = { empresa: "*", herdado: false, chips: [], empresas: [], geral: false, sujo: false };
+async function loadChips(empresa) {
+  const card = $("cardChips");
+  if (!card) return;
+  let d;
+  try { d = await rpc("rpc_admin_chips", { p_admin_password: ADMIN_PASS, p_empresa: empresa || CH.empresa || "*" }); } catch (_) { return; }
+  if (!d || !d.ok) return;                      // banco sem o CHIPS_1: o card fica escondido
+  // nomes dos chips na base qualificada (inclui os escondidos e os de cada empresa)
+  const rot = d.rotulos || {};
+  (d.chips || []).forEach(c => { rot[c.codigo] = c.rotulo; });
+  const ZON = new Set((d.chips || []).filter(c => c.grupo === "ZONA").map(c => c.codigo));
+  Object.keys(rot).forEach(k => { if (ZON.has(k) || BQ_ZONA[k]) BQ_ZONA[k] = rot[k]; else BQ_TIPO[k] = rot[k]; });
+  chFiltrosBq(d.chips || []);
+  if (!d.pode_editar) { card.classList.add("hide"); return; }
+  CH = { empresa: d.empresa, herdado: !!d.herdado, chips: (d.chips || []).map(c => ({ ...c })), empresas: d.empresas || [], geral: !!d.geral, sujo: false };
+  card.classList.remove("hide");
+  chRender();
+}
+// Filtros da base qualificada com os chips visíveis (mais o que já estiver escolhido)
+function chFiltrosBq(chips) {
+  const monta = (id, grupo, todos) => {
+    const el = $(id); if (!el) return;
+    const atual = el.value;
+    const lista = chips.filter(c => c.grupo === grupo && (c.ativo || c.codigo === atual));
+    if (!lista.length) return;
+    el.innerHTML = `<option value="">${todos}</option>` + lista.map(c => `<option value="${esc(c.codigo)}">${esc(c.rotulo)}${c.ativo ? "" : " (escondido)"}</option>`).join("");
+    el.value = atual;
+  };
+  monta("bqZona", "ZONA", "Todas");
+  monta("bqTipo", "TIPO", "Todos");
+}
+function chRender() {
+  const box = $("chEmpresaBox");
+  if (CH.geral && CH.empresas.length) {
+    box.style.display = "flex";
+    $("chEmpresa").innerHTML = `<option value="*">Padrão (todas as empresas)</option>` +
+      CH.empresas.map(e => `<option value="${esc(e.id)}">${esc(nomeDaConta(e.id) || e.id)}${e.propria ? " · lista própria" : ""}</option>`).join("");
+    $("chEmpresa").value = CH.empresa;
+  } else box.style.display = "none";
+  $("btnChipsPadrao").style.display = CH.empresa !== "*" && !CH.herdado ? "" : "none";
+  $("chAviso").textContent = CH.empresa === "*"
+    ? "Lista padrão: vale para toda empresa que não tem lista própria."
+    : CH.herdado ? "Esta empresa usa a lista padrão. Ao salvar, ela passa a ter a lista própria." : "Esta empresa tem a lista própria.";
+  const grupo = (g, titulo) => {
+    const itens = CH.chips.map((c, i) => ({ c, i })).filter(x => x.c.grupo === g);
+    return `<div style="flex:1;min-width:260px"><b style="font-size:13px">${titulo}</b>
+      <table style="margin-top:4px"><tbody>${itens.map(({ c, i }, k) => `<tr style="${c.ativo ? "" : "opacity:.5"}">
+        <td style="width:52px;white-space:nowrap"><button class="ghost" data-ch-sobe="${i}" ${k ? "" : "disabled"} title="Subir" style="padding:2px 6px">▲</button><button class="ghost" data-ch-desce="${i}" ${k < itens.length - 1 ? "" : "disabled"} title="Descer" style="padding:2px 6px">▼</button></td>
+        <td><input data-ch-rot="${i}" value="${esc(c.rotulo)}" maxlength="40" style="width:100%"></td>
+        <td style="white-space:nowrap"><label style="font-size:12px;display:flex;align-items:center;gap:4px;margin:0"><input type="checkbox" style="width:auto;margin:0" data-ch-ativo="${i}" ${c.ativo ? "checked" : ""}> na bolha</label></td>
+      </tr>`).join("")}</tbody></table>
+      <button class="ghost" data-ch-novo="${g}" style="margin-top:6px">＋ Novo chip</button></div>`;
+  };
+  $("chListas").innerHTML = grupo("ZONA", "Zona / região") + grupo("TIPO", "Tipo de profissional");
+  $("btnChipsSalvar").disabled = !CH.sujo;
+  const L = $("chListas"), suja = () => { CH.sujo = true; $("btnChipsSalvar").disabled = false; $("chMsg").textContent = "Alterações não salvas"; };
+  const troca = (i, dir) => {
+    const g = CH.chips[i].grupo, idx = CH.chips.map((c, j) => c.grupo === g ? j : -1).filter(j => j >= 0);
+    const j = idx[idx.indexOf(i) + dir];
+    if (j == null) return;
+    [CH.chips[i], CH.chips[j]] = [CH.chips[j], CH.chips[i]];
+    suja(); chRender();
+  };
+  L.querySelectorAll("[data-ch-sobe]").forEach(b => b.addEventListener("click", () => troca(+b.dataset.chSobe, -1)));
+  L.querySelectorAll("[data-ch-desce]").forEach(b => b.addEventListener("click", () => troca(+b.dataset.chDesce, 1)));
+  L.querySelectorAll("[data-ch-rot]").forEach(inp => inp.addEventListener("input", () => { CH.chips[+inp.dataset.chRot].rotulo = inp.value; suja(); }));
+  L.querySelectorAll("[data-ch-ativo]").forEach(cb => cb.addEventListener("change", () => { CH.chips[+cb.dataset.chAtivo].ativo = cb.checked; suja(); chRender(); }));
+  L.querySelectorAll("[data-ch-novo]").forEach(b => b.addEventListener("click", () => {
+    const nome = (prompt(b.dataset.chNovo === "ZONA" ? "Nome da zona ou região (ex.: Campolim):" : "Nome do tipo (ex.: 🏗️ Construtora):") || "").trim();
+    if (!nome) return;
+    if (CH.chips.some(c => c.rotulo.trim().toLowerCase() === nome.toLowerCase())) { alert("Já existe um chip com esse nome."); return; }
+    CH.chips.push({ codigo: "", grupo: b.dataset.chNovo, rotulo: nome, ativo: true });
+    suja(); chRender();
+  }));
+}
+$("chEmpresa")?.addEventListener("change", () => {
+  if (CH.sujo && !confirm("Descartar as alterações não salvas?")) { $("chEmpresa").value = CH.empresa; return; }
+  loadChips($("chEmpresa").value);
+});
+$("btnChipsSalvar")?.addEventListener("click", async () => {
+  if (CH.chips.some(c => !String(c.rotulo || "").trim())) { alert("Todo chip precisa de um nome."); return; }
+  const b = $("btnChipsSalvar"); b.disabled = true; $("chMsg").textContent = "Salvando...";
+  try {
+    const d = await rpc("rpc_admin_chips_salvar", { p_admin_password: ADMIN_PASS, p_empresa: CH.empresa,
+      p_chips: CH.chips.map(c => ({ codigo: c.codigo || null, grupo: c.grupo, rotulo: c.rotulo.trim(), ativo: !!c.ativo })) });
+    if (!d || !d.ok) throw new Error((d && d.error) || "Não consegui salvar");
+    await loadChips(CH.empresa);
+    $("chMsg").textContent = "✅ Salvo. Os operadores veem em até 5 minutos.";
+  } catch (e) { $("chMsg").textContent = "❌ " + e.message; b.disabled = false; }
+});
+$("btnChipsPadrao")?.addEventListener("click", async () => {
+  if (!confirm("Esta empresa volta a usar a lista padrão, e a lista própria dela é apagada. Continuar?")) return;
+  const d = await rpc("rpc_admin_chips_usar_padrao", { p_admin_password: ADMIN_PASS, p_empresa: CH.empresa });
+  if (!d || !d.ok) { alert((d && d.error) || "Não consegui"); return; }
+  loadChips(CH.empresa);
+});
 let BQ_LINHAS = [];
 const BQ_POR_PAGINA = 100;
 let BQ_FILTROS = null, BQ_TOTAL = 0, BQ_PAGINA = 0;

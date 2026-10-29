@@ -410,6 +410,20 @@
         <tbody id="listaRanking"><tr><td colspan="5"><small>Escolha e clique em Ver ranking.</small></td></tr></tbody>
       </table>
     </div>
+    <div class="card hide" id="cardChips">
+      <h3 style="margin-top:0;font-size:14px">🏷️ Chips da bolha — zona e tipo</h3>
+      <small>Os botões que o operador marca na bolha do WhatsApp. O que você salvar aqui aparece para os operadores em até 5 minutos, sem atualizar a extensão. Chip escondido some da bolha, mas quem já foi marcado com ele continua com o nome certo. 🧲 Contratando e 🚫 Nº inválido são fixos.</small>
+      <div id="chEmpresaBox" style="display:none;gap:8px;flex-wrap:wrap;align-items:end;margin-top:8px">
+        <div style="flex:2;min-width:200px"><label>Lista de</label><select id="chEmpresa"></select></div>
+        <button id="btnChipsPadrao" class="ghost" style="margin-bottom:4px;display:none">↩ Voltar a usar o padrão</button>
+      </div>
+      <div id="chAviso" style="margin-top:8px;font-size:12px;color:#666"></div>
+      <div id="chListas" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <button id="btnChipsSalvar" class="secondary" disabled>💾 Salvar chips</button>
+        <small id="chMsg"></small>
+      </div>
+    </div>
     <div class="card" id="cardBaseQuali">
       <h3 style="margin-top:0;font-size:14px">📍 Base qualificada — zona e tipo dos profissionais</h3>
       <small>O que os operadores marcam na bolha do WhatsApp durante a conversa. Use para montar listas sem precisar abordar de novo. Cada empresa vê só as marcações dela.</small>
@@ -685,7 +699,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261029parceria"></script>
+<script src="admin-catho-coletor.js?v=20261029chips"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
