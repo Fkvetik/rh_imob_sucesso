@@ -2846,12 +2846,21 @@ function usoHoras(min) {
   const h = Math.floor(min / 60), m = min % 60;
   return h ? `${h}h${m ? String(m).padStart(2, "0") : ""}` : `${m} min`;
 }
+// Horário de funcionamento da ferramenta: a barra mostra só das 8h às 20h
+// (blocos de 15 min 32 a 79). Fora disso ela não dispara; o que ficou ligado
+// fora do horário aparece só como aviso ao lado.
+const USO_INI = 32, USO_FIM = 80;
+function usoForaMin(blocos) { return (blocos || []).filter(([i]) => i < USO_INI || i >= USO_FIM).length * 15; }
+function usoNoHorarioMin(blocos) { return (blocos || []).filter(([i]) => i >= USO_INI && i < USO_FIM).length * 15; }
+function usoEixo() {
+  return `<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;font-weight:400;min-width:220px">${[8, 10, 12, 14, 16, 18, 20].map(h => `<span>${h}h</span>`).join("")}</div>`;
+}
 function usoBarra(blocos, semRegistro) {
   if (semRegistro) return '<div style="height:14px;border-radius:4px;background:repeating-linear-gradient(45deg,#f3f4f6 0 6px,#fff 6px 12px);font-size:10px;color:#888;text-align:center;line-height:14px">sem registro</div>';
   const est = new Array(96).fill(0);
   (blocos || []).forEach(([i, e]) => { if (i >= 0 && i < 96) est[i] = e; });
-  return `<div style="display:flex;height:14px;border-radius:4px;overflow:hidden;min-width:220px">${est.map((e, i) =>
-    `<span style="flex:1;background:${USO_COR[e]};${i % 24 === 0 && i ? "box-shadow:inset 1px 0 #9ca3af;" : ""}" title="${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}"></span>`).join("")}</div>`;
+  return `<div style="display:flex;height:14px;border-radius:4px;overflow:hidden;min-width:220px">${est.slice(USO_INI, USO_FIM).map((e, k) => { const i = k + USO_INI;
+    return `<span style="flex:1;background:${USO_COR[e]};${k % 8 === 0 && k ? "box-shadow:inset 1px 0 #9ca3af;" : ""}" title="${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}"></span>`; }).join("")}</div>`;
 }
 async function usoMostrar(tbody, m) {
   const linha = tbody.querySelector(`tr[data-maq="${CSS.escape(USO_ABERTO)}"]`);
@@ -2877,6 +2886,7 @@ async function usoMostrar(tbody, m) {
   const soma = k => L.reduce((s, x) => s + (x[k] || 0), 0);
   const env = soma("enviadas"), resp = soma("respostas");
   const diasLigada = L.filter(x => x.min_ligada > 0).length;
+  const noHorario = L.reduce((t, x) => t + usoNoHorarioMin(x.blocos), 0);
   const pilula = (t, cor) => `<span style="display:inline-block;background:${cor || "#f1ecf4"};color:#3b0a40;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:0 4px 4px 0">${t}</span>`;
   const nomeDia = d => new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
   tr.firstElementChild.innerHTML = `
@@ -2884,16 +2894,16 @@ async function usoMostrar(tbody, m) {
       <b style="font-size:13px">📊 Uso da extensão — ${esc((m && m.nome) || USO_ABERTO)}</b>
       <select class="usoDias" style="width:auto;padding:3px 6px;font-size:12px">${[7, 14, 30, 60, 90].map(n => `<option value="${n}" ${n === USO_DIAS ? "selected" : ""}>últimos ${n} dias</option>`).join("")}</select>
     </div>
-    <div>${pilula(`🖥 ligada ${usoHoras(soma("min_ligada"))} em ${diasLigada} de ${L.length} dias`)}${pilula(`▶️ disparando ${usoHoras(soma("min_disparando"))}`, "#dcfce7")}${pilula(`✉️ ${env} enviadas`)}${pilula(`💬 ${resp} respostas${env ? ` (${Math.round(resp * 100 / env)}%)` : ""}`)}${pilula(`🏷 ${soma("qualificados")} qualificados`)}${pilula(`📄 ${soma("propostas")} propostas`)}${pilula(`📅 ${soma("agendados")} agendados`)}</div>
-    <small style="color:#666">Barra do dia, de 0h a 24h: <span style="color:#9ca3af">■</span> desligada · <span style="color:#d97706">■</span> ligada sem disparar · <span style="color:#16a34a">■</span> disparando (WhatsApp aberto). ${desde ? `Registro de ligada/desligada desde ${esc(r.historico_desde)}; antes disso só as ações.` : "Registro de ligada/desligada começa agora; os dias anteriores mostram só as ações."}</small>
+    <div>${pilula(`🖥 ligada ${usoHoras(noHorario)} no horário (8h–20h) em ${diasLigada} de ${L.length} dias`)}${pilula(`▶️ disparando ${usoHoras(soma("min_disparando"))}`, "#dcfce7")}${pilula(`✉️ ${env} enviadas`)}${pilula(`💬 ${resp} respostas${env ? ` (${Math.round(resp * 100 / env)}%)` : ""}`)}${pilula(`🏷 ${soma("qualificados")} qualificados`)}${pilula(`📄 ${soma("propostas")} propostas`)}${pilula(`📅 ${soma("agendados")} agendados`)}</div>
+    <small style="color:#666">Barra do dia, no horário de funcionamento (8h às 20h): <span style="color:#9ca3af">■</span> desligada · <span style="color:#d97706">■</span> ligada sem disparar · <span style="color:#16a34a">■</span> disparando (WhatsApp aberto). ${desde ? `Registro de ligada/desligada desde ${esc(r.historico_desde)}; antes disso só as ações.` : "Registro de ligada/desligada começa agora; os dias anteriores mostram só as ações."}</small>
     <table style="margin-top:6px">
-      <thead><tr><th>Dia</th><th style="width:40%">Ligada / disparando no dia</th><th>Ligada</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th><th>Qualificou</th><th>Propostas</th><th>Agendou</th></tr></thead>
+      <thead><tr><th>Dia</th><th style="width:40%">${usoEixo()}</th><th>Ligada (8h–20h)</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th><th>Qualificou</th><th>Propostas</th><th>Agendou</th></tr></thead>
       <tbody>${L.map(x => {
         const sem = !x.blocos.length && (!desde || x.dia < desde);
         return `<tr>
         <td style="white-space:nowrap">${esc(nomeDia(x.dia))}</td>
         <td>${usoBarra(x.blocos, sem)}</td>
-        <td style="white-space:nowrap">${sem ? "—" : usoHoras(x.min_ligada)}${x.primeiro ? `<br><small>${esc(x.primeiro)}–${esc(x.ultimo)}</small>` : ""}</td>
+        <td style="white-space:nowrap">${sem ? "—" : usoHoras(usoNoHorarioMin(x.blocos))}${x.primeiro ? `<br><small>${esc(x.primeiro)}–${esc(x.ultimo)}</small>` : ""}${usoForaMin(x.blocos) ? `<br><small style="color:#999">+${usoHoras(usoForaMin(x.blocos))} fora do horário</small>` : ""}</td>
         <td>${sem ? "—" : usoHoras(x.min_disparando)}</td>
         <td>${x.enviadas || "—"}</td><td>${x.respostas || "—"}</td><td>${x.qualificados || "—"}</td><td>${x.propostas || "—"}</td><td>${x.agendados || "—"}</td>
       </tr>`; }).join("")}</tbody>

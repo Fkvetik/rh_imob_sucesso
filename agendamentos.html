@@ -40,6 +40,28 @@
   .vg-barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
   .vg-barra .vg-print{margin-left:auto;padding:8px 14px;border-radius:8px;border:1px solid var(--rh-purple);background:#fff;color:var(--rh-purple);font-weight:700;cursor:pointer}
   .vg-barra .vg-print:hover{background:var(--rh-purple-light)}
+  /* Uso da ferramenta pela equipe (Visão Geral) */
+  #usoEquipe{padding:16px 20px 0}
+  #usoEquipe .ue-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px}
+  #usoEquipe h3{margin:0 0 2px;font-size:14px}
+  #usoEquipe .ue-sub{font-size:11px;color:#888;margin-bottom:10px}
+  #usoEquipe table{width:100%;border-collapse:collapse;font-size:12.5px}
+  #usoEquipe th{font-size:10.5px;color:#888;text-align:left;font-weight:700;padding:6px 8px;border-bottom:2px solid #eee;white-space:nowrap}
+  #usoEquipe td{padding:8px;border-bottom:1px solid #f3f3f3;vertical-align:middle}
+  #usoEquipe tr.ue-op{cursor:pointer}
+  #usoEquipe tr.ue-op:hover td{background:#faf7fc}
+  #usoEquipe tr.ue-op.aberto td{background:#f6f0fb}
+  #usoEquipe .ue-st{font-weight:700;white-space:nowrap}
+  #usoEquipe .ue-dias{display:flex;gap:3px}
+  #usoEquipe .ue-dias i{width:14px;height:14px;border-radius:3px;display:inline-block}
+  #usoEquipe .ue-bar{display:flex;height:12px;border-radius:3px;overflow:hidden;background:#e5e7eb;min-width:200px}
+  #usoEquipe .ue-bar span{flex:1}
+  #usoEquipe .ue-eixo{display:flex;justify-content:space-between;font-size:9.5px;color:#999;font-weight:400;min-width:200px}
+  #usoEquipe .ue-det td{background:#fcfaff;padding:4px 8px 12px}
+  #usoEquipe .ue-det table td{padding:4px 6px;border-bottom:1px solid #f1edf6}
+  #usoEquipe .ue-res{padding:4px 9px;border-radius:7px;border:1px solid var(--rh-purple);background:#fff;color:var(--rh-purple);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
+  #usoEquipe .ue-nao{color:#b42318;font-weight:700}
+  @media print{#usoEquipe .ue-res{display:none}}
   .vg-validade{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;border:1px solid}
   .vg-validade.ok{background:#ecfdf3;color:#166534;border-color:#bbf7d0}
   .vg-validade.logo{background:#fffbeb;color:#92400e;border-color:#fcd34d}
@@ -228,6 +250,7 @@
       <button type="button" class="vg-print" id="btnImprimirVG">🖨 Imprimir / salvar PDF</button>
     </div>
     <div id="dashboard"></div>
+    <div id="usoEquipe"></div>
     <div id="charts"></div>
   </div>
   <div class="chart-tooltip" id="chartTooltip"></div>
@@ -301,7 +324,7 @@
   </div>
 </div>
 
-<script src="agendamentos.js?v=20261025validade"></script>
+<script src="agendamentos.js?v=20261029uso"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

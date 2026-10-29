@@ -172,6 +172,7 @@ async function loadAgendamentos() {
 
 async function loadDashboard() {
   loadValidadeEquipe(); // não espera: a faixa aparece quando chegar
+  loadUsoEquipe();      // idem: o quadro de uso aparece quando chegar
   try {
     const [resp, taxa, ritmo, jornada] = await Promise.all([
       rpc("rpc_admin_dashboard", { p_admin_password: ADMIN_PASS }),
@@ -998,6 +999,108 @@ if (ADMIN_PASS) {
       loadDashboard();
     })
     .catch(() => {});
+}
+
+
+// ===== Visão Geral: uso da ferramenta pela equipe =====
+// Mesma informação da tela "Máquinas" do admin, só o que interessa ao
+// contratante: se está ligada agora, o horário de hoje e os últimos 7 dias no
+// horário de funcionamento (8h às 20h). O banco já filtra pela empresa do
+// login (SQL SAUDE_1/SAUDE_3): ninguém vê operador de outra empresa.
+const UE_COR = ["#e5e7eb", "#fcd34d", "#22c55e"];   // desligada · ligada sem disparar · disparando
+const UE_INI = 32, UE_FIM = 80;                       // blocos de 15 min: 8h00 a 19h45
+let UE_ABERTO = null, UE_DADOS = {};
+const ueHoras = m => { if (!m) return "—"; const h = Math.floor(m / 60), r = m % 60; return h ? `${h}h${r ? String(r).padStart(2, "0") : ""}` : `${r} min`; };
+const ueNoHorario = b => (b || []).filter(([i]) => i >= UE_INI && i < UE_FIM).length * 15;
+const ueDisparando = b => (b || []).filter(([i, e]) => e === 2 && i >= UE_INI && i < UE_FIM).length * 15;
+const ueFds = dia => { const d = new Date(dia + "T12:00:00Z").getUTCDay(); return d === 0 || d === 6; };
+function ueBarra(blocos) {
+  const est = new Array(96).fill(0);
+  (blocos || []).forEach(([i, e]) => { if (i >= 0 && i < 96) est[i] = e; });
+  return `<div class="ue-bar">${est.slice(UE_INI, UE_FIM).map(e => `<span style="background:${UE_COR[e]}"></span>`).join("")}</div>`;
+}
+function ueAgora(m) {
+  const min = m.minutos_sem_sinal;
+  if (min == null) return '<span class="ue-st" style="color:#999">⚫ nunca ligou</span>';
+  if (min <= 6) return m.whatsapp_aberto && m.disparo === "rodando"
+    ? '<span class="ue-st" style="color:#15803d">🟢 disparando</span>'
+    : '<span class="ue-st" style="color:#b45309">🟡 ligada, sem disparar</span>';
+  const t = min < 60 ? `${min} min` : min < 1440 ? `${Math.round(min / 60)} h` : `${Math.round(min / 1440)} dia(s)`;
+  return `<span class="ue-st" style="color:#6b7280">⚫ desligada há ${t}</span>`;
+}
+
+async function loadUsoEquipe() {
+  const el = document.getElementById("usoEquipe");
+  if (!el) return;
+  try {
+    const saude = await rpc("rpc_admin_saude", { p_admin_password: ADMIN_PASS });
+    const ops = (saude && saude.ok ? saude.maquinas : []).slice(0, 40);
+    if (!ops.length) { el.innerHTML = ""; return; }
+    const usos = await Promise.all(ops.map(m =>
+      rpc("rpc_admin_uso_operador", { p_admin_password: ADMIN_PASS, p_login: m.login, p_dias: 7 }).catch(() => null)));
+    UE_DADOS = {};
+    ops.forEach((m, k) => { UE_DADOS[m.login] = { m, u: usos[k] && usos[k].ok ? usos[k] : null }; });
+    renderUsoEquipe();
+  } catch (_) {
+    el.innerHTML = "";   // sem os SQLs de saúde, o quadro simplesmente não aparece
+  }
+}
+
+function renderUsoEquipe() {
+  const el = document.getElementById("usoEquipe");
+  const lista = Object.values(UE_DADOS);
+  if (!el || !lista.length) return;
+  const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+  const linhas = lista.map(({ m, u }) => {
+    const L = u ? u.linhas || [] : [];
+    const hj = L.find(x => x.dia === hoje);
+    const passados = L.slice().reverse();   // do mais antigo para hoje
+    const uteis = passados.filter(x => !ueFds(x.dia) && (ueNoHorario(x.blocos) > 0 || x.dia !== hoje));
+    const usados = uteis.filter(x => ueNoHorario(x.blocos) > 0);
+    const soma = k => L.reduce((t, x) => t + (x[k] || 0), 0);
+    const lig = L.reduce((t, x) => t + ueNoHorario(x.blocos), 0), disp = L.reduce((t, x) => t + ueDisparando(x.blocos), 0);
+    const quadradinhos = passados.map(x => {
+      const n = ueNoHorario(x.blocos), cor = n ? (ueDisparando(x.blocos) ? UE_COR[2] : UE_COR[1]) : ueFds(x.dia) ? "#f3f4f6" : "#fecaca";
+      return `<i style="background:${cor}" title="${x.dia.slice(8, 10)}/${x.dia.slice(5, 7)}: ${n ? ueHoras(n) + " ligada" : ueFds(x.dia) ? "fim de semana" : "não usada"}"></i>`;
+    }).join("");
+    const aberto = UE_ABERTO === m.login;
+    const det = !aberto || !u ? "" : `<tr class="ue-det"><td colspan="6"><table>
+      <tr><th>Dia</th><th><div class="ue-eixo">${[8, 10, 12, 14, 16, 18, 20].map(h => `<span>${h}h</span>`).join("")}</div></th><th>Início–fim</th><th>Ligada</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th><th>Agendados</th></tr>
+      ${passados.map(x => { const n = ueNoHorario(x.blocos), nao = !n && !ueFds(x.dia) && x.dia !== hoje;
+        return `<tr><td style="white-space:nowrap">${new Date(x.dia + "T12:00:00Z").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "UTC" })}</td>
+        <td>${ueBarra(x.blocos)}</td>
+        <td style="white-space:nowrap">${n ? `${esc(x.primeiro)}–${esc(x.ultimo)}` : nao ? '<span class="ue-nao">Não usada</span>' : ueFds(x.dia) ? "fim de semana" : "—"}</td>
+        <td>${ueHoras(n)}</td><td>${ueHoras(ueDisparando(x.blocos))}</td>
+        <td>${x.enviadas || "—"}</td><td>${x.respostas || "—"}</td><td>${x.agendados || "—"}</td></tr>`; }).join("")}
+      </table></td></tr>`;
+    return `<tr class="ue-op${aberto ? " aberto" : ""}" data-login="${esc(m.login)}" title="Clique para ver dia a dia">
+      <td><b>${esc(m.nome || m.login)}</b></td>
+      <td>${ueAgora(m)}</td>
+      <td style="white-space:nowrap">${hj && ueNoHorario(hj.blocos) ? `${esc(hj.primeiro)}–${esc(hj.ultimo)}` : '<span style="color:#999">ainda não ligou</span>'}</td>
+      <td>${u ? `<div class="ue-dias">${quadradinhos}</div><small style="color:#666">${usados.length} de ${uteis.length} dias úteis · ligada ${ueHoras(lig)} · disparando ${ueHoras(disp)}</small>` : "—"}</td>
+      <td style="white-space:nowrap">${u ? `${soma("enviadas")} enviadas · ${soma("respostas")} respostas · ${soma("agendados")} agendados` : "—"}</td>
+      <td><button type="button" class="ue-res" data-res="${esc(m.login)}" title="Resumo do período para imprimir ou salvar em PDF">📊 Resumo (PDF)</button></td>
+    </tr>${det}`;
+  }).join("");
+  el.innerHTML = `<div class="ue-card">
+    <h3>🖥 Uso da ferramenta pela equipe</h3>
+    <div class="ue-sub">Últimos 7 dias, no horário de funcionamento (8h às 20h). Quadradinhos: <span style="color:#16a34a">■</span> disparou · <span style="color:#d97706">■</span> ligada sem disparar · <span style="color:#ef4444">■</span> dia útil sem uso · <span style="color:#bbb">■</span> fim de semana. Clique no operador para ver dia a dia.</div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Operador</th><th>Agora</th><th>Hoje</th><th>Últimos 7 dias</th><th>Resultado (7 dias)</th><th></th></tr></thead>
+      <tbody>${linhas}</tbody>
+    </table></div></div>`;
+  el.querySelectorAll("tr.ue-op").forEach(tr => tr.addEventListener("click", e => {
+    if (e.target.closest("button")) return;
+    UE_ABERTO = UE_ABERTO === tr.dataset.login ? null : tr.dataset.login;
+    renderUsoEquipe();
+  }));
+  // Resumo do período (mesma página que a RH IMOB usa, com o código do relatório).
+  // window.open sem noopener leva a sessão desta aba junto (sessionStorage).
+  el.querySelectorAll("[data-res]").forEach(b => b.addEventListener("click", () => {
+    const fim = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+    const d = new Date(fim + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - 29);
+    window.open(`resumo-cliente.html?login=${encodeURIComponent(b.dataset.res)}&de=${d.toISOString().slice(0, 10)}&ate=${fim}`, "_blank");
+  }));
 }
 
 

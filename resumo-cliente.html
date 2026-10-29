@@ -187,11 +187,16 @@
   const USO_COR = ["", "#f5c451", "#22a55a"]; // ligada sem disparar · disparando
   const horas = min => { if (!min) return "—"; const h = Math.floor(min / 60), m = min % 60; return h ? `${h}h${m ? String(m).padStart(2, "0") : ""}` : `${m} min`; };
   const minDe = hhmm => { const [h, m] = String(hhmm).split(":").map(Number); return h * 60 + m; };
+  // Horário de funcionamento: a linha mostra só das 8h às 20h (blocos 32 a 79).
+  // Fora disso a ferramenta não dispara; vira só um aviso na coluna "Ligada".
+  const USO_INI = 32, USO_FIM = 80;
+  const noHorario = b => (b || []).filter(([i]) => i >= USO_INI && i < USO_FIM).length * 15;
+  const foraHorario = b => (b || []).filter(([i]) => i < USO_INI || i >= USO_FIM).length * 15;
   function barraUso(blocos, sem) {
     if (sem) return '<div class="ub sem"></div>';
     const est = new Array(96).fill(0);
     (blocos || []).forEach(([i, e]) => { if (i >= 0 && i < 96) est[i] = e; });
-    return `<div class="ub">${est.map(e => `<span${e ? ` style="background:${USO_COR[e]}"` : ""}></span>`).join("")}</div>`;
+    return `<div class="ub">${est.slice(USO_INI, USO_FIM).map(e => `<span${e ? ` style="background:${USO_COR[e]}"` : ""}></span>`).join("")}</div>`;
   }
   function secaoUso(u) {
     if (!u) return "";
@@ -200,7 +205,7 @@
       const dow = new Date(x.dia + "T12:00:00Z").getUTCDay();
       const fds = dow === 0 || dow === 6;
       const sem = !x.blocos.length && (!desde || x.dia < desde);   // antes do acompanhamento começar
-      const usou = x.blocos.length > 0;
+      const usou = noHorario(x.blocos) > 0;   // só conta como uso o que foi no horário (8h–20h)
       return Object.assign({}, x, { fds, sem, usou, nao: !sem && !usou && !fds && x.dia !== hoje });
     });
     const acomp = linhas.filter(x => !x.sem);
@@ -209,32 +214,33 @@
     const comInicio = acomp.filter(x => x.primeiro);
     const inicioMedio = comInicio.length ? Math.round(comInicio.reduce((s, x) => s + minDe(x.primeiro), 0) / comInicio.length) : null;
     const somar = k => acomp.reduce((s, x) => s + (x[k] || 0), 0);
+    const ligadaHorario = acomp.reduce((s, x) => s + noHorario(x.blocos), 0);
     const nomeDia = iso => new Date(iso + "T12:00:00Z").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "UTC" });
     return `
         <h2>Uso da ferramenta</h2>
         ${acomp.length ? `
         <div class="kpis">
           <div class="kpi"><div class="n">${usados.length}<span style="font-size:16px;color:var(--suave)"> de ${uteis.length}</span></div><div class="t">dias úteis com a extensão ligada</div>${uteis.length - usados.length ? `<div class="p" style="color:#b42318">${uteis.length - usados.length} dia(s) útil(eis) sem uso</div>` : ""}</div>
-          <div class="kpi"><div class="n">${horas(somar("min_ligada"))}</div><div class="t">extensão ligada</div></div>
+          <div class="kpi"><div class="n">${horas(ligadaHorario)}</div><div class="t">extensão ligada no horário (8h–20h)</div></div>
           <div class="kpi"><div class="n">${horas(somar("min_disparando"))}</div><div class="t">disparando mensagens</div></div>
           <div class="kpi"><div class="n">${inicioMedio == null ? "—" : String(Math.floor(inicioMedio / 60)).padStart(2, "0") + ":" + String(inicioMedio % 60).padStart(2, "0")}</div><div class="t">horário médio de início</div></div>
         </div>` : `<p class="nota" style="margin-top:0">O acompanhamento do uso ainda não tem registros neste período.</p>`}
-        <div class="uso-legenda">Linha do dia, de 0h a 24h:<i style="background:#e7e5ec"></i>desligada<i style="background:${USO_COR[1]}"></i>ligada sem disparar<i style="background:${USO_COR[2]}"></i>disparando mensagens</div>
+        <div class="uso-legenda">Linha do dia, no horário de funcionamento (8h às 20h):<i style="background:#e7e5ec"></i>desligada<i style="background:${USO_COR[1]}"></i>ligada sem disparar<i style="background:${USO_COR[2]}"></i>disparando mensagens</div>
         <div class="uso-tab"><table>
-          <thead><tr><th>Dia</th><th class="bar"><div class="eixo"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div></th><th>Início–fim</th><th>Ligada</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th></tr></thead>
+          <thead><tr><th>Dia</th><th class="bar"><div class="eixo">${[8, 10, 12, 14, 16, 18, 20].map(h => `<span>${h}h</span>`).join("")}</div></th><th>Início–fim</th><th>Ligada</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th></tr></thead>
           <tbody>${linhas.map(x => `
             <tr class="${x.nao ? "nao" : x.fds && !x.usou ? "fds" : ""}">
               <td>${esc(nomeDia(x.dia))}</td>
               <td class="bar">${barraUso(x.blocos, x.sem)}</td>
               <td class="st">${x.sem ? "sem registro" : x.usou ? `${esc(x.primeiro)}–${esc(x.ultimo)}` : x.nao ? "Não usada" : x.fds ? "fim de semana" : "—"}</td>
-              <td>${x.sem ? "—" : horas(x.min_ligada)}</td>
+              <td>${x.sem ? "—" : horas(noHorario(x.blocos))}${foraHorario(x.blocos) ? `<div style="font-size:10px;color:var(--suave)">+${horas(foraHorario(x.blocos))} fora do horário</div>` : ""}</td>
               <td>${x.sem ? "—" : horas(x.min_disparando)}</td>
               <td>${x.enviadas ? num(x.enviadas) : "—"}</td>
               <td>${x.respostas ? num(x.respostas) : "—"}</td>
             </tr>`).join("")}</tbody>
         </table></div>
         <p class="nota" style="margin-top:10px">
-          "Ligada" é o tempo em que a extensão esteve aberta e funcionando no computador do operador (medido em blocos de 15 minutos);
+          "Ligada" é o tempo em que a extensão esteve aberta e funcionando no computador do operador dentro do horário de funcionamento, das 8h às 20h (medido em blocos de 15 minutos; fora desse horário ela não envia mensagens);
           "disparando" é o tempo em que ela estava enviando as mensagens da fila, com o WhatsApp aberto. "Início–fim" é o primeiro e o último horário do dia.
           ${desde && linhas.some(x => x.sem) ? `O acompanhamento do uso começou em ${esc(u.historico_desde.slice(0, 10))}; os dias anteriores aparecem como "sem registro".` : ""}
         </p>`;
