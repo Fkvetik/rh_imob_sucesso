@@ -2804,11 +2804,16 @@ async function loadMaquinas() {
       coleta = `${problema ? "⚠️" : "✅"} ${quando}<br><small>${m.ultima_coleta_encontrados || 0} achados · ${m.ultima_coleta_entregues || 0} na fila${m.ultima_coleta_erro ? "<br>" + esc(m.ultima_coleta_erro) : ""}</small>`;
     }
     if (velha || (m.ultima_coleta_erro) || (on && m.whatsapp_aberto === false && m.disparo === "rodando")) atencao++;
-    return `<tr>
-      <td><b>${esc(m.nome || m.login)}</b><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
+    return `<tr data-maq="${esc(m.login)}">
+      <td class="usoAbrir" data-login="${esc(m.login)}" title="Ver o relatório de uso da extensão" style="cursor:pointer"><b>${esc(m.nome || m.login)}</b> <small style="color:#6C0070">📊 ${USO_ABERTO === m.login ? "fechar" : "uso"}</small><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
       <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}${controle}</td><td>${coleta}</td>
     </tr>`;
   }).join("") || '<tr><td colspan="6"><small>Nenhum operador ativo.</small></td></tr>';
+  tbody.querySelectorAll(".usoAbrir").forEach(td => td.addEventListener("click", () => {
+    USO_ABERTO = USO_ABERTO === td.dataset.login ? null : td.dataset.login;
+    loadMaquinas();
+  }));
+  if (USO_ABERTO) usoMostrar(tbody, lista.find(x => x.login === USO_ABERTO));
   tbody.querySelectorAll(".disparoRemotoBtn").forEach(b => b.addEventListener("click", async () => {
     const pausar = b.dataset.tipo === "PAUSAR_DISPARO";
     const m = lista.find(x => x.login === b.dataset.login) || {};
@@ -2825,6 +2830,72 @@ async function loadMaquinas() {
   const resumo = $("maquinasResumo");
   if (resumo) resumo.innerHTML = `<span class="selo ok">🟢 ${online} online</span> <span class="selo sem">${lista.length - online} sem sinal agora</span>`
     + (atencao ? ` <span class="selo logo">⚠️ ${atencao} pedem atenção</span>` : "");
+}
+
+// Relatório de uso (SQL SAUDE_2): clicar no operador em "Máquinas" abre, logo
+// abaixo da linha dele, os dias do período com a barra do dia (desligada /
+// ligada / disparando, em blocos de 15 min) e o que ele fez em cada dia.
+// O "atualiza a cada minuto" redesenha a tabela: o relatório volta do cache.
+var USO_ABERTO = null, USO_DIAS = 7, USO_CACHE = {};
+const USO_COR = ["#e5e7eb", "#fcd34d", "#22c55e"];
+function usoHoras(min) {
+  if (!min) return "—";
+  const h = Math.floor(min / 60), m = min % 60;
+  return h ? `${h}h${m ? String(m).padStart(2, "0") : ""}` : `${m} min`;
+}
+function usoBarra(blocos, semRegistro) {
+  if (semRegistro) return '<div style="height:14px;border-radius:4px;background:repeating-linear-gradient(45deg,#f3f4f6 0 6px,#fff 6px 12px);font-size:10px;color:#888;text-align:center;line-height:14px">sem registro</div>';
+  const est = new Array(96).fill(0);
+  (blocos || []).forEach(([i, e]) => { if (i >= 0 && i < 96) est[i] = e; });
+  return `<div style="display:flex;height:14px;border-radius:4px;overflow:hidden;min-width:220px">${est.map((e, i) =>
+    `<span style="flex:1;background:${USO_COR[e]};${i % 24 === 0 && i ? "box-shadow:inset 1px 0 #9ca3af;" : ""}" title="${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}"></span>`).join("")}</div>`;
+}
+async function usoMostrar(tbody, m) {
+  const linha = tbody.querySelector(`tr[data-maq="${CSS.escape(USO_ABERTO)}"]`);
+  if (!linha) return;
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td colspan="6" style="background:#faf7fc"><small>Carregando o relatório…</small></td>';
+  linha.after(tr);
+  const chave = USO_ABERTO + "|" + USO_DIAS;
+  let r = USO_CACHE[chave];
+  if (!r || Date.now() - r._em > 5 * 60 * 1000) {
+    try {
+      r = await rpc("rpc_admin_uso_operador", { p_admin_password: ADMIN_PASS, p_login: USO_ABERTO, p_dias: USO_DIAS });
+      if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+      r._em = Date.now(); USO_CACHE[chave] = r;
+    } catch (e) {
+      tr.firstElementChild.innerHTML = `<small>${/rpc_admin_uso_operador|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_2 no Supabase do Coletor." : esc(e.message)}</small>`;
+      return;
+    }
+  }
+  if (!tr.isConnected) return;
+  const L = r.linhas || [];
+  const desde = r.historico_desde ? r.historico_desde.slice(6, 10) + "-" + r.historico_desde.slice(3, 5) + "-" + r.historico_desde.slice(0, 2) : null;
+  const soma = k => L.reduce((s, x) => s + (x[k] || 0), 0);
+  const env = soma("enviadas"), resp = soma("respostas");
+  const diasLigada = L.filter(x => x.min_ligada > 0).length;
+  const pilula = (t, cor) => `<span style="display:inline-block;background:${cor || "#f1ecf4"};color:#3b0a40;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:0 4px 4px 0">${t}</span>`;
+  const nomeDia = d => new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+  tr.firstElementChild.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <b style="font-size:13px">📊 Uso da extensão — ${esc((m && m.nome) || USO_ABERTO)}</b>
+      <select class="usoDias" style="width:auto;padding:3px 6px;font-size:12px">${[7, 14, 30, 60, 90].map(n => `<option value="${n}" ${n === USO_DIAS ? "selected" : ""}>últimos ${n} dias</option>`).join("")}</select>
+    </div>
+    <div>${pilula(`🖥 ligada ${usoHoras(soma("min_ligada"))} em ${diasLigada} de ${L.length} dias`)}${pilula(`▶️ disparando ${usoHoras(soma("min_disparando"))}`, "#dcfce7")}${pilula(`✉️ ${env} enviadas`)}${pilula(`💬 ${resp} respostas${env ? ` (${Math.round(resp * 100 / env)}%)` : ""}`)}${pilula(`🏷 ${soma("qualificados")} qualificados`)}${pilula(`📄 ${soma("propostas")} propostas`)}${pilula(`📅 ${soma("agendados")} agendados`)}</div>
+    <small style="color:#666">Barra do dia, de 0h a 24h: <span style="color:#9ca3af">■</span> desligada · <span style="color:#d97706">■</span> ligada sem disparar · <span style="color:#16a34a">■</span> disparando (WhatsApp aberto). ${desde ? `Registro de ligada/desligada desde ${esc(r.historico_desde)}; antes disso só as ações.` : "Registro de ligada/desligada começa agora; os dias anteriores mostram só as ações."}</small>
+    <table style="margin-top:6px">
+      <thead><tr><th>Dia</th><th style="width:40%">Ligada / disparando no dia</th><th>Ligada</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th><th>Qualificou</th><th>Propostas</th><th>Agendou</th></tr></thead>
+      <tbody>${L.map(x => {
+        const sem = !x.blocos.length && (!desde || x.dia < desde);
+        return `<tr>
+        <td style="white-space:nowrap">${esc(nomeDia(x.dia))}</td>
+        <td>${usoBarra(x.blocos, sem)}</td>
+        <td style="white-space:nowrap">${sem ? "—" : usoHoras(x.min_ligada)}${x.primeiro ? `<br><small>${esc(x.primeiro)}–${esc(x.ultimo)}</small>` : ""}</td>
+        <td>${sem ? "—" : usoHoras(x.min_disparando)}</td>
+        <td>${x.enviadas || "—"}</td><td>${x.respostas || "—"}</td><td>${x.qualificados || "—"}</td><td>${x.propostas || "—"}</td><td>${x.agendados || "—"}</td>
+      </tr>`; }).join("")}</tbody>
+    </table>`;
+  tr.querySelector(".usoDias").addEventListener("change", e => { USO_DIAS = parseInt(e.target.value, 10) || 7; loadMaquinas(); });
 }
 
 // Resposta visual a todo clique em botão (pulso rápido) — o "carregando" é o
