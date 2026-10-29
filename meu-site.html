@@ -117,6 +117,7 @@
           : '') +
       '</div>';
   }
+  function ehCapital(){ return S.cidade_slug === 'sao-paulo'; }
   function urlSite(){ return 'https://www.rhimob.com.br/corretor/' + S.cidade_slug + '/' + S.nome_slug; }
   function marcaSujo(){ sujo = true; $('btnSalvar').textContent = '💾 Salvar alterações •'; }
 
@@ -179,9 +180,11 @@
         '<label for="fProf">Você é</label><select id="fProf" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:#fff">' +
           PROFS.map(function(p){ return '<option value="' + p[0] + '"' + (p[0] === (S.profissao || 'CORRETOR') ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select>' +
         '<label for="fCreci" id="lblReg">' + regDe(S.profissao) + ' (opcional)</label><input type="text" id="fCreci" maxlength="30" placeholder="Número do registro" value="' + esc(S.creci) + '">' +
-        '<label>Região em que atua</label><div class="linha" id="fZonas">' +
+        '<label>' + (ehCapital() ? 'Região em que atua' : 'Zonas de São Paulo (capital) em que atua') + '</label><div class="linha" id="fZonas">' +
           ZONAS.map(function(z){ var on = (S.zonas || []).indexOf(z[0]) >= 0;
             return '<button type="button" class="btn btn-mini ' + (on ? 'btn-prim' : 'btn-ghost') + '" data-zona="' + z[0] + '">' + (on ? '✓ ' : '') + z[1] + '</button>'; }).join('') + '</div>' +
+        '<label for="fCidades">Outras cidades que atende</label><input type="text" id="fCidades" maxlength="400" placeholder="Ex.: Caraguatatuba, Ubatuba, São Sebastião" value="' + esc((S.cidades || []).join(', ')) + '">' +
+        '<small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">A cidade principal é ' + esc(S.cidade) + ' (fica no endereço do site). Aqui vão as outras, separadas por vírgula.</small>' +
         '<label for="fBairros">Bairros em que atua</label><input type="text" id="fBairros" maxlength="600" placeholder="Ex.: Campolim, Jardim Europa, Vila Hortência" value="' + esc((S.bairros || []).join(', ')) + '">' +
         '<small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Separe por vírgula. A gente arruma as maiúsculas ao salvar.</small>' +
       '</div>' +
@@ -249,6 +252,7 @@
       if ($('fVagas')) Object.assign(S.vaga, { vagas: $('fVagas').value, horario: $('fHorario').value, beneficios: $('fBenef').value,
         comissao: $('fComissao').value, perfil: $('fPerfil').value, descricao: $('fVagaDesc').value });
     }
+    S.cidades = $('fCidades').value.split(/[,;\n]/).map(function(c){ return c.trim(); }).filter(Boolean);
     S.bairros = $('fBairros').value.split(/[,;\n]/).map(function(b){ return b.trim(); }).filter(Boolean);
     S.instagram = $('fIg').value.trim(); S.facebook = $('fFb').value.trim(); S.linkedin = $('fLi').value.trim(); S.youtube = $('fYt').value.trim();
     document.querySelectorAll('.album').forEach(function(el){
@@ -331,7 +335,7 @@
   function salvar(){
     lerCampos();
     var dados = { nome:S.nome, creci:S.creci, bio:S.bio, foto_url:S.foto_url || '', capa_url:S.capa_url || '',
-      profissao:S.profissao || 'CORRETOR', zonas:S.zonas || [], bairros:S.bairros || [], vaga:S.vaga || null,
+      profissao:S.profissao || 'CORRETOR', zonas:S.zonas || [], bairros:S.bairros || [], cidades:S.cidades || [], vaga:S.vaga || null,
       instagram:S.instagram, facebook:S.facebook, linkedin:S.linkedin, youtube:S.youtube,
       albuns:(S.albuns || []).map(function(a){ return { titulo:a.titulo || '', fotos:a.fotos || [], legendas:a.legendas || [],
         finalidade:a.finalidade || '', tipo:a.tipo || '', preco:a.preco || '', bairro:a.bairro || '',
@@ -343,6 +347,7 @@
       sujo = false; $('btnSalvar').textContent = '💾 Salvar alterações';
       // os bairros voltam com a escrita arrumada pelo banco
       if (Array.isArray(d.bairros)) { S.bairros = d.bairros; if ($('fBairros')) $('fBairros').value = d.bairros.join(', '); }
+      if (Array.isArray(d.cidades)) { S.cidades = d.cidades; if ($('fCidades')) $('fCidades').value = d.cidades.join(', '); }
       if (semFoto) { S.albuns = S.albuns.filter(function(a){ return a.fotos && a.fotos.length; }); render(); }
       toast(semFoto ? '✅ Salvo. Álbuns sem foto não foram guardados.' : '✅ Salvo');
     }).catch(function(e){ $('btnSalvar').textContent = '💾 Salvar alterações •'; toast('⚠️ ' + e.message); throw e; })

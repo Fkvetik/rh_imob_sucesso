@@ -6,6 +6,8 @@
 import { COLETOR } from './_ext-comum.js';
 
 const BASE = 'https://www.rhimob.com.br';
+// WhatsApp da RH IMOB (Fernando), o mesmo do site: quem quer criar o próprio site fala aqui.
+const RH_WA = '5511953973268';
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -49,12 +51,22 @@ function render(s, prev, url) {
   const capa = urlOk(s.capa_url);
   const foto = urlOk(s.foto_url);
   const prof = PROF[s.profissao] || PROF.CORRETOR;
-  const zonas = (Array.isArray(s.zonas) ? s.zonas : []).map(z => ZONA[z]).filter(Boolean);
+  // Zonas são da capital: fora de São Paulo, dizemos de onde são.
+  const capital = s.cidade_slug === 'sao-paulo';
+  const zonas = (Array.isArray(s.zonas) ? s.zonas : []).map(z => ZONA[z] && (capital ? ZONA[z] : ZONA[z] + ' (SP)')).filter(Boolean);
   const bairros = Array.isArray(s.bairros) ? s.bairros.filter(Boolean) : [];
+  // Outras cidades que atende (SQL SITES_6), além da cidade do link.
+  const cidades = Array.isArray(s.cidades) ? s.cidades.filter(c => c && c !== s.cidade) : [];
   const atuaEm = [zonas.join(' · '), bairros.join(', ')].filter(Boolean).join(' — ');
-  const titulo = `${s.nome} — ${prof.t} em ${s.cidade}`;
-  const desc = (s.bio ? String(s.bio).replace(/\s+/g, ' ').slice(0, 155)
-    : `${prof.t} em ${s.cidade}${atuaEm ? ' (' + atuaEm + ')' : ''}. Fale com ${primeiro} pelo WhatsApp.`);
+  const listaCidades = (l) => l.length > 1 ? l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1] : (l[0] || '');
+  const todasCidades = [s.cidade, ...cidades];
+  // Título: até duas cidades, para caber no resultado do Google.
+  const titulo = `${s.nome} — ${prof.t} em ${todasCidades.length > 2 ? todasCidades.slice(0, 2).join(', ') + ' e região' : listaCidades(todasCidades)}`;
+  // Descrição: sempre com as regiões (é o que a pessoa procura no Google), depois o "Sobre".
+  const desc = [
+    `${prof.t} em ${listaCidades(todasCidades)}${atuaEm ? ' — ' + atuaEm : ''}${s.creci ? `. ${prof.reg} ${s.creci}` : ''}.`,
+    s.bio ? String(s.bio).replace(/\s+/g, ' ') : `Fale com ${primeiro} pelo WhatsApp.`
+  ].join(' ').slice(0, 160);
   const ogImg = capa || foto || (albuns[0] && urlOk(albuns[0].fotos[0])) || '';
   // Vaga para corretores (imobiliária / gerente de vendas, SQL SITES_4).
   const vaga = (s.vaga && s.vaga.aberta && (s.profissao === 'IMOBILIARIA' || s.profissao === 'GERENTE')) ? s.vaga : null;
@@ -80,6 +92,27 @@ function render(s, prev, url) {
     ['li', urlOk(s.linkedin), 'LinkedIn'], ['yt', urlOk(s.youtube), 'YouTube']
   ].filter(r => r[1]);
   const iniciais = String(s.nome || '?').split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase();
+  // "Onde atendo" em texto corrido: o Google lê as regiões na própria página.
+  const ondeHtml = (cidades.length || zonas.length || bairros.length) ? `
+  <section><h2>Onde atendo</h2>
+    <div class="bio">${esc(primeiro)} atende em <b>${esc(listaCidades(todasCidades))}</b>${zonas.length ? `, ${zonas.length > 1 ? 'nas regiões' : 'na'} ${esc(listaCidades(zonas))}` : ''}${bairros.length ? `, com atuação nos bairros ${esc(listaCidades(bairros))}` : ''}.</div>
+  </section>` : '';
+  // Dados estruturados (schema.org) para o Google entender quem é, onde atende e o registro.
+  const ld = prev ? null : {
+    '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: s.nome, url, description: desc,
+    ...(tel ? { telephone: '+' + tel } : {}),
+    ...(foto || ogImg ? { image: foto || ogImg } : {}),
+    address: { '@type': 'PostalAddress', addressLocality: s.cidade, addressCountry: 'BR' },
+    areaServed: [
+      ...todasCidades.map(c => ({ '@type': 'City', name: c })),
+      ...zonas.map(z => ({ '@type': 'Place', name: capital ? `${z}, São Paulo` : z.replace(' (SP)', ', São Paulo') })),
+      ...bairros.map(b => ({ '@type': 'Place', name: `${b}, ${s.cidade}` }))
+    ],
+    ...(s.creci ? { identifier: { '@type': 'PropertyValue', propertyID: prof.reg, value: String(s.creci) } } : {}),
+    ...(redes.length ? { sameAs: redes.map(r => r[1]) } : {})
+  };
+  const ldHtml = ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>` : '';
+  const waParceria = `https://wa.me/${RH_WA}?text=${encodeURIComponent(`Olá, Fernando! Vi o site de ${s.nome} na RH IMOB e quero criar o meu site gratuito e ser parceiro.`)}`;
   // Ficha de cada imóvel (SQL SITES_5). Álbuns antigos não têm ficha: só título e fotos.
   const fichas = albuns.map(a => {
     const specs = [
@@ -114,6 +147,7 @@ ${prev ? '<meta name="robots" content="noindex, nofollow">' : `<link rel="canoni
 ${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
 <meta name="theme-color" content="#2b124d">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+${ldHtml}
 <style>
   :root{--roxo:#2b124d;--roxo2:#5b21b6;--lilas:#f4eefb;--laranja:#f97316;--txt:#1f1530;--muted:#6b5e7e;--line:#e9e1f3;--bg:#fbf9fd}
   *{box-sizing:border-box}
@@ -182,6 +216,10 @@ ${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
   .redes a:hover{background:var(--roxo2);color:#fff}
   .redes svg{width:19px;height:19px}
   footer p{margin:0;font-size:12px;color:var(--muted)}
+  .parceria{max-width:520px;margin:0 auto 16px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:6px}
+  .parceria strong{color:var(--roxo);font-size:14px}
+  .parceria span{font-size:13px;color:var(--muted)}
+  .parceria .btn{padding:9px 14px;font-size:14px;margin-top:4px}
   footer p a{color:var(--roxo2);font-weight:700;text-decoration:none}
   .fixo{position:fixed;right:16px;bottom:16px;z-index:5;box-shadow:0 12px 28px -8px rgba(22,163,74,.6);border-radius:999px}
   @media(min-width:760px){.fixo{display:none}}
@@ -240,6 +278,7 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
 
 <main>
   ${s.bio ? `<section><h2>Sobre</h2><div class="bio">${esc(s.bio)}</div></section>` : ''}
+  ${ondeHtml}
   ${vagaHtml}
   <section>
     <h2>Imóveis</h2>
@@ -259,6 +298,11 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
 
 <footer>
   ${redes.length ? `<div class="redes">${redes.map(r => `<a href="${esc(r[1])}" target="_blank" rel="noopener" aria-label="${r[2]}">${ICON[r[0]]}</a>`).join('')}</div>` : ''}
+  <div class="parceria">
+    <strong>É corretor? Tenha o seu site grátis</strong>
+    <span>Seja parceiro da RH IMOB: estratégias digitais e ferramentas para o corretor vender mais.</span>
+    <a class="btn btn-sec" href="${esc(waParceria)}" target="_blank" rel="noopener">${ICON.wa} Quero meu site grátis</a>
+  </div>
   <p>Site em parceria com a <a href="${BASE}/" target="_blank" rel="noopener">RH IMOB</a> · tecnologia para conectar profissionais do mercado imobiliário</p>
 </footer>
 
