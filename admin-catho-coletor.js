@@ -2320,7 +2320,7 @@ $("btnRanking")?.addEventListener("click", loadRanking);
 
 // ===== Base qualificada (zona e tipo marcados na bolha — SQL QUALI_1) =====
 const BQ_ZONA = { NORTE: "Norte", SUL: "Sul", LESTE: "Leste", OESTE: "Oeste", CENTRO: "Centro" };
-const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", GERENTE: "Gerente de vendas", ADVOGADO: "Advogado", ARQUITETO: "Arquiteto", ENGENHEIRO: "Engenheiro", OUTRO: "Outro" };
+const BQ_TIPO = { CORRETOR: "Corretor", IMOBILIARIA: "Imobiliária", GERENTE: "Gerente de vendas", ADVOGADO: "Advogado", ARQUITETO: "Arquiteto", ENGENHEIRO: "Engenheiro", PARCERIA: "Parceria", OUTRO: "Outro" };
 let BQ_LINHAS = [];
 const BQ_POR_PAGINA = 100;
 let BQ_FILTROS = null, BQ_TOTAL = 0, BQ_PAGINA = 0;
