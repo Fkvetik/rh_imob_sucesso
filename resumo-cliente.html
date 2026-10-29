@@ -38,6 +38,11 @@
   .sem .q{font-weight:700;color:var(--texto);margin-bottom:3px}
   .rot{display:flex;gap:6px}.rot span{flex:1;text-align:center;font-size:10px;color:var(--suave);padding-top:4px}
   .nota{font-size:12px;color:var(--suave);margin-top:22px;line-height:1.5}
+  .codigo{font-size:11px;color:var(--suave);margin-top:10px;border-top:1px solid var(--borda);padding-top:10px}
+  .emitidos{max-width:900px;margin:0 auto 32px;padding:0 16px;font-size:12px;color:var(--suave)}
+  .emitidos table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
+  .emitidos td,.emitidos th{padding:6px 10px;border-bottom:1px solid var(--borda);text-align:left}
+  .emitidos th{font-size:10px;text-transform:uppercase}
   .msg{max-width:900px;margin:40px auto;padding:0 16px;text-align:center;color:var(--suave)}
   .uso-legenda{font-size:11px;color:var(--suave);margin:10px 0 6px}
   .uso-legenda i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 3px 0 8px}
@@ -54,7 +59,7 @@
   .ub.sem{background:repeating-linear-gradient(45deg,#f1eff5 0 5px,#fff 5px 10px)}
   .eixo{display:flex;justify-content:space-between;font-size:9px;color:var(--suave);font-weight:400;text-transform:none}
   @media (max-width:600px){.etapa{grid-template-columns:110px 1fr 50px}.topo,.corpo{padding:18px}}
-  @media print{body{background:#fff}.barra{display:none}.folha{box-shadow:none;margin:0;max-width:none;border-radius:0}
+  @media print{body{background:#fff}.barra,.emitidos{display:none}.folha{box-shadow:none;margin:0;max-width:none;border-radius:0}
     .topo{-webkit-print-color-adjust:exact;print-color-adjust:exact}.etapa .b,.sem .b,.ub,.ub span,.uso-legenda i,.uso-tab tr.nao td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
@@ -66,17 +71,24 @@
   <button id="btnImprimir" class="sec">🖨 Imprimir / salvar PDF</button>
 </div>
 <div id="saida"><div class="msg">Carregando...</div></div>
+<div class="emitidos" id="emitidos"></div>
 
 <script>
-// Resumo de um cliente (operador) num período — aberto pelo painel admin
-// (botão 📊 Resumo). Usa a mesma sessão de admin do painel; números vêm do
-// SQL RESUMO_1 (rpc_admin_resumo_cliente).
+// Resumo de um cliente (operador) num período. Duas portas:
+//  • admin: botão 📊 Resumo no painel (mesma sessão de admin, ?login=&empresa=);
+//  • operador: Kanban da extensão → Visão geral → 📄 Meu resumo (?k=<link de
+//    10 min>, SQL RELAT_1) — só os dados dele, sem senha de admin.
+// Ao imprimir, o relatório ganha um código (rpc_relatorio_emitir) que vai no
+// nome do PDF e no rodapé. Números: SQL RESUMO_1 / SAUDE_3.
 (function(){
   const SUPABASE_URL = "https://lrejfhsomfxyaoshmpzz.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y";
   const $ = id => document.getElementById(id);
   const q = new URLSearchParams(location.search);
   const login = q.get("login") || "";
+  const chave = (q.get("k") || "").replace(/[^a-f0-9]/g, "");
+  let empresa = q.get("empresa") || "";
+  let atual = null;   // o que está na tela (para o nome do PDF e o código)
   const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
   const menos30 = (() => { const d = new Date(hoje + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() - 29); return d.toISOString().slice(0, 10); })();
   $("de").value = q.get("de") || menos30;
@@ -93,16 +105,70 @@
     return s;
   }
 
+  const rpc = (nome, corpo) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${nome}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+    body: JSON.stringify(corpo)
+  });
+  // Nome do arquivo: o Chrome usa o título da página. Sem "/" (vira "_") e sem caracteres proibidos no Windows.
+  const dataArq = iso => dataBR(iso).replace(/\//g, "-");
+  const limpaArq = t => String(t || "").replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim();
+  function tituloPdf(codigo) {
+    if (!atual) return;
+    document.title = ["RH IMOB", "Relatório", empresa, atual.nome || atual.login, `${dataArq(atual.de)} a ${dataArq(atual.ate)}`, codigo]
+      .filter(Boolean).map(limpaArq).join(" - ");
+  }
+
+  async function carregarOperador() {
+    $("saida").innerHTML = '<div class="msg">Carregando...</div>';
+    try {
+      const r = await rpc("rpc_operador_resumo", { p_chave: chave, p_de: $("de").value, p_ate: $("ate").value });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error((d && (d.error || d.message)) || ("HTTP " + r.status));
+      empresa = d.empresa || empresa;
+      render(d, d.uso && d.uso.ok ? d.uso : null);
+    } catch (e) {
+      $("saida").innerHTML = `<div class="msg">❌ ${esc(e.message)}</div>`;
+    }
+  }
+
+  async function listarEmitidos() {
+    if (chave || !login) return;
+    try {
+      const d = await (await rpc("rpc_admin_relatorios", { p_admin_password: senha(), p_login: login })).json();
+      const l = d && d.ok ? d.lista : [];
+      $("emitidos").innerHTML = !l.length ? "" : `<h2>Relatórios já emitidos deste operador</h2>
+        <table><tr><th>Código</th><th>Período</th><th>Gerado em</th><th>Por</th></tr>
+        ${l.map(x => `<tr><td><b>${esc(x.codigo)}</b></td><td>${dataBR(x.de)} a ${dataBR(x.ate)}</td><td>${esc(x.gerado_em)}</td><td>${x.origem === "OPERADOR" ? "o próprio operador" : esc(x.gerado_por)}</td></tr>`).join("")}</table>`;
+    } catch (_) {}
+  }
+
+  async function imprimir() {
+    const b = $("btnImprimir");
+    if (atual) {
+      b.disabled = true;
+      try {
+        const corpo = chave ? { p_admin_password: null, p_chave: chave, p_login: null, p_de: atual.de, p_ate: atual.ate }
+                            : { p_admin_password: senha(), p_chave: null, p_login: login, p_de: atual.de, p_ate: atual.ate, p_empresa: empresa || null };
+        const d = await (await rpc("rpc_relatorio_emitir", corpo)).json();
+        if (d && d.ok) {
+          tituloPdf(d.codigo);
+          const c = $("codigoRel");
+          if (c) c.textContent = `Relatório nº ${d.codigo} · gerado em ${d.gerado_em} · RH IMOB`;
+          listarEmitidos();
+        }
+      } catch (_) {}   // sem o SQL RELAT_1, imprime sem código
+      b.disabled = false;
+    }
+    window.print();
+  }
+
   async function carregar() {
+    if (chave) return carregarOperador();
     if (!login) { $("saida").innerHTML = '<div class="msg">Abra este resumo pelo painel admin (botão 📊 Resumo do operador).</div>'; return; }
     const pass = senha();
     if (!pass) { $("saida").innerHTML = '<div class="msg">Sessão de admin não encontrada nesta aba. Abra o resumo pelo botão 📊 Resumo no painel admin.</div>'; return; }
     $("saida").innerHTML = '<div class="msg">Carregando...</div>';
-    const rpc = (nome, corpo) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${nome}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
-      body: JSON.stringify(corpo)
-    });
     const corpo = { p_admin_password: pass, p_login: login, p_de: $("de").value, p_ate: $("ate").value };
     try {
       // uso da ferramenta (SQL SAUDE_3): se faltar, o resumo sai sem essa seção
@@ -111,6 +177,7 @@
       const d = await r.json();
       if (!r.ok || !d.ok) throw new Error((d && (d.error || d.message)) || ("HTTP " + r.status));
       render(d, await usoP);
+      listarEmitidos();
     } catch (e) {
       $("saida").innerHTML = `<div class="msg">❌ ${esc(e.message)}</div>`;
     }
@@ -183,7 +250,8 @@
     const maxEtapa = Math.max(1, ...etapas.map(e => e[1] || 0));
     const semanas = d.por_semana || [];
     const maxSem = Math.max(1, ...semanas.map(s => s.abordados || 0));
-    document.title = `Resumo — ${d.nome || d.login} — ${dataBR(d.de)} a ${dataBR(d.ate)}`;
+    atual = { login: d.login, nome: d.nome, de: String(d.de).slice(0, 10), ate: String(d.ate).slice(0, 10) };
+    tituloPdf(null);
 
     $("saida").innerHTML = `
     <div class="folha">
@@ -191,7 +259,7 @@
         <img src="assets/rhimob-logo.jpg" alt="RH IMOB">
         <div>
           <h1>Resumo do período — ${esc(d.nome || d.login)}</h1>
-          <p>${dataBR(d.de)} a ${dataBR(d.ate)} · Extensão RH IMOB Aceleradora</p>
+          <p>${empresa ? esc(empresa) + " · " : ""}${dataBR(d.de)} a ${dataBR(d.ate)} · Extensão RH IMOB Aceleradora</p>
         </div>
       </div>
       <div class="corpo">
@@ -227,12 +295,13 @@
           ${d.acesso_fim ? `Acesso contratado: ${dataBR(d.acesso_inicio)} a ${dataBR(d.acesso_fim)}.<br>` : ""}
           Contagens por data do evento no período (horário de Brasília). "Responderam", "proposta" e "agendaram" contam as pessoas que chegaram a essa etapa dentro do período.
         </p>
+        <p class="codigo" id="codigoRel"></p>
       </div>
     </div>`;
   }
 
   $("btnAtualizar").addEventListener("click", carregar);
-  $("btnImprimir").addEventListener("click", () => window.print());
+  $("btnImprimir").addEventListener("click", imprimir);
   carregar();
 })();
 </script>

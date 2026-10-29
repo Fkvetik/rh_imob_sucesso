@@ -1030,7 +1030,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
-        <button data-login="${esc(u.login)}" class="ghost resumoBtn" style="padding:4px 8px;font-size:11px" title="Resumo do período para mandar ao cliente (imprime ou salva em PDF)">📊 Resumo</button>
+        <button data-login="${esc(u.login)}" data-conta="${esc(u.conta_id_plataforma||'')}" class="ghost resumoBtn" style="padding:4px 8px;font-size:11px" title="Resumo do período para mandar ao cliente (imprime ou salva em PDF)">📊 Resumo</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
     </tr>
@@ -1047,7 +1047,8 @@ function renderUsuarios(list) {
       const v = VALIDADE_OPER[btn.dataset.login] || {};
       const hoje = hojeBR();
       const de = v.acesso_inicio && v.acesso_inicio <= hoje ? v.acesso_inicio : somarPeriodo(hoje, "-29:d");
-      window.open(`resumo-cliente.html?login=${encodeURIComponent(btn.dataset.login)}&de=${de}&ate=${hoje}`, "_blank");
+      const emp = btn.dataset.conta ? nomeDaConta(btn.dataset.conta) : "";
+      window.open(`resumo-cliente.html?login=${encodeURIComponent(btn.dataset.login)}&de=${de}&ate=${hoje}${emp ? "&empresa=" + encodeURIComponent(emp) : ""}`, "_blank");
     });
   });
   tbody.querySelectorAll(".validadeOperBtn").forEach(btn => {
