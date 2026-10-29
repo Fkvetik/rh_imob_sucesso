@@ -39,9 +39,23 @@
   .rot{display:flex;gap:6px}.rot span{flex:1;text-align:center;font-size:10px;color:var(--suave);padding-top:4px}
   .nota{font-size:12px;color:var(--suave);margin-top:22px;line-height:1.5}
   .msg{max-width:900px;margin:40px auto;padding:0 16px;text-align:center;color:var(--suave)}
+  .uso-legenda{font-size:11px;color:var(--suave);margin:10px 0 6px}
+  .uso-legenda i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 3px 0 8px}
+  .uso-tab{overflow-x:auto}
+  .uso-tab table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  .uso-tab th{text-align:left;font-size:10px;color:var(--suave);font-weight:600;text-transform:uppercase;padding:4px 6px;border-bottom:1px solid var(--borda);white-space:nowrap}
+  .uso-tab td{padding:5px 6px;border-bottom:1px solid var(--borda);white-space:nowrap}
+  .uso-tab td.bar{width:42%;min-width:200px;white-space:normal}
+  .uso-tab tr{break-inside:avoid}
+  .uso-tab tr.nao td{background:#fff3f2}.uso-tab tr.nao .st{color:#b42318;font-weight:700}
+  .uso-tab tr.fds td{color:#a39cae}
+  .ub{display:flex;height:12px;border-radius:3px;overflow:hidden;background:#e7e5ec}
+  .ub span{flex:1}
+  .ub.sem{background:repeating-linear-gradient(45deg,#f1eff5 0 5px,#fff 5px 10px)}
+  .eixo{display:flex;justify-content:space-between;font-size:9px;color:var(--suave);font-weight:400;text-transform:none}
   @media (max-width:600px){.etapa{grid-template-columns:110px 1fr 50px}.topo,.corpo{padding:18px}}
   @media print{body{background:#fff}.barra{display:none}.folha{box-shadow:none;margin:0;max-width:none;border-radius:0}
-    .topo{-webkit-print-color-adjust:exact;print-color-adjust:exact}.etapa .b,.sem .b{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    .topo{-webkit-print-color-adjust:exact;print-color-adjust:exact}.etapa .b,.sem .b,.ub,.ub span,.uso-legenda i,.uso-tab tr.nao td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -84,21 +98,82 @@
     const pass = senha();
     if (!pass) { $("saida").innerHTML = '<div class="msg">Sessão de admin não encontrada nesta aba. Abra o resumo pelo botão 📊 Resumo no painel admin.</div>'; return; }
     $("saida").innerHTML = '<div class="msg">Carregando...</div>';
+    const rpc = (nome, corpo) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${nome}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+      body: JSON.stringify(corpo)
+    });
+    const corpo = { p_admin_password: pass, p_login: login, p_de: $("de").value, p_ate: $("ate").value };
     try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rpc_admin_resumo_cliente`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
-        body: JSON.stringify({ p_admin_password: pass, p_login: login, p_de: $("de").value, p_ate: $("ate").value })
-      });
+      // uso da ferramenta (SQL SAUDE_3): se faltar, o resumo sai sem essa seção
+      const usoP = rpc("rpc_admin_uso_periodo", corpo).then(x => x.json()).then(u => u && u.ok ? u : null).catch(() => null);
+      const r = await rpc("rpc_admin_resumo_cliente", corpo);
       const d = await r.json();
       if (!r.ok || !d.ok) throw new Error((d && (d.error || d.message)) || ("HTTP " + r.status));
-      render(d);
+      render(d, await usoP);
     } catch (e) {
       $("saida").innerHTML = `<div class="msg">❌ ${esc(e.message)}</div>`;
     }
   }
 
-  function render(d) {
+  // ---------- Uso da ferramenta: um dia por linha, barra de 0h a 24h ----------
+  const USO_COR = ["", "#f5c451", "#22a55a"]; // ligada sem disparar · disparando
+  const horas = min => { if (!min) return "—"; const h = Math.floor(min / 60), m = min % 60; return h ? `${h}h${m ? String(m).padStart(2, "0") : ""}` : `${m} min`; };
+  const minDe = hhmm => { const [h, m] = String(hhmm).split(":").map(Number); return h * 60 + m; };
+  function barraUso(blocos, sem) {
+    if (sem) return '<div class="ub sem"></div>';
+    const est = new Array(96).fill(0);
+    (blocos || []).forEach(([i, e]) => { if (i >= 0 && i < 96) est[i] = e; });
+    return `<div class="ub">${est.map(e => `<span${e ? ` style="background:${USO_COR[e]}"` : ""}></span>`).join("")}</div>`;
+  }
+  function secaoUso(u) {
+    if (!u) return "";
+    const desde = u.historico_desde ? u.historico_desde.slice(6, 10) + "-" + u.historico_desde.slice(3, 5) + "-" + u.historico_desde.slice(0, 2) : null;
+    const linhas = (u.linhas || []).slice().reverse().map(x => {
+      const dow = new Date(x.dia + "T12:00:00Z").getUTCDay();
+      const fds = dow === 0 || dow === 6;
+      const sem = !x.blocos.length && (!desde || x.dia < desde);   // antes do acompanhamento começar
+      const usou = x.blocos.length > 0;
+      return Object.assign({}, x, { fds, sem, usou, nao: !sem && !usou && !fds && x.dia !== hoje });
+    });
+    const acomp = linhas.filter(x => !x.sem);
+    const uteis = acomp.filter(x => !x.fds && (x.usou || x.dia !== hoje)); // hoje ainda sem uso não conta como falta
+    const usados = uteis.filter(x => x.usou);
+    const comInicio = acomp.filter(x => x.primeiro);
+    const inicioMedio = comInicio.length ? Math.round(comInicio.reduce((s, x) => s + minDe(x.primeiro), 0) / comInicio.length) : null;
+    const somar = k => acomp.reduce((s, x) => s + (x[k] || 0), 0);
+    const nomeDia = iso => new Date(iso + "T12:00:00Z").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "UTC" });
+    return `
+        <h2>Uso da ferramenta</h2>
+        ${acomp.length ? `
+        <div class="kpis">
+          <div class="kpi"><div class="n">${usados.length}<span style="font-size:16px;color:var(--suave)"> de ${uteis.length}</span></div><div class="t">dias úteis com a extensão ligada</div>${uteis.length - usados.length ? `<div class="p" style="color:#b42318">${uteis.length - usados.length} dia(s) útil(eis) sem uso</div>` : ""}</div>
+          <div class="kpi"><div class="n">${horas(somar("min_ligada"))}</div><div class="t">extensão ligada</div></div>
+          <div class="kpi"><div class="n">${horas(somar("min_disparando"))}</div><div class="t">disparando mensagens</div></div>
+          <div class="kpi"><div class="n">${inicioMedio == null ? "—" : String(Math.floor(inicioMedio / 60)).padStart(2, "0") + ":" + String(inicioMedio % 60).padStart(2, "0")}</div><div class="t">horário médio de início</div></div>
+        </div>` : `<p class="nota" style="margin-top:0">O acompanhamento do uso ainda não tem registros neste período.</p>`}
+        <div class="uso-legenda">Linha do dia, de 0h a 24h:<i style="background:#e7e5ec"></i>desligada<i style="background:${USO_COR[1]}"></i>ligada sem disparar<i style="background:${USO_COR[2]}"></i>disparando mensagens</div>
+        <div class="uso-tab"><table>
+          <thead><tr><th>Dia</th><th class="bar"><div class="eixo"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div></th><th>Início–fim</th><th>Ligada</th><th>Disparando</th><th>Enviadas</th><th>Respostas</th></tr></thead>
+          <tbody>${linhas.map(x => `
+            <tr class="${x.nao ? "nao" : x.fds && !x.usou ? "fds" : ""}">
+              <td>${esc(nomeDia(x.dia))}</td>
+              <td class="bar">${barraUso(x.blocos, x.sem)}</td>
+              <td class="st">${x.sem ? "sem registro" : x.usou ? `${esc(x.primeiro)}–${esc(x.ultimo)}` : x.nao ? "Não usada" : x.fds ? "fim de semana" : "—"}</td>
+              <td>${x.sem ? "—" : horas(x.min_ligada)}</td>
+              <td>${x.sem ? "—" : horas(x.min_disparando)}</td>
+              <td>${x.enviadas ? num(x.enviadas) : "—"}</td>
+              <td>${x.respostas ? num(x.respostas) : "—"}</td>
+            </tr>`).join("")}</tbody>
+        </table></div>
+        <p class="nota" style="margin-top:10px">
+          "Ligada" é o tempo em que a extensão esteve aberta e funcionando no computador do operador (medido em blocos de 15 minutos);
+          "disparando" é o tempo em que ela estava enviando as mensagens da fila, com o WhatsApp aberto. "Início–fim" é o primeiro e o último horário do dia.
+          ${desde && linhas.some(x => x.sem) ? `O acompanhamento do uso começou em ${esc(u.historico_desde.slice(0, 10))}; os dias anteriores aparecem como "sem registro".` : ""}
+        </p>`;
+  }
+
+  function render(d, uso) {
     const n = d.numeros || {};
     const recebidos = (n.recebidos_catho || 0) + (n.recebidos_banco || 0) + (n.recebidos_creci || 0) + (n.recebidos_outros || 0);
     const etapas = [
@@ -145,6 +220,8 @@
         <h2>Abordagens por semana</h2>
         <div class="semanas">${semanas.map(s => `<div class="sem"><span class="q">${num(s.abordados)}</span><div class="b" style="height:${Math.max(2, Math.round((s.abordados || 0) / maxSem * 100))}%"></div></div>`).join("")}</div>
         <div class="rot">${semanas.map(s => `<span>${dataBR(s.semana).slice(0, 5)}</span>`).join("")}</div>` : ""}
+
+        ${secaoUso(uso)}
 
         <p class="nota">
           ${d.acesso_fim ? `Acesso contratado: ${dataBR(d.acesso_inicio)} a ${dataBR(d.acesso_fim)}.<br>` : ""}
