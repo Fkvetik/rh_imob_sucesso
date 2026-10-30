@@ -449,11 +449,23 @@
           <div style="flex:1;min-width:80px"><label>m²</label><input id="rdArea" type="number" min="0" max="999999"></div>
         </div>
         <label style="margin-top:6px">Descrição curta</label><textarea id="rdDesc" maxlength="600" rows="3" placeholder="Lazer, localização, entrega, condições…"></textarea>
-        <label style="margin-top:6px">Fotos (a primeira é a capa)</label>
-        <div id="rdFotos" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <small id="rdDescConta" style="display:block;text-align:right;color:#888;font-size:11px">0 de 600 caracteres — faltam 600</small>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+          <div style="flex:0 0 auto">
+            <label>📷 Foto da capa</label>
+            <div style="font-size:11px;color:#888;margin-bottom:4px">A que aparece no card do site</div>
+            <div id="rdCapa"></div>
+            <button id="btnRedeCapa" class="ghost" style="margin-top:6px">Escolher capa</button>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <label>🖼️ Galeria</label>
+            <div style="font-size:11px;color:#888;margin-bottom:4px">Fotos que abrem ao clicar no imóvel. ★ transforma a foto em capa.</div>
+            <div id="rdFotos" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            <button id="btnRedeFotos" class="ghost" style="margin-top:6px">＋ Adicionar fotos à galeria</button>
+          </div>
+        </div>
         <input id="rdArquivos" type="file" accept="image/*" multiple style="display:none">
-        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
-          <button id="btnRedeFotos" class="ghost">📷 Adicionar fotos</button>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">
           <button id="btnRedeSalvar" class="secondary">💾 Salvar empreendimento</button>
           <button id="btnRedeCancelar" class="ghost">Cancelar</button>
           <small id="rdMsg"></small>
@@ -735,7 +747,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261030rede"></script>
+<script src="admin-catho-coletor.js?v=20261030capa"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

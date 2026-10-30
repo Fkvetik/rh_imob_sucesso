@@ -3078,17 +3078,27 @@ function rdZonasRender() {
     rdZonasRender();
   });
 }
+// A capa é a primeira foto do álbum (igual ao site do corretor); a galeria são as demais.
 function rdFotosRender() {
-  const F = $("rdFotos"), fotos = RD.ed.album.fotos;
-  F.innerHTML = fotos.map((u, k) => `<div style="position:relative;width:96px;height:72px">
+  const fotos = RD.ed.album.fotos, capa = fotos[0];
+  $("rdCapa").innerHTML = capa
+    ? `<div style="position:relative;width:200px;height:150px"><img src="${esc(capa)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
+        <button type="button" data-rd-tirar="0" title="Tirar a capa" style="position:absolute;right:4px;bottom:4px;padding:0 6px">✕</button></div>`
+    : '<div style="width:200px;height:150px;border:1px dashed #d8c7df;border-radius:8px;display:grid;place-items:center;color:#999;font-size:12px;background:#fff">Sem capa</div>';
+  $("btnRedeCapa").textContent = capa ? "Trocar capa" : "Escolher capa";
+  $("rdFotos").innerHTML = fotos.slice(1).map((u, j) => { const k = j + 1; return `<div style="position:relative;width:96px;height:72px">
       <img src="${esc(u)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
-      ${k === 0 ? '<span style="position:absolute;left:4px;top:4px;background:#2b124d;color:#fff;font-size:10px;border-radius:999px;padding:1px 6px">Capa</span>' : ""}
       <div style="position:absolute;right:2px;bottom:2px;display:flex;gap:2px">
-        ${k ? `<button type="button" data-rd-capa="${k}" title="Usar como capa" style="padding:0 5px">★</button>` : ""}
+        <button type="button" data-rd-capa="${k}" title="Usar como capa" style="padding:0 5px">★</button>
         <button type="button" data-rd-tirar="${k}" title="Tirar" style="padding:0 5px">✕</button>
-      </div></div>`).join("") || '<small style="color:#888">Nenhuma foto ainda.</small>';
-  F.querySelectorAll("[data-rd-tirar]").forEach(b => b.onclick = () => { fotos.splice(+b.dataset.rdTirar, 1); rdFotosRender(); });
-  F.querySelectorAll("[data-rd-capa]").forEach(b => b.onclick = () => { const f = fotos.splice(+b.dataset.rdCapa, 1)[0]; fotos.unshift(f); rdFotosRender(); });
+      </div></div>`; }).join("") || '<small style="color:#888">Nenhuma foto na galeria ainda.</small>';
+  $("rdForm").querySelectorAll("[data-rd-tirar]").forEach(b => b.onclick = () => { fotos.splice(+b.dataset.rdTirar, 1); rdFotosRender(); });
+  $("rdForm").querySelectorAll("[data-rd-capa]").forEach(b => b.onclick = () => { const f = fotos.splice(+b.dataset.rdCapa, 1)[0]; fotos.unshift(f); rdFotosRender(); });
+}
+function rdContaDesc() {
+  const n = $("rdDesc").value.length, falta = 600 - n;
+  $("rdDescConta").textContent = `${n} de 600 caracteres — ${falta ? "faltam " + falta : "limite atingido"}`;
+  $("rdDescConta").style.color = falta <= 50 ? "#b45309" : "#888";
 }
 function rdAbrir(it) {
   const a = (it && it.album) || {};
@@ -3100,7 +3110,7 @@ function rdAbrir(it) {
   $("rdDorm").value = a.dorm || ""; $("rdSuites").value = a.suites || ""; $("rdVagas").value = a.vagas || ""; $("rdArea").value = a.area || "";
   $("rdDesc").value = a.descricao || ""; $("rdMsg").textContent = "";
   $("rdForm").style.display = ""; $("btnRedeNovo").style.display = "none";
-  rdZonasRender(); rdFotosRender();
+  rdZonasRender(); rdFotosRender(); rdContaDesc();
   $("rdForm").scrollIntoView({ behavior: "smooth", block: "center" }); $("rdTitulo").focus();
 }
 function rdFechar() { RD.ed = null; $("rdForm").style.display = "none"; $("btnRedeNovo").style.display = ""; }
@@ -3120,9 +3130,15 @@ function rdReduzir(file) {
 $("btnRedeNovo")?.addEventListener("click", () => rdAbrir(null));
 $("btnRedeCancelar")?.addEventListener("click", rdFechar);
 $("rdCidade")?.addEventListener("input", () => RD.ed && rdZonasRender());
-$("btnRedeFotos")?.addEventListener("click", () => { $("rdArquivos").value = ""; $("rdArquivos").click(); });
+$("rdDesc")?.addEventListener("input", rdContaDesc);
+// Mesmo seletor de arquivos para os dois botões: a capa entra na frente (a antiga vai para a galeria).
+let rdParaCapa = false;
+const rdEscolher = (capa) => { rdParaCapa = capa; const inp = $("rdArquivos"); inp.multiple = !capa; inp.value = ""; inp.click(); };
+$("btnRedeCapa")?.addEventListener("click", () => rdEscolher(true));
+$("btnRedeFotos")?.addEventListener("click", () => rdEscolher(false));
 $("rdArquivos")?.addEventListener("change", async () => {
-  const fs = [...($("rdArquivos").files || [])].slice(0, 30 - RD.ed.album.fotos.length);
+  const capa = rdParaCapa;
+  const fs = [...($("rdArquivos").files || [])].slice(0, capa ? 1 : 30 - RD.ed.album.fotos.length);
   const b = $("btnRedeSalvar"); b.disabled = true; let erros = 0;
   for (let k = 0; k < fs.length; k++) {
     $("rdMsg").textContent = `Enviando foto ${k + 1} de ${fs.length}…`;
@@ -3130,7 +3146,8 @@ $("rdArquivos")?.addEventListener("change", async () => {
       const imagem = await rdReduzir(fs[k]);
       const d = await fetch("/api/site-foto", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin: ADMIN_PASS, imagem }) }).then(r => r.json());
       if (!d || !d.ok) throw new Error((d && d.error) || "Falha ao enviar");
-      RD.ed.album.fotos.push(d.url); rdFotosRender();
+      if (capa) RD.ed.album.fotos.unshift(d.url); else RD.ed.album.fotos.push(d.url);
+      rdFotosRender();
     } catch (e) { erros++; $("rdMsg").textContent = "⚠️ " + e.message; }
   }
   b.disabled = false;
