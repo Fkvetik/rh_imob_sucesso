@@ -2723,7 +2723,7 @@ async function loadSites() {
         <td style="white-space:nowrap">
           <button type="button" class="ghost" data-site-wa="${s.id}" style="font-size:12px;color:#128c4a" title="Escreve a mensagem no WhatsApp que já está aberto. Confira e aperte Enter.">💬 WhatsApp</button>
           <a href="${esc(s.status === "PUBLICADO" ? u.site : u.previa)}" target="_blank" rel="noopener" class="ghost" style="font-size:12px">👀 Ver</a>
-          <button type="button" class="ghost" data-site-copiar="${s.id}" style="font-size:12px">🔗 Link do painel</button>
+          <a href="${esc(u.painel)}" target="_blank" rel="noopener" class="ghost" style="font-size:12px" title="Abre o painel do corretor numa aba nova">🔗 Link do painel</a><button type="button" class="ghost" data-site-copiar="${s.id}" style="font-size:12px;padding-left:6px;padding-right:6px" title="Copiar o link do painel">📋</button>
           ${s.status === "DESATIVADO"
             ? `<button type="button" class="ghost" data-site-status="${s.id}" data-novo="RASCUNHO" style="font-size:12px">Reativar</button>`
             : `<button type="button" class="ghost" data-site-status="${s.id}" data-novo="DESATIVADO" style="font-size:12px;color:#b91c1c">Desativar</button>`}
@@ -2731,7 +2731,7 @@ async function loadSites() {
     }).join("") : '<tr><td colspan="7"><small>Nenhum site criado ainda.</small></td></tr>';
     tbody.querySelectorAll("[data-site-copiar]").forEach(b => b.addEventListener("click", () => {
       const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteCopiar);
-      if (s) navigator.clipboard.writeText(siteUrls(s).painel).then(() => { b.textContent = "✅ Copiado"; setTimeout(() => { b.textContent = "🔗 Link do painel"; }, 1500); });
+      if (s) navigator.clipboard.writeText(siteUrls(s).painel).then(() => { b.textContent = "✅"; setTimeout(() => { b.textContent = "📋"; }, 1500); });
     }));
     tbody.querySelectorAll("[data-site-wa]").forEach(b => b.addEventListener("click", async () => {
       const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteWa); if (!s) return;
