@@ -53,7 +53,7 @@ const CONTATOS_SITE = [
   ["email", "E-mail de contato", "Rodapés e política de privacidade"]
 ];
 function foneBonito(n) {
-  const d = String(n || "").replace(/D/g, "").replace(/^55/, "");
+  const d = String(n || "").replace(/\D/g, "").replace(/^55/, "");
   return d.length >= 10 ? "(" + d.slice(0, 2) + ") " + d.slice(2, d.length - 4) + "-" + d.slice(-4) : String(n || "");
 }
 async function loadContatosSite() {
@@ -2646,6 +2646,7 @@ async function loadSites() {
         <td>${limitesSiteHtml(s)}</td>
         <td><small>${esc(s.criado_por || "—")}<br>${s.criado_em ? new Date(s.criado_em).toLocaleDateString("pt-BR") : ""}</small></td>
         <td style="white-space:nowrap">
+          <button type="button" class="ghost" data-site-wa="${s.id}" style="font-size:12px;color:#128c4a" title="Escreve a mensagem no WhatsApp que já está aberto. Confira e aperte Enter.">💬 WhatsApp</button>
           <a href="${esc(s.status === "PUBLICADO" ? u.site : u.previa)}" target="_blank" rel="noopener" class="ghost" style="font-size:12px">👀 Ver</a>
           <button type="button" class="ghost" data-site-copiar="${s.id}" style="font-size:12px">🔗 Link do painel</button>
           ${s.status === "DESATIVADO"
@@ -2656,6 +2657,15 @@ async function loadSites() {
     tbody.querySelectorAll("[data-site-copiar]").forEach(b => b.addEventListener("click", () => {
       const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteCopiar);
       if (s) navigator.clipboard.writeText(siteUrls(s).painel).then(() => { b.textContent = "✅ Copiado"; setTimeout(() => { b.textContent = "🔗 Link do painel"; }, 1500); });
+    }));
+    tbody.querySelectorAll("[data-site-wa]").forEach(b => b.addEventListener("click", async () => {
+      const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteWa); if (!s) return;
+      b.disabled = true;
+      const r = await abrirWhatsAppExt(s.telefone, msgSiteWa(s));
+      b.disabled = false;
+      b.textContent = r.ok ? "✅ No WhatsApp" : "💬 WhatsApp";
+      if (r.ok) setTimeout(() => { b.textContent = "💬 WhatsApp"; }, 2500);
+      else if (r.aviso) alert(r.aviso);
     }));
     tbody.querySelectorAll("[data-site-lim]").forEach(b => b.addEventListener("click", async () => {
       const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteLim); if (!s) return;
@@ -2681,6 +2691,62 @@ async function loadSites() {
     if ($("stOperadores")) $("stOperadores").innerHTML = "";
   }
 }
+// Mensagem do botão 💬 da lista de sites: quem ainda não publicou recebe o
+// link do painel; quem já está no ar recebe o site e o painel.
+function msgSiteWa(s) {
+  const u = siteUrls(s);
+  const nome = String(s.nome || "").trim().split(/\s+/)[0] || "";
+  const guia = SITE_BASE + "/como-usar-o-painel";
+  if (s.status === "PUBLICADO") {
+    return `Oi, ${nome}! Tudo bem? Aqui é da RH IMOB.
+
+Seu site de corretor parceiro está no ar: ${u.site}
+
+Para colocar mais imóveis e fotos, use o seu painel:
+${u.painel}
+
+Qualquer dúvida, é só me chamar aqui.`;
+  }
+  return `Oi, ${nome}! Tudo bem? Aqui é da RH IMOB.
+
+Seu site de corretor parceiro já está criado. Falta só colocar suas fotos e publicar, e dá para fazer pelo celular mesmo:
+${u.painel}
+
+Passo a passo com imagens: ${guia}
+
+Qualquer dúvida, é só me chamar aqui.`;
+}
+// Escreve a mensagem no WhatsApp Web que já está aberto, pela extensão RH IMOB
+// Aceleradora (rh_site.js, versão 3.30.0 ou mais nova). Quem envia é você,
+// conferindo e apertando Enter. Sem a extensão neste navegador, abre o
+// WhatsApp numa aba nova.
+let WA_EXT_SEQ = 0;
+function abrirWhatsAppExt(telefone, texto) {
+  const dig = String(telefone || "").replace(/\D/g, "");
+  const fone = dig.length >= 12 ? dig : "55" + dig;
+  if (!document.documentElement.dataset.rhimobExt) {
+    window.open("https://api.whatsapp.com/send?phone=" + fone + "&text=" + encodeURIComponent(texto), "_blank", "noopener");
+    return Promise.resolve({ ok: true });
+  }
+  const id = "wa" + (++WA_EXT_SEQ);
+  return new Promise(resolve => {
+    const fim = (r) => { window.removeEventListener("message", ouvir); clearTimeout(tempo); resolve(r); };
+    const ouvir = (e) => {
+      if (e.source !== window || !e.data || e.data.fonte !== "rhimob-ext" || e.data.id !== id) return;
+      if (e.data.ok) return fim({ ok: true });
+      const avisos = {
+        sem_whatsapp: "Abra o WhatsApp Web neste navegador (com a extensão RH IMOB ligada) e clique de novo.",
+        whatsapp_sem_extensao: "A aba do WhatsApp não respondeu. Recarregue o WhatsApp Web (F5), espere carregar e clique de novo.",
+        extensao_recarregada: "A extensão foi atualizada. Recarregue esta página (F5) e clique de novo."
+      };
+      fim({ ok: false, aviso: avisos[e.data.error] || "Não consegui abrir a conversa no WhatsApp. Tente de novo." });
+    };
+    const tempo = setTimeout(() => fim({ ok: false, aviso: "A extensão não respondeu. Recarregue esta página (F5) e tente de novo." }), 8000);
+    window.addEventListener("message", ouvir);
+    window.postMessage({ fonte: "rhimob-admin", tipo: "ABRIR_WA", id, telefone: fone, texto }, location.origin);
+  });
+}
+
 async function criarSiteAdmin() {
   const nome = $("stNome").value.trim(), tel = $("stTel").value.trim(), cidade = $("stCidade").value.trim();
   if (!nome || !tel || !cidade) { alert("Preencha nome, WhatsApp e cidade."); return; }
