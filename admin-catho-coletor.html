@@ -96,6 +96,12 @@
   .pass-eye:hover{background:#f0eef5}
   .who-info{font-size:11.5px;color:rgba(255,255,255,.85);background:rgba(255,255,255,.12);border-radius:8px;padding:6px 12px;line-height:1.5}
   .who-info b{color:#fff}
+  /* Seções que encolhem: clique no título do card (lembra a escolha neste navegador) */
+  .card > h3.rec-titulo { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; }
+  .card > h3.rec-titulo::after { content: '▾'; margin-left: auto; font-size: 13px; color: #8a6d99; transition: transform .15s; }
+  .card.recolhido > h3.rec-titulo::after { transform: rotate(-90deg); }
+  .card.recolhido > h3.rec-titulo { margin-bottom: 0; }
+  .card.recolhido > :not(h3.rec-titulo) { display: none !important; }
 </style>
 </head>
 <body>
@@ -773,6 +779,23 @@
   })();
 </script>
 <script src="admin-catho-coletor.js?v=20261030limites"></script>
+<script>
+  // Clicar no título de qualquer seção encolhe ou abre a seção.
+  (function () {
+    var CHAVE = 'rh_admin_recolhidos', salvos = {};
+    try { salvos = JSON.parse(localStorage.getItem(CHAVE) || '{}') || {}; } catch (e) {}
+    document.querySelectorAll('.card > h3:first-child').forEach(function (h) {
+      var card = h.parentElement, id = card.id || h.textContent.trim().slice(0, 60);
+      h.classList.add('rec-titulo'); h.title = 'Clique para encolher ou abrir';
+      if (salvos[id]) card.classList.add('recolhido');
+      h.addEventListener('click', function () {
+        var r = card.classList.toggle('recolhido');
+        if (r) salvos[id] = 1; else delete salvos[id];
+        try { localStorage.setItem(CHAVE, JSON.stringify(salvos)); } catch (e) {}
+      });
+    });
+  })();
+</script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
