@@ -2703,6 +2703,10 @@ async function loadSites() {
     const r = await rpc("rpc_admin_sites", { p_admin_password: ADMIN_PASS });
     if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
     SITES_CACHE = r.sites || [];
+    const ext = document.documentElement.dataset.rhimobExt;
+    if ($("stExtStatus")) $("stExtStatus").innerHTML = ext
+      ? '<span style="color:#1a7a3d">🟢 Extensão RH IMOB ' + esc(ext) + ' ligada: o botão 💬 WhatsApp escreve no WhatsApp que já está aberto.</span>'
+      : '<span style="color:#b45309">⚪ Extensão RH IMOB não encontrada nesta página: instale a 3.30.0 (ou mais nova) e recarregue (F5) para o botão 💬 WhatsApp escrever no WhatsApp aberto.</span>';
     $("stOperadores").innerHTML = (r.operadores || []).map(o =>
       `<label style="display:flex;gap:5px;align-items:center;margin:0;font-weight:600"><input type="checkbox" data-site-op="${esc(o.login)}" ${o.pode ? "checked" : ""} style="width:auto;margin:0"> ${esc(o.nome || o.login)}</label>`).join("")
       || "<small>Nenhum operador ativo.</small>";
@@ -2800,8 +2804,11 @@ function abrirWhatsAppExt(telefone, texto) {
   const dig = String(telefone || "").replace(/\D/g, "");
   const fone = dig.length >= 12 ? dig : "55" + dig;
   if (!document.documentElement.dataset.rhimobExt) {
-    window.open("https://api.whatsapp.com/send?phone=" + fone + "&text=" + encodeURIComponent(texto), "_blank", "noopener");
-    return Promise.resolve({ ok: true });
+    const abrir = confirm("A extensão RH IMOB não está ligada nesta página, então não dá para escrever no WhatsApp que já está aberto.\n\n" +
+      "Para funcionar: instale a extensão 3.30.0 (ou mais nova) e recarregue esta página (F5).\n\n" +
+      "Quer abrir o WhatsApp numa aba nova mesmo assim?");
+    if (abrir) window.open("https://api.whatsapp.com/send?phone=" + fone + "&text=" + encodeURIComponent(texto), "_blank", "noopener");
+    return Promise.resolve({ ok: abrir });
   }
   const id = "wa" + (++WA_EXT_SEQ);
   return new Promise(resolve => {
