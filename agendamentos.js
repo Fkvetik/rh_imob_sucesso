@@ -247,12 +247,13 @@ function csvEscape(v) {
 }
 $("btnExportCsv").addEventListener("click", () => {
   const rows = filtered();
-  const header = ["Nome candidato","Telefone","Empresa","Etapa","Data agendamento","Operador","Entrevistador","Atrasado"];
+  const header = ["Nome candidato","Telefone","Empresa","Etapa","Data agendamento","Operador","Entrevistador","Atrasado","Entrou no agendamento"];
   const body = rows.map(a => [
     a.nome_candidato||"", a.telefone||"", a.empresa||"",
     (COLUMNS.find(c => c.id === a.status)?.label) || a.status || "",
     fmtData(a.data_agendamento), a.nome_operador||a.login||"", a.entrevistador||"",
-    isAtrasado(a) ? "SIM" : "NAO"
+    isAtrasado(a) ? "SIM" : "NAO",
+    a.criado_em ? new Date(a.criado_em).toLocaleString("pt-BR") : ""
   ].map(csvEscape).join(";"));
   const csv = "﻿" + [header.join(";"), ...body].join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -750,6 +751,7 @@ function renderCard(a) {
       <div class="empresa-badge" style="display:inline-block;margin:2px 0;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:${empresaColor(a.empresa)}">${esc(a.empresa||"—")}</div>
       <div class="sub">${esc(fmtData(a.data_agendamento))}</div>
       <div class="sub">👤 ${esc(a.nome_operador||a.login||"—")}</div>
+      ${a.criado_em ? `<div class="entrou" title="Quando o operador mandou para o agendamento">📥 entrou ${esc(quandoCurto(a.criado_em))}</div>` : ""}
       ${meetBtn}
       ${obs}
       ${reag}${badgeAtrasado}${linhaContato}
@@ -809,21 +811,56 @@ function openEditModal(id) {
   $("mLinkReuniao").value = a.link_reuniao || "";
   $("mMotivo").value = "";
   $("mHistorico").innerHTML = "Carregando...";
+  $("mJornada").innerHTML = linhaTempoHtml(a, null);
   $("editModal").classList.add("open");
+
+  rpc("rpc_admin_jornada_lead", { p_admin_password: ADMIN_PASS, p_id: id })
+    .then(resp => { if (editingId === id && resp && resp.ok) $("mJornada").innerHTML = linhaTempoHtml(a, resp.lead, true); })
+    .catch(() => {}); // banco ainda sem o AGEND_2: fica só a entrada no agendamento
 
   rpc("rpc_admin_historico_agendamento", { p_admin_password: ADMIN_PASS, p_id: id })
     .then(resp => {
       if (!resp.ok) { $("mHistorico").innerHTML = '<small style="color:#aaa">Sem histórico</small>'; return; }
       const h = resp.historico || [];
-      $("mHistorico").innerHTML = h.length
+      const entrada = a.criado_em ? `<div class="hist-item entrada">📥 <b>Entrou no agendamento</b><br>${new Date(a.criado_em).toLocaleString("pt-BR")} · por ${esc(a.nome_operador || a.login || "operador")}</div>` : "";
+      $("mHistorico").innerHTML = (h.length || entrada)
         ? h.map(x => {
             const nome = s => { const c = COLUMNS.find(c => c.id === s); return c ? c.label : (s || "—"); };
             if (!x.status_novo) return `<div class="hist-item">${esc(x.motivo || "Registro")}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
             return `<div class="hist-item">${esc(nome(x.status_anterior))} → <b>${esc(nome(x.status_novo))}</b>${x.data_agendamento ? " · entrevista em " + esc(fmtData(x.data_agendamento)) : ""}${x.motivo ? " — " + esc(x.motivo) : ""}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
-          }).join("")
+          }).join("") + entrada
         : '<small style="color:#aaa">Sem mudanças registradas ainda</small>';
     })
     .catch(() => { $("mHistorico").innerHTML = '<small style="color:#aaa">Sem histórico</small>'; });
+}
+
+// Linha do tempo: abordado -> respondeu -> proposta -> agendou (datas do lead,
+// SQL AGEND_2) -> entrou no agendamento (carimbo do próprio agendamento).
+// Embaixo de cada etapa, quanto tempo levou desde a anterior.
+function linhaTempoHtml(a, lead, procurado) {
+  const l = lead || {};
+  const etapas = [
+    ["📤 Abordado", l.abordado_em], ["💬 Respondeu", l.respondeu_em],
+    ["📄 Proposta", l.proposta_em], ["🗓 Agendou", l.agendou_em],
+    ["📥 Entrou no agendamento", a.criado_em]
+  ];
+  if (!lead) etapas.splice(0, 4);
+  const dur = ms => {
+    const min = Math.round(ms / 60000);
+    if (min < 60) return min + " min";
+    const h = Math.round(min / 60);
+    return h < 48 ? h + " h" : Math.round(h / 24) + " dias";
+  };
+  let antes = null;
+  const partes = etapas.map(([rot, quando]) => {
+    const d = quando ? new Date(quando) : null;
+    if (!d || isNaN(d.getTime())) return `<span class="et falta">${rot}: —</span>`;
+    const tempo = antes && d >= antes ? `<span class="tempo">${dur(d - antes)} depois</span>` : "";
+    antes = d;
+    return `<span class="et"><b>${rot}</b> ${esc(quandoCurto(quando))}${tempo}</span>`;
+  });
+  const aviso = procurado && !lead ? '<span class="tempo" style="width:100%">Não achei esse telefone no CRM do operador para mostrar a abordagem.</span>' : "";
+  return partes.join('<span class="seta">→</span>') + aviso;
 }
 
 function toDatetimeLocal(s) {

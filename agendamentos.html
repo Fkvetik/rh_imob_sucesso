@@ -195,6 +195,14 @@
   button.ghost{background:#eee;color:#333;padding:9px 14px;border-radius:8px;border:0;cursor:pointer;font-size:13px}
   button.primary2{background:var(--rh-purple);color:#fff;padding:9px 14px;border-radius:8px;border:0;cursor:pointer;font-size:13px}
   button.primary2:hover{background:var(--rh-purple-dark)}
+  .entrou{font-size:10.5px;color:#6b5b95;margin-top:2px}
+  .jornada{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12px;background:#f6f3fc;border-radius:6px;padding:8px;margin-bottom:4px}
+  .jornada .et{white-space:nowrap}
+  .jornada .et b{color:#33165f}
+  .jornada .seta{color:#aaa}
+  .jornada .tempo{display:block;font-size:10px;color:#888}
+  .jornada .falta{color:#aaa}
+  .hist-item.entrada{border-left-color:#7c5cc4}
   .hist-item{border-left:2px solid #ddd;padding:4px 0 4px 10px;font-size:11px;color:#555;margin-bottom:4px}
   .btns{display:flex;gap:8px;flex-wrap:wrap}
   .wa-btn{display:inline-flex;align-items:center;gap:5px;background:#e6f9ee;color:#128c4a;text-decoration:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700}
@@ -265,6 +273,9 @@
     <label>Observação de quem agendou</label>
     <div id="mObsAgendamento" style="font-size:13px;background:#f7f7f7;border-radius:6px;padding:8px;margin-bottom:4px;white-space:pre-wrap"></div>
 
+    <label>Linha do tempo do lead</label>
+    <div id="mJornada" class="jornada"></div>
+
     <label>Link da reunião</label>
     <input id="mLinkReuniao" placeholder="https://meet.google.com/...">
 
@@ -324,7 +335,7 @@
   </div>
 </div>
 
-<script src="agendamentos.js?v=20261029uso"></script>
+<script src="agendamentos.js?v=20261030entrou"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>
