@@ -83,6 +83,7 @@
 <input type="file" id="arquivos" accept="image/*" multiple>
 
 <script src="/painel-app.js?v=20261030guia"></script>
+<script src="/assets/share-art.js"></script>
 <script>
 (function(){
   // Projeto do Coletor (chave pública; tudo passa pelas funções rpc_site_* do SQL SITES_1).
@@ -129,6 +130,37 @@
     if (!anunciaVaga(S.profissao)) return '';
     return '<div class="card"><h2>🤝 Oferecer imóveis à rede</h2><small>Tem imóvel que quer vender em parceria? Cadastre na rede: depois que a RH IMOB aprovar, ele aparece no site dos corretores da região, com a comissão e o seu contato no material de vendas. Quando um cliente se interessar, você recebe o aviso aqui.</small>' +
       '<button class="btn btn-prim" type="button" id="btnParceria" style="width:100%">🤝 Abrir meus imóveis na rede</button></div>';
+  }
+  // Indicação de negócio (SQL INDICA_1): o corretor divulga o link dele; a empresa preenche
+  // o formulário, a indicação cai aqui e na RH IMOB, e o WhatsApp dele abre com os dados.
+  var INDICA = null; // null = ainda não carregou (ou banco sem o INDICA_1)
+  var ETAPA_IND = { NOVA:'Nova', REUNIAO:'Reunião marcada', CONTRATO:'Contrato fechado', PAGO:'Comissão paga', PERDIDA:'Não fechou' };
+  function urlIndica(){ return 'https://www.rhimob.com.br/indica/' + S.cidade_slug + '/' + S.nome_slug; }
+  function indicaHtml(){
+    return '<div class="card"><h2>💰 Indique a RH IMOB e ganhe</h2><small>Conhece imobiliária ou construtora que precisa contratar corretores? Mande o seu link. Quando a empresa fecha com a RH IMOB, você recebe <b>até 25% do valor do contrato</b>. As condições a gente combina com você numa conversa.</small>' +
+      '<div class="url">' + esc(urlIndica()) + '</div>' +
+      '<div class="linha">' +
+        '<button class="btn btn-sec btn-mini" type="button" id="btnIndCopiar">🔗 Copiar link</button>' +
+        '<button class="btn btn-ghost btn-mini" type="button" id="btnIndZap">💬 Mandar no WhatsApp</button>' +
+        '<button class="btn btn-ghost btn-mini" type="button" id="btnIndArte">🖼️ Arte para Story</button>' +
+      '</div>' +
+      '<div id="indLista" style="margin-top:10px">' + indicaListaHtml() + '</div></div>';
+  }
+  function indicaListaHtml(){
+    if (!INDICA) return '';
+    if (!INDICA.length) return '<small>Ainda não chegou nenhuma indicação pelo seu link.</small>';
+    return '<b style="font-size:14px">Suas indicações</b>' + INDICA.map(function(i){
+      return '<div style="border-top:1px solid var(--line);padding:8px 0;font-size:14px"><b>' + esc(i.nome) + '</b>' + (i.empresa ? ' · ' + esc(i.empresa) : '') +
+        '<br><small style="margin:0">' + esc(ETAPA_IND[i.etapa] || i.etapa) + ' · ' + new Date(i.criado_em).toLocaleDateString('pt-BR') +
+        (i.comissao != null ? ' · <b style="color:#11692f">comissão R$ ' + Number(i.comissao).toLocaleString('pt-BR', { minimumFractionDigits:2 }) + '</b>' : '') + '</small></div>';
+    }).join('');
+  }
+  function carregarIndicacoes(){
+    rpc('rpc_indica_minhas', { p_token_edicao:T }).then(function(d){
+      if (!d || !d.ok) return;
+      INDICA = d.itens || [];
+      var el = $('indLista'); if (el) el.innerHTML = indicaListaHtml();
+    }).catch(function(){});
   }
   // Material de vendas dos lançamentos da sua região (SQL REDE_2): só o profissional vê, nunca o cliente.
   function materialHtml(){
@@ -222,6 +254,7 @@
       '</div>' +
       vagaHtml() +
       parceriaHtml() +
+      indicaHtml() +
       // Lançamentos da rede (SQL REDE_1): aparecem sozinhos; o profissional só escolhe se quer mostrar.
       (S.rede_qtd > 0 ? '<div class="card"><h2>🏗️ Lançamentos em parceria</h2><small>' + S.rede_qtd + ' empreendimento' + (S.rede_qtd > 1 ? 's' : '') +
         ' das construtoras parceiras da RH IMOB para a sua região. Eles aparecem no seu site e quem se interessar fala com você pelo seu WhatsApp.</small>' +
@@ -332,6 +365,18 @@
         sujo = false; location.href = '/parceiro?t=' + d.token;
       }).catch(function(e){ toast('⚠️ ' + e.message); b.disabled = false; b.textContent = '🤝 Abrir meus imóveis na rede'; });
     });
+    $('btnIndCopiar').onclick = function(){ navigator.clipboard.writeText(urlIndica()).then(function(){ toast('🔗 Link de indicação copiado'); }); };
+    $('btnIndZap').onclick = function(){
+      var txt = 'Oi! Se você estiver precisando contratar corretores, vale conhecer a RH IMOB: é especializada em recrutamento para o mercado imobiliário, com ferramentas, bancos de corretores e equipe que faz a triagem.\n\n' + urlIndica();
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(txt), '_blank');
+    };
+    $('btnIndArte').onclick = function(){
+      if (!window.gerarArteRHIMOB) { toast('⚠️ Não consegui gerar a arte agora. Recarregue a página.'); return; }
+      gerarArteRHIMOB({ kicker: '● RH IMOB · INDICAÇÃO DE ' + String(S.nome || '').toUpperCase(), title: 'Precisa contratar corretores?',
+        sub: 'Recrutamento especializado no mercado imobiliário: ferramentas, bancos de corretores e equipe que faz a triagem por você.',
+        tags: [{ txt: '✓ Extensão recrutadora' }, { txt: '✓ Bancos de corretores' }, { txt: '✓ Triagem pela equipe' }],
+        ctaText: 'Fale comigo', ctaColor: '#ff7a1a', url: urlIndica(), filename: 'indicacao-rhimob.png' }, this);
+    };
     $('btnPublicar') && ($('btnPublicar').onclick = function(){ publicar(true); });
     $('btnDespublicar') && ($('btnDespublicar').onclick = function(){ if (confirm('Tirar o site do ar? Ele volta a ser rascunho.')) publicar(false); });
     $('btnCopiar') && ($('btnCopiar').onclick = function(){ navigator.clipboard.writeText(urlSite()).then(function(){ toast('🔗 Link copiado'); }); });
@@ -427,6 +472,7 @@
     if (!d || !d.ok) { app.innerHTML = '<div class="card"><h2>Não deu para abrir</h2><small>' + esc((d && (d.error || d.message)) || 'Link inválido.') + '</small></div>'; return; }
     S = d.site; S.albuns = Array.isArray(S.albuns) ? S.albuns : []; render();
     PainelApp.iniciar({ token: T, tipo: 'site', rpc: rpc });
+    carregarIndicacoes();
     // material de vendas chega depois, sem segurar a tela (banco sem o REDE_2: fica sem o card)
     rpc('rpc_site_material', { p_token_edicao:T }).then(function(m){
       if (m && m.ok && (m.itens || []).length) { lerCampos(); S.material = m.itens; render(); }

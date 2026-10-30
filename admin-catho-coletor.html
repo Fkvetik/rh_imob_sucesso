@@ -678,6 +678,15 @@
       <div class="btns"><button id="btnSalvarContatosSite" type="button">💾 Salvar contatos</button></div>
       <div id="csMsg" class="msg"></div>
     </div>
+    <div class="card" id="cardIndicacoes">
+      <h3 style="margin-top:0;font-size:14px">💼 Indicações de negócio</h3>
+      <small>Empresas que chegaram pelo link de indicação dos corretores da rede (rhimob.com.br/indica/...). Atualize a etapa, o valor do contrato e a porcentagem: a comissão é calculada sozinha e o corretor acompanha no painel dele. Padrão: 25% em ferramentas, 15% em planos com assistentes.</small>
+      <div id="indResumo" style="margin-top:10px;font-size:13px"></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Data</th><th>Corretor</th><th>Empresa indicada</th><th>Etapa</th><th>Produto</th><th>Valor do contrato</th><th>%</th><th>Comissão</th><th></th></tr></thead>
+        <tbody id="listaIndicacoes"><tr><td colspan="9"><small>Carregando…</small></td></tr></tbody>
+      </table></div>
+    </div>
     <div class="card" id="cardContratos">
       <h3 style="margin-top:0;font-size:14px">💰 Contratos e pagamentos</h3>
       <small>Cada "🔄 Renovar" pode registrar aqui o período, o valor e se já foi pago. O recibo sai daqui.</small>
@@ -785,7 +794,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261030wa"></script>
+<script src="admin-catho-coletor.js?v=20261030indica"></script>
 <script>
   // Clicar no título de qualquer seção encolhe ou abre a seção.
   (function () {

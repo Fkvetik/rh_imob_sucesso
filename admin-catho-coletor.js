@@ -39,6 +39,81 @@ function showApp() {
   loadUsuariosEnriquecimento();
   document.getElementById("cardContatosSite")?.classList.toggle("hide", !superAdmin);
   if (superAdmin) loadContatosSite();
+  document.getElementById("cardIndicacoes")?.classList.toggle("hide", !superAdmin);
+  if (superAdmin) loadIndicacoes();
+}
+
+// ===== Indicações de negócio (SQL INDICA_1) =====
+// Comissão = valor do contrato × %. O corretor vê a etapa e a comissão no painel dele.
+const IND_ETAPAS = [["NOVA", "🆕 Nova"], ["REUNIAO", "🗓 Reunião"], ["CONTRATO", "✍️ Contrato"], ["PAGO", "✅ Comissão paga"], ["PERDIDA", "✖ Não fechou"]];
+const IND_PRODUTOS = [["", "—"], ["FERRAMENTA", "Ferramenta (25%)"], ["ASSISTENTES", "Assistentes (15%)"]];
+let IND_CACHE = [];
+const reais = v => "R$ " + Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+async function loadIndicacoes() {
+  const tbody = $("listaIndicacoes");
+  if (!tbody) return;
+  try {
+    const r = await rpc("rpc_admin_indicacoes", { p_admin_password: ADMIN_PASS });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    IND_CACHE = r.itens || [];
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="9"><small>' + (/rpc_admin_indicacoes|function|404/i.test(e.message) ? "Falta rodar o SQL INDICA_1 no Supabase do Coletor." : esc(e.message)) + "</small></td></tr>";
+    return;
+  }
+  const soma = etapa => IND_CACHE.filter(i => i.etapa === etapa).reduce((t, i) => t + Number(i.comissao || 0), 0);
+  const novas = IND_CACHE.filter(i => i.etapa === "NOVA").length;
+  $("indResumo").innerHTML = IND_CACHE.length
+    ? '<b>' + IND_CACHE.length + '</b> indicação(ões)' + (novas ? ' · <b style="color:#b45309">' + novas + ' nova(s)</b>' : "") +
+      ' · comissão a pagar: <b>' + reais(soma("CONTRATO")) + '</b> · já paga: <b style="color:#1a7a3d">' + reais(soma("PAGO")) + "</b>"
+    : "";
+  const opc = (lista, v) => lista.map(([k, t]) => '<option value="' + k + '"' + (k === (v || "") ? " selected" : "") + ">" + t + "</option>").join("");
+  tbody.innerHTML = IND_CACHE.length ? IND_CACHE.map(i => '<tr data-ind="' + i.id + '">' +
+    "<td><small>" + new Date(i.criado_em).toLocaleDateString("pt-BR") + "</small></td>" +
+    "<td><b>" + esc(i.corretor) + "</b><br><small>" + esc(i.corretor_cidade || "") + '</small><br><button type="button" class="ghost" data-ind-wa="corretor" style="font-size:11px;padding:3px 7px">💬 Corretor</button></td>' +
+    "<td><b>" + esc(i.nome) + "</b>" + (i.empresa ? "<br>" + esc(i.empresa) : "") + "<br><small>" + esc(foneBonito(i.whatsapp)) + (i.plano ? " · " + esc(i.plano) : "") + '</small><br><button type="button" class="ghost" data-ind-wa="lead" style="font-size:11px;padding:3px 7px">💬 Empresa</button></td>' +
+    '<td><select data-ind-etapa style="min-width:130px">' + opc(IND_ETAPAS, i.etapa) + "</select></td>" +
+    '<td><select data-ind-produto style="min-width:140px">' + opc(IND_PRODUTOS, i.produto) + "</select></td>" +
+    '<td><input data-ind-valor type="number" min="0" step="0.01" style="width:110px" placeholder="0,00" value="' + (i.valor != null ? i.valor : "") + '"></td>' +
+    '<td><input data-ind-pct type="number" min="0" max="100" step="0.5" style="width:70px" value="' + (i.pct != null ? i.pct : "") + '"></td>' +
+    '<td data-ind-com style="white-space:nowrap;font-weight:700">' + (i.comissao != null ? reais(i.comissao) : "—") + "</td>" +
+    '<td><input data-ind-obs type="text" placeholder="Observação" style="width:140px" value="' + esc(i.obs || "") + '"><br><button type="button" data-ind-salvar style="font-size:12px;margin-top:4px">💾 Salvar</button></td>' +
+    "</tr>").join("") : '<tr><td colspan="9"><small>Nenhuma indicação ainda. Elas aparecem aqui quando uma empresa preenche o formulário do link de um corretor.</small></td></tr>';
+
+  tbody.querySelectorAll("tr[data-ind]").forEach(tr => {
+    const i = IND_CACHE.find(x => String(x.id) === tr.dataset.ind); if (!i) return;
+    const q = sel => tr.querySelector(sel);
+    const conta = () => {
+      const v = parseFloat(q("[data-ind-valor]").value), p = parseFloat(q("[data-ind-pct]").value);
+      q("[data-ind-com]").textContent = isNaN(v) || isNaN(p) ? "—" : reais(Math.round(v * p) / 100);
+    };
+    q("[data-ind-produto]").addEventListener("change", e => {
+      const pct = { FERRAMENTA: 25, ASSISTENTES: 15 }[e.target.value];
+      if (pct != null) q("[data-ind-pct]").value = pct;
+      conta();
+    });
+    q("[data-ind-valor]").addEventListener("input", conta);
+    q("[data-ind-pct]").addEventListener("input", conta);
+    tr.querySelectorAll("[data-ind-wa]").forEach(b => b.addEventListener("click", async () => {
+      const lead = b.dataset.indWa === "lead";
+      const pn = s => String(s || "").trim().split(/\s+/)[0];
+      const texto = lead
+        ? "Olá, " + pn(i.nome) + "! Aqui é da RH IMOB. Recebemos o seu contato pela indicação de " + pn(i.corretor) + ". Podemos marcar uma conversa rápida para você conhecer as soluções?"
+        : "Oi, " + pn(i.corretor) + "! Aqui é da RH IMOB. Chegou a indicação de " + i.nome + (i.empresa ? " (" + i.empresa + ")" : "") + " pelo seu link. Vamos marcar a reunião juntos?";
+      const r = await abrirWhatsAppExt(lead ? i.whatsapp : i.corretor_tel, texto);
+      if (!r.ok && r.aviso) alert(r.aviso);
+    }));
+    q("[data-ind-salvar]").addEventListener("click", async e => {
+      const b = e.target, num = v => v === "" ? null : Number(v);
+      b.disabled = true;
+      try {
+        const x = await rpc("rpc_admin_indicacao_salvar", { p_admin_password: ADMIN_PASS, p_id: i.id,
+          p_etapa: q("[data-ind-etapa]").value, p_produto: q("[data-ind-produto]").value || null,
+          p_valor: num(q("[data-ind-valor]").value), p_pct: num(q("[data-ind-pct]").value), p_obs: q("[data-ind-obs]").value });
+        if (!x || !x.ok) throw new Error((x && x.error) || "não salvou");
+        loadIndicacoes();
+      } catch (err) { alert("❌ " + err.message); b.disabled = false; }
+    });
+  });
 }
 
 // ===== Contatos do site (SQL CONFIG_1) =====

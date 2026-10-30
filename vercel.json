@@ -69,6 +69,10 @@
       "destination": "/api/corretor-site?cidade=:cidade&nome=:nome"
     },
     {
+      "source": "/indica/:cidade/:nome",
+      "destination": "/api/indica?cidade=:cidade&nome=:nome"
+    },
+    {
       "source": "/parceiro/:slug",
       "destination": "/api/parceiro-site?slug=:slug"
     }
