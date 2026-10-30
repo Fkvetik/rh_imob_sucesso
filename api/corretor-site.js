@@ -56,7 +56,9 @@ function render(s, prev, url) {
   const prof = PROF[s.profissao] || PROF.CORRETOR;
   // Zonas são da capital: fora de São Paulo, dizemos de onde são.
   const capital = s.cidade_slug === 'sao-paulo';
-  const zonas = (Array.isArray(s.zonas) ? s.zonas : []).map(z => ZONA[z] && (capital ? ZONA[z] : ZONA[z] + ' (SP)')).filter(Boolean);
+  // "Todas as regiões" (SQL REDE_4) atende a cidade inteira: não vira zona da capital.
+  const todasRegioes = (Array.isArray(s.zonas) ? s.zonas : []).includes('TODAS');
+  const zonas = todasRegioes ? [] : (Array.isArray(s.zonas) ? s.zonas : []).map(z => ZONA[z] && (capital ? ZONA[z] : ZONA[z] + ' (SP)')).filter(Boolean);
   const bairros = Array.isArray(s.bairros) ? s.bairros.filter(Boolean) : [];
   // Outras cidades que atende (SQL SITES_6), além da cidade do link.
   const cidades = Array.isArray(s.cidades) ? s.cidades.filter(c => c && c !== s.cidade) : [];
@@ -96,9 +98,9 @@ function render(s, prev, url) {
   ].filter(r => r[1]);
   const iniciais = String(s.nome || '?').split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase();
   // "Onde atendo" em texto corrido: o Google lê as regiões na própria página.
-  const ondeHtml = (cidades.length || zonas.length || bairros.length) ? `
+  const ondeHtml = (cidades.length || zonas.length || bairros.length || todasRegioes) ? `
   <section><h2>Onde atendo</h2>
-    <div class="bio">${esc(primeiro)} atende em <b>${esc(listaCidades(todasCidades))}</b>${zonas.length ? `, ${zonas.length > 1 ? 'nas regiões' : 'na'} ${esc(listaCidades(zonas))}` : ''}${bairros.length ? `, com atuação nos bairros ${esc(listaCidades(bairros))}` : ''}.</div>
+    <div class="bio">${esc(primeiro)} atende em <b>${esc(listaCidades(todasCidades))}</b>${todasRegioes ? ', em todas as regiões' : ''}${zonas.length ? `, ${zonas.length > 1 ? 'nas regiões' : 'na'} ${esc(listaCidades(zonas))}` : ''}${bairros.length ? `, com atuação nos bairros ${esc(listaCidades(bairros))}` : ''}.</div>
   </section>` : '';
   // Dados estruturados (schema.org) para o Google entender quem é, onde atende e o registro.
   const ld = prev ? null : {
@@ -148,13 +150,22 @@ function render(s, prev, url) {
           ${f.preco ? `<span class="preco">${esc(f.preco)}</span>` : ''}
           <strong>${esc(f.titulo)}</strong>
           ${f.specs ? `<span class="specs">${esc(f.specs)}</span>` : ''}
+          ${f.local ? `<small style="display:block">📍 ${esc(f.local)}</small>` : ''}
           <small>${f.construtora ? esc(f.construtora) + ' · ' : ''}${f.tipo ? esc(f.tipo) + ' · ' : ''}${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}</small>
         </div>
       </button>`;
+  // Filtro dos lançamentos: por cidade (se houver mais de uma) e por região (zonas da capital).
+  // Sem zona = vale para a cidade toda: aparece em qualquer região daquela cidade.
+  const redeCidades = [...new Set(rede.map(a => a.cidade).filter(Boolean))];
+  const redeZonas = Object.keys(ZONA).filter(z => rede.some(a => (a.zonas || []).includes(z)));
+  const filtros = [...(redeCidades.length > 1 ? redeCidades.map(c => ['c', c, c]) : []), ...redeZonas.map(z => ['z', z, ZONA[z]])];
+  const local = (a) => [redeCidades.length > 1 ? a.cidade : '', (a.zonas || []).map(z => ZONA[z]).filter(Boolean).join(', ')].filter(Boolean).join(' — ');
   const redeHtml = !rede.length ? '' : `
   <section><h2>🏗️ Lançamentos em parceria</h2>
     <p class="sub">Empreendimentos das construtoras parceiras da RH IMOB na região. Atendimento com ${esc(primeiro)}.</p>
-    <div class="albuns">${rede.map((a, i) => cardAlbum(a, fichasRede[i], albuns.length + i)).join('')}</div>
+    ${filtros.length ? `<div class="filtros" role="group" aria-label="Filtrar por região"><button type="button" class="on" data-f="">Todas</button>${filtros.map(f => `<button type="button" data-f="${f[0]}:${esc(f[1])}">${esc(f[2])}</button>`).join('')}</div>` : ''}
+    <div class="albuns">${rede.map((a, i) => `<div class="rd" data-cidade="${esc(a.cidade || '')}" data-cs="${esc(a.cidade_slug || '')}" data-zonas="${esc((a.zonas || []).join(' '))}">${cardAlbum(a, { ...fichasRede[i], local: local(a) }, albuns.length + i)}</div>`).join('')}</div>
+    <div class="vazio" id="rdVazio" style="display:none">Nenhum lançamento nesta região por enquanto.</div>
   </section>`;
 
   return `<!doctype html>
@@ -270,6 +281,12 @@ ${ldHtml}
   .lb-ficha .p{font-size:20px;font-weight:800}
   .lb-ficha .s{font-size:13px;opacity:.9;margin-top:2px}
   .sub{margin:-6px 0 12px;font-size:13px;color:var(--muted)}
+  .filtros{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;margin:0 -18px;padding-left:18px;padding-right:18px;scrollbar-width:none}
+  .filtros::-webkit-scrollbar{display:none}
+  .filtros button{flex-shrink:0;border:1px solid var(--line);background:#fff;color:var(--roxo2);font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:8px 14px;cursor:pointer}
+  .filtros button.on{background:var(--roxo2);border-color:var(--roxo2);color:#fff}
+  .rd{display:contents}
+  .rd.fora{display:none}
   .lb-ficha .d{font-size:13px;opacity:.85;margin-top:6px;white-space:pre-line}
 </style>
 </head>
@@ -292,7 +309,7 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
     <div class="quem">
       <h1>${esc(s.nome)}</h1>
       <p>${esc(prof.t)} · ${esc(s.cidade)}${s.creci ? ` · ${esc(prof.reg)} ${esc(s.creci)}` : ''}</p>
-      ${zonas.length || bairros.length ? `<div class="atua">${zonas.map(z => `<b>${esc(z)}</b>`).join('')}${bairros.map(b => `<b>${esc(b)}</b>`).join('')}</div>` : ''}
+      ${zonas.length || bairros.length || todasRegioes ? `<div class="atua">${todasRegioes ? '<b>Todas as regiões</b>' : ''}${zonas.map(z => `<b>${esc(z)}</b>`).join('')}${bairros.map(b => `<b>${esc(b)}</b>`).join('')}</div>` : ''}
     </div>
     <div class="acoes">
       ${wa ? `<a class="btn btn-wa" data-onde="PERFIL" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa} Falar no WhatsApp</a>` : ''}
@@ -358,6 +375,18 @@ ${wa ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(wa)}" target="
   document.getElementById('lbProx').onclick = function(){ mostra(i + 1); };
   document.addEventListener('keydown', function(e){ if(!lb.classList.contains('aberto')) return;
     if(e.key === 'Escape') fecha(); if(e.key === 'ArrowLeft') mostra(i - 1); if(e.key === 'ArrowRight') mostra(i + 1); });
+  // Filtro dos lançamentos: cidade (c:) ou região (z:). Sem zona = cidade toda (aparece em qualquer região da capital).
+  var fb = document.querySelectorAll('.filtros [data-f]');
+  [].forEach.call(fb, function(b){ b.onclick = function(){
+    [].forEach.call(fb, function(x){ x.classList.toggle('on', x === b); });
+    var f = b.getAttribute('data-f'), k = f.charAt(0), v = f.slice(2), n = 0;
+    [].forEach.call(document.querySelectorAll('.rd'), function(el){
+      var zs = el.getAttribute('data-zonas').split(' ').filter(Boolean);
+      var ok = !f || (k === 'c' ? el.getAttribute('data-cidade') === v : (zs.indexOf(v) >= 0 || (!zs.length && el.getAttribute('data-cs') === 'sao-paulo')));
+      el.classList.toggle('fora', !ok); if (ok) n++;
+    });
+    document.getElementById('rdVazio').style.display = n ? 'none' : '';
+  }; });
   // Cada clique no WhatsApp: conta no admin e aparece no /painel → Leads (/api/site-clique).
   var sid = ''; try { sid = sessionStorage.getItem('rh_sid') || Math.random().toString(36).slice(2, 12); sessionStorage.setItem('rh_sid', sid); } catch (e) {}
   document.addEventListener('click', function(e){

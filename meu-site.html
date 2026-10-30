@@ -96,7 +96,8 @@
   }
   var PROFS = [['CORRETOR','Corretor(a) de imóveis'],['IMOBILIARIA','Imobiliária'],['GERENTE','Gerente de vendas'],['ADVOGADO','Advogado(a)'],['ARQUITETO','Arquiteto(a)'],['ENGENHEIRO','Engenheiro(a)'],['OUTRO','Outro']];
   var REGS = { CORRETOR:'CRECI', IMOBILIARIA:'CRECI', GERENTE:'CRECI', ADVOGADO:'OAB', ARQUITETO:'CAU', ENGENHEIRO:'CREA', OUTRO:'Registro profissional' };
-  var ZONAS = [['NORTE','Zona Norte'],['SUL','Zona Sul'],['LESTE','Zona Leste'],['OESTE','Zona Oeste'],['CENTRO','Centro']];
+  // TODAS (SQL REDE_4): atende a cidade inteira; recebe os lançamentos de todas as regiões.
+  var ZONAS = [['TODAS','🗺️ Todas as regiões'],['NORTE','Zona Norte'],['SUL','Zona Sul'],['LESTE','Zona Leste'],['OESTE','Zona Oeste'],['CENTRO','Centro']];
   function regDe(p){ return REGS[p] || 'CRECI'; }
   // Vaga para corretores: só imobiliária e gerente de vendas (SQL SITES_4).
   function anunciaVaga(p){ return p === 'IMOBILIARIA' || p === 'GERENTE'; }
@@ -306,7 +307,9 @@
     });
     app.querySelectorAll('[data-zona]').forEach(function(b){ b.onclick = function(){
       lerCampos(); var z = b.dataset.zona, l = S.zonas = (S.zonas || []).slice(), i = l.indexOf(z);
-      if (i >= 0) l.splice(i, 1); else l.push(z);
+      // "Todas as regiões" substitui as zonas; marcar uma zona tira o "Todas"
+      if (z === 'TODAS') S.zonas = i >= 0 ? [] : ['TODAS'];
+      else { var t = l.indexOf('TODAS'); if (t >= 0) l.splice(t, 1); i = l.indexOf(z); if (i >= 0) l.splice(i, 1); else l.push(z); }
       marcaSujo(); render(); }; });
     $('btnPublicar') && ($('btnPublicar').onclick = function(){ publicar(true); });
     $('btnDespublicar') && ($('btnDespublicar').onclick = function(){ if (confirm('Tirar o site do ar? Ele volta a ser rascunho.')) publicar(false); });

@@ -48,14 +48,20 @@ function render(p, itens, url) {
     fin: fichas[k].fin, tipo: fichas[k].tipo, preco: fichas[k].preco, specs: fichas[k].specs, desc: fichas[k].desc, wa: fichas[k].wa, rid: fichas[k].rid })))
     .replace(/</g, '\\u003c');
   const waTopo = waEmpresa ? `https://wa.me/${waEmpresa}?text=${encodeURIComponent(`Olá! Vi o site da ${p.nome} na RH IMOB e quero conhecer os empreendimentos.`)}` : '';
+  // Em cada cidade, se houver empreendimentos com zona, o visitante filtra por região.
+  // Sem zona = cidade toda: aparece em qualquer região.
+  const filtrosDe = (c) => {
+    const zs = Object.keys(ZONA).filter(z => itens.some(a => a.cidade === c && (a.zonas || []).includes(z)));
+    return zs.length ? `<div class="filtros" role="group" aria-label="Filtrar por região"><button type="button" class="on" data-f="">Todas</button>${zs.map(z => `<button type="button" data-f="${z}">${ZONA[z]}</button>`).join('')}</div>` : '';
+  };
   const porCidade = cidades.map(c => `
-  <section><h2>📍 ${esc(c)}</h2><div class="albuns">${itens.map((a, i) => a.cidade !== c ? '' : `
-    <button class="album" type="button" data-album="${i}">
+  <section><h2>📍 ${esc(c)}</h2>${filtrosDe(c)}<div class="albuns">${itens.map((a, i) => a.cidade !== c ? '' : `
+    <button class="album rd" type="button" data-album="${i}" data-zonas="${esc((a.zonas || []).join(' '))}">
       <div class="img"><img src="${esc((a.fotos || [])[0])}" alt="${esc(fichas[i].titulo)}" loading="lazy">${fichas[i].fin ? `<span class="fin">${esc(fichas[i].fin)}</span>` : ''}</div>
       <div class="info"><span class="preco">${esc(fichas[i].preco)}</span><strong>${esc(fichas[i].titulo)}</strong>
         ${fichas[i].specs ? `<span class="specs">${esc(fichas[i].specs)}</span>` : ''}
         <small>${esc(fichas[i].local)}</small></div>
-    </button>`).join('')}</div></section>`).join('');
+    </button>`).join('')}</div><div class="vazio rdVazio" style="display:none">Nenhum empreendimento nesta região por enquanto.</div></section>`).join('');
   const iniciais = String(p.nome || '?').split(' ').filter(Boolean).map(x => x[0]).slice(0, 2).join('').toUpperCase();
   const ld = { '@context': 'https://schema.org', '@type': 'Organization', name: p.nome, url, description: desc.slice(0, 300),
     ...(waEmpresa ? { telephone: '+' + waEmpresa } : {}), ...(logo || ogImg ? { logo: logo || ogImg } : {}),
@@ -115,6 +121,11 @@ ${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
   .album strong{display:block;font-size:14px}
   .album .specs{display:block;font-size:12.5px;color:#3a2d4d;margin:2px 0}
   .album small{color:var(--muted);font-size:12px}
+  .filtros{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 12px;margin:0 -18px;scrollbar-width:none}
+  .filtros::-webkit-scrollbar{display:none}
+  .filtros button{flex-shrink:0;border:1px solid var(--line);background:#fff;color:var(--roxo2);font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:8px 14px;cursor:pointer}
+  .filtros button.on{background:var(--roxo2);border-color:var(--roxo2);color:#fff}
+  .album.fora{display:none}
   .vazio{background:#fff;border:1px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted)}
   footer{border-top:1px solid var(--line);background:#fff;padding:22px 18px;text-align:center}
   footer p{margin:0;font-size:12px;color:var(--muted)}
@@ -198,6 +209,19 @@ ${waTopo ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(waTopo)}" 
     if(e.key === 'Escape') fecha(); if(e.key === 'ArrowLeft') mostra(i - 1); if(e.key === 'ArrowRight') mostra(i + 1); });
   foto.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, { passive: true });
   foto.addEventListener('touchend', function(e){ if(x0 === null) return; var d = e.changedTouches[0].clientX - x0; if(Math.abs(d) > 40) mostra(i + (d < 0 ? 1 : -1)); x0 = null; });
+  // Filtro por região dentro de cada cidade (sem zona = cidade toda, aparece sempre).
+  [].forEach.call(document.querySelectorAll('section'), function(sec){
+    var fb = sec.querySelectorAll('.filtros [data-f]');
+    [].forEach.call(fb, function(b){ b.onclick = function(){
+      [].forEach.call(fb, function(x){ x.classList.toggle('on', x === b); });
+      var z = b.getAttribute('data-f'), n = 0;
+      [].forEach.call(sec.querySelectorAll('.rd'), function(el){
+        var zs = el.getAttribute('data-zonas').split(' ').filter(Boolean), ok = !z || !zs.length || zs.indexOf(z) >= 0;
+        el.classList.toggle('fora', !ok); if (ok) n++;
+      });
+      sec.querySelector('.rdVazio').style.display = n ? 'none' : '';
+    }; });
+  });
   // Cada clique no WhatsApp: conta no admin e aparece no /painel → Leads (/api/site-clique).
   var sid = ''; try { sid = sessionStorage.getItem('rh_sid') || Math.random().toString(36).slice(2, 12); sessionStorage.setItem('rh_sid', sid); } catch (e) {}
   document.addEventListener('click', function(e){
