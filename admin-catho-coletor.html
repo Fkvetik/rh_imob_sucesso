@@ -424,6 +424,42 @@
         <small id="chMsg"></small>
       </div>
     </div>
+    <div class="card hide" id="cardRede">
+      <h3 style="margin-top:0;font-size:14px">🏗️ Imóveis da rede — lançamentos das construtoras parceiras</h3>
+      <small>O que você cadastrar aqui aparece sozinho no site de todos os profissionais da rede que atendem a cidade (e, em São Paulo capital, a zona escolhida). Quem se interessa fala com o profissional pelo WhatsApp dele; cada clique é contado aqui e aparece no Painel → Leads.</small>
+      <div id="rdLista" style="margin-top:10px"></div>
+      <button id="btnRedeNovo" class="secondary" style="margin-top:8px">＋ Novo empreendimento</button>
+      <div id="rdForm" style="display:none;margin-top:10px;padding:12px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="flex:2;min-width:200px"><label>Nome do empreendimento</label><input id="rdTitulo" type="text" maxlength="80" placeholder="Ex.: Residencial Vista Sul"></div>
+          <div style="flex:1;min-width:150px"><label>Construtora</label><input id="rdConstrutora" type="text" maxlength="60" placeholder="Ex.: Plano&amp;Plano"></div>
+          <div style="flex:1;min-width:160px"><label>Cidade</label><input id="rdCidade" type="text" maxlength="60" list="rdCidades" placeholder="Ex.: Mogi Mirim"><datalist id="rdCidades"></datalist></div>
+        </div>
+        <div id="rdZonasBox" style="display:none;margin-top:6px"><label>Zonas (vazio = São Paulo toda)</label><div id="rdZonas" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <div style="flex:1;min-width:120px"><label>Venda ou locação</label><select id="rdFin"><option value="">—</option><option value="VENDA">Venda</option><option value="LOCACAO">Locação</option></select></div>
+          <div style="flex:1;min-width:130px"><label>Tipo</label><select id="rdTipo"><option value="">—</option><option value="APARTAMENTO">Apartamento</option><option value="CASA">Casa</option><option value="SOBRADO">Sobrado</option><option value="COBERTURA">Cobertura</option><option value="TERRENO">Terreno</option><option value="SALA">Sala comercial</option><option value="LOJA">Loja</option><option value="GALPAO">Galpão</option><option value="CHACARA">Chácara</option><option value="OUTRO">Outro</option></select></div>
+          <div style="flex:1;min-width:130px"><label>Preço (vazio = sob consulta)</label><input id="rdPreco" type="text" inputmode="numeric" placeholder="Ex.: 420.000"></div>
+          <div style="flex:1;min-width:130px"><label>Bairro</label><input id="rdBairro" type="text" maxlength="60"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <div style="flex:1;min-width:70px"><label>Dorm.</label><input id="rdDorm" type="number" min="0" max="99"></div>
+          <div style="flex:1;min-width:70px"><label>Suítes</label><input id="rdSuites" type="number" min="0" max="99"></div>
+          <div style="flex:1;min-width:70px"><label>Vagas</label><input id="rdVagas" type="number" min="0" max="99"></div>
+          <div style="flex:1;min-width:80px"><label>m²</label><input id="rdArea" type="number" min="0" max="999999"></div>
+        </div>
+        <label style="margin-top:6px">Descrição curta</label><textarea id="rdDesc" maxlength="600" rows="3" placeholder="Lazer, localização, entrega, condições…"></textarea>
+        <label style="margin-top:6px">Fotos (a primeira é a capa)</label>
+        <div id="rdFotos" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <input id="rdArquivos" type="file" accept="image/*" multiple style="display:none">
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+          <button id="btnRedeFotos" class="ghost">📷 Adicionar fotos</button>
+          <button id="btnRedeSalvar" class="secondary">💾 Salvar empreendimento</button>
+          <button id="btnRedeCancelar" class="ghost">Cancelar</button>
+          <small id="rdMsg"></small>
+        </div>
+      </div>
+    </div>
     <div class="card" id="cardBaseQuali">
       <h3 style="margin-top:0;font-size:14px">📍 Base qualificada — zona e tipo dos profissionais</h3>
       <small>O que os operadores marcam na bolha do WhatsApp durante a conversa. Use para montar listas sem precisar abordar de novo. Cada empresa vê só as marcações dela.</small>
@@ -699,7 +735,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261029chips"></script>
+<script src="admin-catho-coletor.js?v=20261030rede"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

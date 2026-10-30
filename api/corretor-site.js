@@ -47,6 +47,9 @@ function render(s, prev, url) {
   const tel = soDigitos(s.telefone);
   const primeiro = String(s.nome || '').split(' ')[0];
   const albuns = Array.isArray(s.albuns) ? s.albuns.filter(a => a && Array.isArray(a.fotos) && a.fotos.length) : [];
+  // Lançamentos da rede RH IMOB (SQL REDE_1): o admin cadastra por cidade/zona e
+  // aparecem aqui sozinhos. O contato continua indo para o WhatsApp do profissional.
+  const rede = Array.isArray(s.rede) ? s.rede.filter(a => a && Array.isArray(a.fotos) && a.fotos.length) : [];
   // Capa: a imagem que o profissional subir; sem ela, o banner padrão da parceria.
   const capa = urlOk(s.capa_url);
   const foto = urlOk(s.foto_url);
@@ -82,7 +85,7 @@ function render(s, prev, url) {
         ${vaga.perfil ? `<dt>Perfil</dt><dd>${esc(vaga.perfil)}</dd>` : ''}
       </dl>
       ${vaga.descricao ? `<p>${esc(vaga.descricao)}</p>` : ''}
-      ${waVaga ? `<a class="btn btn-wa" href="${esc(waVaga)}" target="_blank" rel="noopener">${ICON.wa} Quero me candidatar</a>` : ''}
+      ${waVaga ? `<a class="btn btn-wa" data-onde="VAGA" href="${esc(waVaga)}" target="_blank" rel="noopener">${ICON.wa} Quero me candidatar</a>` : ''}
     </div>
   </section>`;
   const waMsg = encodeURIComponent(`Olá, ${primeiro}! Vi seu site e quero falar sobre imóveis.`);
@@ -114,7 +117,7 @@ function render(s, prev, url) {
   const ldHtml = ld ? `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>` : '';
   const waParceria = `https://wa.me/${RH_WA}?text=${encodeURIComponent(`Olá, Fernando! Vi o site de ${s.nome} na RH IMOB e quero criar o meu site gratuito e ser parceiro.`)}`;
   // Ficha de cada imóvel (SQL SITES_5). Álbuns antigos não têm ficha: só título e fotos.
-  const fichas = albuns.map(a => {
+  const fichaDe = (a, daRede) => {
     const specs = [
       a.dorm ? `${a.dorm} dorm` : '', a.suites ? `${a.suites} suíte${a.suites > 1 ? 's' : ''}` : '',
       a.vagas ? `${a.vagas} vaga${a.vagas > 1 ? 's' : ''}` : '', a.area ? `${Number(a.area).toLocaleString('pt-BR')} m²` : '', a.bairro || ''
@@ -125,13 +128,34 @@ function render(s, prev, url) {
     return {
       titulo: a.titulo || TIPO_IMOVEL[a.tipo] || 'Imóvel', fin: FINALIDADE[a.finalidade] || '', tipo: TIPO_IMOVEL[a.tipo] || '',
       preco, specs, desc: a.descricao || '',
-      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá, ${primeiro}! Vi o ${nomeImovel} no seu site e quero mais informações.`)}` : ''
+      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá, ${primeiro}! Vi o ${daRede ? 'lançamento ' : ''}${nomeImovel} no seu site e quero mais informações.`)}` : '',
+      construtora: daRede ? (a.construtora || '') : '', onde: daRede ? 'REDE' : 'IMOVEL', rid: daRede ? (a.id || null) : null
     };
-  });
-  const dadosAlbuns = JSON.stringify(albuns.map((a, k) => ({
-    t: fichas[k].titulo, f: a.fotos.filter(urlOk), l: Array.isArray(a.legendas) ? a.legendas : [],
-    fin: fichas[k].fin, tipo: fichas[k].tipo, preco: fichas[k].preco, specs: fichas[k].specs, desc: fichas[k].desc, wa: fichas[k].wa
+  };
+  const fichas = albuns.map(a => fichaDe(a, false));
+  const fichasRede = rede.map(a => fichaDe(a, true));
+  // Lightbox: primeiro os imóveis do profissional, depois os da rede (índice continua)
+  const todos = [...albuns, ...rede], todasFichas = [...fichas, ...fichasRede];
+  const dadosAlbuns = JSON.stringify(todos.map((a, k) => ({
+    t: todasFichas[k].titulo, f: a.fotos.filter(urlOk), l: Array.isArray(a.legendas) ? a.legendas : [],
+    fin: todasFichas[k].fin, tipo: todasFichas[k].tipo, preco: todasFichas[k].preco, specs: todasFichas[k].specs, desc: todasFichas[k].desc,
+    wa: todasFichas[k].wa, co: todasFichas[k].construtora, onde: todasFichas[k].onde, rid: todasFichas[k].rid
   }))).replace(/</g, '\\u003c');
+  const cardAlbum = (a, f, i) => `
+      <button class="album" type="button" data-album="${i}">
+        <div class="img"><img src="${esc(a.fotos[0])}" alt="${esc(f.titulo)}" loading="lazy">${f.fin ? `<span class="fin">${esc(f.fin)}</span>` : ''}</div>
+        <div class="info">
+          ${f.preco ? `<span class="preco">${esc(f.preco)}</span>` : ''}
+          <strong>${esc(f.titulo)}</strong>
+          ${f.specs ? `<span class="specs">${esc(f.specs)}</span>` : ''}
+          <small>${f.construtora ? esc(f.construtora) + ' · ' : ''}${f.tipo ? esc(f.tipo) + ' · ' : ''}${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}</small>
+        </div>
+      </button>`;
+  const redeHtml = !rede.length ? '' : `
+  <section><h2>🏗️ Lançamentos em parceria</h2>
+    <p class="sub">Empreendimentos das construtoras parceiras da RH IMOB na região. Atendimento com ${esc(primeiro)}.</p>
+    <div class="albuns">${rede.map((a, i) => cardAlbum(a, fichasRede[i], albuns.length + i)).join('')}</div>
+  </section>`;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -245,6 +269,7 @@ ${ldHtml}
   .lb-ficha .tags b{font-size:11px;background:rgba(255,255,255,.16);border-radius:999px;padding:3px 9px}
   .lb-ficha .p{font-size:20px;font-weight:800}
   .lb-ficha .s{font-size:13px;opacity:.9;margin-top:2px}
+  .sub{margin:-6px 0 12px;font-size:13px;color:var(--muted)}
   .lb-ficha .d{font-size:13px;opacity:.85;margin-top:6px;white-space:pre-line}
 </style>
 </head>
@@ -270,7 +295,7 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
       ${zonas.length || bairros.length ? `<div class="atua">${zonas.map(z => `<b>${esc(z)}</b>`).join('')}${bairros.map(b => `<b>${esc(b)}</b>`).join('')}</div>` : ''}
     </div>
     <div class="acoes">
-      ${wa ? `<a class="btn btn-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa} Falar no WhatsApp</a>` : ''}
+      ${wa ? `<a class="btn btn-wa" data-onde="PERFIL" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa} Falar no WhatsApp</a>` : ''}
       ${urlOk(s.instagram) ? `<a class="btn btn-sec" href="${esc(s.instagram)}" target="_blank" rel="noopener">${ICON.ig} Instagram</a>` : ''}
     </div>
   </div>
@@ -282,18 +307,11 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
   ${vagaHtml}
   <section>
     <h2>Imóveis</h2>
-    ${albuns.length ? `<div class="albuns">${albuns.map((a, i) => `
-      <button class="album" type="button" data-album="${i}">
-        <div class="img"><img src="${esc(a.fotos[0])}" alt="${esc(fichas[i].titulo)}" loading="lazy">${fichas[i].fin ? `<span class="fin">${esc(fichas[i].fin)}</span>` : ''}</div>
-        <div class="info">
-          ${fichas[i].preco ? `<span class="preco">${esc(fichas[i].preco)}</span>` : ''}
-          <strong>${esc(fichas[i].titulo)}</strong>
-          ${fichas[i].specs ? `<span class="specs">${esc(fichas[i].specs)}</span>` : ''}
-          <small>${fichas[i].tipo ? esc(fichas[i].tipo) + ' · ' : ''}${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}</small>
-        </div>
-      </button>`).join('')}</div>`
+    ${albuns.length ? `<div class="albuns">${albuns.map((a, i) => cardAlbum(a, fichas[i], i)).join('')}</div>`
+      : rede.length ? `<div class="vazio">Veja abaixo os lançamentos em parceria${wa ? ` ou <a href="${esc(wa)}" target="_blank" rel="noopener"><b>fale pelo WhatsApp</b></a>` : ''}.</div>`
       : `<div class="vazio">Em breve, os imóveis de ${esc(primeiro)} aparecem aqui.${wa ? ` Enquanto isso, <a href="${esc(wa)}" target="_blank" rel="noopener"><b>fale pelo WhatsApp</b></a>.` : ''}</div>`}
   </section>
+  ${redeHtml}
 </main>
 
 <footer>
@@ -306,7 +324,7 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
   <p>Site em parceria com a <a href="${BASE}/" target="_blank" rel="noopener">RH IMOB</a> · tecnologia para conectar profissionais do mercado imobiliário</p>
 </footer>
 
-${wa ? `<a class="btn btn-wa fixo" href="${esc(wa)}" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">${ICON.wa} WhatsApp</a>` : ''}
+${wa ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(wa)}" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">${ICON.wa} WhatsApp</a>` : ''}
 
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Fotos do imóvel">
   <div class="lb-top"><span id="lbTitulo"></span><button type="button" id="lbFechar" aria-label="Fechar">×</button></div>
@@ -326,11 +344,11 @@ ${wa ? `<a class="btn btn-wa fixo" href="${esc(wa)}" target="_blank" rel="noopen
     leg.textContent = al.l[i] || ''; leg.style.display = al.l[i] ? '' : 'none';
     [].forEach.call(thumbs.children, function(t, k){ t.className = k === i ? 'on' : ''; }); }
   function abre(n){ al = A[n]; if(!al) return; thumbs.innerHTML = '';
-    var tags = [al.fin, al.tipo].filter(Boolean).map(function(t){ return '<b>' + txt(t) + '</b>'; }).join('');
+    var tags = [al.co, al.fin, al.tipo].filter(Boolean).map(function(t){ return '<b>' + txt(t) + '</b>'; }).join('');
     info.innerHTML = (al.preco || al.specs || al.desc || tags ? '<div class="lb-ficha">' + (tags ? '<div class="tags">' + tags + '</div>' : '') +
       (al.preco ? '<div class="p">' + txt(al.preco) + '</div>' : '') + (al.specs ? '<div class="s">' + txt(al.specs) + '</div>' : '') +
       (al.desc ? '<div class="d">' + txt(al.desc) + '</div>' : '') + '</div>' : '') +
-      (al.wa ? '<a class="btn btn-wa" target="_blank" rel="noopener" href="' + al.wa + '">Tenho interesse neste imóvel</a>' : '');
+      (al.wa ? '<a class="btn btn-wa" target="_blank" rel="noopener" data-onde="' + al.onde + '"' + (al.rid ? ' data-rede="' + al.rid + '"' : '') + ' data-titulo="' + txt(al.t) + '" href="' + al.wa + '">Tenho interesse neste imóvel</a>' : '');
     al.f.forEach(function(u, k){ var t = document.createElement('img'); t.src = u; t.alt = ''; t.loading = 'lazy'; t.onclick = function(){ mostra(k); }; thumbs.appendChild(t); });
     lb.classList.add('aberto'); document.body.style.overflow = 'hidden'; mostra(0); }
   function fecha(){ lb.classList.remove('aberto'); document.body.style.overflow = ''; }
@@ -340,6 +358,14 @@ ${wa ? `<a class="btn btn-wa fixo" href="${esc(wa)}" target="_blank" rel="noopen
   document.getElementById('lbProx').onclick = function(){ mostra(i + 1); };
   document.addEventListener('keydown', function(e){ if(!lb.classList.contains('aberto')) return;
     if(e.key === 'Escape') fecha(); if(e.key === 'ArrowLeft') mostra(i - 1); if(e.key === 'ArrowRight') mostra(i + 1); });
+  // Cada clique no WhatsApp: conta no admin e aparece no /painel → Leads (/api/site-clique).
+  var sid = ''; try { sid = sessionStorage.getItem('rh_sid') || Math.random().toString(36).slice(2, 12); sessionStorage.setItem('rh_sid', sid); } catch (e) {}
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[data-onde]'); if(!a) return;
+    try { fetch('/api/site-clique', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ c: ${JSON.stringify(s.cidade_slug || '')}, n: ${JSON.stringify(s.nome_slug || '')}, onde: a.getAttribute('data-onde'),
+        rede: a.getAttribute('data-rede') || null, titulo: a.getAttribute('data-titulo') || '', sid: sid, pagina: location.href.split('?')[0] }) }).catch(function(){}); } catch (e) {}
+  });
   foto.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, { passive: true });
   foto.addEventListener('touchend', function(e){ if(x0 === null) return; var d = e.changedTouches[0].clientX - x0; if(Math.abs(d) > 40) mostra(i + (d < 0 ? 1 : -1)); x0 = null; });
 })();

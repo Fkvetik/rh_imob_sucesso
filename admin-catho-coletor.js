@@ -27,7 +27,7 @@ function showApp() {
   loadAdmins();
   loadAuditLog();
   loadLogsExtensao();
-  loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); loadChips(); }); // chips depois das contas: nomes das empresas
+  loadContasPlataforma().then(() => { loadUsuariosPlataforma(); renderWhoInfo(); loadChips(); loadRede(); }); // chips depois das contas: nomes das empresas
   loadContratos();
   // Banco de Corretores CRECI é só da RH IMOB: admin de empresa não vê a aba.
   const superAdmin = !(CURRENT_ADMIN && CURRENT_ADMIN.conta_id_plataforma);
@@ -3018,3 +3018,133 @@ document.addEventListener("click", (e) => {
   void b.offsetWidth; // reinicia a animação
   b.classList.add("clicado");
 }, true);
+
+// ===== Imóveis da rede (SQL REDE_1): lançamentos que aparecem no site de todos os profissionais da região =====
+const RD_ZONAS = [["NORTE", "Zona Norte"], ["SUL", "Zona Sul"], ["LESTE", "Zona Leste"], ["OESTE", "Zona Oeste"], ["CENTRO", "Centro"]];
+let RD = { itens: [], ed: null };
+const rdSlug = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+async function loadRede() {
+  const card = $("cardRede");
+  if (!card) return;
+  let d;
+  try { d = await rpc("rpc_admin_rede", { p_admin_password: ADMIN_PASS }); } catch (_) { return; } // banco sem o REDE_1
+  if (!d || !d.ok || !d.pode_editar) { card.classList.add("hide"); return; }
+  card.classList.remove("hide");
+  RD.itens = d.itens || [];
+  $("rdCidades").innerHTML = (d.cidades || []).map(c => `<option value="${esc(c.cidade)}">${c.sites} site${c.sites === 1 ? "" : "s"} no ar</option>`).join("");
+  rdLista();
+}
+function rdLista() {
+  const L = $("rdLista");
+  if (!RD.itens.length) { L.innerHTML = '<small style="color:#888">Nenhum empreendimento ainda. Cadastre o primeiro e ele já aparece nos sites da cidade.</small>'; return; }
+  L.innerHTML = RD.itens.map((it, i) => {
+    const a = it.album || {}, zonas = (it.zonas || []).map(z => (RD_ZONAS.find(x => x[0] === z) || [z, z])[1]).join(", ");
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #eee;${it.ativo ? "" : "opacity:.55"}">
+      <img src="${esc((a.fotos || [])[0] || "")}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;background:#f1eaf5;flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <b>${esc(a.titulo || "Sem nome")}</b>${it.construtora ? ` <small style="color:#666">· ${esc(it.construtora)}</small>` : ""}<br>
+        <small>📍 ${esc(it.cidade)}${zonas ? " — " + esc(zonas) : ""} · aparece em <b>${it.sites}</b> site${it.sites === 1 ? "" : "s"} · 💬 ${it.cliques} clique${it.cliques === 1 ? "" : "s"}${it.cliques ? ` (${it.cliques_30d} em 30 dias)` : ""}</small>
+      </div>
+      <label style="display:flex;gap:4px;align-items:center;font-size:12px;white-space:nowrap"><input type="checkbox" data-rd-ativo="${i}" style="width:auto;margin:0"${it.ativo ? " checked" : ""}> no ar</label>
+      <button class="ghost" data-rd-ed="${i}" title="Editar">✎</button>
+      <button class="ghost" data-rd-del="${i}" title="Apagar">🗑</button>
+    </div>`;
+  }).join("");
+  L.querySelectorAll("[data-rd-ed]").forEach(b => b.onclick = () => rdAbrir(RD.itens[+b.dataset.rdEd]));
+  L.querySelectorAll("[data-rd-del]").forEach(b => b.onclick = async () => {
+    const it = RD.itens[+b.dataset.rdDel];
+    if (!confirm(`Apagar "${(it.album || {}).titulo}"? Ele some do site de todos os profissionais.`)) return;
+    const r = await rpc("rpc_admin_rede_excluir", { p_admin_password: ADMIN_PASS, p_id: it.id }).catch(e => ({ ok: false, error: e.message }));
+    if (!r.ok) { alert(r.error || "Não consegui apagar"); return; }
+    loadRede();
+  });
+  L.querySelectorAll("[data-rd-ativo]").forEach(cb => cb.onchange = async () => {
+    const it = RD.itens[+cb.dataset.rdAtivo];
+    const r = await rpc("rpc_admin_rede_salvar", { p_admin_password: ADMIN_PASS, p_item: { ...it, ativo: cb.checked } }).catch(e => ({ ok: false, error: e.message }));
+    if (!r.ok) { alert(r.error || "Não consegui salvar"); cb.checked = !cb.checked; return; }
+    loadRede();
+  });
+}
+function rdZonasRender() {
+  const sp = rdSlug($("rdCidade").value) === "sao-paulo";
+  $("rdZonasBox").style.display = sp ? "" : "none";
+  $("rdZonas").innerHTML = RD_ZONAS.map(([z, t]) => {
+    const on = RD.ed.zonas.includes(z);
+    return `<button type="button" class="${on ? "secondary" : "ghost"}" data-rd-zona="${z}" style="padding:4px 10px">${on ? "✓ " : ""}${t}</button>`;
+  }).join("");
+  $("rdZonas").querySelectorAll("[data-rd-zona]").forEach(b => b.onclick = () => {
+    const z = b.dataset.rdZona, i = RD.ed.zonas.indexOf(z);
+    if (i >= 0) RD.ed.zonas.splice(i, 1); else RD.ed.zonas.push(z);
+    rdZonasRender();
+  });
+}
+function rdFotosRender() {
+  const F = $("rdFotos"), fotos = RD.ed.album.fotos;
+  F.innerHTML = fotos.map((u, k) => `<div style="position:relative;width:96px;height:72px">
+      <img src="${esc(u)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
+      ${k === 0 ? '<span style="position:absolute;left:4px;top:4px;background:#2b124d;color:#fff;font-size:10px;border-radius:999px;padding:1px 6px">Capa</span>' : ""}
+      <div style="position:absolute;right:2px;bottom:2px;display:flex;gap:2px">
+        ${k ? `<button type="button" data-rd-capa="${k}" title="Usar como capa" style="padding:0 5px">★</button>` : ""}
+        <button type="button" data-rd-tirar="${k}" title="Tirar" style="padding:0 5px">✕</button>
+      </div></div>`).join("") || '<small style="color:#888">Nenhuma foto ainda.</small>';
+  F.querySelectorAll("[data-rd-tirar]").forEach(b => b.onclick = () => { fotos.splice(+b.dataset.rdTirar, 1); rdFotosRender(); });
+  F.querySelectorAll("[data-rd-capa]").forEach(b => b.onclick = () => { const f = fotos.splice(+b.dataset.rdCapa, 1)[0]; fotos.unshift(f); rdFotosRender(); });
+}
+function rdAbrir(it) {
+  const a = (it && it.album) || {};
+  RD.ed = { id: it ? it.id : null, ativo: it ? it.ativo : true, ordem: it ? it.ordem : 0, zonas: [...((it && it.zonas) || [])],
+            album: { ...a, fotos: [...(a.fotos || [])] } };
+  $("rdTitulo").value = a.titulo || ""; $("rdConstrutora").value = (it && it.construtora) || ""; $("rdCidade").value = (it && it.cidade) || "";
+  $("rdFin").value = a.finalidade || ""; $("rdTipo").value = a.tipo || "";
+  $("rdPreco").value = a.preco ? Number(a.preco).toLocaleString("pt-BR") : ""; $("rdBairro").value = a.bairro || "";
+  $("rdDorm").value = a.dorm || ""; $("rdSuites").value = a.suites || ""; $("rdVagas").value = a.vagas || ""; $("rdArea").value = a.area || "";
+  $("rdDesc").value = a.descricao || ""; $("rdMsg").textContent = "";
+  $("rdForm").style.display = ""; $("btnRedeNovo").style.display = "none";
+  rdZonasRender(); rdFotosRender();
+  $("rdForm").scrollIntoView({ behavior: "smooth", block: "center" }); $("rdTitulo").focus();
+}
+function rdFechar() { RD.ed = null; $("rdForm").style.display = "none"; $("btnRedeNovo").style.display = ""; }
+// Mesma redução do painel do corretor (/meu-site): até 1600 px, JPEG.
+function rdReduzir(file) {
+  return new Promise((ok, falha) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement("canvas");
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); falha(new Error("Não consegui abrir essa imagem")); };
+    img.src = url;
+  });
+}
+$("btnRedeNovo")?.addEventListener("click", () => rdAbrir(null));
+$("btnRedeCancelar")?.addEventListener("click", rdFechar);
+$("rdCidade")?.addEventListener("input", () => RD.ed && rdZonasRender());
+$("btnRedeFotos")?.addEventListener("click", () => { $("rdArquivos").value = ""; $("rdArquivos").click(); });
+$("rdArquivos")?.addEventListener("change", async () => {
+  const fs = [...($("rdArquivos").files || [])].slice(0, 30 - RD.ed.album.fotos.length);
+  const b = $("btnRedeSalvar"); b.disabled = true; let erros = 0;
+  for (let k = 0; k < fs.length; k++) {
+    $("rdMsg").textContent = `Enviando foto ${k + 1} de ${fs.length}…`;
+    try {
+      const imagem = await rdReduzir(fs[k]);
+      const d = await fetch("/api/site-foto", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin: ADMIN_PASS, imagem }) }).then(r => r.json());
+      if (!d || !d.ok) throw new Error((d && d.error) || "Falha ao enviar");
+      RD.ed.album.fotos.push(d.url); rdFotosRender();
+    } catch (e) { erros++; $("rdMsg").textContent = "⚠️ " + e.message; }
+  }
+  b.disabled = false;
+  if (!erros) $("rdMsg").textContent = fs.length ? "Fotos prontas — lembre de salvar" : "";
+});
+$("btnRedeSalvar")?.addEventListener("click", async () => {
+  const v = (id) => $(id).value.trim();
+  const item = { id: RD.ed.id, ativo: RD.ed.ativo, ordem: RD.ed.ordem, cidade: v("rdCidade"), construtora: v("rdConstrutora"),
+    zonas: rdSlug(v("rdCidade")) === "sao-paulo" ? RD.ed.zonas : [],
+    album: { titulo: v("rdTitulo"), fotos: RD.ed.album.fotos, legendas: RD.ed.album.legendas || [], finalidade: v("rdFin"), tipo: v("rdTipo"),
+      preco: v("rdPreco").replace(/\D/g, ""), bairro: v("rdBairro"), dorm: v("rdDorm"), suites: v("rdSuites"), vagas: v("rdVagas"), area: v("rdArea"), descricao: v("rdDesc") } };
+  const b = $("btnRedeSalvar"); b.disabled = true; $("rdMsg").textContent = "Salvando…";
+  const r = await rpc("rpc_admin_rede_salvar", { p_admin_password: ADMIN_PASS, p_item: item }).catch(e => ({ ok: false, error: e.message }));
+  b.disabled = false;
+  if (!r.ok) { $("rdMsg").textContent = "⚠️ " + (r.error || "Não consegui salvar"); return; }
+  rdFechar(); loadRede();
+});

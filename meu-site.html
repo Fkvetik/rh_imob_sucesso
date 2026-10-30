@@ -191,6 +191,10 @@
         '<small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Separe por vírgula. A gente arruma as maiúsculas ao salvar.</small>' +
       '</div>' +
       vagaHtml() +
+      // Lançamentos da rede (SQL REDE_1): aparecem sozinhos; o profissional só escolhe se quer mostrar.
+      (S.rede_qtd > 0 ? '<div class="card"><h2>🏗️ Lançamentos em parceria</h2><small>' + S.rede_qtd + ' empreendimento' + (S.rede_qtd > 1 ? 's' : '') +
+        ' das construtoras parceiras da RH IMOB para a sua região. Eles aparecem no seu site e quem se interessar fala com você pelo seu WhatsApp.</small>' +
+        '<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:10px"><input type="checkbox" id="fRede" style="width:auto;margin:0"' + (S.rede_oculta ? '' : ' checked') + '> Mostrar no meu site</label></div>' : '') +
 
       '<div class="card"><h2>Fotos do topo</h2><small>A capa é a imagem grande do topo. Sem capa, o site usa o banner padrão da parceria, com seu nome e sua região. Para trocar, use uma imagem deitada, de preferência 1600 × 600.</small>' +
         '<div class="fotoum"><div class="prev">' + (S.foto_url ? '<img src="' + esc(S.foto_url) + '" alt="">' : 'Sua foto') + '</div>' +
@@ -274,6 +278,14 @@
       if (mudouVaga) rerender(); // mostra ou esconde o quadro de vagas
     };
     $('fVagaOn') && ($('fVagaOn').onchange = function(){ marcaSujo(); rerender(); });
+    // vale na hora, sem precisar salvar
+    $('fRede') && ($('fRede').onchange = function(){
+      var cb = $('fRede'), oculta = !cb.checked; cb.disabled = true;
+      rpc('rpc_site_rede_ocultar', { p_token_edicao:T, p_oculta:oculta }).then(function(d){
+        if (!d || !d.ok) throw new Error((d && d.error) || 'Não consegui');
+        S.rede_oculta = oculta; toast(oculta ? 'Lançamentos escondidos do seu site' : '✅ Lançamentos aparecendo no seu site');
+      }).catch(function(e){ cb.checked = !cb.checked; toast('⚠️ ' + e.message); }).then(function(){ cb.disabled = false; });
+    });
     app.querySelectorAll('[data-zona]').forEach(function(b){ b.onclick = function(){
       lerCampos(); var z = b.dataset.zona, l = S.zonas = (S.zonas || []).slice(), i = l.indexOf(z);
       if (i >= 0) l.splice(i, 1); else l.push(z);
