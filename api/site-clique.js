@@ -6,7 +6,10 @@
 //     o imóvel e o profissional que recebeu o contato. O WhatsApp de quem
 //     clicou não chega até nós (a conversa abre direto no celular do
 //     profissional), então o lead fica sem telefone.
+//  3) avisos no painel de quem recebeu (e do dono do imóvel da rede), que
+//     também vão como notificação para o celular (SQL REDE_5).
 import { cors, send, lerCorpo, COLETOR, NT } from './_ext-comum.js';
+import { enviarPendentes } from './_push.js';
 
 const ONDE = { PERFIL: 'botão do perfil', IMOVEL: 'imóvel do profissional', REDE: 'lançamento da rede RH IMOB', VAGA: 'vaga para corretores' };
 const limpa = (s, n) => String(s || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
@@ -26,11 +29,15 @@ export default async function handler(req, res) {
   if (!c || !n) return send(res, 400, { ok: false });
 
   try {
-    const s = await fetch(`${COLETOR.url}/rest/v1/rpc/rpc_site_clique`, {
+    const clique = corpo => fetch(`${COLETOR.url}/rest/v1/rpc/rpc_site_clique`, {
       method: 'POST',
       headers: { apikey: COLETOR.anon, Authorization: `Bearer ${COLETOR.anon}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_cidade: c, p_nome: n, p_onde: onde, p_rede_id: rede })
+      body: JSON.stringify(corpo)
     }).then(r => r.json()).catch(() => null);
+    const base = { p_cidade: c, p_nome: n, p_onde: onde, p_rede_id: rede };
+    let s = await clique({ ...base, p_titulo: limpa(b.titulo, 80) || null });
+    // banco ainda sem o REDE_5 (a função não tem p_titulo): conta do jeito antigo
+    if (s && s.code && !('ok' in s)) s = await clique(base);
     if (!s || !s.ok) return send(res, 200, { ok: false }); // rascunho ou banco sem o REDE_1: não conta
 
     const service = NT.service();
@@ -57,6 +64,7 @@ export default async function handler(req, res) {
         })
       }).catch(() => {});
     }
+    await enviarPendentes().catch(() => {});
     return send(res, 200, { ok: true });
   } catch (e) {
     return send(res, 200, { ok: false });
@@ -93,6 +101,7 @@ async function cliqueParceiro(res, b, slug, rede) {
         })
       }).catch(() => {});
     }
+    await enviarPendentes().catch(() => {});
     return send(res, 200, { ok: true });
   } catch (e) {
     return send(res, 200, { ok: false });

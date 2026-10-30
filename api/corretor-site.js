@@ -130,7 +130,7 @@ function render(s, prev, url) {
     return {
       titulo: a.titulo || TIPO_IMOVEL[a.tipo] || 'Imóvel', fin: FINALIDADE[a.finalidade] || '', tipo: TIPO_IMOVEL[a.tipo] || '',
       preco, specs, desc: a.descricao || '',
-      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá, ${primeiro}! Vi o ${daRede ? 'lançamento ' : ''}${nomeImovel} no seu site e quero mais informações.`)}` : '',
+      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá, ${primeiro}! Vi o ${daRede ? 'lançamento ' : ''}${nomeImovel} no seu site e quero mais informações.${daRede && a.id ? ` (Ref. RH-${a.id})` : ''}`)}` : '',
       construtora: daRede ? (a.construtora || '') : '', onde: daRede ? 'REDE' : 'IMOVEL', rid: daRede ? (a.id || null) : null
     };
   };

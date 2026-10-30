@@ -40,7 +40,7 @@ function render(p, itens, url) {
     return {
       titulo: a.titulo || TIPO_IMOVEL[a.tipo] || 'Empreendimento', fin: FINALIDADE[a.finalidade] || '', tipo: TIPO_IMOVEL[a.tipo] || '', preco, specs,
       desc: a.descricao || '', local: [a.cidade, (a.zonas || []).map(z => ZONA[z]).filter(Boolean).join(', ')].filter(Boolean).join(' — '),
-      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá${a.resp ? ', ' + String(a.resp).split(' ')[0] : ''}! Vi o ${nomeImovel} no site da ${p.nome} (RH IMOB) e quero mais informações.`)}` : '',
+      wa: tel ? `https://wa.me/${tel}?text=${encodeURIComponent(`Olá${a.resp ? ', ' + String(a.resp).split(' ')[0] : ''}! Vi o ${nomeImovel} no site da ${p.nome} (RH IMOB) e quero mais informações.${a.id ? ` (Ref. RH-${a.id})` : ''}`)}` : '',
       rid: a.id
     };
   });

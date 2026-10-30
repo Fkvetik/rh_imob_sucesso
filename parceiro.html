@@ -6,6 +6,10 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Painel do parceiro — RH IMOB</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2b124d">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RH IMOB">
 <style>
   :root{--roxo:#2b124d;--roxo2:#5b21b6;--lilas:#f4eefb;--txt:#1f1530;--muted:#6b5e7e;--line:#e6ddf1;--bg:#f7f4fb;--ok:#16a34a;--erro:#c0392b}
   *{box-sizing:border-box}
@@ -65,6 +69,7 @@
 <div id="toast"></div>
 <input type="file" id="arquivos" accept="image/*">
 
+<script src="/painel-app.js?v=20261030"></script>
 <script>
 (function(){
   // Coletor (chave pública; tudo passa pelas funções rpc_parceiro_* do SQL REDE_2).
@@ -96,21 +101,23 @@
 
   function lista(){
     $('titulo').textContent = 'Painel do parceiro — ' + D.parceiro.nome;
-    var itens = D.itens || [];
+    var itens = D.itens || [], imob = D.parceiro.imobiliaria;
     app.innerHTML =
-      '<div class="card"><h2>Seus empreendimentos na rede RH IMOB</h2>' +
-        '<small class="d">Cadastre cada empreendimento com fotos e ficha. Depois que a RH IMOB aprovar, ele aparece sozinho no site dos corretores parceiros da cidade (e da zona, em São Paulo). Quem se interessa fala com o corretor, que vende com o material de vendas que você deixar aqui.</small>' +
+      (imob && D.parceiro.site_token ? '<a class="btn btn-ghost btn-mini" href="/meu-site?t=' + esc(D.parceiro.site_token) + '" style="margin-bottom:12px">← Voltar ao meu site</a>' : '') +
+      '<div class="card"><h2>' + (imob ? 'Seus imóveis na rede RH IMOB' : 'Seus empreendimentos na rede RH IMOB') + '</h2>' +
+        '<small class="d">' + (imob ? 'Cadastre aqui os imóveis que você quer vender em parceria. Pode trazer um imóvel do seu site com um toque. Depois que a RH IMOB aprovar, ele aparece no site dos corretores da região (menos no seu), e o corretor vê a comissão e o seu contato no material de vendas. Quando um cliente se interessar, você recebe o aviso no 🔔.'
+          : 'Cadastre cada empreendimento com fotos e ficha. Depois que a RH IMOB aprovar, ele aparece sozinho no site dos corretores parceiros da cidade (e da zona, em São Paulo). Quem se interessa fala com o corretor, que vende com o material de vendas que você deixar aqui.') + '</small>' +
         (itens.length ? itens.map(function(it, i){
           var a = it.album || {}, z = (it.zonas || []).map(function(c){ return (ZONAS.filter(function(x){ return x[0] === c; })[0] || [c, c])[1]; }).join(', ');
           return '<div class="item"><img src="' + esc((a.fotos || [])[0] || '') + '" alt="">' +
             '<div class="i"><b>' + esc(a.titulo || 'Sem nome') + '</b><small>📍 ' + esc(it.cidade) + (z ? ' — ' + esc(z) : '') + '</small><br>' + statusHtml(it) + '</div>' +
             '<button class="btn btn-ghost btn-mini" data-ed="' + i + '">✎ Editar</button></div>';
-        }).join('') : '<p style="color:var(--muted);font-size:14px;margin:14px 0 0">Nenhum empreendimento ainda.</p>') +
-        '<button class="btn btn-prim" id="btnNovo" style="width:100%;margin-top:14px">➕ Novo empreendimento</button>' +
+        }).join('') : '<p style="color:var(--muted);font-size:14px;margin:14px 0 0">Nenhum ' + (imob ? 'imóvel' : 'empreendimento') + ' ainda.</p>') +
+        '<button class="btn btn-prim" id="btnNovo" style="width:100%;margin-top:14px">➕ ' + (imob ? 'Novo imóvel na rede' : 'Novo empreendimento') + '</button>' +
       '</div>' +
-      empresaHtml();
+      (imob ? '' : empresaHtml());
     $('btnNovo').onclick = function(){ editar(null); };
-    ligarEmpresa();
+    if (!imob) ligarEmpresa();
     app.querySelectorAll('[data-ed]').forEach(function(b){ b.onclick = function(){ editar(D.itens[+b.dataset.ed]); }; });
   }
 
@@ -159,19 +166,21 @@
     }).catch(function(e){ toast('⚠️ ' + e.message); b.disabled = false; b.textContent = '💾 Salvar dados da empresa'; });
   }
 
-  function editar(it){
-    var a = (it && it.album) || {}, p = (it && it.privado) || {};
+  function editar(it, base){
+    var imob = D.parceiro.imobiliaria;
+    var a = (it && it.album) || base || {}, p = (it && it.privado) || (imob ? { resp_nome: D.parceiro.nome, resp_whatsapp: D.parceiro.whatsapp } : {});
     ED = { id: it ? it.id : null, publicado: !!(it && it.status === 'PUBLICADO'), zonas: ((it && it.zonas) || []).slice(),
            fotos: (a.fotos || []).slice(), legendas: (a.legendas || []).slice() };
     var num = function(id, rot, v, max){ return '<div><label for="' + id + '">' + rot + '</label><input type="number" id="' + id + '" min="0" max="' + max + '" value="' + esc(v || '') + '"></div>'; };
     app.innerHTML =
-      '<div class="card"><div class="linha" style="justify-content:space-between"><h2>' + (it ? 'Editar empreendimento' : 'Novo empreendimento') + '</h2>' +
+      '<div class="card"><div class="linha" style="justify-content:space-between"><h2>' + (it ? 'Editar ' + (imob ? 'imóvel' : 'empreendimento') : 'Novo ' + (imob ? 'imóvel na rede' : 'empreendimento')) + '</h2>' +
         '<button class="btn btn-ghost btn-mini" id="btnVoltar">← Voltar</button></div>' +
         (ED.publicado ? '<div class="aviso">Este empreendimento está no ar. Mudanças no <b>anúncio</b> passam pela aprovação da RH IMOB (o anúncio atual continua no ar até lá). O <b>material de vendas</b> vale na hora.</div>' : '') +
 
+        trazerHtml(it) +
         '<h3>📣 Anúncio</h3><small class="d">O que aparece no site dos corretores.</small>' +
         '<label for="fTitulo">Nome do empreendimento</label><input type="text" id="fTitulo" maxlength="80" placeholder="Ex.: Residencial Vista Sul" value="' + esc(a.titulo) + '">' +
-        '<div class="g2"><div><label for="fCidade">Cidade</label><input type="text" id="fCidade" maxlength="60" list="cidades" placeholder="Ex.: São Paulo" value="' + esc(it ? it.cidade : '') + '">' +
+        '<div class="g2"><div><label for="fCidade">Cidade</label><input type="text" id="fCidade" maxlength="60" list="cidades" placeholder="Ex.: São Paulo" value="' + esc(it ? it.cidade : (imob ? D.parceiro.cidade_site || '' : '')) + '">' +
           '<datalist id="cidades">' + (D.cidades || []).map(function(c){ return '<option value="' + esc(c.cidade) + '">' + c.sites + ' corretor(es) com site</option>'; }).join('') + '</datalist></div>' +
           '<div><label for="fBairro">Bairro</label><input type="text" id="fBairro" maxlength="60" value="' + esc(a.bairro) + '"></div></div>' +
         '<div id="zonasBox"><label>Zonas de São Paulo (vazio = cidade toda)</label><div class="zonas" id="fZonas"></div></div>' +
@@ -200,11 +209,19 @@
         '</div>' +
       '</div>';
     $('btnVoltar').onclick = function(){ ED = null; lista(); };
+    $('fTrazer') && ($('fTrazer').onchange = function(){ var al = (D.albuns_site || [])[+this.value]; if (al) { editar(null, al); toast('Imóvel trazido do seu site. Confira, complete o material de vendas e envie.'); } });
     $('fCidade').addEventListener('input', zonasRender);
     $('fDesc').addEventListener('input', conta);
     $('btnSalvar').onclick = salvar;
     $('btnExcluir') && ($('btnExcluir').onclick = excluir);
     zonasRender(); fotosRender(); conta(); window.scrollTo(0, 0);
+  }
+  // Imobiliária: traz um imóvel do próprio site (fotos e ficha) para não digitar de novo.
+  function trazerHtml(it){
+    var l = D.albuns_site || [];
+    if (it || !D.parceiro.imobiliaria || !l.length) return '';
+    return '<label for="fTrazer">📥 Trazer um imóvel do meu site</label><select id="fTrazer"><option value="">Escolha um imóvel (opcional)</option>' +
+      l.map(function(al, k){ return '<option value="' + k + '">' + esc(al.titulo || ('Imóvel ' + (k + 1))) + '</option>'; }).join('') + '</select>';
   }
   function conta(){ var n = $('fDesc').value.length, f = 600 - n; $('fDescConta').textContent = n + ' de 600 caracteres — ' + (f ? 'faltam ' + f : 'limite atingido'); $('fDescConta').style.color = f <= 50 ? '#b45309' : ''; }
   function zonasRender(){
@@ -285,6 +302,7 @@
     return rpc('rpc_parceiro_meu', { p_token: T }).then(function(d){
       if (!d || !d.ok) { app.innerHTML = '<div class="card"><h2>Não deu para abrir</h2><small class="d">' + esc((d && (d.error || d.message)) || 'Link inválido.') + '</small></div>'; return; }
       D = d; ED = null; lista();
+      PainelApp.iniciar({ token: T, tipo: 'parceiro', rpc: rpc });
     }).catch(function(){ app.innerHTML = '<div class="card"><h2>Sem conexão</h2><small class="d">Verifique a internet e recarregue a página.</small></div>'; });
   }
   if (!T) { app.innerHTML = '<div class="card"><h2>Link incompleto</h2><small class="d">Abra o link exatamente como você recebeu da RH IMOB.</small></div>'; return; }

@@ -6,6 +6,10 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Meu site — RH IMOB</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2b124d">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RH IMOB">
 <style>
   :root{--roxo:#2b124d;--roxo2:#5b21b6;--lilas:#f4eefb;--txt:#1f1530;--muted:#6b5e7e;--line:#e6ddf1;--bg:#f7f4fb;--ok:#16a34a;--erro:#c0392b}
   *{box-sizing:border-box}
@@ -66,7 +70,7 @@
 <body>
 <header>
   <img src="/assets/rhimob-logo.jpg" alt="">
-  <div><strong>Meu site de corretor</strong><span>Parceria RH IMOB</span></div>
+  <div><strong>Meu site</strong><span>Rede de Parceiros RH IMOB</span></div>
 </header>
 
 <div class="wrap" id="app"><div class="carregando">Carregando seu site…</div></div>
@@ -78,6 +82,7 @@
 <input type="file" id="arquivo" accept="image/*">
 <input type="file" id="arquivos" accept="image/*" multiple>
 
+<script src="/painel-app.js?v=20261030"></script>
 <script>
 (function(){
   // Projeto do Coletor (chave pública; tudo passa pelas funções rpc_site_* do SQL SITES_1).
@@ -117,6 +122,13 @@
             '<label for="fVagaDesc">Sobre a vaga (opcional)</label><textarea id="fVagaDesc" maxlength="800" placeholder="Treinamento, plantões, tipo de imóvel, região de atuação…">' + esc(v.descricao) + '</textarea>'
           : '') +
       '</div>';
+  }
+  // Imobiliária oferece imóveis à rede (SQL REDE_5): abre o painel de parceiro ligado ao site,
+  // o mesmo das construtoras. A RH IMOB aprova e o imóvel vai para os profissionais da região.
+  function parceriaHtml(){
+    if (!anunciaVaga(S.profissao)) return '';
+    return '<div class="card"><h2>🤝 Oferecer imóveis à rede</h2><small>Tem imóvel que quer vender em parceria? Cadastre na rede: depois que a RH IMOB aprovar, ele aparece no site dos corretores da região, com a comissão e o seu contato no material de vendas. Quando um cliente se interessar, você recebe o aviso aqui.</small>' +
+      '<button class="btn btn-prim" type="button" id="btnParceria" style="width:100%">🤝 Abrir meus imóveis na rede</button></div>';
   }
   // Material de vendas dos lançamentos da sua região (SQL REDE_2): só o profissional vê, nunca o cliente.
   function materialHtml(){
@@ -209,6 +221,7 @@
         '<small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Separe por vírgula. A gente arruma as maiúsculas ao salvar.</small>' +
       '</div>' +
       vagaHtml() +
+      parceriaHtml() +
       // Lançamentos da rede (SQL REDE_1): aparecem sozinhos; o profissional só escolhe se quer mostrar.
       (S.rede_qtd > 0 ? '<div class="card"><h2>🏗️ Lançamentos em parceria</h2><small>' + S.rede_qtd + ' empreendimento' + (S.rede_qtd > 1 ? 's' : '') +
         ' das construtoras parceiras da RH IMOB para a sua região. Eles aparecem no seu site e quem se interessar fala com você pelo seu WhatsApp.</small>' +
@@ -311,6 +324,14 @@
       if (z === 'TODAS') S.zonas = i >= 0 ? [] : ['TODAS'];
       else { var t = l.indexOf('TODAS'); if (t >= 0) l.splice(t, 1); i = l.indexOf(z); if (i >= 0) l.splice(i, 1); else l.push(z); }
       marcaSujo(); render(); }; });
+    $('btnParceria') && ($('btnParceria').onclick = function(){
+      if (sujo && !confirm('Você tem alterações sem salvar aqui. Sair mesmo assim?')) return;
+      var b = $('btnParceria'); b.disabled = true; b.textContent = 'Abrindo…';
+      rpc('rpc_site_parceria', { p_token_edicao:T }).then(function(d){
+        if (!d || !d.ok) throw new Error((d && (d.error || d.message)) || 'Não consegui abrir');
+        sujo = false; location.href = '/parceiro?t=' + d.token;
+      }).catch(function(e){ toast('⚠️ ' + e.message); b.disabled = false; b.textContent = '🤝 Abrir meus imóveis na rede'; });
+    });
     $('btnPublicar') && ($('btnPublicar').onclick = function(){ publicar(true); });
     $('btnDespublicar') && ($('btnDespublicar').onclick = function(){ if (confirm('Tirar o site do ar? Ele volta a ser rascunho.')) publicar(false); });
     $('btnCopiar') && ($('btnCopiar').onclick = function(){ navigator.clipboard.writeText(urlSite()).then(function(){ toast('🔗 Link copiado'); }); });
@@ -405,6 +426,7 @@
   rpc('rpc_site_meu', { p_token_edicao:T }).then(function(d){
     if (!d || !d.ok) { app.innerHTML = '<div class="card"><h2>Não deu para abrir</h2><small>' + esc((d && (d.error || d.message)) || 'Link inválido.') + '</small></div>'; return; }
     S = d.site; S.albuns = Array.isArray(S.albuns) ? S.albuns : []; render();
+    PainelApp.iniciar({ token: T, tipo: 'site', rpc: rpc });
     // material de vendas chega depois, sem segurar a tela (banco sem o REDE_2: fica sem o card)
     rpc('rpc_site_material', { p_token_edicao:T }).then(function(m){
       if (m && m.ok && (m.itens || []).length) { lerCampos(); S.material = m.itens; render(); }

@@ -3120,6 +3120,7 @@ function rdLista() {
     if (!sim) { nota = prompt("Motivo (o parceiro vê no painel dele):", ""); if (nota === null) return; }
     const r = await rpc("rpc_admin_rede_aprovar", { p_admin_password: ADMIN_PASS, p_id: it.id, p_aprovar: sim, p_nota: nota }).catch(e => ({ ok: false, error: e.message }));
     if (!r.ok) { alert(r.error || "Não consegui"); return; }
+    avisarCelulares();
     loadRede();
   };
   L.querySelectorAll("[data-rd-ok]").forEach(b => b.onclick = () => aprovar(RD.itens[+b.dataset.rdOk], true));
@@ -3232,5 +3233,9 @@ $("btnRedeSalvar")?.addEventListener("click", async () => {
   const r = await rpc("rpc_admin_rede_salvar", { p_admin_password: ADMIN_PASS, p_item: item }).catch(e => ({ ok: false, error: e.message }));
   b.disabled = false;
   if (!r.ok) { $("rdMsg").textContent = "⚠️ " + (r.error || "Não consegui salvar"); return; }
+  avisarCelulares();
   rdFechar(); loadRede();
 });
+
+// Aprovação e cadastro geram avisos (SQL REDE_5): entrega já como notificação no celular.
+function avisarCelulares() { fetch("/api/push-enviar", { method: "POST" }).catch(() => {}); }
