@@ -170,8 +170,10 @@
         '<small style="margin:8px 0 0;color:#11692f;font-weight:700">✓ Sua página é gratuita.</small>' +
       '</div>' +
 
-      '<div class="card"><h2>Seus dados</h2><small>Aparecem no topo do site. O botão de WhatsApp usa o número ' + esc(formataTel(S.telefone)) + '.</small>' +
+      '<div class="card"><h2>Seus dados</h2><small>Aparecem no topo do site.</small>' +
         '<label for="fNome">Nome</label><input type="text" id="fNome" maxlength="80" value="' + esc(S.nome) + '">' +
+        '<label for="fTel">WhatsApp</label><input type="text" id="fTel" inputmode="tel" maxlength="20" placeholder="(11) 93038-6249" value="' + esc(formataTel(S.telefone)) + '">' +
+        '<small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">É o número que o botão de WhatsApp do site chama. Pode trocar se preferir outro.</small>' +
         '<label for="fBio">Sobre você</label><textarea id="fBio" maxlength="1200" placeholder="Conte há quanto tempo atua e com que tipo de imóvel trabalha.">' + esc(S.bio) + '</textarea>' +
       '</div>' +
 
@@ -245,7 +247,7 @@
 
   function lerCampos(){
     if (!$('fNome')) return;
-    S.nome = $('fNome').value.trim() || S.nome; S.creci = $('fCreci').value.trim(); S.bio = $('fBio').value.trim();
+    S.nome = $('fNome').value.trim() || S.nome; S.telefone = $('fTel').value.trim(); S.creci = $('fCreci').value.trim(); S.bio = $('fBio').value.trim();
     S.profissao = $('fProf').value; S.bairrosTxt = $('fBairros').value;
     if ($('fVagaOn')) {
       S.vaga = Object.assign({}, S.vaga || {}, { aberta: $('fVagaOn').checked });
@@ -334,7 +336,7 @@
 
   function salvar(){
     lerCampos();
-    var dados = { nome:S.nome, creci:S.creci, bio:S.bio, foto_url:S.foto_url || '', capa_url:S.capa_url || '',
+    var dados = { nome:S.nome, telefone:S.telefone, creci:S.creci, bio:S.bio, foto_url:S.foto_url || '', capa_url:S.capa_url || '',
       profissao:S.profissao || 'CORRETOR', zonas:S.zonas || [], bairros:S.bairros || [], cidades:S.cidades || [], vaga:S.vaga || null,
       instagram:S.instagram, facebook:S.facebook, linkedin:S.linkedin, youtube:S.youtube,
       albuns:(S.albuns || []).map(function(a){ return { titulo:a.titulo || '', fotos:a.fotos || [], legendas:a.legendas || [],
@@ -347,6 +349,7 @@
       sujo = false; $('btnSalvar').textContent = '💾 Salvar alterações';
       // os bairros voltam com a escrita arrumada pelo banco
       if (Array.isArray(d.bairros)) { S.bairros = d.bairros; if ($('fBairros')) $('fBairros').value = d.bairros.join(', '); }
+      if (d.telefone) { S.telefone = d.telefone; if ($('fTel')) $('fTel').value = formataTel(d.telefone); }
       if (Array.isArray(d.cidades)) { S.cidades = d.cidades; if ($('fCidades')) $('fCidades').value = d.cidades.join(', '); }
       if (semFoto) { S.albuns = S.albuns.filter(function(a){ return a.fotos && a.fotos.length; }); render(); }
       toast(semFoto ? '✅ Salvo. Álbuns sem foto não foram guardados.' : '✅ Salvo');
