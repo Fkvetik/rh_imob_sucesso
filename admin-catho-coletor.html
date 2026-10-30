@@ -428,11 +428,14 @@
       <h3 style="margin-top:0;font-size:14px">🏗️ Imóveis da rede — lançamentos das construtoras parceiras</h3>
       <small>O que você cadastrar aqui aparece sozinho no site de todos os profissionais da rede que atendem a cidade (e, em São Paulo capital, a zona escolhida). Quem se interessa fala com o profissional pelo WhatsApp dele; cada clique é contado aqui e aparece no Painel → Leads.</small>
       <div style="margin-top:10px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <b style="font-size:13px">🤝 Parceiros (construtoras)</b>
-          <button id="btnParceiroNovo" class="ghost">＋ Novo parceiro</button>
+        <b style="font-size:13px">🤝 Sites das construtoras — rhimob.com.br/parceiro/nome</b>
+        <div style="font-size:11px;color:#888;margin-top:2px">Crie o site e mande o link de edição para o responsável: ele cadastra os empreendimentos e o material de vendas; você aprova aqui embaixo. No site da construtora, o contato é o WhatsApp do responsável; nos sites dos corretores, é sempre o do corretor.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:8px 0 4px;padding:8px 10px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
+          <div style="flex:2;min-width:160px"><label>Nome do site</label><input id="pcNome" type="text" maxlength="60" placeholder="Ex.: Cury"></div>
+          <div style="flex:1;min-width:150px"><label>WhatsApp do responsável</label><input id="pcTel" type="text" inputmode="tel" placeholder="(11) 99999-9999"></div>
+          <button id="btnParceiroNovo" class="secondary" style="margin-bottom:4px">➕ Criar site</button>
         </div>
-        <div style="font-size:11px;color:#888;margin-top:2px">Mande o link para o responsável: ele cadastra os empreendimentos e o material de vendas; você aprova aqui embaixo.</div>
+        <div id="pcResultado" style="font-size:13px;margin:4px 0"></div>
         <div id="rdParceiros" style="margin-top:6px"></div>
       </div>
       <div id="rdLista" style="margin-top:10px"></div>
@@ -769,7 +772,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261030parc"></script>
+<script src="admin-catho-coletor.js?v=20261030site"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

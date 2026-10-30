@@ -3043,15 +3043,17 @@ async function rdParceiros() {
   if (!d || !d.ok || !d.pode_editar) { box.parentElement.style.display = "none"; return; }
   box.parentElement.style.display = "";
   const ps = d.parceiros || [];
+  const telFmt = (t) => { const x = String(t || "").replace(/^55/, ""); return x.length >= 10 ? `(${x.slice(0, 2)}) ${x.slice(2, -4)}-${x.slice(-4)}` : x; };
   box.innerHTML = ps.length ? ps.map(p => `<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid #eee;flex-wrap:wrap;${p.ativo ? "" : "opacity:.55"}">
-      <b style="flex:1;min-width:120px;font-size:13px">${esc(p.nome)}</b>
+      <div style="flex:1;min-width:140px"><b style="font-size:13px">${esc(p.nome)}</b>${p.whatsapp ? ` <small style="color:#666">· ${esc(telFmt(p.whatsapp))}</small>` : ""}</div>
       <small>${p.publicados} no ar${p.aguardando ? ` · <b style="color:#b45309">${p.aguardando} aguardando</b>` : ""}</small>
-      <button class="ghost" data-pc-link="${esc(p.token)}" title="Copiar o link de edição para mandar ao responsável">🔗 Copiar link</button>
+      <a class="ghost" href="https://www.rhimob.com.br/parceiro/${esc(p.slug)}" target="_blank" rel="noopener" style="font-size:12px">👀 Ver site</a>
+      <button class="ghost" data-pc-link="${esc(p.token)}" title="Copiar o link de edição para mandar ao responsável">🔗 Copiar link de edição</button>
       <label style="display:flex;gap:4px;align-items:center;font-size:12px"><input type="checkbox" data-pc-ativo="${p.id}" data-pc-nome="${esc(p.nome)}" style="width:auto;margin:0"${p.ativo ? " checked" : ""}> ativo</label>
     </div>`).join("") : '<small style="color:#888">Nenhum parceiro ainda.</small>';
   box.querySelectorAll("[data-pc-link]").forEach(b => b.onclick = () => {
     const url = "https://www.rhimob.com.br/parceiro?t=" + b.dataset.pcLink;
-    navigator.clipboard.writeText(url).then(() => { b.textContent = "✓ Copiado"; setTimeout(() => { b.textContent = "🔗 Copiar link"; }, 1800); }, () => prompt("Copie o link:", url));
+    navigator.clipboard.writeText(url).then(() => { b.textContent = "✓ Copiado"; setTimeout(() => { b.textContent = "🔗 Copiar link de edição"; }, 1800); }, () => prompt("Copie o link:", url));
   });
   box.querySelectorAll("[data-pc-ativo]").forEach(cb => cb.onchange = async () => {
     const r = await rpc("rpc_admin_parceiro_salvar", { p_admin_password: ADMIN_PASS, p_nome: cb.dataset.pcNome, p_id: +cb.dataset.pcAtivo, p_ativo: cb.checked }).catch(e => ({ ok: false, error: e.message }));
@@ -3059,14 +3061,18 @@ async function rdParceiros() {
     loadRede();
   });
 }
+// Criar o site da construtora: igual ao do corretor (nome + WhatsApp do responsável).
 $("btnParceiroNovo")?.addEventListener("click", async () => {
-  const nome = (prompt("Nome do parceiro (ex.: Cury, Vivaz, Plano&Plano):") || "").trim();
-  if (!nome) return;
-  const r = await rpc("rpc_admin_parceiro_salvar", { p_admin_password: ADMIN_PASS, p_nome: nome }).catch(e => ({ ok: false, error: e.message }));
-  if (!r.ok) { alert(r.error || "Não consegui criar"); return; }
-  const url = "https://www.rhimob.com.br/parceiro?t=" + r.token;
-  navigator.clipboard.writeText(url).catch(() => {});
-  prompt(`Parceiro criado. Mande este link para o responsável da ${nome} (já copiado):`, url);
+  const nome = $("pcNome").value.trim(), tel = $("pcTel").value.trim();
+  if (!nome || !tel) { alert("Preencha o nome do site e o WhatsApp do responsável."); return; }
+  const btn = $("btnParceiroNovo"); btn.disabled = true;
+  const r = await rpc("rpc_admin_parceiro_salvar", { p_admin_password: ADMIN_PASS, p_nome: nome, p_whatsapp: tel }).catch(e => ({ ok: false, error: e.message }));
+  btn.disabled = false;
+  if (!r.ok) { alert(/function|404|p_whatsapp/i.test(r.error || "") ? "Falta rodar o SQL REDE_3 no Supabase do Coletor." : "❌ " + (r.error || "Não consegui criar")); return; }
+  const edicao = "https://www.rhimob.com.br/parceiro?t=" + r.token, site = "https://www.rhimob.com.br/parceiro/" + r.slug;
+  navigator.clipboard.writeText(edicao).catch(() => {});
+  $("pcResultado").innerHTML = `✅ Site criado. Link de edição (já copiado, mande para o responsável): <a href="${esc(edicao)}" target="_blank" rel="noopener">${esc(edicao)}</a> · Site: <a href="${esc(site)}" target="_blank" rel="noopener">${esc(site)}</a>`;
+  $("pcNome").value = ""; $("pcTel").value = "";
   loadRede();
 });
 function rdStatus(it) {

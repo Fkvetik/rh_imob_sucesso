@@ -63,6 +63,10 @@
     {
       "source": "/corretor/:cidade/:nome",
       "destination": "/api/corretor-site?cidade=:cidade&nome=:nome"
+    },
+    {
+      "source": "/parceiro/:slug",
+      "destination": "/api/parceiro-site?slug=:slug"
     }
   ],
   "headers": [

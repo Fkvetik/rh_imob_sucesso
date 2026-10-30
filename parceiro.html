@@ -107,9 +107,56 @@
             '<button class="btn btn-ghost btn-mini" data-ed="' + i + '">✎ Editar</button></div>';
         }).join('') : '<p style="color:var(--muted);font-size:14px;margin:14px 0 0">Nenhum empreendimento ainda.</p>') +
         '<button class="btn btn-prim" id="btnNovo" style="width:100%;margin-top:14px">➕ Novo empreendimento</button>' +
-      '</div>';
+      '</div>' +
+      empresaHtml();
     $('btnNovo').onclick = function(){ editar(null); };
+    ligarEmpresa();
     app.querySelectorAll('[data-ed]').forEach(function(b){ b.onclick = function(){ editar(D.itens[+b.dataset.ed]); }; });
+  }
+
+  // Site da própria construtora (SQL REDE_3): rhimob.com.br/parceiro/<slug>, com o WhatsApp da empresa.
+  function urlSite(){ return 'https://www.rhimob.com.br/parceiro/' + D.parceiro.slug; }
+  function empresaHtml(){
+    var p = D.parceiro;
+    var foto = function(id, rot, u, cls){ return '<div><label>' + rot + '</label><div class="capa" style="' + (cls || '') + '">' + (u ? '<img src="' + esc(u) + '" alt="">' : 'Sem imagem') + '</div>' +
+      '<div class="linha" style="margin-top:6px"><button type="button" class="btn btn-sec btn-mini" data-emp-foto="' + id + '">📷 ' + (u ? 'Trocar' : 'Colocar') + '</button>' +
+      (u ? '<button type="button" class="btn btn-ghost btn-mini" data-emp-tirar="' + id + '">Tirar</button>' : '') + '</div></div>'; };
+    return '<div class="card"><h2>🏢 Site da ' + esc(p.nome) + '</h2>' +
+      '<small class="d">Todos os seus empreendimentos aprovados, num endereço só. Aqui o contato é o seu: o botão do topo chama o WhatsApp da empresa e cada empreendimento chama o responsável dele. Nos sites dos corretores, quem atende é o corretor.</small>' +
+      '<div style="font-size:13px;color:var(--roxo2);word-break:break-all;margin:10px 0 6px">' + esc(urlSite()) + '</div>' +
+      '<div class="linha"><a class="btn btn-sec btn-mini" target="_blank" rel="noopener" href="' + esc(urlSite()) + '">👀 Ver meu site</a>' +
+        '<button type="button" class="btn btn-ghost btn-mini" id="btnCopiar">🔗 Copiar link</button></div>' +
+      '<label for="eTel">WhatsApp da empresa</label><input type="text" id="eTel" inputmode="tel" placeholder="(11) 99999-9999" value="' + esc(telFmt(p.whatsapp)) + '">' +
+      '<label for="eSobre">Sobre a empresa</label><textarea id="eSobre" maxlength="1200" placeholder="Há quanto tempo atua, onde constrói, o que entrega…">' + esc(p.sobre) + '</textarea>' +
+      '<div class="g2" style="margin-top:4px">' + foto('logo_url', 'Logo', p.logo_url, 'width:120px;aspect-ratio:1') + foto('capa_url', 'Capa do topo', p.capa_url) + '</div>' +
+      '<button type="button" class="btn btn-prim" id="btnEmpresa" style="width:100%;margin-top:14px">💾 Salvar dados da empresa</button></div>';
+  }
+  function ligarEmpresa(){
+    $('btnCopiar').onclick = function(){ navigator.clipboard.writeText(urlSite()).then(function(){ toast('🔗 Link copiado'); }); };
+    $('btnEmpresa').onclick = salvarEmpresa;
+    app.querySelectorAll('[data-emp-tirar]').forEach(function(b){ b.onclick = function(){ guardaEmpresa(); D.parceiro[b.dataset.empTirar] = null; lista(); toast('Lembre de salvar'); }; });
+    app.querySelectorAll('[data-emp-foto]').forEach(function(b){ b.onclick = function(){
+      var inp = $('arquivos'), campo = b.dataset.empFoto; inp.multiple = false; inp.value = '';
+      inp.onchange = function(){
+        var f = (inp.files || [])[0]; if (!f) return;
+        toast('Enviando foto…');
+        reduzir(f).then(function(img){
+          return fetch('/api/site-foto', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ p: T, imagem: img }) }).then(function(r){ return r.json(); });
+        }).then(function(d){ if (!d || !d.ok) throw new Error((d && d.error) || 'Falha ao enviar');
+          guardaEmpresa(); D.parceiro[campo] = d.url; lista(); toast('✅ Foto pronta — lembre de salvar');
+        }).catch(function(e){ toast('⚠️ ' + e.message); });
+      };
+      inp.click(); }; });
+  }
+  // o que foi digitado não se perde quando a tela redesenha (trocar foto)
+  function guardaEmpresa(){ if ($('eTel')) { D.parceiro.whatsapp = $('eTel').value; D.parceiro.sobre = $('eSobre').value; } }
+  function salvarEmpresa(){
+    guardaEmpresa();
+    var p = D.parceiro, b = $('btnEmpresa'); b.disabled = true; b.textContent = 'Salvando…';
+    rpc('rpc_parceiro_dados_salvar', { p_token: T, p_dados: { whatsapp: p.whatsapp || '', sobre: p.sobre || '', logo_url: p.logo_url || '', capa_url: p.capa_url || '' } }).then(function(d){
+      if (!d || !d.ok) throw new Error((d && (d.error || d.message)) || 'Não consegui salvar');
+      toast('✅ Dados da empresa salvos'); return carregar();
+    }).catch(function(e){ toast('⚠️ ' + e.message); b.disabled = false; b.textContent = '💾 Salvar dados da empresa'; });
   }
 
   function editar(it){

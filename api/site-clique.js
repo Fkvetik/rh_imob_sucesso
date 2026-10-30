@@ -20,6 +20,9 @@ export default async function handler(req, res) {
   const n = limpa(b.n, 80).toLowerCase().replace(/[^a-z0-9-]/g, '');
   const onde = ONDE[String(b.onde || '').toUpperCase()] ? String(b.onde).toUpperCase() : 'PERFIL';
   const rede = /^\d{1,12}$/.test(String(b.rede || '')) ? Number(b.rede) : null;
+  // Site da construtora (SQL REDE_3): vem { parceiro: slug } no lugar de c/n.
+  const parceiro = limpa(b.parceiro, 80).toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (parceiro) return cliqueParceiro(res, b, parceiro, rede);
   if (!c || !n) return send(res, 400, { ok: false });
 
   try {
@@ -50,6 +53,42 @@ export default async function handler(req, res) {
           mensagem: `Clicou no WhatsApp (${ONDE[onde]}${titulo ? ': ' + titulo : ''}${s.construtora ? ' — ' + s.construtora : ''}). A conversa abriu direto no WhatsApp de ${s.nome}${telFmt ? ' ' + telFmt : ''}.`,
           origem: `Site do corretor — ${ONDE[onde]}`,
           pagina: limpa(b.pagina, 300) || `https://www.rhimob.com.br/corretor/${c}/${n}`,
+          enviou_whatsapp: true
+        })
+      }).catch(() => {});
+    }
+    return send(res, 200, { ok: true });
+  } catch (e) {
+    return send(res, 200, { ok: false });
+  }
+}
+
+async function cliqueParceiro(res, b, slug, rede) {
+  try {
+    const s = await fetch(`${COLETOR.url}/rest/v1/rpc/rpc_parceiro_clique`, {
+      method: 'POST',
+      headers: { apikey: COLETOR.anon, Authorization: `Bearer ${COLETOR.anon}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_slug: slug, p_rede_id: rede })
+    }).then(r => r.json()).catch(() => null);
+    if (!s || !s.ok) return send(res, 200, { ok: false });
+    const service = NT.service();
+    if (service) {
+      const tel = String(s.telefone || '').replace(/\D/g, '').replace(/^55/, '');
+      const telFmt = tel.length >= 10 ? `(${tel.slice(0, 2)}) ${tel.slice(2, -4)}-${tel.slice(-4)}` : tel;
+      const sid = 'sitepar-' + (limpa(b.sid, 40).replace(/[^a-z0-9]/gi, '') || Math.random().toString(36).slice(2, 10));
+      await fetch(`${NT.url}/rest/v1/site_leads`, {
+        method: 'POST',
+        headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          session_id: `${sid}#${Date.now().toString(36)}`,
+          nome: `Visitante do site da ${s.nome}`,
+          empresa: s.nome,
+          cidade: s.cidade || null,
+          cargo_vaga: s.rede_titulo || null,
+          tipo: 'site_construtora',
+          mensagem: `Clicou no WhatsApp ${s.rede_titulo ? 'do empreendimento ' + s.rede_titulo : 'da empresa'}. A conversa abriu direto no WhatsApp ${s.resp ? 'de ' + s.resp : 'da ' + s.nome}${telFmt ? ' ' + telFmt : ''}.`,
+          origem: 'Site da construtora parceira',
+          pagina: limpa(b.pagina, 300) || `https://www.rhimob.com.br/parceiro/${slug}`,
           enviou_whatsapp: true
         })
       }).catch(() => {});
