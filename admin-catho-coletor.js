@@ -3033,18 +3033,63 @@ async function loadRede() {
   RD.itens = d.itens || [];
   $("rdCidades").innerHTML = (d.cidades || []).map(c => `<option value="${esc(c.cidade)}">${c.sites} site${c.sites === 1 ? "" : "s"} no ar</option>`).join("");
   rdLista();
+  rdParceiros();
+}
+// Parceiros (SQL REDE_2): cada construtora recebe um link /parceiro?t=... para alimentar os empreendimentos dela.
+async function rdParceiros() {
+  const box = $("rdParceiros");
+  let d;
+  try { d = await rpc("rpc_admin_parceiros", { p_admin_password: ADMIN_PASS }); } catch (_) { box.parentElement.style.display = "none"; return; } // banco sem o REDE_2
+  if (!d || !d.ok || !d.pode_editar) { box.parentElement.style.display = "none"; return; }
+  box.parentElement.style.display = "";
+  const ps = d.parceiros || [];
+  box.innerHTML = ps.length ? ps.map(p => `<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid #eee;flex-wrap:wrap;${p.ativo ? "" : "opacity:.55"}">
+      <b style="flex:1;min-width:120px;font-size:13px">${esc(p.nome)}</b>
+      <small>${p.publicados} no ar${p.aguardando ? ` · <b style="color:#b45309">${p.aguardando} aguardando</b>` : ""}</small>
+      <button class="ghost" data-pc-link="${esc(p.token)}" title="Copiar o link de edição para mandar ao responsável">🔗 Copiar link</button>
+      <label style="display:flex;gap:4px;align-items:center;font-size:12px"><input type="checkbox" data-pc-ativo="${p.id}" data-pc-nome="${esc(p.nome)}" style="width:auto;margin:0"${p.ativo ? " checked" : ""}> ativo</label>
+    </div>`).join("") : '<small style="color:#888">Nenhum parceiro ainda.</small>';
+  box.querySelectorAll("[data-pc-link]").forEach(b => b.onclick = () => {
+    const url = "https://www.rhimob.com.br/parceiro?t=" + b.dataset.pcLink;
+    navigator.clipboard.writeText(url).then(() => { b.textContent = "✓ Copiado"; setTimeout(() => { b.textContent = "🔗 Copiar link"; }, 1800); }, () => prompt("Copie o link:", url));
+  });
+  box.querySelectorAll("[data-pc-ativo]").forEach(cb => cb.onchange = async () => {
+    const r = await rpc("rpc_admin_parceiro_salvar", { p_admin_password: ADMIN_PASS, p_nome: cb.dataset.pcNome, p_id: +cb.dataset.pcAtivo, p_ativo: cb.checked }).catch(e => ({ ok: false, error: e.message }));
+    if (!r.ok) { alert(r.error || "Não consegui salvar"); cb.checked = !cb.checked; return; }
+    loadRede();
+  });
+}
+$("btnParceiroNovo")?.addEventListener("click", async () => {
+  const nome = (prompt("Nome do parceiro (ex.: Cury, Vivaz, Plano&Plano):") || "").trim();
+  if (!nome) return;
+  const r = await rpc("rpc_admin_parceiro_salvar", { p_admin_password: ADMIN_PASS, p_nome: nome }).catch(e => ({ ok: false, error: e.message }));
+  if (!r.ok) { alert(r.error || "Não consegui criar"); return; }
+  const url = "https://www.rhimob.com.br/parceiro?t=" + r.token;
+  navigator.clipboard.writeText(url).catch(() => {});
+  prompt(`Parceiro criado. Mande este link para o responsável da ${nome} (já copiado):`, url);
+  loadRede();
+});
+function rdStatus(it) {
+  if (it.status === "EM_ANALISE") return ' <span style="background:#fff4e0;color:#8a5300;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px">⏳ Novo, aguardando aprovação</span>';
+  if (it.status === "RECUSADO") return ` <span style="background:#fde8e8;color:#9b1c1c;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px">Recusado${it.nota_admin ? ": " + esc(it.nota_admin) : ""}</span>`;
+  if (it.pendente) return ' <span style="background:#fff4e0;color:#8a5300;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px">⏳ Alteração aguardando aprovação</span>';
+  return "";
 }
 function rdLista() {
   const L = $("rdLista");
   if (!RD.itens.length) { L.innerHTML = '<small style="color:#888">Nenhum empreendimento ainda. Cadastre o primeiro e ele já aparece nos sites da cidade.</small>'; return; }
   L.innerHTML = RD.itens.map((it, i) => {
-    const a = it.album || {}, zonas = (it.zonas || []).map(z => (RD_ZONAS.find(x => x[0] === z) || [z, z])[1]).join(", ");
-    return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #eee;${it.ativo ? "" : "opacity:.55"}">
+    // o que espera aprovação aparece na versão que o parceiro mandou
+    const a = (it.pendente && it.pendente.album) || it.album || {}, cid = (it.pendente && it.pendente.cidade) || it.cidade;
+    const zonas = ((it.pendente && it.pendente.zonas) || it.zonas || []).map(z => (RD_ZONAS.find(x => x[0] === z) || [z, z])[1]).join(", ");
+    const aguarda = it.status === "EM_ANALISE" || !!it.pendente;
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #eee;flex-wrap:wrap;${it.ativo ? "" : "opacity:.55"}${aguarda ? ";background:#fffaf0" : ""}">
       <img src="${esc((a.fotos || [])[0] || "")}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;background:#f1eaf5;flex-shrink:0">
-      <div style="flex:1;min-width:0">
-        <b>${esc(a.titulo || "Sem nome")}</b>${it.construtora ? ` <small style="color:#666">· ${esc(it.construtora)}</small>` : ""}<br>
-        <small>📍 ${esc(it.cidade)}${zonas ? " — " + esc(zonas) : ""} · aparece em <b>${it.sites}</b> site${it.sites === 1 ? "" : "s"} · 💬 ${it.cliques} clique${it.cliques === 1 ? "" : "s"}${it.cliques ? ` (${it.cliques_30d} em 30 dias)` : ""}</small>
+      <div style="flex:1;min-width:200px">
+        <b>${esc(a.titulo || "Sem nome")}</b>${it.construtora ? ` <small style="color:#666">· ${esc(it.construtora)}</small>` : ""}${rdStatus(it)}<br>
+        <small>📍 ${esc(cid)}${zonas ? " — " + esc(zonas) : ""} · aparece em <b>${it.sites}</b> site${it.sites === 1 ? "" : "s"} · 💬 ${it.cliques} clique${it.cliques === 1 ? "" : "s"}${it.cliques ? ` (${it.cliques_30d} em 30 dias)` : ""}${it.privado && Object.keys(it.privado).length ? " · 🔒 com material de vendas" : ""}</small>
       </div>
+      ${aguarda ? `<button class="secondary" data-rd-ok="${i}" title="Publicar como está">✓ Aprovar</button><button class="ghost" data-rd-nao="${i}">✕ Recusar</button>` : ""}
       <label style="display:flex;gap:4px;align-items:center;font-size:12px;white-space:nowrap"><input type="checkbox" data-rd-ativo="${i}" style="width:auto;margin:0"${it.ativo ? " checked" : ""}> no ar</label>
       <button class="ghost" data-rd-ed="${i}" title="Editar">✎</button>
       <button class="ghost" data-rd-del="${i}" title="Apagar">🗑</button>
@@ -3060,10 +3105,19 @@ function rdLista() {
   });
   L.querySelectorAll("[data-rd-ativo]").forEach(cb => cb.onchange = async () => {
     const it = RD.itens[+cb.dataset.rdAtivo];
-    const r = await rpc("rpc_admin_rede_salvar", { p_admin_password: ADMIN_PASS, p_item: { ...it, ativo: cb.checked } }).catch(e => ({ ok: false, error: e.message }));
+    const r = await rpc("rpc_admin_rede_salvar", { p_admin_password: ADMIN_PASS, p_item: { id: it.id, so_ativo: cb.checked } }).catch(e => ({ ok: false, error: e.message }));
     if (!r.ok) { alert(r.error || "Não consegui salvar"); cb.checked = !cb.checked; return; }
     loadRede();
   });
+  const aprovar = async (it, sim) => {
+    let nota = null;
+    if (!sim) { nota = prompt("Motivo (o parceiro vê no painel dele):", ""); if (nota === null) return; }
+    const r = await rpc("rpc_admin_rede_aprovar", { p_admin_password: ADMIN_PASS, p_id: it.id, p_aprovar: sim, p_nota: nota }).catch(e => ({ ok: false, error: e.message }));
+    if (!r.ok) { alert(r.error || "Não consegui"); return; }
+    loadRede();
+  };
+  L.querySelectorAll("[data-rd-ok]").forEach(b => b.onclick = () => aprovar(RD.itens[+b.dataset.rdOk], true));
+  L.querySelectorAll("[data-rd-nao]").forEach(b => b.onclick = () => aprovar(RD.itens[+b.dataset.rdNao], false));
 }
 function rdZonasRender() {
   const sp = rdSlug($("rdCidade").value) === "sao-paulo";
@@ -3101,10 +3155,17 @@ function rdContaDesc() {
   $("rdDescConta").style.color = falta <= 50 ? "#b45309" : "#888";
 }
 function rdAbrir(it) {
-  const a = (it && it.album) || {};
-  RD.ed = { id: it ? it.id : null, ativo: it ? it.ativo : true, ordem: it ? it.ordem : 0, zonas: [...((it && it.zonas) || [])],
+  // Alteração do parceiro esperando aprovação: abre a versão nova (salvar aqui = aprovar com os seus ajustes).
+  const pend = (it && it.pendente) || null;
+  const a = (pend && pend.album) || (it && it.album) || {}, p = (it && it.privado) || {};
+  RD.ed = { id: it ? it.id : null, ativo: it ? it.ativo : true, ordem: it ? it.ordem : 0, zonas: [...((pend && pend.zonas) || (it && it.zonas) || [])],
             album: { ...a, fotos: [...(a.fotos || [])] } };
-  $("rdTitulo").value = a.titulo || ""; $("rdConstrutora").value = (it && it.construtora) || ""; $("rdCidade").value = (it && it.cidade) || "";
+  $("rdTitulo").value = a.titulo || ""; $("rdConstrutora").value = (it && it.construtora) || ""; $("rdCidade").value = (pend && pend.cidade) || (it && it.cidade) || "";
+  $("rdConstrutora").disabled = !!(it && it.parceiro_id); // de parceiro: é sempre o nome do parceiro
+  const tel = String(p.resp_whatsapp || "").replace(/^55/, "");
+  $("rdPTabela").value = p.tabela_url || ""; $("rdPEspelho").value = p.espelho_url || ""; $("rdPCondicoes").value = p.condicoes || "";
+  $("rdPComissao").value = p.comissao || ""; $("rdPNome").value = p.resp_nome || ""; $("rdPEmail").value = p.resp_email || "";
+  $("rdPTel").value = tel.length >= 10 ? `(${tel.slice(0, 2)}) ${tel.slice(2, -4)}-${tel.slice(-4)}` : tel;
   $("rdFin").value = a.finalidade || ""; $("rdTipo").value = a.tipo || "";
   $("rdPreco").value = a.preco ? Number(a.preco).toLocaleString("pt-BR") : ""; $("rdBairro").value = a.bairro || "";
   $("rdDorm").value = a.dorm || ""; $("rdSuites").value = a.suites || ""; $("rdVagas").value = a.vagas || ""; $("rdArea").value = a.area || "";
@@ -3158,7 +3219,9 @@ $("btnRedeSalvar")?.addEventListener("click", async () => {
   const item = { id: RD.ed.id, ativo: RD.ed.ativo, ordem: RD.ed.ordem, cidade: v("rdCidade"), construtora: v("rdConstrutora"),
     zonas: rdSlug(v("rdCidade")) === "sao-paulo" ? RD.ed.zonas : [],
     album: { titulo: v("rdTitulo"), fotos: RD.ed.album.fotos, legendas: RD.ed.album.legendas || [], finalidade: v("rdFin"), tipo: v("rdTipo"),
-      preco: v("rdPreco").replace(/\D/g, ""), bairro: v("rdBairro"), dorm: v("rdDorm"), suites: v("rdSuites"), vagas: v("rdVagas"), area: v("rdArea"), descricao: v("rdDesc") } };
+      preco: v("rdPreco").replace(/\D/g, ""), bairro: v("rdBairro"), dorm: v("rdDorm"), suites: v("rdSuites"), vagas: v("rdVagas"), area: v("rdArea"), descricao: v("rdDesc") },
+    privado: { tabela_url: v("rdPTabela"), espelho_url: v("rdPEspelho"), condicoes: v("rdPCondicoes"), comissao: v("rdPComissao"),
+      resp_nome: v("rdPNome"), resp_whatsapp: v("rdPTel"), resp_email: v("rdPEmail") } };
   const b = $("btnRedeSalvar"); b.disabled = true; $("rdMsg").textContent = "Salvando…";
   const r = await rpc("rpc_admin_rede_salvar", { p_admin_password: ADMIN_PASS, p_item: item }).catch(e => ({ ok: false, error: e.message }));
   b.disabled = false;

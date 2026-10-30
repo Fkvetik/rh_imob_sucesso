@@ -427,6 +427,14 @@
     <div class="card hide" id="cardRede">
       <h3 style="margin-top:0;font-size:14px">🏗️ Imóveis da rede — lançamentos das construtoras parceiras</h3>
       <small>O que você cadastrar aqui aparece sozinho no site de todos os profissionais da rede que atendem a cidade (e, em São Paulo capital, a zona escolhida). Quem se interessa fala com o profissional pelo WhatsApp dele; cada clique é contado aqui e aparece no Painel → Leads.</small>
+      <div style="margin-top:10px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <b style="font-size:13px">🤝 Parceiros (construtoras)</b>
+          <button id="btnParceiroNovo" class="ghost">＋ Novo parceiro</button>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:2px">Mande o link para o responsável: ele cadastra os empreendimentos e o material de vendas; você aprova aqui embaixo.</div>
+        <div id="rdParceiros" style="margin-top:6px"></div>
+      </div>
       <div id="rdLista" style="margin-top:10px"></div>
       <button id="btnRedeNovo" class="secondary" style="margin-top:8px">＋ Novo empreendimento</button>
       <div id="rdForm" style="display:none;margin-top:10px;padding:12px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
@@ -462,6 +470,20 @@
             <div style="font-size:11px;color:#888;margin-bottom:4px">Fotos que abrem ao clicar no imóvel. ★ transforma a foto em capa.</div>
             <div id="rdFotos" style="display:flex;gap:6px;flex-wrap:wrap"></div>
             <button id="btnRedeFotos" class="ghost" style="margin-top:6px">＋ Adicionar fotos à galeria</button>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:8px 10px;border:1px solid #e6ddf1;border-radius:8px;background:#fff">
+          <b style="font-size:13px">🔒 Material de vendas</b> <small style="color:#888">— só os corretores da região veem, no painel do site deles</small>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px"><label>Link da tabela de vendas</label><input id="rdPTabela" type="text" placeholder="https://…"></div>
+            <div style="flex:1;min-width:200px"><label>Link do espelho de vendas</label><input id="rdPEspelho" type="text" placeholder="https://…"></div>
+          </div>
+          <label>Preços e condições</label><textarea id="rdPCondicoes" maxlength="1000" rows="2"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="flex:1;min-width:160px"><label>Comissão do corretor</label><input id="rdPComissao" type="text" maxlength="200" placeholder="Ex.: 4% sobre a venda"></div>
+            <div style="flex:1;min-width:140px"><label>Responsável</label><input id="rdPNome" type="text" maxlength="80"></div>
+            <div style="flex:1;min-width:140px"><label>WhatsApp do responsável</label><input id="rdPTel" type="text" inputmode="tel"></div>
+            <div style="flex:1;min-width:160px"><label>E-mail do responsável</label><input id="rdPEmail" type="text" maxlength="120"></div>
           </div>
         </div>
         <input id="rdArquivos" type="file" accept="image/*" multiple style="display:none">
@@ -747,7 +769,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261030capa"></script>
+<script src="admin-catho-coletor.js?v=20261030parc"></script>
 <script src="senha-olho.js"></script>
 </body>
 </html>

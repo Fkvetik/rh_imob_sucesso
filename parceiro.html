@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel do parceiro — RH IMOB</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--roxo:#2b124d;--roxo2:#5b21b6;--lilas:#f4eefb;--txt:#1f1530;--muted:#6b5e7e;--line:#e6ddf1;--bg:#f7f4fb;--ok:#16a34a;--erro:#c0392b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--txt);background:var(--bg);padding-bottom:40px}
+  header{background:var(--roxo);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+  header img{width:32px;height:32px;border-radius:50%}
+  header strong{display:block;font-size:15px}
+  header span{font-size:12px;opacity:.8}
+  .wrap{max-width:760px;margin:0 auto;padding:14px 16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:16px;margin:0 0 4px;color:var(--roxo)}
+  .card h3{font-size:14px;margin:18px 0 2px;color:var(--roxo)}
+  .card small.d{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
+  label{display:block;font-size:12.5px;font-weight:700;color:#3a2d4d;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=email],select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:#fff}
+  textarea{min-height:90px;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:2px solid #c4b5fd;border-color:#a78bfa}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 8px}
+  @media(max-width:520px){.g2{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:11px 14px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none}
+  .btn-prim{background:var(--roxo2);color:#fff}
+  .btn-sec{background:var(--lilas);color:var(--roxo2)}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:#3a2d4d}
+  .btn-mini{padding:6px 9px;font-size:12px;border-radius:8px}
+  .btn:disabled{opacity:.55;cursor:default}
+  .linha{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .item{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .item img{width:72px;height:54px;object-fit:cover;border-radius:8px;background:var(--lilas);flex-shrink:0}
+  .item .i{flex:1;min-width:0}
+  .item b{display:block;font-size:14px}
+  .item small{color:var(--muted);font-size:12px}
+  .st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;margin-top:3px}
+  .st.an{background:#fff4e0;color:#8a5300} .st.ok{background:#e6f7ec;color:#11692f} .st.no{background:#fde8e8;color:#9b1c1c}
+  .zonas{display:flex;gap:6px;flex-wrap:wrap}
+  .capa{width:220px;max-width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:var(--lilas);display:grid;place-items:center;color:var(--muted);font-size:12px;position:relative}
+  .capa img{width:100%;height:100%;object-fit:cover}
+  .fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:6px}
+  .foto{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--lilas)}
+  .foto img{width:100%;height:100%;object-fit:cover}
+  .acts{position:absolute;right:4px;bottom:4px;display:flex;gap:4px}
+  .acts button{border:0;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 6px;cursor:pointer}
+  .conta{display:block;text-align:right;font-size:11px;color:var(--muted);margin-top:2px}
+  .priv{background:#fbf8ff;border:1px solid var(--line);border-radius:12px;padding:4px 12px 12px;margin-top:16px}
+  .aviso{background:#fff7e6;border:1px solid #f3d9a4;color:#7a4b00;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f1530;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;max-width:90vw;text-align:center}
+  #toast.on{opacity:1}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <img src="/assets/rhimob-logo.jpg" alt="">
+  <div><strong id="titulo">Painel do parceiro</strong><span>Rede de vendas RH IMOB</span></div>
+</header>
+<div class="wrap" id="app"><div class="card">Carregando…</div></div>
+<div id="toast"></div>
+<input type="file" id="arquivos" accept="image/*">
+
+<script>
+(function(){
+  // Coletor (chave pública; tudo passa pelas funções rpc_parceiro_* do SQL REDE_2).
+  var SB = 'https://lrejfhsomfxyaoshmpzz.supabase.co';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyZWpmaHNvbWZ4eWFvc2htcHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTQxNzIsImV4cCI6MjEwMTY5MDE3Mn0.FfdMC8jJaWGTUxDVIh5TVcXrRBIWAaMXX6HZNLIQ28Y';
+  var T = (new URLSearchParams(location.search).get('t') || '').replace(/[^a-f0-9]/g, '');
+  var D = null, ED = null;
+  var ZONAS = [['NORTE','Zona Norte'],['SUL','Zona Sul'],['LESTE','Zona Leste'],['OESTE','Zona Oeste'],['CENTRO','Centro']];
+  var TIPOS = [['APARTAMENTO','Apartamento'],['CASA','Casa'],['SOBRADO','Sobrado'],['COBERTURA','Cobertura'],['TERRENO','Terreno'],['SALA','Sala comercial'],['LOJA','Loja'],['GALPAO','Galpão'],['CHACARA','Chácara'],['OUTRO','Outro']];
+  var app = document.getElementById('app');
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('on'); }, 3500); }
+  function rpc(nome, body){
+    return fetch(SB + '/rest/v1/rpc/' + nome, { method:'POST', headers:{ apikey:KEY, Authorization:'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+      .then(function(r){ return r.json(); });
+  }
+  function slug(s){ return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function telFmt(t){ var d = String(t || '').replace(/\D/g, '').replace(/^55/, ''); return d.length >= 10 ? '(' + d.slice(0, 2) + ') ' + d.slice(2, -4) + '-' + d.slice(-4) : d; }
+  function opcoes(lista, atual, vazio){ return '<option value="">' + vazio + '</option>' + lista.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === atual ? ' selected' : '') + '>' + o[1] + '</option>'; }).join(''); }
+
+  function statusHtml(it){
+    if (it.status === 'RECUSADO') return '<span class="st no">Não aprovado' + (it.nota_admin ? ': ' + esc(it.nota_admin) : '') + '</span>';
+    if (it.status === 'EM_ANALISE') return '<span class="st an">⏳ Em análise pela RH IMOB</span>';
+    return '<span class="st ok">● No ar em ' + it.sites + ' site' + (it.sites === 1 ? '' : 's') + '</span>' +
+      (it.tem_pendente ? ' <span class="st an">⏳ Alteração em análise</span>' : '') +
+      (!it.tem_pendente && it.nota_admin ? ' <span class="st no">Alteração não aprovada: ' + esc(it.nota_admin) + '</span>' : '');
+  }
+
+  function lista(){
+    $('titulo').textContent = 'Painel do parceiro — ' + D.parceiro.nome;
+    var itens = D.itens || [];
+    app.innerHTML =
+      '<div class="card"><h2>Seus empreendimentos na rede RH IMOB</h2>' +
+        '<small class="d">Cadastre cada empreendimento com fotos e ficha. Depois que a RH IMOB aprovar, ele aparece sozinho no site dos corretores parceiros da cidade (e da zona, em São Paulo). Quem se interessa fala com o corretor, que vende com o material de vendas que você deixar aqui.</small>' +
+        (itens.length ? itens.map(function(it, i){
+          var a = it.album || {}, z = (it.zonas || []).map(function(c){ return (ZONAS.filter(function(x){ return x[0] === c; })[0] || [c, c])[1]; }).join(', ');
+          return '<div class="item"><img src="' + esc((a.fotos || [])[0] || '') + '" alt="">' +
+            '<div class="i"><b>' + esc(a.titulo || 'Sem nome') + '</b><small>📍 ' + esc(it.cidade) + (z ? ' — ' + esc(z) : '') + '</small><br>' + statusHtml(it) + '</div>' +
+            '<button class="btn btn-ghost btn-mini" data-ed="' + i + '">✎ Editar</button></div>';
+        }).join('') : '<p style="color:var(--muted);font-size:14px;margin:14px 0 0">Nenhum empreendimento ainda.</p>') +
+        '<button class="btn btn-prim" id="btnNovo" style="width:100%;margin-top:14px">➕ Novo empreendimento</button>' +
+      '</div>';
+    $('btnNovo').onclick = function(){ editar(null); };
+    app.querySelectorAll('[data-ed]').forEach(function(b){ b.onclick = function(){ editar(D.itens[+b.dataset.ed]); }; });
+  }
+
+  function editar(it){
+    var a = (it && it.album) || {}, p = (it && it.privado) || {};
+    ED = { id: it ? it.id : null, publicado: !!(it && it.status === 'PUBLICADO'), zonas: ((it && it.zonas) || []).slice(),
+           fotos: (a.fotos || []).slice(), legendas: (a.legendas || []).slice() };
+    var num = function(id, rot, v, max){ return '<div><label for="' + id + '">' + rot + '</label><input type="number" id="' + id + '" min="0" max="' + max + '" value="' + esc(v || '') + '"></div>'; };
+    app.innerHTML =
+      '<div class="card"><div class="linha" style="justify-content:space-between"><h2>' + (it ? 'Editar empreendimento' : 'Novo empreendimento') + '</h2>' +
+        '<button class="btn btn-ghost btn-mini" id="btnVoltar">← Voltar</button></div>' +
+        (ED.publicado ? '<div class="aviso">Este empreendimento está no ar. Mudanças no <b>anúncio</b> passam pela aprovação da RH IMOB (o anúncio atual continua no ar até lá). O <b>material de vendas</b> vale na hora.</div>' : '') +
+
+        '<h3>📣 Anúncio</h3><small class="d">O que aparece no site dos corretores.</small>' +
+        '<label for="fTitulo">Nome do empreendimento</label><input type="text" id="fTitulo" maxlength="80" placeholder="Ex.: Residencial Vista Sul" value="' + esc(a.titulo) + '">' +
+        '<div class="g2"><div><label for="fCidade">Cidade</label><input type="text" id="fCidade" maxlength="60" list="cidades" placeholder="Ex.: São Paulo" value="' + esc(it ? it.cidade : '') + '">' +
+          '<datalist id="cidades">' + (D.cidades || []).map(function(c){ return '<option value="' + esc(c.cidade) + '">' + c.sites + ' corretor(es) com site</option>'; }).join('') + '</datalist></div>' +
+          '<div><label for="fBairro">Bairro</label><input type="text" id="fBairro" maxlength="60" value="' + esc(a.bairro) + '"></div></div>' +
+        '<div id="zonasBox"><label>Zonas de São Paulo (vazio = cidade toda)</label><div class="zonas" id="fZonas"></div></div>' +
+        '<div class="g2"><div><label for="fFin">Venda ou locação</label><select id="fFin">' + opcoes([['VENDA','Venda'],['LOCACAO','Locação']], a.finalidade, '—') + '</select></div>' +
+          '<div><label for="fTipo">Tipo</label><select id="fTipo">' + opcoes(TIPOS, a.tipo, '—') + '</select></div></div>' +
+        '<label for="fPreco">Preço a partir de (vazio = sob consulta)</label><input type="text" id="fPreco" inputmode="numeric" placeholder="Ex.: 289.000" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '">' +
+        '<div class="g4">' + num('fDorm', 'Dorm.', a.dorm, 99) + num('fSuites', 'Suítes', a.suites, 99) + num('fVagas', 'Vagas', a.vagas, 99) + num('fArea', 'm²', a.area, 999999) + '</div>' +
+        '<label for="fDesc">Descrição curta</label><textarea id="fDesc" maxlength="600" placeholder="Lazer, localização, entrega, diferenciais…">' + esc(a.descricao) + '</textarea>' +
+        '<small class="conta" id="fDescConta"></small>' +
+        '<label>📷 Foto da capa <span style="font-weight:400;color:var(--muted)">— a que aparece no card do site</span></label><div id="capa"></div>' +
+        '<label>🖼️ Galeria <span style="font-weight:400;color:var(--muted)">— fotos que abrem ao clicar. ★ vira capa</span></label><div class="fotos" id="galeria"></div>' +
+
+        '<div class="priv"><h3>🔒 Material de vendas</h3><small class="d">Só os corretores da rede veem, para poder vender. Nunca aparece para o cliente.</small>' +
+          '<div class="g2"><div><label for="pTabela">Link da tabela de vendas</label><input type="text" id="pTabela" placeholder="https://…" value="' + esc(p.tabela_url) + '"></div>' +
+          '<div><label for="pEspelho">Link do espelho de vendas</label><input type="text" id="pEspelho" placeholder="https://…" value="' + esc(p.espelho_url) + '"></div></div>' +
+          '<label for="pCondicoes">Preços e condições</label><textarea id="pCondicoes" maxlength="1000" placeholder="Ex.: entrada facilitada em 60x, uso do FGTS, Minha Casa Minha Vida faixa 2…">' + esc(p.condicoes) + '</textarea>' +
+          '<label for="pComissao">Comissão do corretor</label><input type="text" id="pComissao" maxlength="200" placeholder="Ex.: 4% sobre o valor da venda" value="' + esc(p.comissao) + '">' +
+          '<div class="g2"><div><label for="pNome">Responsável</label><input type="text" id="pNome" maxlength="80" placeholder="Nome" value="' + esc(p.resp_nome) + '"></div>' +
+          '<div><label for="pTel">WhatsApp do responsável</label><input type="text" id="pTel" inputmode="tel" placeholder="(11) 99999-9999" value="' + esc(telFmt(p.resp_whatsapp)) + '"></div></div>' +
+          '<label for="pEmail">E-mail do responsável</label><input type="email" id="pEmail" maxlength="120" value="' + esc(p.resp_email) + '">' +
+        '</div>' +
+
+        '<div class="linha" style="margin-top:16px">' +
+          '<button class="btn btn-prim" id="btnSalvar" style="flex:1">' + (ED.publicado ? '💾 Salvar' : '📨 Enviar para aprovação') + '</button>' +
+          (it ? '<button class="btn btn-ghost" id="btnExcluir" title="Apagar este empreendimento">🗑</button>' : '') +
+        '</div>' +
+      '</div>';
+    $('btnVoltar').onclick = function(){ ED = null; lista(); };
+    $('fCidade').addEventListener('input', zonasRender);
+    $('fDesc').addEventListener('input', conta);
+    $('btnSalvar').onclick = salvar;
+    $('btnExcluir') && ($('btnExcluir').onclick = excluir);
+    zonasRender(); fotosRender(); conta(); window.scrollTo(0, 0);
+  }
+  function conta(){ var n = $('fDesc').value.length, f = 600 - n; $('fDescConta').textContent = n + ' de 600 caracteres — ' + (f ? 'faltam ' + f : 'limite atingido'); $('fDescConta').style.color = f <= 50 ? '#b45309' : ''; }
+  function zonasRender(){
+    var sp = slug($('fCidade').value) === 'sao-paulo';
+    $('zonasBox').style.display = sp ? '' : 'none';
+    $('fZonas').innerHTML = ZONAS.map(function(z){ var on = ED.zonas.indexOf(z[0]) >= 0;
+      return '<button type="button" class="btn btn-mini ' + (on ? 'btn-prim' : 'btn-ghost') + '" data-z="' + z[0] + '">' + (on ? '✓ ' : '') + z[1] + '</button>'; }).join('');
+    $('fZonas').querySelectorAll('[data-z]').forEach(function(b){ b.onclick = function(){ var i = ED.zonas.indexOf(b.dataset.z); if (i >= 0) ED.zonas.splice(i, 1); else ED.zonas.push(b.dataset.z); zonasRender(); }; });
+  }
+  // A capa é a primeira foto; a galeria são as demais.
+  function fotosRender(){
+    var f = ED.fotos;
+    $('capa').innerHTML = '<div class="capa">' + (f[0] ? '<img src="' + esc(f[0]) + '" alt=""><div class="acts"><button type="button" data-tirar="0">✕</button></div>' : 'Sem capa') + '</div>' +
+      '<button type="button" class="btn btn-sec btn-mini" id="btnCapa" style="margin-top:6px">📷 ' + (f[0] ? 'Trocar capa' : 'Escolher capa') + '</button>';
+    $('galeria').innerHTML = f.slice(1).map(function(u, j){ var k = j + 1;
+      return '<div class="foto"><img src="' + esc(u) + '" alt="" loading="lazy"><div class="acts"><button type="button" data-capa="' + k + '" title="Usar como capa">★</button><button type="button" data-tirar="' + k + '" title="Tirar">✕</button></div></div>'; }).join('') +
+      (f.length < 30 ? '<button type="button" class="btn btn-ghost" id="btnGaleria" style="aspect-ratio:1;border-style:dashed">＋ Fotos</button>' : '');
+    $('btnCapa').onclick = function(){ escolher(true); };
+    $('btnGaleria') && ($('btnGaleria').onclick = function(){ escolher(false); });
+    app.querySelectorAll('[data-tirar]').forEach(function(b){ b.onclick = function(){ var k = +b.dataset.tirar; f.splice(k, 1); ED.legendas.splice(k, 1); fotosRender(); }; });
+    app.querySelectorAll('[data-capa]').forEach(function(b){ b.onclick = function(){ var k = +b.dataset.capa; f.unshift(f.splice(k, 1)[0]); ED.legendas.unshift(ED.legendas.splice(k, 1)[0] || ''); fotosRender(); }; });
+  }
+  function reduzir(file){
+    return new Promise(function(ok, falha){
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        var k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); falha(new Error('Não consegui abrir essa imagem')); };
+      img.src = url;
+    });
+  }
+  function escolher(capa){
+    var inp = $('arquivos'); inp.multiple = !capa; inp.value = '';
+    inp.onchange = function(){
+      var fs = [].slice.call(inp.files || []).slice(0, capa ? 1 : 30 - ED.fotos.length), feitas = 0, erros = 0;
+      if (!fs.length) return;
+      $('btnSalvar').disabled = true;
+      fs.reduce(function(pr, f){ return pr.then(function(){
+        toast('Enviando foto ' + (feitas + erros + 1) + ' de ' + fs.length + '…');
+        return reduzir(f).then(function(img){
+          return fetch('/api/site-foto', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ p: T, imagem: img }) }).then(function(r){ return r.json(); });
+        }).then(function(d){ if (!d || !d.ok) throw new Error((d && d.error) || 'Falha ao enviar');
+          if (capa) { ED.fotos.unshift(d.url); ED.legendas.unshift(''); } else { ED.fotos.push(d.url); ED.legendas.push(''); }
+          feitas++; fotosRender();
+        }).catch(function(){ erros++; });
+      }); }, Promise.resolve()).then(function(){
+        $('btnSalvar').disabled = false;
+        toast(erros ? '⚠️ ' + feitas + ' enviada(s), ' + erros + ' com erro' : '✅ Foto(s) prontas — lembre de salvar');
+      });
+    };
+    inp.click();
+  }
+  function salvar(){
+    var v = function(id){ return $(id).value.trim(); };
+    var item = { id: ED.id, cidade: v('fCidade'), zonas: slug(v('fCidade')) === 'sao-paulo' ? ED.zonas : [],
+      album: { titulo: v('fTitulo'), fotos: ED.fotos, legendas: ED.legendas, finalidade: v('fFin'), tipo: v('fTipo'), preco: v('fPreco').replace(/\D/g, ''),
+        bairro: v('fBairro'), dorm: v('fDorm'), suites: v('fSuites'), vagas: v('fVagas'), area: v('fArea'), descricao: v('fDesc') },
+      privado: { tabela_url: v('pTabela'), espelho_url: v('pEspelho'), condicoes: v('pCondicoes'), comissao: v('pComissao'),
+        resp_nome: v('pNome'), resp_whatsapp: v('pTel'), resp_email: v('pEmail') } };
+    var b = $('btnSalvar'); b.disabled = true; b.textContent = 'Salvando…';
+    rpc('rpc_parceiro_salvar', { p_token: T, p_item: item }).then(function(d){
+      if (!d || !d.ok) throw new Error((d && (d.error || d.message)) || 'Não consegui salvar');
+      toast(d.status === 'EM_ANALISE' ? '📨 Enviado! A RH IMOB vai conferir e publicar.' : d.pendente ? '📨 Salvo. A mudança no anúncio vai para aprovação.' : '✅ Salvo');
+      return carregar();
+    }).catch(function(e){ toast('⚠️ ' + e.message); b.disabled = false; b.textContent = ED && ED.publicado ? '💾 Salvar' : '📨 Enviar para aprovação'; });
+  }
+  function excluir(){
+    if (!confirm('Apagar este empreendimento? Ele some do site de todos os corretores.')) return;
+    rpc('rpc_parceiro_excluir', { p_token: T, p_id: ED.id }).then(function(d){
+      if (!d || !d.ok) throw new Error((d && d.error) || 'Não consegui apagar');
+      toast('Apagado'); return carregar();
+    }).catch(function(e){ toast('⚠️ ' + e.message); });
+  }
+  function carregar(){
+    return rpc('rpc_parceiro_meu', { p_token: T }).then(function(d){
+      if (!d || !d.ok) { app.innerHTML = '<div class="card"><h2>Não deu para abrir</h2><small class="d">' + esc((d && (d.error || d.message)) || 'Link inválido.') + '</small></div>'; return; }
+      D = d; ED = null; lista();
+    }).catch(function(){ app.innerHTML = '<div class="card"><h2>Sem conexão</h2><small class="d">Verifique a internet e recarregue a página.</small></div>'; });
+  }
+  if (!T) { app.innerHTML = '<div class="card"><h2>Link incompleto</h2><small class="d">Abra o link exatamente como você recebeu da RH IMOB.</small></div>'; return; }
+  carregar();
+})();
+</script>
+</body>
+</html>

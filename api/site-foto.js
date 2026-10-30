@@ -16,23 +16,27 @@ export default async function handler(req, res) {
   const t = String(b.t || '');
   // Imóveis da rede (SQL REDE_1): o admin do painel manda a senha dele no lugar do link.
   const admin = String(b.admin || '');
+  // Construtora parceira (SQL REDE_2): manda o link de edição dela.
+  const p = String(b.p || '').replace(/[^a-f0-9]/g, '');
   const m = String(b.imagem || '').match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
-  if ((!t && !admin) || t.length > 80 || admin.length > 200) return send(res, 400, { ok: false, error: 'Link inválido' });
+  if ((!t && !admin && !p) || t.length > 80 || admin.length > 200 || p.length > 80) return send(res, 400, { ok: false, error: 'Link inválido' });
   if (!m) return send(res, 400, { ok: false, error: 'Envie uma foto JPG, PNG ou WEBP' });
   const bytes = Buffer.from(m[2], 'base64');
   if (bytes.length > MAX_BYTES) return send(res, 413, { ok: false, error: 'Foto muito grande (máx. 4 MB)' });
 
   try {
-    const v = await fetch(`${COLETOR.url}/rest/v1/rpc/${admin ? 'rpc_admin_rede_upload_ok' : 'rpc_site_validar_upload'}`, {
+    const [rpcNome, corpo] = admin ? ['rpc_admin_rede_upload_ok', { p_admin_password: admin }]
+      : p ? ['rpc_parceiro_upload_ok', { p_token: p }] : ['rpc_site_validar_upload', { p_token_edicao: t }];
+    const v = await fetch(`${COLETOR.url}/rest/v1/rpc/${rpcNome}`, {
       method: 'POST',
       headers: { apikey: COLETOR.anon, Authorization: `Bearer ${COLETOR.anon}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(admin ? { p_admin_password: admin } : { p_token_edicao: t })
+      body: JSON.stringify(corpo)
     }).then(r => r.json()).catch(() => null);
     if (!v || !v.ok) return send(res, 403, { ok: false, error: (v && v.error) || (admin ? 'Só o administrador geral envia fotos da rede' : 'Link inválido') });
 
     const service = NT.service();
     if (!service) return send(res, 500, { ok: false, error: 'Chave de serviço não configurada no Vercel' });
-    const caminho = `${admin ? 'rede' : v.id}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${TIPOS[m[1]]}`;
+    const caminho = `${admin ? 'rede' : p ? 'parceiro-' + v.id : v.id}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${TIPOS[m[1]]}`;
     const up = await fetch(`${NT.url}/storage/v1/object/corretor-sites/${caminho}`, {
       method: 'POST',
       headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': m[1], 'Cache-Control': '31536000', 'x-upsert': 'false' },

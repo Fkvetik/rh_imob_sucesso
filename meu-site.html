@@ -117,6 +117,23 @@
           : '') +
       '</div>';
   }
+  // Material de vendas dos lançamentos da sua região (SQL REDE_2): só o profissional vê, nunca o cliente.
+  function materialHtml(){
+    var l = (S.material || []).filter(function(m){ return m.privado && Object.keys(m.privado).length; });
+    if (!l.length) return '';
+    var lk = function(u, t){ return u ? '<a class="btn btn-sec btn-mini" target="_blank" rel="noopener" href="' + esc(u) + '">' + t + '</a>' : ''; };
+    return '<div class="card"><h2>📂 Material de vendas</h2><small>Dos lançamentos em parceria da sua região. Só você vê: use para atender e vender.</small>' +
+      l.map(function(m){ var p = m.privado, wa = p.resp_whatsapp ? 'https://wa.me/' + p.resp_whatsapp + '?text=' + encodeURIComponent('Olá' + (p.resp_nome ? ', ' + p.resp_nome.split(' ')[0] : '') + '! Sou ' + S.nome + ', corretor(a) da rede RH IMOB, e tenho um cliente para o ' + (m.titulo || 'empreendimento') + '.') : '';
+        return '<div style="display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)">' +
+          (m.capa ? '<img src="' + esc(m.capa) + '" alt="" style="width:76px;height:58px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '') +
+          '<div style="flex:1;min-width:0"><b style="font-size:14px">' + esc(m.titulo) + '</b>' + (m.construtora ? ' <span style="color:var(--muted);font-size:12px">· ' + esc(m.construtora) + '</span>' : '') +
+          (p.comissao ? '<div style="font-size:13px;margin-top:4px">💰 <b>Comissão:</b> ' + esc(p.comissao) + '</div>' : '') +
+          (p.condicoes ? '<div style="font-size:13px;margin-top:4px;white-space:pre-line;color:#3a2d4d">' + esc(p.condicoes) + '</div>' : '') +
+          (p.resp_nome || p.resp_email ? '<div style="font-size:12.5px;margin-top:4px;color:var(--muted)">Responsável: ' + esc(p.resp_nome || '') + (p.resp_email ? ' · ' + esc(p.resp_email) : '') + '</div>' : '') +
+          '<div class="linha" style="margin-top:8px">' + lk(p.tabela_url, '📄 Tabela de vendas') + lk(p.espelho_url, '🏢 Espelho de vendas') +
+            (wa ? '<a class="btn btn-ok btn-mini" target="_blank" rel="noopener" href="' + esc(wa) + '">💬 Falar com o responsável</a>' : '') + '</div>' +
+          '</div></div>'; }).join('') + '</div>';
+  }
   function ehCapital(){ return S.cidade_slug === 'sao-paulo'; }
   function urlSite(){ return 'https://www.rhimob.com.br/corretor/' + S.cidade_slug + '/' + S.nome_slug; }
   function marcaSujo(){ sujo = true; $('btnSalvar').textContent = '💾 Salvar alterações •'; }
@@ -195,6 +212,7 @@
       (S.rede_qtd > 0 ? '<div class="card"><h2>🏗️ Lançamentos em parceria</h2><small>' + S.rede_qtd + ' empreendimento' + (S.rede_qtd > 1 ? 's' : '') +
         ' das construtoras parceiras da RH IMOB para a sua região. Eles aparecem no seu site e quem se interessar fala com você pelo seu WhatsApp.</small>' +
         '<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:10px"><input type="checkbox" id="fRede" style="width:auto;margin:0"' + (S.rede_oculta ? '' : ' checked') + '> Mostrar no meu site</label></div>' : '') +
+      materialHtml() +
 
       '<div class="card"><h2>Fotos do topo</h2><small>A capa é a imagem grande do topo. Sem capa, o site usa o banner padrão da parceria, com seu nome e sua região. Para trocar, use uma imagem deitada, de preferência 1600 × 600.</small>' +
         '<div class="fotoum"><div class="prev">' + (S.foto_url ? '<img src="' + esc(S.foto_url) + '" alt="">' : 'Sua foto') + '</div>' +
@@ -384,6 +402,10 @@
   rpc('rpc_site_meu', { p_token_edicao:T }).then(function(d){
     if (!d || !d.ok) { app.innerHTML = '<div class="card"><h2>Não deu para abrir</h2><small>' + esc((d && (d.error || d.message)) || 'Link inválido.') + '</small></div>'; return; }
     S = d.site; S.albuns = Array.isArray(S.albuns) ? S.albuns : []; render();
+    // material de vendas chega depois, sem segurar a tela (banco sem o REDE_2: fica sem o card)
+    rpc('rpc_site_material', { p_token_edicao:T }).then(function(m){
+      if (m && m.ok && (m.itens || []).length) { lerCampos(); S.material = m.itens; render(); }
+    }).catch(function(){});
   }).catch(function(){ app.innerHTML = '<div class="card"><h2>Sem conexão</h2><small>Verifique a internet e recarregue a página.</small></div>'; });
 })();
 </script>
