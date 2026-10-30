@@ -2673,7 +2673,7 @@ async function loadContratando() {
     $("ctResumo").innerHTML = linhas.length
       ? `<span style="display:inline-block;background:#fdf2e3;color:#8a4b00;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;margin-right:6px">${linhas.length} empresa(s) contratando</span>` + (vagas ? `<span style="display:inline-block;background:#fdf2e3;color:#8a4b00;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">${vagas} vaga(s) informada(s)</span>` : "") : "";
     tbody.innerHTML = linhas.length ? linhas.map(l => {
-      const tel = String(l.telefone || "").replace(/D/g, "");
+      const tel = String(l.telefone || "").replace(/\D/g, "");
       const wa = tel ? `https://wa.me/${tel.startsWith("55") ? tel : "55" + tel}` : "";
       return `<tr><td><b>${esc(l.nome || "—")}</b><br><small>${esc(BQ_TIPO[l.tipo] || l.tipo || "")}</small></td><td>${esc(l.cidade || "—")}</td>
         <td>${l.vagas ? `<b>${l.vagas}</b>` : '<small style="color:#999">não informou</small>'}</td>
