@@ -37,7 +37,59 @@ function showApp() {
     loadCidadesExportarContatos();
   }
   loadUsuariosEnriquecimento();
+  document.getElementById("cardContatosSite")?.classList.toggle("hide", !superAdmin);
+  if (superAdmin) loadContatosSite();
 }
+
+// ===== Contatos do site (SQL CONFIG_1) =====
+// O site lê estes valores por /api/site-config; o que está escrito nas
+// páginas vira só o reserva.
+const CONTATOS_SITE = [
+  ["wa_vagas", "WhatsApp de vagas", "Quem procura vaga: páginas de carreira, vagas, Grupo Kaza, Vitacon"],
+  ["wa_leiloes", "WhatsApp de leilões", "Quem quer comprar: páginas de leilão"],
+  ["wa_empresas", "WhatsApp para empresas", "Planos, plataformas, extensão e banco de corretores"],
+  ["wa_rede", "WhatsApp da Rede de Parceiros", "Página da Rede de Parceiros e guia do painel"],
+  ["wa_parceria", "WhatsApp \"quero meu site\"", "Botão nos sites dos corretores e das construtoras"],
+  ["email", "E-mail de contato", "Rodapés e política de privacidade"]
+];
+function foneBonito(n) {
+  const d = String(n || "").replace(/D/g, "").replace(/^55/, "");
+  return d.length >= 10 ? "(" + d.slice(0, 2) + ") " + d.slice(2, d.length - 4) + "-" + d.slice(-4) : String(n || "");
+}
+async function loadContatosSite() {
+  const box = $("csCampos");
+  if (!box) return;
+  let c = {};
+  try {
+    const r = await rpc("rpc_site_config", {});
+    if (!r.ok) throw new Error(r.error || "erro");
+    c = r.config || {};
+  } catch (e) {
+    box.innerHTML = '<small style="color:#b45309">Rode o SQL CONFIG_1 no Supabase Coletor para editar os contatos por aqui.</small>';
+    $("btnSalvarContatosSite").disabled = true;
+    return;
+  }
+  $("btnSalvarContatosSite").disabled = false;
+  box.innerHTML = CONTATOS_SITE.map(([k, rot, dica]) => `<div>
+      <label style="margin:0">${esc(rot)}</label>
+      <input data-cs="${k}" type="text" value="${esc(k === "email" ? (c[k] || "") : foneBonito(c[k]))}" placeholder="${k === "email" ? "contato@rhimob.com.br" : "(11) 99999-9999"}">
+      <small style="color:#888">${esc(dica)}</small>
+    </div>`).join("");
+}
+$("btnSalvarContatosSite")?.addEventListener("click", async () => {
+  const msg = $("csMsg");
+  const valores = {};
+  document.querySelectorAll("[data-cs]").forEach(i => { valores[i.dataset.cs] = i.value.trim(); });
+  msg.textContent = "Salvando…";
+  try {
+    const r = await rpc("rpc_admin_site_config_salvar", { p_admin_password: ADMIN_PASS, p_valores: valores });
+    if (!r.ok) throw new Error(r.error || "não salvou");
+    msg.textContent = "✅ Salvo. O site inteiro passa a usar os novos contatos em até 10 minutos.";
+    loadContatosSite();
+  } catch (e) {
+    msg.textContent = "❌ " + e.message;
+  }
+});
 
 // ===== Log de auditoria (Fase 12) =====
 async function loadAuditLog() {

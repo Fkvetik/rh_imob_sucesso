@@ -671,6 +671,13 @@
     </div><!-- /tabOperadores -->
 
     <div class="tabpanel hide" id="tabAdmin">
+    <div class="card" id="cardContatosSite">
+      <h3 style="margin-top:0;font-size:14px">📞 Contatos do site</h3>
+      <small>Os números de WhatsApp e o e-mail que aparecem no rhimob.com.br. Trocou aqui e salvou: o site inteiro muda em até 10 minutos (páginas, vagas, sites dos corretores e das construtoras). Não precisa mexer em código.</small>
+      <div id="csCampos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px 14px;margin-top:10px"><small>Carregando…</small></div>
+      <div class="btns"><button id="btnSalvarContatosSite" type="button">💾 Salvar contatos</button></div>
+      <div id="csMsg" class="msg"></div>
+    </div>
     <div class="card" id="cardContratos">
       <h3 style="margin-top:0;font-size:14px">💰 Contratos e pagamentos</h3>
       <small>Cada "🔄 Renovar" pode registrar aqui o período, o valor e se já foi pago. O recibo sai daqui.</small>
@@ -778,7 +785,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261030limites"></script>
+<script src="admin-catho-coletor.js?v=20261030contatos"></script>
 <script>
   // Clicar no título de qualquer seção encolhe ou abre a seção.
   (function () {

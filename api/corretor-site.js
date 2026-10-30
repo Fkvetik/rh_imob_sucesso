@@ -4,10 +4,12 @@
 // Publicado: aberto a todos. Rascunho: só com ?t=<chave de edição> (prévia),
 // sempre com noindex e sem cache.
 import { COLETOR } from './_ext-comum.js';
+import { contatos, PADRAO } from './_contatos.js';
 
 const BASE = 'https://www.rhimob.com.br';
-// WhatsApp da RH IMOB (Fernando), o mesmo do site: quem quer criar o próprio site fala aqui.
-const RH_WA = '5511953973268';
+// WhatsApp da RH IMOB: quem quer criar o próprio site fala aqui.
+// Vem do admin (Contatos do site → wa_parceria); lido a cada pedido.
+let RH_WA = PADRAO.wa_parceria;
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -404,6 +406,7 @@ ${wa ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(wa)}" target="
 }
 
 export default async function handler(req, res) {
+  RH_WA = (await contatos()).wa_parceria;
   const cidade = String(req.query.cidade || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
   const nome = String(req.query.nome || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
   const t = String(req.query.t || '').replace(/[^a-f0-9]/g, '').slice(0, 64) || null;

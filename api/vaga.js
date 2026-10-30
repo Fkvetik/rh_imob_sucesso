@@ -5,7 +5,7 @@
 const SB   = 'https://pufxvskozfdvfscqnays.supabase.co';
 const KEY  = 'sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj';
 const BASE = 'https://www.rhimob.com.br';
-const FALLBACK_WA = '5511953973268';
+import { contatos } from './_contatos.js';
 
 export default async function handler(req, res) {
   const slug = (req.query.slug || '').replace(/[^a-z0-9-]/g, '');
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   }
 
   res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
-  res.send(renderVaga(v, slug));
+  res.send(renderVaga(v, slug, (await contatos()).wa_vagas));
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ function liList(items) {
   return items.map(i => `<li>${esc(i)}</li>`).join('');
 }
 
-function renderVaga(v, slug) {
+function renderVaga(v, slug, FALLBACK_WA) {
   const url      = `${BASE}/vaga/${slug}`;
   const titulo   = v.titulo || 'Vaga RH IMOB';
   const cidadeUf = [v.cidade, v.estado_uf].filter(Boolean).join('/');
@@ -67,7 +67,10 @@ function renderVaga(v, slug) {
   const modal    = v.modalidade || '';
   const remun    = v.remuneracao || '';
   const categoria= v.categoria || 'Vaga';
-  const respWa   = (v.responsavel_whatsapp || FALLBACK_WA).replace(/\D/g, '') || FALLBACK_WA;
+  // Sem WhatsApp na vaga (ou com o número geral antigo): usa o de vagas do admin.
+  // (FALLBACK_WA vem do admin: Contatos do site → wa_vagas)
+  let respWa = String(v.responsavel_whatsapp || '').replace(/\D/g, '');
+  if (!respWa || respWa === '5511953973268') respWa = FALLBACK_WA;
   const respNome = v.responsavel_nome || 'Mariana';
   // Padrão é a foto da Mariana (responsável de quase toda vaga), mas quando o
   // responsável é alguém da empresa cliente (ex.: vaga anunciada por terceiro,

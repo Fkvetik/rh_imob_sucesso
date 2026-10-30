@@ -226,7 +226,7 @@
         '<div class="grp-title">Responsável / contato</div>'+
         '<div class="cols-2">'+
           '<div class="field"><label>Nome</label>'+f('v-responsavel_nome',v.responsavel_nome||'Mariana')+'</div>'+
-          '<div class="field"><label>WhatsApp <span class="dica">(só números)</span></label>'+f('v-responsavel_whatsapp',v.responsavel_whatsapp||'5511953973268')+'</div>'+
+          '<div class="field"><label>WhatsApp <span class="dica">(só números)</span></label>'+f('v-responsavel_whatsapp',v.responsavel_whatsapp||((window.RH_CONTATOS&&RH_CONTATOS.wa_vagas)||'5511953973268'))+'</div>'+
         '</div>'+
         '<div class="cols-3">'+
           '<div class="field"><label>Empresa</label>'+f('v-responsavel_empresa',v.responsavel_empresa||'RH Imob')+'</div>'+
@@ -276,5 +276,6 @@
     }
   </script>
 <script src="senha-olho.js"></script>
+<script src="/contatos.js?v=1" defer></script>
 </body>
 </html>

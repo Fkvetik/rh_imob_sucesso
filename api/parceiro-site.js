@@ -4,9 +4,11 @@
 // Aqui o contato é da própria construtora: WhatsApp da empresa no topo e o do
 // responsável em cada empreendimento. (Nos sites dos corretores, é o do corretor.)
 import { COLETOR } from './_ext-comum.js';
+import { contatos, PADRAO } from './_contatos.js';
 
 const BASE = 'https://www.rhimob.com.br';
-const RH_WA = '5511953973268'; // RH IMOB (Fernando): quem quer ser parceiro fala aqui
+// RH IMOB: quem quer ser parceiro fala aqui (admin → Contatos do site → wa_parceria)
+let RH_WA = PADRAO.wa_parceria;
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -236,6 +238,7 @@ ${waTopo ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(waTopo)}" 
 }
 
 export default async function handler(req, res) {
+  RH_WA = (await contatos()).wa_parceria;
   const slug = String(req.query.slug || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   if (!slug) { res.status(404).send(naoEncontrado()); return; }
