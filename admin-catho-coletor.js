@@ -2591,6 +2591,7 @@ async function loadSites() {
     tbody.innerHTML = SITES_CACHE.length ? SITES_CACHE.map(s => {
       const u = siteUrls(s);
       return `<tr><td><b>${esc(s.nome)}</b><br><small>${esc(s.telefone)}</small></td><td>${esc(s.cidade)}</td><td>${rot[s.status] || esc(s.status)}</td><td>${s.fotos}</td>
+        <td>${limitesSiteHtml(s)}</td>
         <td><small>${esc(s.criado_por || "—")}<br>${s.criado_em ? new Date(s.criado_em).toLocaleDateString("pt-BR") : ""}</small></td>
         <td style="white-space:nowrap">
           <a href="${esc(s.status === "PUBLICADO" ? u.site : u.previa)}" target="_blank" rel="noopener" class="ghost" style="font-size:12px">👀 Ver</a>
@@ -2599,10 +2600,19 @@ async function loadSites() {
             ? `<button type="button" class="ghost" data-site-status="${s.id}" data-novo="RASCUNHO" style="font-size:12px">Reativar</button>`
             : `<button type="button" class="ghost" data-site-status="${s.id}" data-novo="DESATIVADO" style="font-size:12px;color:#b91c1c">Desativar</button>`}
         </td></tr>`;
-    }).join("") : '<tr><td colspan="6"><small>Nenhum site criado ainda.</small></td></tr>';
+    }).join("") : '<tr><td colspan="7"><small>Nenhum site criado ainda.</small></td></tr>';
     tbody.querySelectorAll("[data-site-copiar]").forEach(b => b.addEventListener("click", () => {
       const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteCopiar);
       if (s) navigator.clipboard.writeText(siteUrls(s).painel).then(() => { b.textContent = "✅ Copiado"; setTimeout(() => { b.textContent = "🔗 Link do painel"; }, 1500); });
+    }));
+    tbody.querySelectorAll("[data-site-lim]").forEach(b => b.addEventListener("click", async () => {
+      const s = SITES_CACHE.find(x => String(x.id) === b.dataset.siteLim); if (!s) return;
+      const leads = pedirLimite(`Limite de LEADS por mês para ${s.nome}`, s.limite_leads); if (leads === undefined) return;
+      let ind = s.limite_indicacoes;
+      if (s.profissao === "IMOBILIARIA" || s.profissao === "GERENTE") { ind = pedirLimite(`Limite de INDICAÇÕES para a vaga por mês (${s.nome})`, s.limite_indicacoes); if (ind === undefined) return; }
+      const x = await rpc("rpc_admin_site_limites", { p_admin_password: ADMIN_PASS, p_id: s.id, p_leads: leads == null ? -1 : leads, p_indicacoes: ind == null ? -1 : ind }).catch(e => ({ ok: false, error: e.message }));
+      if (!x || !x.ok) { alert(/rpc_admin_site_limites|function|404/i.test((x && x.error) || "") ? "Falta rodar o SQL REDE_6 no Supabase do Coletor." : "❌ " + ((x && x.error) || "não salvou")); return; }
+      loadSites();
     }));
     tbody.querySelectorAll("[data-site-status]").forEach(b => b.addEventListener("click", async () => {
       if (b.dataset.novo === "DESATIVADO" && !confirm("Desativar este site? Ele sai do ar e o painel do corretor deixa de abrir.")) return;
@@ -2615,7 +2625,7 @@ async function loadSites() {
     }));
   } catch (e) {
     const falta = /rpc_admin_sites|function|404/i.test(e.message);
-    tbody.innerHTML = `<tr><td colspan="6"><small>${falta ? "Falta rodar o SQL SITES_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><small>${falta ? "Falta rodar o SQL SITES_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
     if ($("stOperadores")) $("stOperadores").innerHTML = "";
   }
 }
@@ -3047,6 +3057,7 @@ async function rdParceiros() {
   box.innerHTML = ps.length ? ps.map(p => `<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid #eee;flex-wrap:wrap;${p.ativo ? "" : "opacity:.55"}">
       <div style="flex:1;min-width:140px"><b style="font-size:13px">${esc(p.nome)}</b>${p.whatsapp ? ` <small style="color:#666">· ${esc(telFmt(p.whatsapp))}</small>` : ""}</div>
       <small>${p.publicados} no ar${p.aguardando ? ` · <b style="color:#b45309">${p.aguardando} aguardando</b>` : ""}</small>
+      ${"leads_mes" in p ? `<button class="ghost" data-pc-lim="${p.id}" title="Limite de leads por mês">📊 ${contaLimite(p.leads_mes, p.limite_leads)} leads</button>` : ""}
       <a class="ghost" href="https://www.rhimob.com.br/parceiro/${esc(p.slug)}" target="_blank" rel="noopener" style="font-size:12px">👀 Ver site</a>
       <button class="ghost" data-pc-link="${esc(p.token)}" title="Copiar o link de edição para mandar ao responsável">🔗 Copiar link de edição</button>
       <label style="display:flex;gap:4px;align-items:center;font-size:12px"><input type="checkbox" data-pc-ativo="${p.id}" data-pc-nome="${esc(p.nome)}" style="width:auto;margin:0"${p.ativo ? " checked" : ""}> ativo</label>
@@ -3054,6 +3065,13 @@ async function rdParceiros() {
   box.querySelectorAll("[data-pc-link]").forEach(b => b.onclick = () => {
     const url = "https://www.rhimob.com.br/parceiro?t=" + b.dataset.pcLink;
     navigator.clipboard.writeText(url).then(() => { b.textContent = "✓ Copiado"; setTimeout(() => { b.textContent = "🔗 Copiar link de edição"; }, 1800); }, () => prompt("Copie o link:", url));
+  });
+  box.querySelectorAll("[data-pc-lim]").forEach(b => b.onclick = async () => {
+    const p = ps.find(x => String(x.id) === b.dataset.pcLim); if (!p) return;
+    const v = pedirLimite(`Limite de LEADS por mês para ${p.nome}`, p.limite_leads); if (v === undefined) return;
+    const r = await rpc("rpc_admin_parceiro_limite", { p_admin_password: ADMIN_PASS, p_id: p.id, p_leads: v == null ? -1 : v }).catch(e => ({ ok: false, error: e.message }));
+    if (!r.ok) { alert(r.error || "Não consegui salvar"); return; }
+    rdParceiros();
   });
   box.querySelectorAll("[data-pc-ativo]").forEach(cb => cb.onchange = async () => {
     const r = await rpc("rpc_admin_parceiro_salvar", { p_admin_password: ADMIN_PASS, p_nome: cb.dataset.pcNome, p_id: +cb.dataset.pcAtivo, p_ativo: cb.checked }).catch(e => ({ ok: false, error: e.message }));
@@ -3239,3 +3257,22 @@ $("btnRedeSalvar")?.addEventListener("click", async () => {
 
 // Aprovação e cadastro geram avisos (SQL REDE_5): entrega já como notificação no celular.
 function avisarCelulares() { fetch("/api/push-enviar", { method: "POST" }).catch(() => {}); }
+
+// Limite de contatos por mês (SQL REDE_6): vazio = sem limite. Quando acaba, o
+// painel da pessoa recebe um aviso para falar com a RH IMOB; o site segue no ar.
+function contaLimite(qtd, lim) { return lim == null ? `${qtd || 0} / ∞` : `${qtd || 0} / ${lim}`; }
+function limitesSiteHtml(s) {
+  if (!("leads_mes" in s)) return "<small>—</small>"; // banco sem o REDE_6
+  const ind = s.profissao === "IMOBILIARIA" || s.profissao === "GERENTE";
+  const cheio = (q, l) => l != null && q >= l ? ' style="color:#b91c1c;font-weight:700"' : "";
+  return `<small><span${cheio(s.leads_mes, s.limite_leads)}>Leads ${contaLimite(s.leads_mes, s.limite_leads)}</span>` +
+    (ind ? `<br><span${cheio(s.indicacoes_mes, s.limite_indicacoes)}>Indicações ${contaLimite(s.indicacoes_mes, s.limite_indicacoes)}</span>` : "") +
+    `</small><br><button type="button" class="ghost" data-site-lim="${s.id}" style="font-size:11px">⚙️ Limites</button>`;
+}
+// undefined = cancelou; null = sem limite; número = limite
+function pedirLimite(titulo, atual) {
+  const r = prompt(titulo + "\n(deixe vazio para sem limite)", atual == null ? "" : String(atual));
+  if (r === null) return undefined;
+  const n = parseInt(String(r).replace(/\D/g, ""), 10);
+  return String(r).trim() === "" || isNaN(n) ? null : n;
+}
