@@ -76,7 +76,8 @@
     } else if (ehIOS() && !instalado()) {
       partes.push('No iPhone, as notificações funcionam depois de adicionar o painel à Tela de Início.');
     }
-    return partes.length ? '<div class="pa-app">' + partes.join('<br><br>') + '</div>' : '';
+    partes.push('<b>📘 Dúvida de como usar?</b> <a href="/como-usar-o-painel" target="_blank" rel="noopener">Veja o guia do painel</a>, com o passo a passo.');
+    return '<div class="pa-app">' + partes.join('<br><br>') + '</div>';
   }
 
   function desenhar(){
