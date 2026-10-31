@@ -10,18 +10,20 @@
 
 //
 // 2ª etapa (GEO_1): coordenada pelo CEP para talento SEM latitude/longitude.
-// Cada CEP é consultado uma vez (cache nt_geo_cep no banco) na AwesomeAPI,
-// que devolve o ponto da rua do CEP; o banco grava em todos os talentos do
-// mesmo CEP que estão sem coordenada. Nunca sobrescreve coordenada existente.
+// Cada CEP é consultado uma vez (cache nt_geo_cep no banco); o banco grava em
+// todos os talentos do mesmo CEP que estão sem coordenada. Nunca sobrescreve
+// coordenada existente. Fonte: AwesomeAPI (ponto da rua do CEP); como ela
+// limita os servidores da Vercel (429), a alternativa é ViaCEP (endereço) +
+// OpenStreetMap/Nominatim (ponto da rua), no máximo 1 consulta por segundo.
 
 export const config = { maxDuration: 60 };
 
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const LOTE_PADRAO = 40;
 const CONCORRENCIA = 5;
-const GEO_LOTE = 40;            // CEPs por execução (a cada 15 min)
-const GEO_CONCORRENCIA = 3;
+const GEO_LOTE = 25;            // CEPs por execução (a cada 15 min)
 const GEO_TEMPO_MAX_MS = 45000; // para de começar CEP novo perto do limite da função
+const NOMINATIM_UA = 'RHIMOB-geocodificacao/1.0 (+https://www.rhimob.com.br)';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -158,25 +160,57 @@ async function coordenadasPorCep(serviceKey, limite, inicio) {
     resumo.parou = 'Falta rodar o SQL GEO_1 no Novos Talentos (' + e.message + ')';
     return resumo;
   }
-  for (let i = 0; i < pendentes.length; i += GEO_CONCORRENCIA) {
+  // Um CEP por vez: a alternativa (Nominatim) aceita 1 consulta por segundo.
+  let awesomeBloqueada = false;
+  for (const p of pendentes) {
     if (Date.now() - inicio > GEO_TEMPO_MAX_MS) { resumo.parou = 'tempo'; break; }
-    const fatia = pendentes.slice(i, i + GEO_CONCORRENCIA);
-    const res = await Promise.all(fatia.map(p => consultarCep(p.cep)));
-    // Limite da API ou fora do ar: não marca nada, tenta na próxima execução.
-    if (res.some(x => x.status === 'LIMITE')) { resumo.parou = 'limite da API de CEP'; break; }
-    for (let k = 0; k < fatia.length; k++) {
-      const x = res[k];
-      if (x.status === 'ERRO') continue;
-      const n = await rpcNT('nt_geo_aplicar', {
-        p_cep: fatia[k].cep, p_status: x.status, p_lat: x.lat ?? null, p_lng: x.lng ?? null,
-        p_fonte: 'AWESOMEAPI', p_cidade: x.cidade || null, p_uf: x.uf || null, p_bairro: x.bairro || null
-      }, serviceKey);
-      resumo.ceps++;
-      if (x.status === 'OK') { resumo.achados++; resumo.talentos_preenchidos += Number(n) || 0; }
-      else resumo.nao_achados++;
-    }
+    let x = awesomeBloqueada ? { status: 'LIMITE' } : await consultarCep(p.cep);
+    if (x.status === 'LIMITE') { awesomeBloqueada = true; x = await consultarCepOSM(p.cep); }
+    // Fora do ar ou limitado nas duas fontes: não marca nada, tenta na próxima execução.
+    if (x.status === 'LIMITE') { resumo.parou = 'limite das APIs de CEP'; break; }
+    if (x.status === 'ERRO') continue;
+    const n = await rpcNT('nt_geo_aplicar', {
+      p_cep: p.cep, p_status: x.status, p_lat: x.lat ?? null, p_lng: x.lng ?? null,
+      p_fonte: x.fonte || 'AWESOMEAPI', p_cidade: x.cidade || null, p_uf: x.uf || null, p_bairro: x.bairro || null
+    }, serviceKey);
+    resumo.ceps++;
+    if (x.status === 'OK') { resumo.achados++; resumo.talentos_preenchidos += Number(n) || 0; }
+    else resumo.nao_achados++;
   }
   return resumo;
+}
+
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Alternativa: endereço do CEP no ViaCEP e ponto da rua no Nominatim. CEP
+// sem rua (CEP geral de cidade pequena) fica com o ponto da cidade.
+async function consultarCepOSM(cep) {
+  let via;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (r.status === 429 || r.status >= 500) return { status: 'LIMITE' };
+    via = await r.json();
+  } catch (e) { return { status: 'ERRO' }; }
+  if (!via || via.erro || !via.localidade) return { status: 'NAO_ACHADO', fonte: 'VIACEP' };
+
+  const tentativas = [];
+  if (via.logradouro) tentativas.push({ street: via.logradouro, city: via.localidade, state: via.uf, fonte: 'NOMINATIM_RUA' });
+  tentativas.push({ city: via.localidade, state: via.uf, fonte: 'NOMINATIM_CIDADE' });
+  for (const t of tentativas) {
+    const qs = new URLSearchParams({ country: 'Brasil', format: 'json', limit: '1', city: t.city, state: t.state });
+    if (t.street) qs.set('street', t.street);
+    await esperar(1100); // regra de uso do Nominatim: no máximo 1 por segundo
+    let r;
+    try { r = await fetch(`https://nominatim.openstreetmap.org/search?${qs}`, { headers: { 'User-Agent': NOMINATIM_UA, 'Accept-Language': 'pt-BR' } }); }
+    catch (e) { return { status: 'ERRO' }; }
+    if (r.status === 429 || r.status >= 500) return { status: 'LIMITE' };
+    const d = await r.json().catch(() => null);
+    const lat = Number(d && d[0] && d[0].lat), lng = Number(d && d[0] && d[0].lon);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -34 && lat <= 6 && lng >= -74 && lng <= -28) {
+      return { status: 'OK', lat, lng, cidade: via.localidade, uf: via.uf, bairro: via.bairro, fonte: t.fonte };
+    }
+  }
+  return { status: 'NAO_ACHADO', fonte: 'NOMINATIM' };
 }
 
 // { status: 'OK', lat, lng, cidade, uf, bairro } | { status: 'NAO_ACHADO' | 'LIMITE' | 'ERRO' }

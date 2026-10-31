@@ -231,8 +231,25 @@
       e.preventDefault();
       const cep = $('iCep').value.replace(/\D/g, '');
       if (cep.length !== 8) return erro('Digite os 8 números do CEP.');
-      buscar({ cep });
+      buscarCep(cep);
     });
+
+    // O CEP vira ponto aqui no navegador (AwesomeAPI aceita chamada do site);
+    // se falhar, o servidor tenta. Só a coordenada arredondada vai para a busca.
+    async function buscarCep(cep) {
+      info('Localizando o CEP…');
+      try {
+        const r = await fetch('https://cep.awesomeapi.com.br/json/' + cep);
+        if (r.status === 404) return erro('Não encontramos esse CEP. Confira os números.');
+        const d = await r.json();
+        const lat = Number(d.lat), lng = Number(d.lng);
+        if (r.ok && Number.isFinite(lat) && Number.isFinite(lng)) {
+          const rotulo = [d.district, d.city && d.state ? d.city + '/' + d.state : d.city].filter(Boolean).join(' · ');
+          return buscar({ lat, lng, rotulo, cep });
+        }
+      } catch (e) { /* cai para o servidor */ }
+      buscar({ cep });
+    }
 
     function erro(t) { const m = $('msg'); m.className = 'erro'; m.textContent = t; }
     function info(t) { const m = $('msg'); m.className = 'aviso'; m.textContent = t; }
@@ -240,7 +257,7 @@
     async function buscar(alvo) {
       ultimo = alvo;
       info('Buscando…');
-      const qs = new URLSearchParams(alvo.cep ? { cep: alvo.cep, raio } : { lat: alvo.lat.toFixed(4), lng: alvo.lng.toFixed(4), raio });
+      const qs = new URLSearchParams(alvo.lat != null ? { lat: alvo.lat.toFixed(4), lng: alvo.lng.toFixed(4), raio } : { cep: alvo.cep, raio });
       let d;
       try {
         const r = await fetch('/api/perto?' + qs.toString());
@@ -248,6 +265,7 @@
         if (!r.ok || !d.ok) throw new Error((d && d.error) || 'Não foi possível consultar agora.');
       } catch (e) { return erro(e.message || 'Não foi possível consultar agora.'); }
       info('Sua localização é usada só nesta busca e não fica guardada.');
+      if (alvo.rotulo && !d.centro.rotulo) d.centro.rotulo = alvo.rotulo;
       mostrar(d);
     }
 
@@ -300,7 +318,7 @@
     const rUrl = Number(p.get('raio'));
     if ([1, 3, 5, 10, 20, 30].includes(rUrl)) document.querySelector('.raios button[data-r="' + rUrl + '"]').click();
     const cepUrl = (p.get('cep') || '').replace(/\D/g, '');
-    if (cepUrl.length === 8) { $('iCep').value = cepUrl.slice(0, 5) + '-' + cepUrl.slice(5); buscar({ cep: cepUrl }); }
+    if (cepUrl.length === 8) { $('iCep').value = cepUrl.slice(0, 5) + '-' + cepUrl.slice(5); buscarCep(cepUrl); }
   })();
   </script>
 </body>
