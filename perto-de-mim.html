@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perto de mim | RH IMOB</title>
+  <meta name="description" content="Veja quantos profissionais do mercado imobiliário estão perto de você, num raio de até 30 km. Talentos, corretores, imobiliárias e lançamentos da sua região." />
+  <meta name="theme-color" content="#190827" />
+  <link rel="canonical" href="https://www.rhimob.com.br/perto-de-mim" />
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <link rel="icon" href="/favicon.svg?v=20260509anuncie" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=20260509anuncie" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="RH IMOB" />
+  <meta property="og:title" content="O que tem perto de você | RH IMOB" />
+  <meta property="og:description" content="Quantos profissionais do mercado imobiliário estão na sua região, num raio de até 30 km." />
+  <meta property="og:url" content="https://www.rhimob.com.br/perto-de-mim" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "xluiu45itd");
+  </script>
+  <style>
+    :root {
+      --roxo-escuro: #190827; --roxo: #33165f; --roxo-vivo: #6d2df2; --roxo-claro: #efe8ff; --roxo-fundo: #f8f4ff;
+      --laranja: #ff7a1a; --texto: #21172d; --cinza: #6f6283; --linha: rgba(43, 18, 77, .12); --sombra: 0 14px 38px rgba(43, 18, 77, .08);
+      /* uma cor por tipo — a mesma no cartão, na legenda e no mapa */
+      --c-talento: #16a34a; --c-corretor: #2563eb; --c-imob: #7c3aed; --c-lanc: #ea580c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, "Segoe UI", system-ui, sans-serif; color: var(--texto); background: var(--roxo-fundo); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+    .topo { position: sticky; top: 0; z-index: 1000; background: rgba(25, 8, 39, .94); backdrop-filter: blur(10px); }
+    .topo .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .marca img { width: 38px; height: 38px; border-radius: 50%; }
+    .marca strong { font-weight: 900; }
+    .marca small { display: block; font-size: 12px; color: rgba(255,255,255,.6); font-weight: 600; }
+
+    .hero { background: radial-gradient(circle at 80% 0%, #4b178b 0%, var(--roxo-escuro) 60%); color: #fff; padding: 40px 0 92px; }
+    .etiqueta { display: inline-block; background: rgba(255,122,26,.16); color: #ffb27a; font-weight: 800; font-size: 13px; border-radius: 999px; padding: 6px 12px; }
+    .hero h1 { margin-top: 14px; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; font-weight: 900; letter-spacing: -.02em; }
+    .hero p { margin-top: 12px; max-width: 640px; color: rgba(255,255,255,.78); font-size: 17px; }
+
+    .busca { margin-top: -64px; background: #fff; border-radius: 22px; box-shadow: var(--sombra); padding: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .busca-linha { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font: inherit; font-weight: 800; border-radius: 999px; padding: 13px 20px; font-size: 15px; text-decoration: none; }
+    .btn-loc { background: var(--roxo-vivo); color: #fff; }
+    .btn-loc:disabled { opacity: .6; cursor: wait; }
+    .ou { color: var(--cinza); font-weight: 700; font-size: 14px; }
+    .cep { display: flex; gap: 8px; flex: 1 1 260px; min-width: 0; }
+    .cep input { flex: 1; min-width: 0; border: 1.5px solid var(--linha); border-radius: 999px; padding: 12px 16px; font: inherit; font-size: 15px; }
+    .cep input:focus { outline: 2px solid var(--roxo-vivo); border-color: transparent; }
+    .btn-cep { background: var(--roxo-claro); color: var(--roxo); }
+    .raios { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .raios span { font-size: 14px; font-weight: 700; color: var(--cinza); margin-right: 4px; }
+    .raios button { border: 1.5px solid var(--linha); background: #fff; border-radius: 999px; padding: 7px 13px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; color: var(--texto); }
+    .raios button[aria-pressed="true"] { background: var(--roxo); border-color: var(--roxo); color: #fff; }
+    .aviso { font-size: 13px; color: var(--cinza); }
+    .erro { background: #fdecec; color: #a11; border-radius: 12px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
+
+    .resultado { margin: 22px 0 40px; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
+    .lado { display: grid; gap: 12px; }
+    .onde { font-size: 14px; color: var(--cinza); font-weight: 600; }
+    .onde b { color: var(--texto); }
+    .tipo { background: #fff; border-radius: 18px; box-shadow: var(--sombra); padding: 16px 18px; border-left: 6px solid var(--cor); }
+    .tipo-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .tipo-nome { font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .bola { width: 12px; height: 12px; border-radius: 50%; background: var(--cor); flex: none; }
+    .tipo-num { font-size: 30px; font-weight: 900; color: var(--cor); letter-spacing: -.02em; }
+    .tipo-sub { font-size: 13px; color: var(--cinza); margin-top: 2px; }
+    .breve { font-size: 12px; font-weight: 800; color: var(--cinza); background: #f1edf7; border-radius: 999px; padding: 4px 10px; }
+    .faixas { margin-top: 10px; display: grid; gap: 6px; }
+    .faixa { display: grid; grid-template-columns: 76px 1fr 64px; gap: 8px; align-items: center; font-size: 13px; }
+    .faixa i { display: block; height: 8px; border-radius: 999px; background: var(--c-talento); min-width: 2px; }
+    .faixa b { text-align: right; }
+    .cta { background: var(--roxo-escuro); color: #fff; border-radius: 18px; padding: 18px; }
+    .cta strong { display: block; font-size: 18px; line-height: 1.25; }
+    .cta p { color: rgba(255,255,255,.75); font-size: 14px; margin: 6px 0 12px; }
+    .btn-cta { background: var(--laranja); color: #fff; width: 100%; }
+
+    .mapa-caixa { background: #fff; border-radius: 22px; box-shadow: var(--sombra); padding: 10px; }
+    #mapa { height: 560px; border-radius: 16px; }
+    .legenda { display: flex; flex-wrap: wrap; gap: 12px; padding: 10px 6px 2px; font-size: 13px; font-weight: 600; color: var(--cinza); }
+    .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+    .vazio { text-align: center; color: var(--cinza); padding: 40px 10px; }
+
+    .privacidade { margin-bottom: 40px; font-size: 13px; color: var(--cinza); text-align: center; }
+    footer { background: #0f051a; color: rgba(255,255,255,.6); padding: 28px 0; font-size: 14px; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer a { color: rgba(255,255,255,.8); text-decoration: none; }
+
+    @media (max-width: 860px) {
+      .resultado { grid-template-columns: 1fr; }
+      #mapa { height: 380px; }
+      .hero { padding: 28px 0 84px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap">
+      <a class="marca" href="/" aria-label="RH IMOB, página inicial">
+        <img src="/assets/rhimob-logo.jpg" alt="" />
+        <span><strong>RH IMOB</strong><small>Perto de mim</small></span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <span class="etiqueta">📍 Perto de mim</span>
+        <h1>O que tem perto de você no mercado imobiliário</h1>
+        <p>Veja quantos profissionais estão na sua região, num raio de até 30 km, e onde eles se concentram.</p>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <section class="busca" aria-label="Buscar perto de mim">
+        <div class="busca-linha">
+          <button class="btn btn-loc" id="btLoc" type="button">📍 Usar minha localização</button>
+          <span class="ou">ou</span>
+          <form class="cep" id="fCep">
+            <input id="iCep" inputmode="numeric" autocomplete="postal-code" placeholder="Digite um CEP (ex.: 01310-100)" maxlength="9" aria-label="CEP" />
+            <button class="btn btn-cep" type="submit">Buscar</button>
+          </form>
+        </div>
+        <div class="raios" role="group" aria-label="Raio da busca">
+          <span>Raio:</span>
+          <button type="button" data-r="1">1 km</button>
+          <button type="button" data-r="3">3 km</button>
+          <button type="button" data-r="5" aria-pressed="true">5 km</button>
+          <button type="button" data-r="10">10 km</button>
+          <button type="button" data-r="20">20 km</button>
+          <button type="button" data-r="30">30 km</button>
+        </div>
+        <div id="msg" class="aviso">Sua localização é usada só nesta busca e não fica guardada.</div>
+      </section>
+
+      <section class="resultado" id="resultado" hidden>
+        <div class="lado">
+          <div class="onde" id="onde"></div>
+
+          <div class="tipo" style="--cor: var(--c-talento)">
+            <div class="tipo-cab">
+              <div class="tipo-nome"><span class="bola"></span>Novos Talentos</div>
+              <div class="tipo-num" id="nTal">–</div>
+            </div>
+            <div class="tipo-sub" id="subTal">profissionais disponíveis no raio</div>
+            <div class="faixas" id="faixas"></div>
+          </div>
+
+          <div class="tipo" style="--cor: var(--c-corretor)">
+            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Corretores parceiros</div><span class="breve">em breve</span></div>
+          </div>
+          <div class="tipo" style="--cor: var(--c-imob)">
+            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Imobiliárias</div><span class="breve">em breve</span></div>
+          </div>
+          <div class="tipo" style="--cor: var(--c-lanc)">
+            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Construtoras e lançamentos</div><span class="breve">em breve</span></div>
+          </div>
+
+          <div class="cta">
+            <strong id="ctaTit">Precisa contratar na sua região?</strong>
+            <p>Fale com esses profissionais pela plataforma Novos Talentos.</p>
+            <a class="btn btn-cta" href="/novos-talentos#planos">Quero falar com eles</a>
+          </div>
+        </div>
+
+        <div class="mapa-caixa">
+          <div id="mapa" role="img" aria-label="Mapa com a quantidade de profissionais por região"></div>
+          <div class="legenda">
+            <span><span class="bola" style="--cor: var(--c-talento)"></span>Novos Talentos (quantidade por região)</span>
+            <span><span class="bola" style="--cor: var(--c-corretor)"></span>Corretores</span>
+            <span><span class="bola" style="--cor: var(--c-imob)"></span>Imobiliárias</span>
+            <span><span class="bola" style="--cor: var(--c-lanc)"></span>Lançamentos</span>
+          </div>
+        </div>
+      </section>
+
+      <p class="privacidade">Mostramos quantidades por região, nunca o endereço ou o contato de ninguém. Regiões com menos de 3 profissionais entram só no total.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© RH IMOB · Perto de mim</span>
+      <span><a href="/">rhimob.com.br</a> · <a href="/politica">Privacidade</a></span>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="/contatos.js?v=1" defer></script>
+  <script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => Number(n || 0).toLocaleString('pt-BR');
+    let raio = 5, ultimo = null, mapa = null, camada = null;
+
+    // Raio: lembra a última busca e refaz com o raio novo.
+    document.querySelectorAll('.raios button').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.raios button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      raio = Number(b.dataset.r);
+      if (ultimo) buscar(ultimo);
+    }));
+
+    $('btLoc').addEventListener('click', () => {
+      if (!navigator.geolocation) return erro('Seu navegador não oferece localização. Use o CEP.');
+      const bt = $('btLoc');
+      bt.disabled = true; bt.textContent = '📍 Localizando…';
+      navigator.geolocation.getCurrentPosition((p) => {
+        bt.disabled = false; bt.textContent = '📍 Usar minha localização';
+        buscar({ lat: p.coords.latitude, lng: p.coords.longitude });
+      }, () => {
+        bt.disabled = false; bt.textContent = '📍 Usar minha localização';
+        erro('Não conseguimos sua localização (permissão negada ou indisponível). Use o CEP.');
+      }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 });
+    });
+
+    $('iCep').addEventListener('input', (e) => {
+      const d = e.target.value.replace(/\D/g, '').slice(0, 8);
+      e.target.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
+    });
+    $('fCep').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const cep = $('iCep').value.replace(/\D/g, '');
+      if (cep.length !== 8) return erro('Digite os 8 números do CEP.');
+      buscar({ cep });
+    });
+
+    function erro(t) { const m = $('msg'); m.className = 'erro'; m.textContent = t; }
+    function info(t) { const m = $('msg'); m.className = 'aviso'; m.textContent = t; }
+
+    async function buscar(alvo) {
+      ultimo = alvo;
+      info('Buscando…');
+      const qs = new URLSearchParams(alvo.cep ? { cep: alvo.cep, raio } : { lat: alvo.lat.toFixed(4), lng: alvo.lng.toFixed(4), raio });
+      let d;
+      try {
+        const r = await fetch('/api/perto?' + qs.toString());
+        d = await r.json();
+        if (!r.ok || !d.ok) throw new Error((d && d.error) || 'Não foi possível consultar agora.');
+      } catch (e) { return erro(e.message || 'Não foi possível consultar agora.'); }
+      info('Sua localização é usada só nesta busca e não fica guardada.');
+      mostrar(d);
+    }
+
+    function mostrar(d) {
+      $('resultado').hidden = false;
+      const t = d.talentos || {};
+      $('onde').innerHTML = (d.centro.rotulo ? 'Perto de <b>' + esc(d.centro.rotulo) + '</b>' : 'Perto da <b>sua localização</b>') + ' · raio de <b>' + d.raio_km + ' km</b>';
+      $('nTal').textContent = fmt(t.total);
+      $('subTal').textContent = t.total ? 'profissionais disponíveis a até ' + d.raio_km + ' km' : 'nenhum profissional cadastrado neste raio ainda';
+      const faixas = t.faixas || [];
+      const max = Math.max(1, ...faixas.map((f) => f.n));
+      $('faixas').innerHTML = faixas.length > 1 ? faixas.map((f) =>
+        '<div class="faixa"><span>até ' + f.ate_km + ' km</span><i style="width:' + Math.max(1, Math.round(f.n / max * 100)) + '%"></i><b>' + fmt(f.n) + '</b></div>').join('') : '';
+      $('ctaTit').textContent = t.total ? fmt(t.total) + ' profissionais a até ' + d.raio_km + ' km de você' : 'Precisa contratar na sua região?';
+      desenharMapa(d);
+      if (window.innerWidth < 860) $('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function desenharMapa(d) {
+      if (!window.L) return;
+      const centro = [d.centro.lat, d.centro.lng];
+      if (!mapa) {
+        mapa = L.map('mapa', { scrollWheelZoom: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(mapa);
+      }
+      // O mapa precisa de uma posição antes de receber o círculo do raio.
+      mapa.setView(centro, 13);
+      if (camada) camada.remove();
+      camada = L.layerGroup().addTo(mapa);
+      const circ = L.circle(centro, { radius: d.raio_km * 1000, color: '#6d2df2', weight: 2, fillOpacity: .04 }).addTo(camada);
+      L.circleMarker(centro, { radius: 7, color: '#fff', weight: 3, fillColor: '#6d2df2', fillOpacity: 1 })
+        .bindTooltip('Você (aproximado)').addTo(camada);
+      const cel = (d.talentos && d.talentos.celulas) || [];
+      const maior = Math.max(1, ...cel.map((c) => c.n));
+      cel.forEach((c) => {
+        const rpx = 6 + Math.sqrt(c.n / maior) * 18;
+        L.circleMarker([c.lat, c.lng], { radius: rpx, color: '#15803d', weight: 1, fillColor: '#16a34a', fillOpacity: .55 })
+          .bindTooltip(fmt(c.n) + ' talentos nesta região').addTo(camada);
+      });
+      mapa.fitBounds(circ.getBounds(), { padding: [10, 10] });
+      setTimeout(() => mapa.invalidateSize(), 50);
+    }
+
+    function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    // Link compartilhável: /perto-de-mim?cep=01310100&raio=5 já abre buscando.
+    const p = new URLSearchParams(location.search);
+    const rUrl = Number(p.get('raio'));
+    if ([1, 3, 5, 10, 20, 30].includes(rUrl)) document.querySelector('.raios button[data-r="' + rUrl + '"]').click();
+    const cepUrl = (p.get('cep') || '').replace(/\D/g, '');
+    if (cepUrl.length === 8) { $('iCep').value = cepUrl.slice(0, 5) + '-' + cepUrl.slice(5); buscar({ cep: cepUrl }); }
+  })();
+  </script>
+</body>
+</html>
