@@ -66,6 +66,8 @@ export default async function handler(req, res) {
     let geo;
     try { geo = await coordenadasPorCep(SERVICE_KEY, geoLimite, inicio); }
     catch (e) { geo = { erro: String(e && e.message || e) }; }
+    // Uma linha por execução nos logs da Vercel, para acompanhar sem abrir o banco.
+    console.log('[enriquecer-talentos]', JSON.stringify({ ...resumo, geo }));
 
     res.status(200).send(JSON.stringify({ ok: true, ...resumo, geo, detalhes: resultados }));
   } catch (e) {
