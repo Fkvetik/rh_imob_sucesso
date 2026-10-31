@@ -44,5 +44,21 @@ export default async function handler(req, res) {
     const msg = (data && (data.message || data.hint)) || (r ? `HTTP ${r.status}` : 'sem resposta');
     return send(res, 502, { ok: false, error: /rhi_ext_registrar_corretores/.test(msg) ? 'Falta rodar o SQL CRECI_2 no Corretores CRECI' : msg });
   }
+
+  // Marcas do detalhe (SQL CRECI_9): tem telefone/e-mail no CRECI, afastamento
+  // e link. Mesma ordem dos itens; sem o SQL, só não guarda (não trava a coleta).
+  const detalhes = (data.itens || []).map((x, i) => x && x.ok ? {
+    lead_key: x.lead_key,
+    tem_telefone: itens[i].tem_telefone === true, tem_email_oficial: itens[i].tem_email_oficial === true,
+    tem_email_pessoal: itens[i].tem_email_pessoal === true,
+    data_afastamento: String(itens[i].data_afastamento || '').slice(0, 10), url: String(itens[i].url || '').slice(0, 300)
+  } : null).filter(Boolean);
+  if (detalhes.length) {
+    await fetch(`${RHI.url}/rest/v1/rpc/rhi_ext_coleta_detalhes`, {
+      method: 'POST',
+      headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_conta: 'login:' + s.login, p_itens: detalhes })
+    }).catch(() => null);
+  }
   return send(res, 200, data);
 }
