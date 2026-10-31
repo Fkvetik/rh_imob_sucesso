@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   const s = await validarSessao(b.token);
   if (!s.ok) return send(res, 401, { ok: false, error: s.error });
   // Só para quem o admin liberou (SQL ACESSO_CRECI_1); sem liberação, bloqueia.
-  if (s.acesso_creci_cidade !== true) return send(res, 403, { ok: false, error: 'O CRECI por cidade não está liberado para este login. Peça ao administrador.' });
+  if (s.acesso_creci_cidade !== true) return send(res, 403, { ok: false, error: 'O CRECI + Instagram está bloqueado para este login. Fale com a RH IMOB.' });
 
   const service = RHI.service();
   if (!service) return send(res, 500, { ok: false, error: 'Chave de serviço do Corretores CRECI não configurada' });

@@ -215,7 +215,8 @@
   function ocupar(d){ ocupado += d; $('btnSalvar').disabled = ocupado > 0; }
 
   // ── Localização (SQL REDE_GEO_1) ──────────────────────────────────
-  // O profissional informa o CEP; o navegador acha o ponto da rua e grava.
+  // O profissional usa a localização do aparelho (um clique) ou informa o CEP;
+  // o navegador acha o ponto e grava.
   // Aparece no "Perto de mim" (ponto arredondado ~1 km, nunca o CEP).
   function geoHtml(){
     if (!S.geo) return ''; // banco sem o REDE_GEO_1: fica sem o card
@@ -223,9 +224,11 @@
     var cepFmt = g.cep ? g.cep.slice(0, 5) + '-' + g.cep.slice(5) : '';
     return '<div class="card" id="cardGeo"><h2>📍 Sua localização</h2><small>' +
       (g.tem_ponto ? '✓ Você aparece no <a href="/perto-de-mim" target="_blank" rel="noopener">Perto de mim</a> para quem procura profissionais na sua região. Mudou de endereço? Atualize o CEP.'
-                   : 'Informe o CEP do seu escritório (ou de onde você atende) para aparecer no <a href="/perto-de-mim" target="_blank" rel="noopener">Perto de mim</a> e receber oportunidades da sua região.') +
+                   : 'Use a sua localização ou informe o CEP do seu escritório (ou de onde você atende) para aparecer no <a href="/perto-de-mim" target="_blank" rel="noopener">Perto de mim</a> e receber oportunidades da sua região.') +
       ' O CEP não aparece no site: mostramos só a distância aproximada.</small>' +
-      '<div class="linha" style="margin-top:10px"><input type="text" id="fCep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="' + esc(cepFmt) + '" style="flex:1;min-width:0">' +
+      '<button class="btn btn-prim" type="button" id="btnGeoLoc" style="display:block;width:100%;margin-top:10px">📍 Usar minha localização</button>' +
+      '<small style="display:block;text-align:center;margin:6px 0 0;color:var(--muted)">ou digite o CEP</small>' +
+      '<div class="linha" style="margin-top:6px"><input type="text" id="fCep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="' + esc(cepFmt) + '" style="flex:1;min-width:0">' +
       '<button class="btn btn-prim btn-mini" type="button" id="btnGeo">' + (g.tem_ponto ? 'Atualizar' : 'Salvar CEP') + '</button></div>' +
       '<small id="geoMsg" style="display:block;margin-top:6px;color:var(--muted)"></small></div>';
   }
@@ -234,6 +237,38 @@
       var d = e.target.value.replace(/\D/g, '').slice(0, 8);
       e.target.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
     }
+  });
+  function salvarPonto(cep, lat, lng, onde){
+    return rpc('rpc_site_localizacao', { p_token_edicao:T, p_cep:cep, p_lat:lat, p_lng:lng }).then(function(x){
+      if (!x || !x.ok) throw new Error((x && x.error) || 'Não foi possível salvar.');
+      S.geo = { cep:cep, tem_ponto:true };
+      var card = $('cardGeo'); if (card) card.outerHTML = geoHtml();
+      $('geoMsg').textContent = '✓ Salvo' + (onde ? ': ' + onde : '') + '.';
+      toast('📍 Localização salva');
+    });
+  }
+  // Um clique: pega o ponto do aparelho e descobre o CEP dele (OpenStreetMap).
+  document.addEventListener('click', function(e){
+    if (!e.target || e.target.id !== 'btnGeoLoc') return;
+    var bt = e.target, msg = $('geoMsg');
+    if (!navigator.geolocation){ msg.textContent = 'Seu navegador não oferece localização. Digite o CEP.'; return; }
+    bt.disabled = true; bt.textContent = '📍 Localizando…'; msg.textContent = '';
+    var volta = function(t){ bt.disabled = false; bt.textContent = '📍 Usar minha localização'; msg.textContent = t; };
+    navigator.geolocation.getCurrentPosition(function(p){
+      var lat = p.coords.latitude, lng = p.coords.longitude;
+      fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&accept-language=pt-BR&lat=' + lat + '&lon=' + lng)
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var a = (d && d.address) || {};
+          var cep = String(a.postcode || '').replace(/\D/g, '');
+          if (cep.length !== 8) throw new Error('Achamos você, mas não o CEP deste ponto. Digite o CEP abaixo.');
+          var onde = [a.road, a.suburb || a.neighbourhood, a.city || a.town || a.village].filter(Boolean).join(', ');
+          return salvarPonto(cep, lat, lng, onde);
+        })
+        .catch(function(err){ volta('⚠️ ' + (err && err.message || 'Não foi possível salvar. Digite o CEP.')); });
+    }, function(){
+      volta('⚠️ Não conseguimos a sua localização (permissão negada ou indisponível). Digite o CEP.');
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 });
   });
   document.addEventListener('click', function(e){
     if (!e.target || e.target.id !== 'btnGeo') return;
@@ -246,14 +281,7 @@
     }).then(function(d){
       var lat = Number(d.lat), lng = Number(d.lng);
       if (!isFinite(lat) || !isFinite(lng)) throw new Error('Não conseguimos localizar esse CEP agora. Tente de novo mais tarde.');
-      return rpc('rpc_site_localizacao', { p_token_edicao:T, p_cep:cep, p_lat:lat, p_lng:lng }).then(function(x){
-        if (!x || !x.ok) throw new Error((x && x.error) || 'Não foi possível salvar.');
-        S.geo = { cep:cep, tem_ponto:true };
-        var onde = [d.address, d.district, d.city].filter(Boolean).join(', ');
-        var card = $('cardGeo'); if (card) card.outerHTML = geoHtml();
-        $('geoMsg').textContent = '✓ Salvo' + (onde ? ': ' + onde : '') + '.';
-        toast('📍 Localização salva');
-      });
+      return salvarPonto(cep, lat, lng, [d.address, d.district, d.city].filter(Boolean).join(', '));
     }).catch(function(err){
       bt.disabled = false;
       msg.textContent = '⚠️ ' + (err && err.message || 'Não foi possível salvar.');

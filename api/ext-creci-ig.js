@@ -5,6 +5,8 @@
 // rhi_ext_salvar_instagram), sem apagar o que já existe.
 import { cors, send, lerCorpo, validarSessao, RHI } from './_ext-comum.js';
 
+const LIMITE_GRATIS = 5;
+
 export default async function handler(req, res) {
   if (cors(req, res)) return;
   if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Use POST' });
@@ -13,7 +15,7 @@ export default async function handler(req, res) {
   const s = await validarSessao(token);
   if (!s.ok) return send(res, 401, { ok: false, error: s.error });
   // Só para quem o admin liberou (SQL ACESSO_CRECI_1); sem liberação, bloqueia.
-  if (s.acesso_creci_cidade !== true) return send(res, 403, { ok: false, error: 'O CRECI por cidade não está liberado para este login. Peça ao administrador.' });
+  if (s.acesso_creci_cidade !== true) return send(res, 403, { ok: false, error: 'O CRECI + Instagram está bloqueado para este login. Fale com a RH IMOB.' });
   if (!lead_key || typeof lead_key !== 'string' || lead_key.length > 80) return send(res, 400, { ok: false, error: 'lead_key inválido' });
   if (!dados || typeof dados !== 'object' || JSON.stringify(dados).length > 12000) return send(res, 400, { ok: false, error: 'Dados inválidos' });
 
@@ -29,6 +31,21 @@ export default async function handler(req, res) {
 
   const service = RHI.service();
   if (!service) return send(res, 500, { ok: false, error: 'Chave de serviço do Corretores CRECI não configurada' });
+
+  // Plano grátis (SQL CRECI_IG_PLANO_1): só os 5 primeiros perfis com Instagram
+  // entram no 📸 Meus perfis. Daí em diante, só com o plano liberado no admin.
+  if (s.creci_ig_plano === 'gratis' && limpo.instagram_url) {
+    const q = await fetch(`${RHI.url}/rest/v1/rpc/rhi_ext_meus_perfis`, {
+      method: 'POST',
+      headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_conta: 'login:' + s.login, p_page: 1, p_page_size: 1 })
+    }).then(x => x.json()).catch(() => null);
+    if (q && q.ok && Number(q.total) >= LIMITE_GRATIS) {
+      return send(res, 200, { ok: true, gravou: false, limite: true,
+        error: `Plano grátis: você já tem ${LIMITE_GRATIS} perfis do Instagram. Para receber mais, atualize o seu plano com a RH IMOB.` });
+    }
+  }
+
   const r = await fetch(`${RHI.url}/rest/v1/rpc/rhi_ext_salvar_instagram`, {
     method: 'POST',
     headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },

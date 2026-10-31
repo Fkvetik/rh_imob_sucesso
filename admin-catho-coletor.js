@@ -1113,13 +1113,19 @@ $("btnEntrar").addEventListener("click", async () => {
   }
 });
 
-// Quem tem o "CRECI por cidade + Instagram" liberado (SQL ACESSO_CRECI_1).
+// Plano do "CRECI + Instagram" de cada login (SQL CRECI_IG_PLANO_1):
+// gratis (padrão, até 5 perfis) → liberado (sem limite) → bloqueado.
 // null = o SQL ainda não rodou (o botão não aparece).
 let ACESSO_CRECI_CIDADE = null;
+const CRECI_IG_PLANOS = {
+  gratis:    { rot: "grátis (5)", classe: "ghost",     prox: "liberado",  dica: "Usa o CRECI + Instagram com até 5 perfis no 📸 Meus perfis. Clique para liberar sem limite." },
+  liberado:  { rot: "liberado",   classe: "secondary", prox: "bloqueado", dica: "Sem limite de perfis. Clique para bloquear." },
+  bloqueado: { rot: "bloqueado",  classe: "danger",    prox: "gratis",    dica: "A aba não aparece para este login. Clique para voltar ao grátis (5)." }
+};
 async function loadAcessoCreciCidade() {
   try {
-    const r = await rpc("rpc_admin_acesso_creci_cidade", { p_admin_password: ADMIN_PASS });
-    ACESSO_CRECI_CIDADE = r && r.ok ? new Set(r.logins || []) : null;
+    const r = await rpc("rpc_admin_creci_ig_plano", { p_admin_password: ADMIN_PASS });
+    ACESSO_CRECI_CIDADE = r && r.ok ? (r.planos || {}) : null;
   } catch (_) { ACESSO_CRECI_CIDADE = null; }
 }
 
@@ -1170,7 +1176,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
-        ${ACESSO_CRECI_CIDADE ? `<button data-login="${esc(u.login)}" data-ligado="${ACESSO_CRECI_CIDADE.has(u.login) ? '1' : ''}" class="${ACESSO_CRECI_CIDADE.has(u.login) ? 'secondary' : 'ghost'} creciCidadeBtn" style="padding:4px 8px;font-size:11px" title="Libera em Contatos a coleta do CRECI por cidade, a busca do Instagram e o 📸 Meus perfis">📍 CRECI + Instagram: ${ACESSO_CRECI_CIDADE.has(u.login) ? 'liberado' : 'não'}</button>` : ''}
+        ${ACESSO_CRECI_CIDADE ? (() => { const pl = CRECI_IG_PLANOS[ACESSO_CRECI_CIDADE[u.login]] ? ACESSO_CRECI_CIDADE[u.login] : 'gratis', P = CRECI_IG_PLANOS[pl]; return `<button data-login="${esc(u.login)}" data-prox="${P.prox}" class="${P.classe} creciCidadeBtn" style="padding:4px 8px;font-size:11px" title="${P.dica}">📍 CRECI + Instagram: ${P.rot}</button>`; })() : ''}
         <button data-login="${esc(u.login)}" data-conta="${esc(u.conta_id_plataforma||'')}" class="ghost resumoBtn" style="padding:4px 8px;font-size:11px" title="Resumo do período para mandar ao cliente (imprime ou salva em PDF)">📊 Resumo</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
@@ -1183,12 +1189,11 @@ function renderUsuarios(list) {
   });
   tbody.querySelectorAll(".creciCidadeBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
-      const ligar = !btn.dataset.ligado;
       btn.disabled = true;
       try {
-        const r = await rpc("rpc_admin_acesso_creci_cidade", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_ligar: ligar });
+        const r = await rpc("rpc_admin_creci_ig_plano", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_plano: btn.dataset.prox });
         if (!r || !r.ok) throw new Error((r && r.error) || "Não foi possível salvar");
-        ACESSO_CRECI_CIDADE = new Set(r.logins || []);
+        ACESSO_CRECI_CIDADE = r.planos || {};
         renderUsuarios(USUARIOS_COLETOR_CACHE);
       } catch (e) { alert(e.message); btn.disabled = false; }
     });
