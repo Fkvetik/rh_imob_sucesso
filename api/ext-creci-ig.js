@@ -12,8 +12,8 @@ export default async function handler(req, res) {
   const { token, lead_key, dados } = await lerCorpo(req);
   const s = await validarSessao(token);
   if (!s.ok) return send(res, 401, { ok: false, error: s.error });
-  // Liberado por login no admin (SQL ACESSO_CRECI_1). Antes do SQL o campo não existe e passa.
-  if (s.acesso_creci_cidade === false) return send(res, 403, { ok: false, error: 'O CRECI por cidade não está liberado para este login. Peça ao administrador.' });
+  // Só para quem o admin liberou (SQL ACESSO_CRECI_1); sem liberação, bloqueia.
+  if (s.acesso_creci_cidade !== true) return send(res, 403, { ok: false, error: 'O CRECI por cidade não está liberado para este login. Peça ao administrador.' });
   if (!lead_key || typeof lead_key !== 'string' || lead_key.length > 80) return send(res, 400, { ok: false, error: 'lead_key inválido' });
   if (!dados || typeof dados !== 'object' || JSON.stringify(dados).length > 12000) return send(res, 400, { ok: false, error: 'Dados inválidos' });
 
