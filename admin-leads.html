@@ -254,27 +254,28 @@
       if(!arr.length){ document.getElementById('lista').innerHTML='<div class="empty">Nenhum lead '+(FILTRO==='recuperar'?'para recuperar':'ainda')+'.</div>'; return; }
 
       document.getElementById('lista').innerHTML = arr.map(function(l){
-        var rec = !l.enviou_whatsapp;
+        var sup = l.tipo === 'suporte_extensao';
+        var rec = !sup && !l.enviou_whatsapp;
         var num = waNum(l.whatsapp);
-        var msg = encodeURIComponent('Olá'+(l.nome?' '+l.nome.split(' ')[0]:'')+'! Aqui é a Mariana, da RH IMOB. Vi que você começou uma solicitação de contratação no nosso site e queria te ajudar a seguir. Posso te passar os próximos passos?');
+        var msg = sup ? encodeURIComponent('Olá'+(l.nome?' '+l.nome.split(' ')[0]:'')+'! Aqui é do suporte da RH IMOB. Recebi o seu pedido'+(l.cargo_vaga?' ("'+l.cargo_vaga+'")':'')+' e vou te ajudar agora.') : encodeURIComponent('Olá'+(l.nome?' '+l.nome.split(' ')[0]:'')+'! Aqui é a Mariana, da RH IMOB. Vi que você começou uma solicitação de contratação no nosso site e queria te ajudar a seguir. Posso te passar os próximos passos?');
         var campos = [
-          ['Empresa', l.empresa], ['Cidade', l.cidade], ['Cargo', l.cargo_vaga],
+          ['Empresa', l.empresa], ['Cidade', l.cidade], [sup ? 'Assunto' : 'Cargo', l.cargo_vaga],
           ['Quantidade', l.quantidade], ['Urgência', l.urgencia],
           ['Formato', l.formato_contratacao], ['Remuneração', l.remuneracao],
           ['Benefícios', l.beneficios], ['Exigências', l.exigencias],
           ['Contexto', l.mensagem], ['Origem', l.origem]
         ].filter(function(c){return c[1];})
-         .map(function(c){return '<div><b>'+c[0]+':</b> '+esc(c[1])+'</div>';}).join('');
+         .map(function(c){return '<div'+(sup && c[0]==='Contexto'?' style="white-space:pre-line;grid-column:1/-1"':'')+'><b>'+c[0]+':</b> '+esc(c[1])+'</div>';}).join('');
         var key = l.session_id ? esc(l.session_id) : ('id:'+esc(l.id));
         return '<div class="lead'+(rec?' recuperar':'')+'" data-key="'+key+'">' +
           '<div class="lead-top">' +
             '<div><p class="lead-nome">'+esc(l.nome||'(sem nome)')+'</p>' +
               '<p class="lead-meta">'+fmtData(l.created_at)+' · '+esc(l.whatsapp||'sem telefone')+'</p></div>' +
-            '<span class="badge '+(rec?'rec':'ok')+'">'+(rec?'NÃO enviou — recuperar':'Enviou WhatsApp')+'</span>' +
+            (sup ? '<span class="badge rec">🛟 Pedido de suporte</span>' : '<span class="badge '+(rec?'rec':'ok')+'">'+(rec?'NÃO enviou — recuperar':'Enviou WhatsApp')+'</span>') +
           '</div>' +
           (campos?'<div class="lead-grid">'+campos+'</div>':'') +
           '<div class="lead-actions">' +
-            (num?'<a class="wa-btn'+(rec?' rec':'')+'" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone='+num+'&text='+msg+'"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.1 1.5 5.8L0 24l6.3-1.6C8 23.4 10 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>'+(rec?'Recuperar no WhatsApp':'Falar no WhatsApp')+'</a>':'<span class="lead-meta">Sem telefone para contato</span>') +
+            (num?'<a class="wa-btn'+(rec?' rec':'')+'" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone='+num+'&text='+msg+'"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.1 1.5 5.8L0 24l6.3-1.6C8 23.4 10 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>'+(sup?'Responder no WhatsApp':rec?'Recuperar no WhatsApp':'Falar no WhatsApp')+'</a>':'<span class="lead-meta">Sem telefone para contato</span>') +
             '<button type="button" class="del-btn" onclick="excluirLead(this,'+(l.session_id?"'"+esc(l.session_id)+"'":'null')+','+(l.id?"'"+esc(l.id)+"'":'null')+')">Excluir</button>' +
           '</div>' +
         '</div>';

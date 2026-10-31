@@ -76,7 +76,7 @@ export default async function handler(req, res) {
     // formulário). Fundimos todas as linhas da mesma sessão preservando o valor
     // mais recente não-vazio de cada campo, e enviou_whatsapp=true se qualquer
     // linha marcou. Assim o painel mostra 1 lead completo por pessoa.
-    const CAMPOS = ['nome','whatsapp','empresa','cidade','cargo_vaga','quantidade','urgencia','formato_contratacao','remuneracao','beneficios','exigencias','mensagem','origem','pagina'];
+    const CAMPOS = ['nome','whatsapp','empresa','cidade','cargo_vaga','quantidade','urgencia','formato_contratacao','remuneracao','beneficios','exigencias','mensagem','origem','pagina','tipo'];
     const porSessao = new Map();
     const semSessao = [];
     // rows vem em created_at.desc (mais recente primeiro)
