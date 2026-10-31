@@ -68,6 +68,9 @@ export default async function handler(req, res) {
     let geo;
     try { geo = await coordenadasPorCep(SERVICE_KEY, geoLimite, inicio); }
     catch (e) { geo = { erro: String(e && e.message || e) }; }
+    // Grade do "Perto de mim" (GEO_2c) refeita com as coordenadas novas.
+    try { geo.grade = await rpcNT('nt_geo_grade_atualizar', {}, SERVICE_KEY); }
+    catch (e) { geo.grade = 'erro: ' + e.message; }
     // Uma linha por execução nos logs da Vercel, para acompanhar sem abrir o banco.
     console.log('[enriquecer-talentos]', JSON.stringify({ ...resumo, geo }));
 
