@@ -4,6 +4,7 @@
 //   acao 'registrar'   { lead_key, status, post, comentario }  → comentário feito / pulado / inativo
 //   acao 'resposta'    { lead_key, post, respondeu, curtiu }    → resultado da conferência
 //   acao 'a_verificar' {}                                        → comentários a conferir
+//   acao 'sem_telefone' { cidade? }                              → ativos sem telefone (CSV)
 import { cors, send, lerCorpo, validarSessao, RHI } from './_ext-comum.js';
 
 export default async function handler(req, res) {
@@ -28,6 +29,10 @@ export default async function handler(req, res) {
   } else if (b.acao === 'resposta') {
     fn = 'rhi_ext_marcar_resposta';
     corpo = { p_conta: conta, p_lead_key: t(b.lead_key, 80), p_post: t(b.post, 300), p_respondeu: !!b.respondeu, p_curtiu: !!b.curtiu };
+  } else if (b.acao === 'sem_telefone') {
+    // Ativos sem telefone coletados por este login (SQL CRECI_8) — vira CSV na extensão.
+    fn = 'rhi_ext_sem_telefone';
+    corpo = { p_conta: conta, p_cidade: t(b.cidade, 80) || null };
   } else if (b.acao === 'a_verificar') {
     fn = 'rhi_ext_a_verificar';
     corpo = { p_conta: conta };
@@ -43,7 +48,7 @@ export default async function handler(req, res) {
   const data = r ? await r.json().catch(() => null) : null;
   if (!r || !r.ok) {
     const msg = (data && (data.message || data.hint)) || (r ? `HTTP ${r.status}` : 'sem resposta');
-    return send(res, 502, { ok: false, error: /rhi_ext_/.test(msg) ? 'Falta rodar o SQL CRECI_5 no Corretores CRECI' : msg });
+    return send(res, 502, { ok: false, error: /rhi_ext_sem_telefone/.test(msg) ? 'Falta rodar o SQL CRECI_8 no Corretores CRECI' : /rhi_ext_/.test(msg) ? 'Falta rodar o SQL CRECI_5 no Corretores CRECI' : msg });
   }
   return send(res, 200, b.acao === 'a_verificar' ? { ok: true, itens: data || [] } : (data || { ok: true }));
 }
