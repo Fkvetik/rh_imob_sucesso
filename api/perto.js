@@ -16,8 +16,8 @@ function enviar(res, status, corpo, cacheSeg) {
 }
 
 async function pontoDoCep(cep) {
-  const r = await fetch(`https://cep.awesomeapi.com.br/json/${cep}`).catch(() => null);
-  if (!r || !r.ok) return null;
+  const r = await fetch(`https://cep.awesomeapi.com.br/json/${cep}`).catch((e) => ({ ok: false, status: 'rede: ' + e.message }));
+  if (!r || !r.ok) { console.log('[perto] AwesomeAPI', cep, r && r.status); return null; }
   const d = await r.json().catch(() => null);
   const lat = Number(d && d.lat), lng = Number(d && d.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
@@ -53,7 +53,10 @@ export default async function handler(req, res) {
     body: JSON.stringify({ p_lat: lat, p_lng: lng, p_raio_km: raio })
   }).catch(() => null);
   const talentos = r ? await r.json().catch(() => null) : null;
-  if (!r || !r.ok || !talentos) return enviar(res, 502, { ok: false, error: 'Não foi possível consultar agora. Tente de novo em instantes.' });
+  if (!r || !r.ok || !talentos) {
+    console.log('[perto] nt_perto falhou', r && r.status, JSON.stringify(talentos).slice(0, 300));
+    return enviar(res, 502, { ok: false, error: 'Não foi possível consultar agora. Tente de novo em instantes.' });
+  }
 
   return enviar(res, 200, {
     ok: true,
