@@ -303,8 +303,8 @@
       const cel = (d.talentos && d.talentos.celulas) || [];
       const maior = Math.max(1, ...cel.map((c) => c.n));
       cel.forEach((c) => {
-        const rpx = 6 + Math.sqrt(c.n / maior) * 18;
-        L.circleMarker([c.lat, c.lng], { radius: rpx, color: '#15803d', weight: 1, fillColor: '#16a34a', fillOpacity: .55 })
+        const rpx = 3 + Math.sqrt(c.n / maior) * 13; // menores: dá para ver onde concentra
+        L.circleMarker([c.lat, c.lng], { radius: rpx, color: '#15803d', weight: 1, fillColor: '#16a34a', fillOpacity: .5 })
           .bindTooltip(fmt(c.n) + ' talentos nesta região').addTo(camada);
       });
       mapa.fitBounds(circ.getBounds(), { padding: [10, 10] });
