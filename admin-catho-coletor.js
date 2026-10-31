@@ -41,6 +41,8 @@ function showApp() {
   if (superAdmin) loadContatosSite();
   document.getElementById("cardIndicacoes")?.classList.toggle("hide", !superAdmin);
   if (superAdmin) loadIndicacoes();
+  document.getElementById("tabBtnLinks")?.classList.toggle("hide", !superAdmin);
+  if (superAdmin) loadLinks();
 }
 
 // ===== Indicações de negócio (SQL INDICA_1) =====
@@ -3500,3 +3502,74 @@ function pedirLimite(titulo, atual) {
   const n = parseInt(String(r).replace(/\D/g, ""), 10);
   return String(r).trim() === "" || isNaN(n) ? null : n;
 }
+
+// ===== 🧭 Central de links (SQL LINKS_1) =====
+// Os links ficam no banco do Coletor (só com a senha de admin completa), não
+// no código: o repositório do site é público.
+let LINKS = [], LINK_EDITANDO = null;
+async function loadLinks() {
+  const box = $("lkLista");
+  if (!box) return;
+  try {
+    const r = await rpc("rpc_admin_links", { p_admin_password: ADMIN_PASS });
+    if (!r.ok) throw new Error(r.error || "erro");
+    LINKS = r.links || [];
+    renderLinks();
+  } catch (e) {
+    box.innerHTML = '<small style="color:#a11">Não carregou: ' + esc(e.message) + ' (falta rodar o SQL LINKS_1 no Coletor?)</small>';
+  }
+}
+function renderLinks() {
+  const box = $("lkLista");
+  const q = ($("lkBusca").value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const lista = LINKS.filter(l => !q || norm(l.grupo + " " + l.titulo + " " + (l.descricao || "") + " " + l.url).includes(q));
+  $("lkGrupos").innerHTML = [...new Set(LINKS.map(l => l.grupo))].map(g => '<option value="' + esc(g) + '">').join("");
+  if (!lista.length) { box.innerHTML = "<small>Nenhum link" + (q ? " com essa busca" : "") + ".</small>"; return; }
+  const grupos = {};
+  lista.forEach(l => (grupos[l.grupo] = grupos[l.grupo] || []).push(l));
+  box.innerHTML = Object.keys(grupos).sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true })).map(g => `
+    <div style="margin-top:12px">
+      <div style="font-weight:800;font-size:13px;color:#33165f;margin-bottom:6px">${esc(g)}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">
+        ${grupos[g].map(l => `
+          <div style="border:1px solid #e6e0ef;border-radius:10px;padding:9px 11px;background:#fff">
+            <a href="${esc(l.url)}" target="_blank" rel="noopener" style="font-weight:700;color:#5b21b6;text-decoration:none">${esc(l.titulo)} ↗</a>
+            ${l.descricao ? `<div style="font-size:12px;color:#6f6283;margin-top:2px">${esc(l.descricao)}</div>` : ""}
+            <div style="display:flex;gap:6px;margin-top:6px">
+              <button type="button" class="ghost lkCopiar" data-url="${esc(l.url)}" style="padding:2px 8px;font-size:11px">📋 Copiar</button>
+              <button type="button" class="ghost lkEditar" data-id="${l.id}" style="padding:2px 8px;font-size:11px">✏️ Editar</button>
+              <button type="button" class="ghost lkApagar" data-id="${l.id}" data-titulo="${esc(l.titulo)}" style="padding:2px 8px;font-size:11px;color:#a11">Apagar</button>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>`).join("");
+}
+function abrirFormLink(l) {
+  LINK_EDITANDO = l ? l.id : null;
+  $("lkGrupo").value = l ? l.grupo : ""; $("lkTitulo").value = l ? l.titulo : "";
+  $("lkUrl").value = l ? l.url : ""; $("lkDesc").value = l ? (l.descricao || "") : "";
+  $("lkForm").classList.remove("hide"); $("lkMsg").textContent = "";
+  $("lkGrupo").focus();
+}
+$("lkBusca")?.addEventListener("input", renderLinks);
+$("lkNovo")?.addEventListener("click", () => abrirFormLink(null));
+$("lkCancelar")?.addEventListener("click", () => $("lkForm").classList.add("hide"));
+$("lkSalvar")?.addEventListener("click", async () => {
+  const atual = LINKS.find(l => l.id === LINK_EDITANDO);
+  const r = await rpc("rpc_admin_link_salvar", { p_admin_password: ADMIN_PASS, p_id: LINK_EDITANDO,
+    p_grupo: $("lkGrupo").value, p_titulo: $("lkTitulo").value, p_url: $("lkUrl").value.trim(),
+    p_descricao: $("lkDesc").value, p_ordem: atual ? atual.ordem : 100 }).catch(e => ({ ok: false, error: e.message }));
+  if (!r || !r.ok) { $("lkMsg").textContent = "❌ " + ((r && r.error) || "Não salvou"); return; }
+  $("lkForm").classList.add("hide"); $("lkMsg").textContent = "✅ Link salvo.";
+  loadLinks();
+});
+$("lkLista")?.addEventListener("click", async (e) => {
+  const c = e.target.closest(".lkCopiar"), ed = e.target.closest(".lkEditar"), ap = e.target.closest(".lkApagar");
+  if (c) { navigator.clipboard.writeText(c.dataset.url).then(() => { c.textContent = "✓ Copiado"; setTimeout(() => (c.textContent = "📋 Copiar"), 1500); }); }
+  if (ed) abrirFormLink(LINKS.find(l => String(l.id) === ed.dataset.id));
+  if (ap && confirm('Apagar o link "' + ap.dataset.titulo + '"?')) {
+    const r = await rpc("rpc_admin_link_apagar", { p_admin_password: ADMIN_PASS, p_id: Number(ap.dataset.id) }).catch(() => null);
+    if (r && r.ok) loadLinks(); else alert("Não apagou.");
+  }
+});

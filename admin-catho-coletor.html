@@ -155,6 +155,7 @@
       <button type="button" class="tab-btn" data-tab="tabCreci">🏘️ Corretores CRECI</button>
       <button type="button" class="tab-btn" data-tab="tabOperadores">📇 Operadores (Catho Coletor)</button>
       <button type="button" class="tab-btn" data-tab="tabAdmin">🔐 Administração</button>
+      <button type="button" class="tab-btn hide" data-tab="tabLinks" id="tabBtnLinks">🧭 Links</button>
     </div>
 
     <div class="tabpanel" id="tabNT">
@@ -671,6 +672,28 @@
     </div>
     </div><!-- /tabOperadores -->
 
+    <!-- Central de links (SQL LINKS_1): os links ficam no banco, não no código (o site é público) -->
+    <div class="tabpanel hide" id="tabLinks">
+    <div class="card" id="cardLinks">
+      <h3 style="margin-top:0;font-size:14px">🧭 Central de links</h3>
+      <small>Tudo o que você precisa para cuidar do site, da extensão e dos bancos sozinho: rodar SQL, ver tabelas, chaves do servidor, publicar a extensão, planilhas e todas as páginas do admin. Os links ficam guardados no banco (só abrem com a senha de admin), e você pode acrescentar, mudar ou apagar.</small>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <input id="lkBusca" placeholder="🔎 Procurar (ex.: SQL, Vercel, planilha)" style="flex:1 1 260px">
+        <button id="lkNovo" type="button" class="secondary">+ Novo link</button>
+      </div>
+      <div id="lkForm" class="hide" style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+        <input id="lkGrupo" placeholder="Grupo (ex.: 1. Bancos de dados)" list="lkGrupos"><datalist id="lkGrupos"></datalist>
+        <input id="lkTitulo" placeholder="Nome do link">
+        <input id="lkUrl" placeholder="https://...">
+        <input id="lkDesc" placeholder="Para que serve (opcional)">
+        <div class="btns" style="margin:0"><button id="lkSalvar" type="button">💾 Salvar link</button><button id="lkCancelar" type="button" class="ghost">Cancelar</button></div>
+      </div>
+      <div id="lkMsg" class="msg"></div>
+      <div id="lkLista" style="margin-top:10px"><small>Carregando…</small></div>
+      <small style="display:block;margin-top:12px;color:#888">Pastas no computador: <b>DocumentosProjetosh-imob-aceleradora</b> (extensão e SQL em devsql), <b>DocumentosProjetosh_imob_sucesso</b> (site), <b>DocumentosProjetosede-parceiros-pdf</b> (apresentação e artes). Zips da extensão: <b>DocumentosProjetosh-imob-aceleradora-&lt;versão&gt;.zip</b>.</small>
+    </div>
+    </div><!-- /tabLinks -->
+
     <div class="tabpanel hide" id="tabAdmin">
     <div class="card" id="cardContatosSite">
       <h3 style="margin-top:0;font-size:14px">📞 Contatos do site</h3>
@@ -795,7 +818,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261031creci"></script>
+<script src="admin-catho-coletor.js?v=20261031links"></script>
 <script>
   // Clicar no título de qualquer seção encolhe ou abre a seção.
   (function () {
