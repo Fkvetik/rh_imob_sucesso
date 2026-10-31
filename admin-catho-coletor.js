@@ -1111,12 +1111,23 @@ $("btnEntrar").addEventListener("click", async () => {
   }
 });
 
+// Quem tem o "CRECI por cidade + Instagram" liberado (SQL ACESSO_CRECI_1).
+// null = o SQL ainda não rodou (o botão não aparece).
+let ACESSO_CRECI_CIDADE = null;
+async function loadAcessoCreciCidade() {
+  try {
+    const r = await rpc("rpc_admin_acesso_creci_cidade", { p_admin_password: ADMIN_PASS });
+    ACESSO_CRECI_CIDADE = r && r.ok ? new Set(r.logins || []) : null;
+  } catch (_) { ACESSO_CRECI_CIDADE = null; }
+}
+
 async function loadUsuarios() {
   try {
     const [resp] = await Promise.all([
       rpc("rpc_admin_list_usuarios", { p_admin_password: ADMIN_PASS }),
       loadValidadeOperadores(),
-      loadFiltrosAtrasados()
+      loadFiltrosAtrasados(),
+      loadAcessoCreciCidade()
     ]);
     if (!resp.ok) { alert("Sessão expirou: " + resp.error); location.reload(); return; }
     renderUsuarios(resp.usuarios || []);
@@ -1157,6 +1168,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
+        ${ACESSO_CRECI_CIDADE ? `<button data-login="${esc(u.login)}" data-ligado="${ACESSO_CRECI_CIDADE.has(u.login) ? '1' : ''}" class="${ACESSO_CRECI_CIDADE.has(u.login) ? 'secondary' : 'ghost'} creciCidadeBtn" style="padding:4px 8px;font-size:11px" title="Libera em Contatos a coleta do CRECI por cidade, a busca do Instagram e o 📸 Meus perfis">📍 CRECI + Instagram: ${ACESSO_CRECI_CIDADE.has(u.login) ? 'liberado' : 'não'}</button>` : ''}
         <button data-login="${esc(u.login)}" data-conta="${esc(u.conta_id_plataforma||'')}" class="ghost resumoBtn" style="padding:4px 8px;font-size:11px" title="Resumo do período para mandar ao cliente (imprime ou salva em PDF)">📊 Resumo</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
       </td>
@@ -1166,6 +1178,18 @@ function renderUsuarios(list) {
 
   tbody.querySelectorAll(".filtrosBtn").forEach(btn => {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
+  });
+  tbody.querySelectorAll(".creciCidadeBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const ligar = !btn.dataset.ligado;
+      btn.disabled = true;
+      try {
+        const r = await rpc("rpc_admin_acesso_creci_cidade", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_ligar: ligar });
+        if (!r || !r.ok) throw new Error((r && r.error) || "Não foi possível salvar");
+        ACESSO_CRECI_CIDADE = new Set(r.logins || []);
+        renderUsuarios(USUARIOS_COLETOR_CACHE);
+      } catch (e) { alert(e.message); btn.disabled = false; }
+    });
   });
   // Resumo do período (resumo-cliente.html). window.open sem noopener leva a
   // sessão de admin desta aba junto (sessionStorage).

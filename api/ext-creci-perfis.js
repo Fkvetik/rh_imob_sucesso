@@ -12,6 +12,8 @@ export default async function handler(req, res) {
   const { token, cidade, cargo, busca, page } = await lerCorpo(req);
   const s = await validarSessao(token);
   if (!s.ok) return send(res, 401, { ok: false, error: s.error });
+  // Liberado por login no admin (SQL ACESSO_CRECI_1). Antes do SQL o campo não existe e passa.
+  if (s.acesso_creci_cidade === false) return send(res, 403, { ok: false, error: 'O CRECI por cidade não está liberado para este login. Peça ao administrador.' });
 
   const service = RHI.service();
   if (!service) return send(res, 500, { ok: false, error: 'Chave de serviço do Corretores CRECI não configurada' });

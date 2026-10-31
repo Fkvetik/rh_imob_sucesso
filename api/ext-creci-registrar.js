@@ -13,6 +13,8 @@ export default async function handler(req, res) {
   const { token, itens, lote } = await lerCorpo(req);
   const s = await validarSessao(token);
   if (!s.ok) return send(res, 401, { ok: false, error: s.error });
+  // Liberado por login no admin (SQL ACESSO_CRECI_1). Antes do SQL o campo não existe e passa.
+  if (s.acesso_creci_cidade === false) return send(res, 403, { ok: false, error: 'O CRECI por cidade não está liberado para este login. Peça ao administrador.' });
 
   if (!Array.isArray(itens) || !itens.length) return send(res, 400, { ok: false, error: 'Nenhum corretor enviado' });
   if (itens.length > 50 || JSON.stringify(itens).length > 40000) return send(res, 413, { ok: false, error: 'Lote grande demais' });
