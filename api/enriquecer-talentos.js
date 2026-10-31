@@ -8,9 +8,20 @@
 // Quando o CEP não bate com a cidade declarada, marca CEP_DIVERGENTE em vez
 // de adivinhar — fica sinalizado para revisão manual.
 
+//
+// 2ª etapa (GEO_1): coordenada pelo CEP para talento SEM latitude/longitude.
+// Cada CEP é consultado uma vez (cache nt_geo_cep no banco) na AwesomeAPI,
+// que devolve o ponto da rua do CEP; o banco grava em todos os talentos do
+// mesmo CEP que estão sem coordenada. Nunca sobrescreve coordenada existente.
+
+export const config = { maxDuration: 60 };
+
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const LOTE_PADRAO = 40;
 const CONCORRENCIA = 5;
+const GEO_LOTE = 40;            // CEPs por execução (a cada 15 min)
+const GEO_CONCORRENCIA = 3;
+const GEO_TEMPO_MAX_MS = 45000; // para de começar CEP novo perto do limite da função
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -35,6 +46,8 @@ export default async function handler(req, res) {
   }
 
   const limit = Math.min(200, Math.max(1, parseInt(req.query.limit, 10) || LOTE_PADRAO));
+  const geoLimite = Math.min(100, Math.max(0, parseInt(req.query.geo, 10) || GEO_LOTE));
+  const inicio = Date.now();
 
   try {
     const pendentes = await fetchPendentes(SERVICE_KEY, limit);
@@ -49,7 +62,12 @@ export default async function handler(req, res) {
       else resumo.erros++;
     });
 
-    res.status(200).send(JSON.stringify({ ok: true, ...resumo, detalhes: resultados }));
+    // Uma falha na etapa de coordenada não derruba a confirmação de CEP acima.
+    let geo;
+    try { geo = await coordenadasPorCep(SERVICE_KEY, geoLimite, inicio); }
+    catch (e) { geo = { erro: String(e && e.message || e) }; }
+
+    res.status(200).send(JSON.stringify({ ok: true, ...resumo, geo, detalhes: resultados }));
   } catch (e) {
     res.status(500).send(JSON.stringify({ error: 'exception', message: String(e && e.message || e) }));
   }
@@ -114,6 +132,64 @@ async function processarUm(row, serviceKey) {
 
   await atualizar(row.talento_key, patch, serviceKey);
   return { talento_key: row.talento_key, status: 'CEP_CONFIRMADO' };
+}
+
+// ── 2ª etapa: coordenada pelo CEP ──────────────────────────────────────
+async function rpcNT(nome, corpo, serviceKey) {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${nome}`, {
+    method: 'POST',
+    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(corpo)
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(`${nome}: ${(data && (data.message || data.hint)) || 'HTTP ' + r.status}`);
+  return data;
+}
+
+async function coordenadasPorCep(serviceKey, limite, inicio) {
+  const resumo = { ceps: 0, achados: 0, nao_achados: 0, talentos_preenchidos: 0, parou: null };
+  if (!limite) return resumo;
+  let pendentes;
+  try {
+    pendentes = await rpcNT('nt_geo_ceps_pendentes', { p_limite: limite }, serviceKey);
+  } catch (e) {
+    resumo.parou = 'Falta rodar o SQL GEO_1 no Novos Talentos (' + e.message + ')';
+    return resumo;
+  }
+  for (let i = 0; i < pendentes.length; i += GEO_CONCORRENCIA) {
+    if (Date.now() - inicio > GEO_TEMPO_MAX_MS) { resumo.parou = 'tempo'; break; }
+    const fatia = pendentes.slice(i, i + GEO_CONCORRENCIA);
+    const res = await Promise.all(fatia.map(p => consultarCep(p.cep)));
+    // Limite da API ou fora do ar: não marca nada, tenta na próxima execução.
+    if (res.some(x => x.status === 'LIMITE')) { resumo.parou = 'limite da API de CEP'; break; }
+    for (let k = 0; k < fatia.length; k++) {
+      const x = res[k];
+      if (x.status === 'ERRO') continue;
+      const n = await rpcNT('nt_geo_aplicar', {
+        p_cep: fatia[k].cep, p_status: x.status, p_lat: x.lat ?? null, p_lng: x.lng ?? null,
+        p_fonte: 'AWESOMEAPI', p_cidade: x.cidade || null, p_uf: x.uf || null, p_bairro: x.bairro || null
+      }, serviceKey);
+      resumo.ceps++;
+      if (x.status === 'OK') { resumo.achados++; resumo.talentos_preenchidos += Number(n) || 0; }
+      else resumo.nao_achados++;
+    }
+  }
+  return resumo;
+}
+
+// { status: 'OK', lat, lng, cidade, uf, bairro } | { status: 'NAO_ACHADO' | 'LIMITE' | 'ERRO' }
+async function consultarCep(cep) {
+  let r;
+  try { r = await fetch(`https://cep.awesomeapi.com.br/json/${cep}`); }
+  catch (e) { return { status: 'ERRO' }; }
+  if (r.status === 429 || r.status >= 500) return { status: 'LIMITE' };
+  if (r.status === 404 || r.status === 400) return { status: 'NAO_ACHADO' };
+  if (!r.ok) return { status: 'ERRO' };
+  const d = await r.json().catch(() => null);
+  const lat = Number(d && d.lat), lng = Number(d && d.lng);
+  const valido = Number.isFinite(lat) && Number.isFinite(lng) && lat >= -34 && lat <= 6 && lng >= -74 && lng <= -28;
+  if (!valido) return { status: 'NAO_ACHADO' };
+  return { status: 'OK', lat, lng, cidade: d.city, uf: d.state, bairro: d.district };
 }
 
 function normalizar(v) {
