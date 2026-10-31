@@ -23,7 +23,8 @@ export default async function handler(req, res) {
     status: t(dados.status, 20), instagram_url: t(dados.instagram_url, 120), username: t(dados.username, 40),
     nome_perfil: t(dados.nome_perfil, 120), bio: t(dados.bio, 2000), cargo: t(dados.cargo, 80), cargo_raw: t(dados.cargo_raw, 120),
     seguidores: n(dados.seguidores), seguindo: n(dados.seguindo), postagens: n(dados.postagens),
-    telefone: t(dados.telefone, 30), telefone_wa: t(dados.telefone_wa, 200), telefone_txt: t(dados.telefone_txt, 200)
+    telefone: t(dados.telefone, 30), telefone_wa: t(dados.telefone_wa, 200), telefone_txt: t(dados.telefone_txt, 200),
+    evidencia: t(dados.evidencia, 2200) // texto onde o número do CRECI apareceu (o banco confere — SQL CRECI_7)
   };
 
   const service = RHI.service();
