@@ -90,6 +90,17 @@
     .legenda span { display: inline-flex; align-items: center; gap: 6px; }
     .vazio { text-align: center; color: var(--cinza); padding: 40px 10px; }
 
+    .pro { background: #fff; border-radius: 22px; box-shadow: var(--sombra); padding: 24px; margin: 0 0 24px; border-top: 6px solid var(--laranja); }
+    .pro .etiqueta { background: #fff0e5; color: #c25a0c; }
+    .pro h2 { margin-top: 10px; font-size: clamp(22px, 3.4vw, 30px); line-height: 1.15; font-weight: 900; color: var(--roxo-escuro); }
+    .pro > p { margin-top: 8px; color: var(--cinza); max-width: 760px; }
+    .pro-cards { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .pro-cards div { background: var(--roxo-fundo); border-radius: 14px; padding: 14px; }
+    .pro-cards b { display: block; color: var(--roxo-escuro); }
+    .pro-cards span { display: block; font-size: 14px; color: var(--cinza); margin-top: 4px; }
+    .pro-acoes { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .pro-acoes .btn-cta { width: auto; }
+    .pro-acoes small { color: var(--cinza); font-size: 13px; flex: 1 1 260px; }
     .privacidade { margin-bottom: 40px; font-size: 13px; color: var(--cinza); text-align: center; }
     footer { background: #0f051a; color: rgba(255,255,255,.6); padding: 28px 0; font-size: 14px; }
     footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -183,6 +194,23 @@
             <span><span class="bola" style="--cor: var(--c-imob)"></span>Imobiliárias</span>
             <span><span class="bola" style="--cor: var(--c-lanc)"></span>Lançamentos</span>
           </div>
+        </div>
+      </section>
+
+      <!-- Para o profissional: por que aparecer aqui (leva para a Rede de Parceiros) -->
+      <section class="pro" aria-labelledby="proTit">
+        <span class="etiqueta">Para corretores e imobiliárias</span>
+        <h2 id="proTit">Apareça aqui para quem procura na sua região.</h2>
+        <p>Imobiliárias, construtoras e outros corretores usam o Perto de mim para achar profissionais por perto. Quem está na Rede de Parceiros e coloca o CEP no painel aparece no mapa, com link para o próprio site.</p>
+        <div class="pro-cards">
+          <div><b>💼 Mais propostas de trabalho</b><span>Empresas da sua região encontram você pela distância.</span></div>
+          <div><b>🔑 Portfólio maior para vender</b><span>Imóveis e lançamentos da rede chegam para quem está perto.</span></div>
+          <div><b>🤝 Parcerias na região</b><span>Corretores e imobiliárias próximos se acham e dividem negócios.</span></div>
+          <div><b>📈 Melhores condições</b><span>Quem é encontrado escolhe entre mais oportunidades.</span></div>
+        </div>
+        <div class="pro-acoes">
+          <a class="btn btn-cta" href="/rede-de-parceiros">Quero aparecer no mapa</a>
+          <small>Sem custo para o profissional. Já é parceiro? Coloque o CEP no seu painel, no cartão <b>📍 Sua localização</b>.</small>
         </div>
       </section>
 
