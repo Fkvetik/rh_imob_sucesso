@@ -100,6 +100,9 @@
     text-decoration:none; border-left:2px solid transparent;
   }
   nav.toc a:hover{background:var(--surface-2); color:var(--ink)}
+  nav.toc li.sub a{padding-left:26px; font-size:.92em}
+  .guia-pdf{display:inline-block; margin:2px 0 8px; font-size:.86em; font-weight:700; color:var(--purple-dark); background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:3px 12px; text-decoration:none}
+  .guia-pdf:hover{border-color:var(--orange)}
   nav.toc a.active{color:var(--purple-dark); border-left-color:var(--orange); background:var(--surface-2); font-weight:600}
 
   main{padding:36px 0 90px; min-width:0}
@@ -244,6 +247,11 @@
       <li><a href="#mapa">O caminho do lead</a></li>
       <li><a href="#login">1. Entrar e sair</a></li>
       <li><a href="#coleta">2. Captação de contatos</a></li>
+      <li class="sub"><a href="#c-catho">Catho</a></li>
+      <li class="sub"><a href="#c-talentos">Banco de Talentos</a></li>
+      <li class="sub"><a href="#c-creci">Corretores CRECI</a></li>
+      <li class="sub"><a href="#c-instagram">CRECI + Instagram</a></li>
+      <li class="sub"><a href="#c-lista">Minha lista (CSV)</a></li>
       <li><a href="#envio">3. Disparo automático</a></li>
       <li><a href="#bolha">4. A bolha no WhatsApp</a></li>
       <li><a href="#respostas">5. Respostas prontas</a></li>
@@ -263,7 +271,7 @@
       <h1>Do primeiro contato ao agendamento, numa ferramenta só</h1>
       <p class="lede">A RH IMOB Aceleradora encontra os contatos, faz a primeira abordagem no WhatsApp sozinha, ajuda você a conduzir a conversa com respostas prontas, agenda a reunião e mostra em números onde cada operação ganha e onde perde gente. Sem planilha e sem copiar e colar.</p>
       <div class="stat-row">
-        <div class="stat"><b>4</b><span>fontes de contatos: Catho, Banco de Talentos, Corretores CRECI e lista própria</span></div>
+        <div class="stat"><b>5</b><span>origens de contatos: Catho, Banco de Talentos, Corretores CRECI, CRECI + Instagram e lista própria</span></div>
         <div class="stat"><b>7h às 20h</b><span>disparo roda sozinho, de segunda a sábado</span></div>
         <div class="stat"><b>5</b><span>etapas medidas: abordado, respondeu, recebeu a proposta, agendou, parou</span></div>
       </div>
@@ -312,19 +320,26 @@
 
     <section id="coleta">
       <h2><span class="num">02</span> Captação de contatos</h2>
-      <p class="dek">São quatro fontes, todas na aba <strong>Contatos</strong> do popup. O contato que entra por qualquer uma delas vai para a mesma fila de envio.</p>
+      <p class="dek">São cinco origens, todas na aba <strong>Contatos</strong> do popup. Cada login vê só as que estão liberadas para ele. O contato que entra por qualquer uma delas vai para a mesma fila de envio.</p>
+      <div class="card tip">
+        <span class="tag">Guias em PDF</span>
+        <p>Cada origem tem um guia curto em PDF, para mandar a quem vai usar. Depois que os contatos entram na fila, o caminho é o mesmo para todos: <a href="/assets/guias/RH-IMOB-Guia-Base.pdf" target="_blank" rel="noopener"><strong>Guia base</strong></a> (mensagens, envio, bolha e resultados).</p>
+      </div>
 
-      <h3>Catho</h3>
+      <h3 id="c-catho">Catho</h3>
+      <a class="guia-pdf" href="/assets/guias/RH-IMOB-Guia-Catho.pdf" target="_blank" rel="noopener">📄 Guia em PDF</a>
       <p>Você cola o link de uma busca de currículos da Catho e define quantas páginas ela deve percorrer. A extensão abre cada perfil, lê nome, telefone, cargo, cidade e outros dados, e guarda tudo.</p>
       <div class="grid-2">
         <div class="feature"><div class="icon">🌅</div><h4>Automática</h4><p>Roda sozinha todo dia, no horário definido pelo administrador para o seu login.</p></div>
         <div class="feature"><div class="icon">▶️</div><h4>Manual</h4><p>O botão <strong>Rodar coleta agora</strong> funciona a qualquer momento, para testar um filtro novo ou reforçar o dia.</p></div>
       </div>
 
-      <h3>Banco de Talentos</h3>
+      <h3 id="c-talentos">Banco de Talentos</h3>
+      <a class="guia-pdf" href="/assets/guias/RH-IMOB-Guia-Banco-de-Talentos.pdf" target="_blank" rel="noopener">📄 Guia em PDF</a>
       <p>Base da RH IMOB com candidatos já mapeados. Você filtra por cidade, região, cargo, faixa etária e proximidade de metrô, seleciona quem interessa e libera o contato para a sua fila. O acesso e o limite de contatos são definidos pelo administrador.</p>
 
-      <h3>Banco de Corretores CRECI</h3>
+      <h3 id="c-creci">Banco de Corretores CRECI</h3>
+      <a class="guia-pdf" href="/assets/guias/RH-IMOB-Guia-Corretores-CRECI.pdf" target="_blank" rel="noopener">📄 Guia em PDF</a>
       <p>Base só com profissionais com CRECI ativo. Abra pela aba <strong>Corretores CRECI ↗</strong>. Você filtra por <strong>cidade</strong>, <strong>ano de inscrição</strong> e <strong>perfil</strong>, vê o nome de cada corretor e libera os selecionados. Ao liberar, o botão mostra o andamento ("Liberando 12 de 40") e o contato é descontado do limite do plano naquele momento.</p>
       <div class="card tip">
         <span class="tag">Bom saber</span>
@@ -335,7 +350,22 @@
         <figcaption>O Banco de Corretores CRECI: filtros no topo e a lista para selecionar e liberar. Nomes de exemplo.</figcaption>
       </figure>
 
-      <h3>Lista própria (planilha)</h3>
+      <h3 id="c-instagram">CRECI + Instagram</h3>
+      <a class="guia-pdf" href="/assets/guias/RH-IMOB-Guia-CRECI-Instagram.pdf" target="_blank" rel="noopener">📄 Guia em PDF</a>
+      <p>Para chegar em todos os corretores ativos de uma cidade, inclusive os que não estão nas bases. Aparece só para os logins que a RH IMOB liberou.</p>
+      <ol class="steps">
+        <li>Em <strong>Contatos › 📍 CRECI + Instagram</strong>, digite a cidade e clique em <strong>▶ Começar / continuar</strong>. O site do CRECI-SP abre; o botão <strong>Buscar</strong> de lá quem clica é você.</li>
+        <li>A extensão lê cada corretor. Quem está ativo e já tem contato na nossa base vai para a sua lista (usa a cota do plano).</li>
+        <li>Quem está ativo e não tem contato ganha a busca do Instagram, numa aba de trás, em ritmo variado (de 1 a 4 corretores por minuto, nunca menos de 15 segundos entre um e outro). O perfil só é salvo quando o número do CRECI confere.</li>
+        <li>Em <strong>📸 Meus perfis do Instagram</strong>, os perfis ficam em <strong>A abordar</strong>, <strong>Abordados</strong> e <strong>🔥 Responderam</strong>. O <strong>Interagir</strong> abre cada perfil e deixa o comentário escrito no post mais recente; você confere e publica.</li>
+      </ol>
+      <div class="card tip">
+        <span class="tag">Bom saber</span>
+        <p>Se o Google ou o Instagram pedir uma verificação, a busca pausa e a aba vem para a frente. Se o Chrome fechar, a busca do Instagram continua quando ele abrir de novo.</p>
+      </div>
+
+      <h3 id="c-lista">Lista própria (planilha)</h3>
+      <a class="guia-pdf" href="/assets/guias/RH-IMOB-Guia-Minha-lista-CSV.pdf" target="_blank" rel="noopener">📄 Guia em PDF</a>
       <p>Se você já tem contatos fora dessas bases, a opção <strong>Minha lista (CSV)</strong>, na aba Contatos, aceita uma planilha. Baixe o modelo, preencha, suba, e os contatos entram na fila já organizados pelo nome da campanha.</p>
 
       <div class="card tip">
