@@ -214,6 +214,52 @@
   }
   function ocupar(d){ ocupado += d; $('btnSalvar').disabled = ocupado > 0; }
 
+  // ── Localização (SQL REDE_GEO_1) ──────────────────────────────────
+  // O profissional informa o CEP; o navegador acha o ponto da rua e grava.
+  // Aparece no "Perto de mim" (ponto arredondado ~1 km, nunca o CEP).
+  function geoHtml(){
+    if (!S.geo) return ''; // banco sem o REDE_GEO_1: fica sem o card
+    var g = S.geo;
+    var cepFmt = g.cep ? g.cep.slice(0, 5) + '-' + g.cep.slice(5) : '';
+    return '<div class="card" id="cardGeo"><h2>📍 Sua localização</h2><small>' +
+      (g.tem_ponto ? '✓ Você aparece no <a href="/perto-de-mim" target="_blank" rel="noopener">Perto de mim</a> para quem procura profissionais na sua região. Mudou de endereço? Atualize o CEP.'
+                   : 'Informe o CEP do seu escritório (ou de onde você atende) para aparecer no <a href="/perto-de-mim" target="_blank" rel="noopener">Perto de mim</a> e receber oportunidades da sua região.') +
+      ' O CEP não aparece no site: mostramos só a distância aproximada.</small>' +
+      '<div class="linha" style="margin-top:10px"><input type="text" id="fCep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="' + esc(cepFmt) + '" style="flex:1;min-width:0">' +
+      '<button class="btn btn-prim btn-mini" type="button" id="btnGeo">' + (g.tem_ponto ? 'Atualizar' : 'Salvar CEP') + '</button></div>' +
+      '<small id="geoMsg" style="display:block;margin-top:6px;color:var(--muted)"></small></div>';
+  }
+  document.addEventListener('input', function(e){
+    if (e.target && e.target.id === 'fCep'){
+      var d = e.target.value.replace(/\D/g, '').slice(0, 8);
+      e.target.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
+    }
+  });
+  document.addEventListener('click', function(e){
+    if (!e.target || e.target.id !== 'btnGeo') return;
+    var bt = e.target, msg = $('geoMsg'), cep = ($('fCep').value || '').replace(/\D/g, '');
+    if (cep.length !== 8){ msg.textContent = 'Digite os 8 números do CEP.'; return; }
+    bt.disabled = true; msg.textContent = 'Localizando…';
+    fetch('https://cep.awesomeapi.com.br/json/' + cep).then(function(r){
+      if (r.status === 404) throw new Error('Não encontramos esse CEP. Confira os números.');
+      return r.json();
+    }).then(function(d){
+      var lat = Number(d.lat), lng = Number(d.lng);
+      if (!isFinite(lat) || !isFinite(lng)) throw new Error('Não conseguimos localizar esse CEP agora. Tente de novo mais tarde.');
+      return rpc('rpc_site_localizacao', { p_token_edicao:T, p_cep:cep, p_lat:lat, p_lng:lng }).then(function(x){
+        if (!x || !x.ok) throw new Error((x && x.error) || 'Não foi possível salvar.');
+        S.geo = { cep:cep, tem_ponto:true };
+        var onde = [d.address, d.district, d.city].filter(Boolean).join(', ');
+        var card = $('cardGeo'); if (card) card.outerHTML = geoHtml();
+        $('geoMsg').textContent = '✓ Salvo' + (onde ? ': ' + onde : '') + '.';
+        toast('📍 Localização salva');
+      });
+    }).catch(function(err){
+      bt.disabled = false;
+      msg.textContent = '⚠️ ' + (err && err.message || 'Não foi possível salvar.');
+    });
+  });
+
   function render(){
     var pub = S.status === 'PUBLICADO';
     var albuns = S.albuns || [];
@@ -252,6 +298,7 @@
         '<label for="fBairros">Bairros em que atua</label><input type="text" id="fBairros" maxlength="600" placeholder="Ex.: Campolim, Jardim Europa, Vila Hortência" value="' + esc((S.bairros || []).join(', ')) + '">' +
         '<small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Separe por vírgula. A gente arruma as maiúsculas ao salvar.</small>' +
       '</div>' +
+      geoHtml() +
       vagaHtml() +
       parceriaHtml() +
       indicaHtml() +
@@ -473,6 +520,9 @@
     S = d.site; S.albuns = Array.isArray(S.albuns) ? S.albuns : []; render();
     PainelApp.iniciar({ token: T, tipo: 'site', rpc: rpc });
     carregarIndicacoes();
+    rpc('rpc_site_localizacao', { p_token_edicao:T }).then(function(g){
+      if (g && g.ok) { lerCampos(); S.geo = { cep:g.cep || '', tem_ponto:!!g.tem_ponto }; render(); }
+    }).catch(function(){});
     // material de vendas chega depois, sem segurar a tela (banco sem o REDE_2: fica sem o card)
     rpc('rpc_site_material', { p_token_edicao:T }).then(function(m){
       if (m && m.ok && (m.itens || []).length) { lerCampos(); S.material = m.itens; render(); }

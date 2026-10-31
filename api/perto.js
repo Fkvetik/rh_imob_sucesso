@@ -5,7 +5,7 @@
 // O ponto de quem consulta é arredondado (~1 km) antes de qualquer coisa —
 // protege quem consulta, impede "varrer" a base ponto a ponto e deixa a
 // resposta cacheável. Nada é guardado.
-import { NT } from './_ext-comum.js';
+import { NT, COLETOR } from './_ext-comum.js';
 
 const RAIOS = [1, 3, 5, 10, 20, 30];
 
@@ -47,12 +47,22 @@ export default async function handler(req, res) {
   const service = NT.service();
   if (!service) return enviar(res, 500, { ok: false, error: 'Configuração do servidor incompleta.' });
 
-  const r = await fetch(`${NT.url}/rest/v1/rpc/nt_perto`, {
-    method: 'POST',
-    headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ p_lat: lat, p_lng: lng, p_raio_km: raio })
-  }).catch(() => null);
+  const corpo = JSON.stringify({ p_lat: lat, p_lng: lng, p_raio_km: raio });
+  const [r, rRede] = await Promise.all([
+    fetch(`${NT.url}/rest/v1/rpc/nt_perto`, {
+      method: 'POST',
+      headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
+      body: corpo
+    }).catch(() => null),
+    // Corretores e imobiliárias da Rede que informaram o CEP (REDE_GEO_1).
+    fetch(`${COLETOR.url}/rest/v1/rpc/rpc_perto_parceiros`, {
+      method: 'POST',
+      headers: { apikey: COLETOR.anon, Authorization: `Bearer ${COLETOR.anon}`, 'Content-Type': 'application/json' },
+      body: corpo
+    }).catch(() => null)
+  ]);
   const talentos = r ? await r.json().catch(() => null) : null;
+  const parceiros = rRede && rRede.ok ? await rRede.json().catch(() => null) : null;
   if (!r || !r.ok || !talentos) {
     console.log('[perto] nt_perto falhou', r && r.status, JSON.stringify(talentos).slice(0, 300));
     return enviar(res, 502, { ok: false, error: 'Não foi possível consultar agora. Tente de novo em instantes.' });
@@ -63,7 +73,7 @@ export default async function handler(req, res) {
     centro: { lat, lng, rotulo },
     raio_km: raio,
     talentos,
-    // Ainda sem localização no cadastro: aparecem como "em breve" na página.
-    em_breve: ['corretores', 'imobiliarias', 'lancamentos']
-  }, 3600);
+    parceiros, // null enquanto o SQL REDE_GEO_1 não roda: a página mostra "em breve"
+    em_breve: parceiros ? ['lancamentos'] : ['corretores', 'imobiliarias', 'lancamentos']
+  }, 1800);
 }

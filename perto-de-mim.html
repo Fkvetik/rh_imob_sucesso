@@ -157,10 +157,12 @@
           </div>
 
           <div class="tipo" style="--cor: var(--c-corretor)">
-            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Corretores parceiros</div><span class="breve">em breve</span></div>
+            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Corretores parceiros</div><span class="breve" id="nCor">em breve</span></div>
+            <div class="tipo-sub" id="subCor" hidden></div>
           </div>
           <div class="tipo" style="--cor: var(--c-imob)">
-            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Imobiliárias</div><span class="breve">em breve</span></div>
+            <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Imobiliárias</div><span class="breve" id="nImob">em breve</span></div>
+            <div class="tipo-sub" id="subImob" hidden></div>
           </div>
           <div class="tipo" style="--cor: var(--c-lanc)">
             <div class="tipo-cab"><div class="tipo-nome"><span class="bola"></span>Construtoras e lançamentos</div><span class="breve">em breve</span></div>
@@ -280,8 +282,22 @@
       $('faixas').innerHTML = faixas.length > 1 ? faixas.map((f) =>
         '<div class="faixa"><span>até ' + f.ate_km + ' km</span><i style="width:' + Math.max(1, Math.round(f.n / max * 100)) + '%"></i><b>' + fmt(f.n) + '</b></div>').join('') : '';
       $('ctaTit').textContent = t.total ? fmt(t.total) + ' profissionais a até ' + d.raio_km + ' km de você' : 'Precisa contratar na sua região?';
+      parceirosCartao('nCor', 'subCor', d.parceiros && d.parceiros.corretores, 'corretor', 'corretores');
+      parceirosCartao('nImob', 'subImob', d.parceiros && d.parceiros.imobiliarias, 'imobiliária', 'imobiliárias');
       desenharMapa(d);
       if (window.innerWidth < 860) $('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Corretores/imobiliárias da Rede que informaram o CEP no painel.
+    // Sem dados (SQL ainda não rodou) fica "em breve"; zero vira convite.
+    function parceirosCartao(idNum, idSub, n, um, varios) {
+      const el = $(idNum), sub = $(idSub);
+      if (n == null) { el.className = 'breve'; el.textContent = 'em breve'; sub.hidden = true; return; }
+      el.className = 'tipo-num'; el.textContent = fmt(n);
+      sub.hidden = false;
+      sub.innerHTML = n
+        ? (n === 1 ? '1 ' + um : fmt(n) + ' ' + varios) + ' da Rede no raio · toque no ponto do mapa para ver o site'
+        : 'Nenhum ainda neste raio. <a href="/rede-de-parceiros">Seja o primeiro da sua região</a>';
     }
 
     function desenharMapa(d) {
@@ -306,6 +322,14 @@
         const rpx = 3 + Math.sqrt(c.n / maior) * 13; // menores: dá para ver onde concentra
         L.circleMarker([c.lat, c.lng], { radius: rpx, color: '#15803d', weight: 1, fillColor: '#16a34a', fillOpacity: .5 })
           .bindTooltip(fmt(c.n) + ' talentos nesta região').addTo(camada);
+      });
+      // Parceiros por cima das regiões de talentos, com link para o site deles.
+      ((d.parceiros && d.parceiros.pontos) || []).forEach((p) => {
+        const cor = p.tipo === 'imobiliaria' ? '#7c3aed' : '#2563eb';
+        L.circleMarker([p.lat, p.lng], { radius: 8, color: '#fff', weight: 2, fillColor: cor, fillOpacity: 1 })
+          .bindPopup('<b>' + esc(p.nome) + '</b><br>' + (p.tipo === 'imobiliaria' ? 'Imobiliária' : 'Corretor(a)') + ' · ' + esc(p.cidade) +
+            ' · ~' + String(p.km).replace('.', ',') + ' km<br><a href="' + esc(p.url) + '" target="_blank" rel="noopener">Ver o site</a>')
+          .addTo(camada);
       });
       mapa.fitBounds(circ.getBounds(), { padding: [10, 10] });
       setTimeout(() => mapa.invalidateSize(), 50);
