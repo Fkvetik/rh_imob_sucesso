@@ -32,8 +32,14 @@
       texto: function(){ return $('btnPublicar')
         ? 'Quando estiver do seu jeito, toque em <b>🚀 Publicar meu site</b>. Antes disso, só você vê a página. Use <b>👀 Ver meu site</b> para conferir como ficou.'
         : 'O seu site já está no ar. Toque em <b>🔗 Copiar link</b> e coloque na bio do Instagram e no seu WhatsApp.'; } },
+    { titulo: 'Passo 9 · Divulgue o seu site', alvo: function(){ return $('cardDivulgar'); },
+      texto: function(){ return $('btnDivZap')
+        ? 'Mande no <b>💬 WhatsApp</b> (para clientes ou no seu status), baixe a <b>🖼️ Arte para Story</b>, compartilhe no <b>Facebook</b> e no <b>LinkedIn</b>. E coloque o link na <b>bio do Instagram</b>.'
+        : 'Depois de publicar, aqui aparecem os botões para mandar o site no <b>WhatsApp</b>, postar a <b>arte no Story</b> e compartilhar no <b>Facebook</b> e no <b>LinkedIn</b>.'; } },
+    { titulo: 'Passo 10 · Indique a RH IMOB e ganhe 💰', alvo: function(){ return $('cardIndica'); },
+      texto: 'Conhece imobiliária ou construtora que precisa contratar corretores? Mande o <b>seu link de indicação</b>. Quando a empresa fecha com a RH IMOB, você recebe <b>até 25% do valor do contrato</b>. Tem botão para copiar, mandar no WhatsApp e arte para Story.' },
     { titulo: 'Pronto! 🎉',
-      texto: 'Depois de publicar, coloque o link na <b>bio do Instagram</b> e mande para os seus clientes. Imóvel novo? É só criar mais um álbum. Precisando, o guia fica no botão <b>❓</b> do canto da tela.',
+      texto: 'Imóvel novo? É só criar mais um álbum e salvar. Precisando, o guia fica no botão <b>?</b> do canto da tela.',
       fim: true }
   ];
 

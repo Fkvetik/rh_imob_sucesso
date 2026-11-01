@@ -136,8 +136,24 @@
   var INDICA = null; // null = ainda não carregou (ou banco sem o INDICA_1)
   var ETAPA_IND = { NOVA:'Nova', REUNIAO:'Reunião marcada', CONTRATO:'Contrato fechado', PAGO:'Comissão paga', PERDIDA:'Não fechou' };
   function urlIndica(){ return 'https://www.rhimob.com.br/indica/' + S.cidade_slug + '/' + S.nome_slug; }
+  // Divulgação do site: WhatsApp, Story, redes e o compartilhar do celular.
+  // O Instagram não aceita link de fora para postar: vai pela arte do Story.
+  function divulgarHtml(){
+    if (S.status !== 'PUBLICADO') return '<div class="card" id="cardDivulgar"><h2>📣 Divulgue o seu site</h2><small>Assim que você <b>publicar</b>, aqui aparecem os botões para mandar o seu site no WhatsApp, postar no Story e compartilhar nas redes.</small></div>';
+    return '<div class="card" id="cardDivulgar"><h2>📣 Divulgue o seu site</h2><small>Quanto mais gente vê o seu site, mais contatos chegam no seu WhatsApp. Coloque o link na <b>bio do Instagram</b> e mande para os seus clientes.</small>' +
+      '<div class="linha">' +
+        '<button class="btn btn-prim btn-mini" type="button" id="btnDivZap">💬 WhatsApp</button>' +
+        '<button class="btn btn-sec btn-mini" type="button" id="btnDivStory">🖼️ Arte para Story</button>' +
+        '<button class="btn btn-ghost btn-mini" type="button" id="btnDivFb">📘 Facebook</button>' +
+        '<button class="btn btn-ghost btn-mini" type="button" id="btnDivLi">💼 LinkedIn</button>' +
+        '<button class="btn btn-ghost btn-mini" type="button" id="btnDivCopiar">🔗 Copiar link</button>' +
+        (navigator.share ? '<button class="btn btn-ghost btn-mini" type="button" id="btnDivMais">📲 Mais opções</button>' : '') +
+      '</div>' +
+      '<small style="margin:10px 0 0">No Story do Instagram: baixe a arte, poste e use a figurinha <b>Link</b> com o endereço do seu site.</small></div>';
+  }
+  function textoDivulgar(){ return 'Conheça o meu trabalho e os imóveis que tenho disponíveis: ' + urlSite(); }
   function indicaHtml(){
-    return '<div class="card"><h2>💰 Indique a RH IMOB e ganhe</h2><small>Conhece imobiliária ou construtora que precisa contratar corretores? Mande o seu link. Quando a empresa fecha com a RH IMOB, você recebe <b>até 25% do valor do contrato</b>. As condições a gente combina com você numa conversa.</small>' +
+    return '<div class="card" id="cardIndica"><h2>💰 Indique a RH IMOB e ganhe</h2><small>Conhece imobiliária ou construtora que precisa contratar corretores? Mande o seu link. Quando a empresa fecha com a RH IMOB, você recebe <b>até 25% do valor do contrato</b>. As condições a gente combina com você numa conversa.</small>' +
       '<div class="url">' + esc(urlIndica()) + '</div>' +
       '<div class="linha">' +
         '<button class="btn btn-sec btn-mini" type="button" id="btnIndCopiar">🔗 Copiar link</button>' +
@@ -305,6 +321,7 @@
         (pub ? '' : '<small style="margin:10px 0 0">Seu site só fica público quando você clicar em <b>Publicar</b>. Antes disso, ninguém encontra a página.</small>') +
         '<small style="margin:8px 0 0;color:#11692f;font-weight:700">✓ Sua página é gratuita.</small>' +
       '</div>' +
+      divulgarHtml() +
 
       '<div class="card"><h2>Seus dados</h2><small>Aparecem no topo do site.</small>' +
         '<label for="fNome">Nome</label><input type="text" id="fNome" maxlength="80" value="' + esc(S.nome) + '">' +
@@ -440,6 +457,20 @@
         sujo = false; location.href = '/parceiro?t=' + d.token;
       }).catch(function(e){ toast('⚠️ ' + e.message); b.disabled = false; b.textContent = '🤝 Abrir meus imóveis na rede'; });
     });
+    if ($('btnDivZap')){
+      $('btnDivZap').onclick = function(){ window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(textoDivulgar()), '_blank'); };
+      $('btnDivFb').onclick = function(){ window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(urlSite()), '_blank'); };
+      $('btnDivLi').onclick = function(){ window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(urlSite()), '_blank'); };
+      $('btnDivCopiar').onclick = function(){ navigator.clipboard.writeText(urlSite()).then(function(){ toast('🔗 Link do site copiado'); }); };
+      $('btnDivMais') && ($('btnDivMais').onclick = function(){ navigator.share({ title: S.nome, text: textoDivulgar(), url: urlSite() }).catch(function(){}); });
+      $('btnDivStory').onclick = function(){
+        if (!window.gerarArteRHIMOB) { toast('⚠️ Não consegui gerar a arte agora. Recarregue a página.'); return; }
+        gerarArteRHIMOB({ kicker: '● ' + String(S.nome || '').toUpperCase() + ' · ' + String(S.cidade || '').toUpperCase(), title: 'Procurando imóvel?',
+          sub: 'Veja os imóveis que tenho disponíveis e fale comigo direto pelo WhatsApp.',
+          tags: [{ txt: '✓ Atendimento direto' }, { txt: '✓ Imóveis com fotos' }],
+          ctaText: 'Ver meu site', ctaColor: '#ff7a1a', url: urlSite(), filename: 'meu-site-story.png' }, this);
+      };
+    }
     $('btnIndCopiar').onclick = function(){ navigator.clipboard.writeText(urlIndica()).then(function(){ toast('🔗 Link de indicação copiado'); }); };
     $('btnIndZap').onclick = function(){
       var txt = 'Oi! Se você estiver precisando contratar corretores, vale conhecer a RH IMOB: é especializada em recrutamento para o mercado imobiliário, com ferramentas, bancos de corretores e equipe que faz a triagem.\n\n' + urlIndica();
@@ -558,6 +589,6 @@
   }).catch(function(){ app.innerHTML = '<div class="card"><h2>Sem conexão</h2><small>Verifique a internet e recarregue a página.</small></div>'; });
 })();
 </script>
-<script src="/meu-site-guia.js?v=1"></script>
+<script src="/meu-site-guia.js?v=2"></script>
 </body>
 </html>
