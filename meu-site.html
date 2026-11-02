@@ -55,6 +55,8 @@
   .ficha select,.ficha input,.ficha textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px;background:#fff}
   .ficha textarea{grid-column:1/-1;min-height:60px}
   .ficha .nums{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .aPrecoBox .aPrecoView{display:block;margin-top:4px;font-size:12.5px;line-height:1.3;color:#6b6478}
+  .aPrecoBox .aPrecoView b{color:#11692f}
   .foto .leg{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:10px;padding:14px 5px 22px;line-height:1.2}
   .add{aspect-ratio:1;border:2px dashed #cdbbe6;border-radius:10px;display:grid;place-items:center;color:var(--roxo2);font-weight:800;font-size:13px;cursor:pointer;text-align:center;background:#fff}
   .barra{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;justify-content:center;z-index:5}
@@ -391,7 +393,7 @@
       '<div class="ficha">' +
         '<select class="aFin">' + opcoes([['VENDA','Venda'],['LOCACAO','Locação']], a.finalidade, 'Venda ou locação?') + '</select>' +
         '<select class="aTipo">' + opcoes(TIPOS_IMOVEL, a.tipo, 'Tipo do imóvel') + '</select>' +
-        '<input type="text" class="aPreco" inputmode="numeric" placeholder="Preço (vazio = Sob consulta)" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '">' +
+        '<div class="aPrecoBox"><input type="text" class="aPreco" inputmode="numeric" placeholder="Preço (vazio = Sob consulta)" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '"><small class="aPrecoView"></small></div>' +
         '<input type="text" class="aBairro" maxlength="60" placeholder="Bairro" value="' + esc(a.bairro) + '">' +
         '<div class="nums">' + num('aDorm', 'Dorm.', a.dorm, 99) + num('aSuites', 'Suítes', a.suites, 99) + num('aVagas', 'Vagas', a.vagas, 99) + num('aArea', 'm²', a.area, 999999) + '</div>' +
         '<textarea class="aDesc" maxlength="600" placeholder="Descrição curta (opcional): lazer, localização, diferenciais…">' + esc(a.descricao) + '</textarea>' +
@@ -427,6 +429,18 @@
   }
   function rerender(){ lerCampos(); render(); }
 
+  // Mostra, embaixo do campo, como o preço vai aparecer no site (com pontos de milhar).
+  function precoView(box){
+    if (!box) return;
+    var inp = box.querySelector('.aPreco'), view = box.querySelector('.aPrecoView');
+    if (!inp || !view) return;
+    var dig = inp.value.replace(/\D/g, '');
+    var alb = box.closest('.album'), finEl = alb ? alb.querySelector('.aFin') : null;
+    var sufixo = (finEl && finEl.value === 'LOCACAO') ? '/mês' : '';
+    view.innerHTML = dig
+      ? 'No seu site: <b>R$ ' + Number(dig).toLocaleString('pt-BR') + sufixo + '</b>'
+      : 'No seu site: <b>Sob consulta</b>';
+  }
   function ligar(){
     app.querySelectorAll('input[type=text],textarea').forEach(function(el){ el.addEventListener('input', marcaSujo); });
     $('fProf').onchange = function(){
@@ -500,6 +514,15 @@
       el.querySelector('.aExcluir').onclick = function(){ if (!confirm('Apagar este álbum e as fotos dele?')) return; lerCampos(); S.albuns.splice(i, 1); marcaSujo(); render(); };
       var add = el.querySelector('.aAdd'); if (add) add.onclick = function(){ fotosNoAlbum(i); };
       el.querySelectorAll('select,input[type=number]').forEach(function(x){ x.addEventListener('change', marcaSujo); });
+      // prévia do preço: mostra ao vivo como vai aparecer no site e formata o campo ao sair
+      var pbox = el.querySelector('.aPrecoBox');
+      if (pbox){
+        var pinp = pbox.querySelector('.aPreco'), pfin = el.querySelector('.aFin');
+        precoView(pbox);
+        pinp.addEventListener('input', function(){ precoView(pbox); });
+        pinp.addEventListener('blur', function(){ var d = pinp.value.replace(/\D/g, ''); pinp.value = d ? Number(d).toLocaleString('pt-BR') : ''; });
+        if (pfin) pfin.addEventListener('change', function(){ precoView(pbox); });
+      }
       // a legenda anda junto com a foto (tirar, virar capa)
       var legs = function(){ a.legendas = (a.legendas || []).slice(0, a.fotos.length); while (a.legendas.length < a.fotos.length) a.legendas.push(''); return a.legendas; };
       el.querySelectorAll('[data-tirar]').forEach(function(b){ b.onclick = function(){ lerCampos(); var k = +b.dataset.tirar; legs().splice(k, 1); a.fotos.splice(k, 1); marcaSujo(); render(); }; });

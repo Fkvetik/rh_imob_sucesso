@@ -53,6 +53,8 @@
   .acts{position:absolute;right:4px;bottom:4px;display:flex;gap:4px}
   .acts button{border:0;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 6px;cursor:pointer}
   .conta{display:block;text-align:right;font-size:11px;color:var(--muted);margin-top:2px}
+  .precoView{display:block;font-size:12.5px;line-height:1.3;color:var(--muted);margin-top:4px}
+  .precoView b{color:#11692f}
   .priv{background:#fbf8ff;border:1px solid var(--line);border-radius:12px;padding:4px 12px 12px;margin-top:16px}
   .aviso{background:#fff7e6;border:1px solid #f3d9a4;color:#7a4b00;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
   #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f1530;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;max-width:90vw;text-align:center}
@@ -186,7 +188,7 @@
         '<div id="zonasBox"><label>Zonas de São Paulo (vazio = cidade toda)</label><div class="zonas" id="fZonas"></div></div>' +
         '<div class="g2"><div><label for="fFin">Venda ou locação</label><select id="fFin">' + opcoes([['VENDA','Venda'],['LOCACAO','Locação']], a.finalidade, '—') + '</select></div>' +
           '<div><label for="fTipo">Tipo</label><select id="fTipo">' + opcoes(TIPOS, a.tipo, '—') + '</select></div></div>' +
-        '<label for="fPreco">Preço a partir de (vazio = sob consulta)</label><input type="text" id="fPreco" inputmode="numeric" placeholder="Ex.: 289.000" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '">' +
+        '<label for="fPreco">Preço a partir de (vazio = sob consulta)</label><input type="text" id="fPreco" inputmode="numeric" placeholder="Ex.: 289.000" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '"><small class="precoView" id="fPrecoView"></small>' +
         '<div class="g4">' + num('fDorm', 'Dorm.', a.dorm, 99) + num('fSuites', 'Suítes', a.suites, 99) + num('fVagas', 'Vagas', a.vagas, 99) + num('fArea', 'm²', a.area, 999999) + '</div>' +
         '<label for="fDesc">Descrição curta</label><textarea id="fDesc" maxlength="600" placeholder="Lazer, localização, entrega, diferenciais…">' + esc(a.descricao) + '</textarea>' +
         '<small class="conta" id="fDescConta"></small>' +
@@ -212,9 +214,12 @@
     $('fTrazer') && ($('fTrazer').onchange = function(){ var al = (D.albuns_site || [])[+this.value]; if (al) { editar(null, al); toast('Imóvel trazido do seu site. Confira, complete o material de vendas e envie.'); } });
     $('fCidade').addEventListener('input', zonasRender);
     $('fDesc').addEventListener('input', conta);
+    $('fPreco').addEventListener('input', precoView);
+    $('fPreco').addEventListener('blur', function(){ var d = $('fPreco').value.replace(/\D/g, ''); $('fPreco').value = d ? Number(d).toLocaleString('pt-BR') : ''; });
+    $('fFin').addEventListener('change', precoView);
     $('btnSalvar').onclick = salvar;
     $('btnExcluir') && ($('btnExcluir').onclick = excluir);
-    zonasRender(); fotosRender(); conta(); window.scrollTo(0, 0);
+    zonasRender(); fotosRender(); conta(); precoView(); window.scrollTo(0, 0);
   }
   // Imobiliária: traz um imóvel do próprio site (fotos e ficha) para não digitar de novo.
   function trazerHtml(it){
@@ -224,6 +229,15 @@
       l.map(function(al, k){ return '<option value="' + k + '">' + esc(al.titulo || ('Imóvel ' + (k + 1))) + '</option>'; }).join('') + '</select>';
   }
   function conta(){ var n = $('fDesc').value.length, f = 600 - n; $('fDescConta').textContent = n + ' de 600 caracteres — ' + (f ? 'faltam ' + f : 'limite atingido'); $('fDescConta').style.color = f <= 50 ? '#b45309' : ''; }
+  // Mostra como o preço vai aparecer no site dos corretores (com pontos de milhar).
+  function precoView(){
+    var v = $('fPrecoView'); if (!v) return;
+    var dig = $('fPreco').value.replace(/\D/g, '');
+    var sufixo = ($('fFin') && $('fFin').value === 'LOCACAO') ? '/mês' : '';
+    v.innerHTML = dig
+      ? 'No site: <b>R$ ' + Number(dig).toLocaleString('pt-BR') + sufixo + '</b>'
+      : 'No site: <b>Sob consulta</b>';
+  }
   function zonasRender(){
     var sp = slug($('fCidade').value) === 'sao-paulo';
     $('zonasBox').style.display = sp ? '' : 'none';
