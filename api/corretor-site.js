@@ -150,17 +150,27 @@ function render(s, prev, url) {
     fin: todasFichas[k].fin, tipo: todasFichas[k].tipo, preco: todasFichas[k].preco, specs: todasFichas[k].specs, desc: todasFichas[k].desc,
     wa: todasFichas[k].wa, co: todasFichas[k].construtora, onde: todasFichas[k].onde, rid: todasFichas[k].rid
   }))).replace(/</g, '\\u003c');
-  const cardAlbum = (a, f, i) => `
-      <button class="album" type="button" data-album="${i}">
-        <div class="img"><img src="${esc(a.fotos[0])}" alt="${esc(f.titulo)}" loading="lazy">${f.fin ? `<span class="fin">${esc(f.fin)}</span>` : ''}</div>
+  const cardAlbum = (a, f, i) => {
+    const fotos = a.fotos.filter(urlOk);
+    const extras = fotos.slice(1);            // miniaturas (fora a capa)
+    const nMini = Math.min(4, extras.length);
+    const minis = extras.slice(0, nMini).map((u, k) => {
+      const idx = k + 1, ultima = k === nMini - 1 && extras.length > nMini, resto = extras.length - nMini;
+      return `<button class="mini${ultima ? ' mais' : ''}" type="button" data-album="${i}" data-i="${idx}" aria-label="Ver foto ${idx + 1}"><img src="${esc(u)}" alt="" loading="lazy">${ultima ? `<span>+${resto}</span>` : ''}</button>`;
+    }).join('');
+    return `
+      <div class="album">
+        <button class="img" type="button" data-album="${i}" aria-label="Ver fotos de ${esc(f.titulo)}"><img src="${esc(fotos[0])}" alt="${esc(f.titulo)}" loading="lazy">${f.fin ? `<span class="fin">${esc(f.fin)}</span>` : ''}${fotos.length > 1 ? `<span class="count">📷 ${fotos.length}</span>` : ''}</button>
+        ${minis ? `<div class="minis">${minis}</div>` : ''}
         <div class="info">
           ${f.preco ? `<span class="preco">${esc(f.preco)}</span>` : ''}
           <strong>${esc(f.titulo)}</strong>
           ${f.specs ? `<span class="specs">${esc(f.specs)}</span>` : ''}
           ${f.local ? `<small style="display:block">📍 ${esc(f.local)}</small>` : ''}
-          <small>${f.construtora ? esc(f.construtora) + ' · ' : ''}${f.tipo ? esc(f.tipo) + ' · ' : ''}${a.fotos.length} foto${a.fotos.length === 1 ? '' : 's'}</small>
+          <small>${f.construtora ? esc(f.construtora) + ' · ' : ''}${f.tipo ? esc(f.tipo) + ' · ' : ''}${fotos.length} foto${fotos.length === 1 ? '' : 's'}</small>
         </div>
-      </button>`;
+      </div>`;
+  };
   // Filtro dos lançamentos: por cidade (se houver mais de uma) e por região (zonas da capital).
   // Sem zona = vale para a cidade toda: aparece em qualquer região daquela cidade.
   const redeCidades = [...new Set(rede.map(a => a.cidade).filter(Boolean))];
@@ -230,9 +240,15 @@ ${faqLdHtml}
   .capa::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,8,38,0) 40%,rgba(20,8,38,.55))}
   @media(min-width:760px){.capa{height:340px}}
   /* Banner padrão (sem capa própria): marca, nome, profissão e região, sempre legível */
-  .capa.padrao{background:radial-gradient(120% 140% at 100% 0%,#f97316 0%,rgba(249,115,22,0) 45%),linear-gradient(135deg,#1c0a36 0%,#3b1872 55%,#6d28d9 100%)}
-  .capa.padrao::before{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;border:40px solid rgba(255,255,255,.06)}
-  .capa.padrao::after{background:none}
+  .capa.padrao{background:
+    radial-gradient(85% 75% at 88% -5%,rgba(249,115,22,.40) 0%,rgba(249,115,22,0) 55%),
+    radial-gradient(80% 90% at -5% 115%,rgba(139,92,246,.45) 0%,rgba(139,92,246,0) 55%),
+    linear-gradient(140deg,#140627 0%,#241048 50%,#3a1a72 100%)}
+  /* textura leve de pontos, esmaecendo para baixo */
+  .capa.padrao::before{content:"";position:absolute;inset:0;z-index:0;
+    background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.06) 1px,transparent 1.6px) 0 0/24px 24px;
+    -webkit-mask-image:linear-gradient(180deg,#000,transparent 72%);mask-image:linear-gradient(180deg,#000,transparent 72%)}
+  .capa.padrao::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,8,38,0) 45%,rgba(20,8,38,.5))}
   .banner{position:absolute;left:0;right:0;top:0;bottom:64px;display:flex;flex-direction:column;justify-content:center;padding:0 22px;max-width:960px;margin:0 auto;color:#fff;z-index:1}
   .banner small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fed7aa}
   .banner strong{display:block;font-size:26px;line-height:1.15;margin:6px 0 4px;text-shadow:0 2px 12px rgba(0,0,0,.25)}
@@ -267,11 +283,16 @@ ${faqLdHtml}
   h2{font-size:18px;color:var(--roxo);margin:0 0 12px}
   .bio{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;white-space:pre-line;color:#3a2d4d}
   .albuns{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-  .album{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;padding:0;text-align:left;font:inherit;color:inherit}
+  .album{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
   .album:hover{box-shadow:0 12px 28px -18px rgba(43,18,77,.45)}
-  .album .img{aspect-ratio:4/3;background:var(--lilas);overflow:hidden}
-  .album img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
-  .album:hover img{transform:scale(1.04)}
+  .album .img{display:block;width:100%;aspect-ratio:4/3;background:var(--lilas);overflow:hidden;cursor:pointer;padding:0;border:0;position:relative}
+  .album .img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+  .album:hover .img img{transform:scale(1.04)}
+  .album .count{position:absolute;right:10px;bottom:10px;background:rgba(20,8,38,.6);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px}
+  .album .minis{display:flex;gap:6px;padding:10px 12px 12px}
+  .album .mini{position:relative;flex:0 0 auto;width:52px;height:52px;border:0;padding:0;border-radius:9px;overflow:hidden;cursor:pointer;background:var(--lilas)}
+  .album .mini img{width:100%;height:100%;object-fit:cover;display:block}
+  .album .mini.mais span{position:absolute;inset:0;background:rgba(20,8,38,.55);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
   .album .info{padding:10px 12px}
   .album strong{display:block;font-size:14px}
   .album small{color:var(--muted);font-size:12px}
@@ -404,16 +425,16 @@ ${wa ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(wa)}" target="
     tit.textContent = (al.t || 'Imóvel') + ' · ' + (i + 1) + '/' + al.f.length;
     leg.textContent = al.l[i] || ''; leg.style.display = al.l[i] ? '' : 'none';
     [].forEach.call(thumbs.children, function(t, k){ t.className = k === i ? 'on' : ''; }); }
-  function abre(n){ al = A[n]; if(!al) return; thumbs.innerHTML = '';
+  function abre(n, start){ al = A[n]; if(!al) return; thumbs.innerHTML = '';
     var tags = [al.co, al.fin, al.tipo].filter(Boolean).map(function(t){ return '<b>' + txt(t) + '</b>'; }).join('');
     info.innerHTML = (al.preco || al.specs || al.desc || tags ? '<div class="lb-ficha">' + (tags ? '<div class="tags">' + tags + '</div>' : '') +
       (al.preco ? '<div class="p">' + txt(al.preco) + '</div>' : '') + (al.specs ? '<div class="s">' + txt(al.specs) + '</div>' : '') +
       (al.desc ? '<div class="d">' + txt(al.desc) + '</div>' : '') + '</div>' : '') +
       (al.wa ? '<a class="btn btn-wa" target="_blank" rel="noopener" data-onde="' + al.onde + '"' + (al.rid ? ' data-rede="' + al.rid + '"' : '') + ' data-titulo="' + txt(al.t) + '" href="' + al.wa + '">Tenho interesse neste imóvel</a>' : '');
     al.f.forEach(function(u, k){ var t = document.createElement('img'); t.src = u; t.alt = ''; t.loading = 'lazy'; t.onclick = function(){ mostra(k); }; thumbs.appendChild(t); });
-    lb.classList.add('aberto'); document.body.style.overflow = 'hidden'; mostra(0); }
+    lb.classList.add('aberto'); document.body.style.overflow = 'hidden'; mostra(start || 0); }
   function fecha(){ lb.classList.remove('aberto'); document.body.style.overflow = ''; }
-  document.querySelectorAll('[data-album]').forEach(function(b){ b.onclick = function(){ abre(+b.getAttribute('data-album')); }; });
+  document.querySelectorAll('[data-album]').forEach(function(b){ b.onclick = function(){ abre(+b.getAttribute('data-album'), +(b.getAttribute('data-i') || 0)); }; });
   document.getElementById('lbFechar').onclick = fecha;
   document.getElementById('lbAnt').onclick = function(){ mostra(i - 1); };
   document.getElementById('lbProx').onclick = function(){ mostra(i + 1); };
