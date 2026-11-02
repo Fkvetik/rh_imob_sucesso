@@ -148,6 +148,13 @@
   .ri-item .q{flex:1;min-width:0;font-weight:700;font-size:14px}
   .ri-item .q .resp{display:block;margin-top:3px;font-weight:700;font-size:13px}
   .ri-item.no .q .resp{color:var(--no)} .ri-item .q .certa{color:var(--ok)}
+  .ensina{position:fixed;inset:0;background:rgba(20,8,38,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .ensina-box{background:var(--card);border-radius:20px;max-width:460px;width:100%;max-height:86vh;overflow:auto;padding:20px;box-shadow:var(--shadow)}
+  .ensina-top{font-family:var(--disp);font-size:20px;color:var(--grape);margin-bottom:8px}
+  .ensina-q{background:#f3f8ff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:800;margin-bottom:12px;font-family:var(--disp)}
+  .ensina-passos{margin:0 0 14px;padding-left:22px}
+  .ensina-passos li{margin:8px 0;font-size:16px;font-weight:600;line-height:1.45}
+  .ensina .btn{width:100%}
   :focus-visible{outline:3px solid #8fb4ff;outline-offset:2px}
   @media (prefers-reduced-motion: reduce){.pop{animation:none;display:none}.btn:active,.op:active{transform:none}.op.ok.piscar{animation:none}}
 </style>
@@ -196,8 +203,10 @@
           <span class="ic">🔢</span><b>Matemática</b><small>Contas e probleminhas</small></button>
         <button class="disc" style="background:linear-gradient(145deg,#ff8a3d,#f1660f)" data-disc="port">
           <span class="ic">📖</span><b>Português</b><small>Ler, escrever e gramática</small></button>
-        <button class="disc" style="grid-column:1/-1;background:linear-gradient(145deg,#14b8a6,#0d8f81)" data-disc="geo">
-          <span class="ic">🌎</span><b>Geografia</b><small>Países, estados, capitais e moedas</small></button>
+        <button class="disc" style="background:linear-gradient(145deg,#14b8a6,#0d8f81)" data-disc="geo">
+          <span class="ic">🌎</span><b>Geografia</b><small>Países, estados e capitais</small></button>
+        <button class="disc" style="background:linear-gradient(145deg,#c77d3a,#9c5a1e)" data-disc="hist">
+          <span class="ic">🏛️</span><b>História e Mundo</b><small>Fatos, países e descobertas</small></button>
       </div>
     </div>
     <div class="linha">
@@ -220,6 +229,7 @@
       <div class="qtexto" id="qTexto" hidden></div>
       <div class="enun" id="qEnun"></div>
       <div class="ops" id="qOps"></div>
+      <button class="btn ghost sm" id="btnAjuda" style="margin-top:12px" hidden>🤔 Não tenho certeza — me ensina</button>
       <div class="feedback" id="qFeedback" hidden></div>
       <button class="btn teal" id="btnProxima" style="margin-top:14px" hidden>Próxima →</button>
     </div>
@@ -269,6 +279,15 @@
       <div class="vazio" id="paisVazio" hidden>Ainda não há respostas. Jogue uma rodada primeiro 🙂</div>
     </div>
   </section>
+
+  <div id="ensina" class="ensina" hidden>
+    <div class="ensina-box">
+      <div class="ensina-top">🦉 Léo vai te ensinar</div>
+      <div class="ensina-q" id="ensinaQ"></div>
+      <ol class="ensina-passos" id="ensinaPassos"></ol>
+      <button class="btn teal" id="ensinaOk">Entendi! 👍 Quero responder</button>
+    </div>
+  </div>
 </div>
 
 
@@ -282,22 +301,24 @@
   // ---------- estado ----------
   var AVATARES=["🦁","🐯","🐼","🐸","🦄","🐱","🐶","🦊","🐨","🐵","🐰","🐧"];
   var SERIES=["1º","2º","3º","4º","5º"]; // Fundamental I (piloto 3º)
-  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos"};
+  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"História e Mundo"};
   var DISC={
     mat:{nome:"Matemática",skills:["adicao","subtracao","multiplicacao","divisao","problema"]},
     port:{nome:"Português",skills:["ortografia","gramatica","interpretacao"]},
-    geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]}
+    geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]},
+    hist:{nome:"História e Mundo",skills:["historia"]}
   };
   var P=carregar();          // perfil do jogador (localStorage)
   var somOn=true;
-  var discAtual="mat", rodada=[], idx=0, trava=false, acertosR=0, estrelasR=0, streakR=0;
+  var discAtual="mat", rodada=[], idx=0, trava=false, acertosR=0, estrelasR=0, streakR=0, tInicio=0;
+  function qAtual(){return faseRec?recFila[recIdx]:rodada[idx];}
   var recFila=[], recIdx=0, faseRec=false, resultados=[];
   var usados={};             // ids de português já usados (por skill)
 
   function perfilNovo(){return{apelido:"",avatar:"🦄",serie:"3º",turma:"",estrelas:0,pontos:0,
-    streakDias:0,ultimoDia:"",stats:{},id:uid()};}
+    streakDias:0,ultimoDia:"",stats:{},nivel:{},acel:{},errseq:{},id:uid()};}
   function uid(){return "p"+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);}
-  function carregar(){try{var r=JSON.parse(localStorage.getItem("leoKids")||"null");if(r&&r.id){r.stats=r.stats||{};return r;}}catch(e){}return perfilNovo();}
+  function carregar(){try{var r=JSON.parse(localStorage.getItem("leoKids")||"null");if(r&&r.id){r.stats=r.stats||{};r.nivel=r.nivel||{};r.acel=r.acel||{};r.errseq=r.errseq||{};return r;}}catch(e){}return perfilNovo();}
   function salvar(){try{localStorage.setItem("leoKids",JSON.stringify(P));}catch(e){}}
 
   // ---------- som / voz ----------
@@ -320,24 +341,41 @@
   function distrNum(ans){var set={},out=[],cand=[ans+1,ans-1,ans+2,ans-2,ans+10,ans-10,ans+ri(3,6),ans-ri(3,6)];
     cand=emb(cand);for(var i=0;i<cand.length&&out.length<3;i++){var v=cand[i];if(v>=0&&v!==ans&&!set[v]){set[v]=1;out.push(v);}}
     while(out.length<3){var v2=ri(0,ans+8);if(v2!==ans&&!set[v2]){set[v2]=1;out.push(v2);}}return out;}
-  function montarNum(ans,explica){var ops=distrNum(ans).concat([ans]);ops=emb(ops);
-    return{opcoes:ops.map(String),correta:ops.indexOf(ans),explica:explica};}
+  function montarNum(ans,explica,passos){var ops=distrNum(ans).concat([ans]);ops=emb(ops);
+    return{opcoes:ops.map(String),correta:ops.indexOf(ans),explica:explica,passos:passos||null};}
 
   // ---------- gerador de matemática ----------
   function gerarMat(sk){
-    var a,b,c,ans,q;
-    if(sk==="adicao"){a=ri(15,250);b=ri(10,180);ans=a+b;q=a+" + "+b+" = ?";return wrap(sk,q,montarNum(ans,"Some as unidades e depois as dezenas: "+a+" + "+b+" = "+ans+"."));}
-    if(sk==="subtracao"){a=ri(40,320);b=ri(8,a-1);ans=a-b;q=a+" − "+b+" = ?";return wrap(sk,q,montarNum(ans,"Tire "+b+" de "+a+": sobra "+ans+"."));}
-    if(sk==="multiplicacao"){a=ri(2,10);b=ri(2,10);ans=a*b;q=a+" × "+b+" = ?";return wrap(sk,q,montarNum(ans,a+" vezes "+b+" é somar "+b+" "+a+" vezes = "+ans+"."));}
-    if(sk==="divisao"){b=ri(2,9);c=ri(2,9);a=b*c;ans=c;q=a+" ÷ "+b+" = ?";return wrap(sk,q,montarNum(ans,"Quantas vezes "+b+" cabe em "+a+"? "+c+" vezes, porque "+b+" × "+c+" = "+a+"."));}
-    // problema
-    var t=ri(1,4);
-    if(t===1){a=ri(8,40);b=ri(5,30);ans=a+b;q="Ana tinha "+a+" figurinhas e ganhou mais "+b+". Com quantas ela ficou?";return wrap(sk,q,montarNum(ans,"É juntar: "+a+" + "+b+" = "+ans+" figurinhas."),null);}
-    if(t===2){a=ri(20,60);b=ri(5,a-3);ans=a-b;q="Tinha "+a+" balas no pote e comeram "+b+". Quantas sobraram?";return wrap(sk,q,montarNum(ans,"É tirar: "+a+" − "+b+" = "+ans+" balas."),null);}
-    if(t===3){a=ri(2,8);b=ri(3,9);ans=a*b;q=a+" caixas com "+b+" lápis em cada. Quantos lápis ao todo?";return wrap(sk,q,montarNum(ans,a+" caixas × "+b+" lápis = "+ans+" lápis."),null);}
-    b=ri(2,6);c=ri(2,6);a=b*c;ans=c;q=a+" doces para dividir igualmente entre "+b+" crianças. Quantos para cada uma?";return wrap(sk,q,montarNum(ans,a+" ÷ "+b+" = "+ans+" doces para cada criança."),null);
+    var n=nivelDe(sk),a,b,c,ans,q,ps;
+    if(sk==="adicao"){var tA=180+(n-1)*260;a=ri(10+(n-1)*40,tA);b=ri(8,Math.max(12,Math.floor(tA*0.7)));ans=a+b;q=a+" + "+b+" = ?";
+      ps=["Somar é juntar duas quantidades.","Comece com "+a+" e acrescente "+b+".","Some por partes: primeiro as dezenas, depois as unidades.",a+" + "+b+" = "+ans+". A resposta é "+ans+"."];
+      return wrap(sk,q,montarNum(ans,a+" + "+b+" = "+ans+".",ps));}
+    if(sk==="subtracao"){var tS=250+(n-1)*300;a=ri(40,tS);b=ri(8,a-1);ans=a-b;q=a+" − "+b+" = ?";
+      ps=["Subtrair é tirar uma parte do total.","Você tem "+a+" e vai tirar "+b+".","Conte para trás a partir de "+a+".",a+" − "+b+" = "+ans+". A resposta é "+ans+"."];
+      return wrap(sk,q,montarNum(ans,a+" − "+b+" = "+ans+".",ps));}
+    if(sk==="multiplicacao"){var mx=[0,10,12,20,30][n]||10,mn=n>=3?11:2;a=ri(mn,mx);b=ri(2,n>=3?9:10);ans=a*b;q=a+" × "+b+" = ?";
+      ps=["Multiplicar é somar o mesmo número várias vezes.",a+" × "+b+" é somar "+b+" um total de "+a+" vezes.","Vá somando de "+b+" em "+b+".",a+" × "+b+" = "+ans+". A resposta é "+ans+"."];
+      return wrap(sk,q,montarNum(ans,a+" × "+b+" = "+ans+".",ps));}
+    if(sk==="divisao"){var lim=5+n*2;b=ri(2,lim);c=ri(2,lim);a=b*c;ans=c;q=a+" ÷ "+b+" = ?";
+      ps=["Dividir é repartir em partes iguais.","Temos "+a+" para repartir em "+b+" grupos iguais.","Pense: qual número vezes "+b+" dá "+a+"?",b+" × "+c+" = "+a+", então cada grupo fica com "+c+".","A resposta é "+c+"."];
+      return wrap(sk,q,montarNum(ans,a+" ÷ "+b+" = "+c+".",ps));}
+    // problema (escala com o nível)
+    var f=1+(n-1)*0.8,t=ri(1,4);
+    if(t===1){a=ri(8,Math.floor(40*f));b=ri(5,Math.floor(30*f));ans=a+b;q="Ana tinha "+a+" figurinhas e ganhou mais "+b+". Com quantas ela ficou?";
+      ps=["É um probleminha de juntar (somar).","Ela tinha "+a+" e ganhou mais "+b+".",a+" + "+b+" = "+ans+".","A resposta é "+ans+" figurinhas."];
+      return wrap(sk,q,montarNum(ans,a+" + "+b+" = "+ans+" figurinhas.",ps));}
+    if(t===2){a=ri(20,Math.floor(60*f));b=ri(5,a-3);ans=a-b;q="Tinha "+a+" balas no pote e comeram "+b+". Quantas sobraram?";
+      ps=["É um probleminha de tirar (subtrair).","Tinha "+a+" e saíram "+b+".",a+" − "+b+" = "+ans+".","A resposta é "+ans+" balas."];
+      return wrap(sk,q,montarNum(ans,a+" − "+b+" = "+ans+" balas.",ps));}
+    if(t===3){a=ri(2,Math.floor(8*f));b=ri(3,9);ans=a*b;q=a+" caixas com "+b+" lápis em cada. Quantos lápis ao todo?";
+      ps=["É um probleminha de vezes (multiplicar).","São "+a+" caixas, cada uma com "+b+".",a+" × "+b+" = "+ans+".","A resposta é "+ans+" lápis."];
+      return wrap(sk,q,montarNum(ans,a+" × "+b+" = "+ans+" lápis.",ps));}
+    b=ri(2,Math.floor(6*f));c=ri(2,6);a=b*c;ans=c;q=a+" doces para dividir igualmente entre "+b+" crianças. Quantos para cada uma?";
+    ps=["É um probleminha de repartir (dividir).","São "+a+" doces para "+b+" crianças, igualzinho.",a+" ÷ "+b+" = "+ans+".","Cada criança fica com "+ans+" doces."];
+    return wrap(sk,q,montarNum(ans,a+" ÷ "+b+" = "+ans+" doces para cada criança.",ps));
   }
-  function wrap(sk,enun,m){return{skill:sk,enun:enun,texto:null,opcoes:m.opcoes,correta:m.correta,explica:m.explica};}
+  function wrap(sk,enun,m){return{skill:sk,enun:enun,texto:null,opcoes:m.opcoes,correta:m.correta,explica:m.explica,passos:m.passos||null};}
+  function nivelDe(sk){return (P.nivel&&P.nivel[sk])||1;}
 
   // ---------- banco de português ----------
   var PORT=[
@@ -371,8 +409,9 @@
     usados[sk][q.id]=1;
     var ops=q.ops.map(function(t,i){return{t:t,ok:i===q.c};});
     ops=emb(ops);
+    var dica={ortografia:"Pense no som da palavra e lembre como ela se escreve certinho.",gramatica:"Leia a frase devagar e pense no que cada palavra faz nela.",interpretacao:"Volte no textinho com calma e procure a informação que a pergunta pede."}[sk]||"Vamos pensar juntos.";
     return{skill:sk,enun:q.enun,texto:q.texto||null,opcoes:ops.map(function(o){return o.t;}),
-      correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex};
+      correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex,passos:[dica,q.ex]};
   }
 
   // ---------- geografia: país → capital e país → moeda ----------
@@ -400,10 +439,10 @@
     var it=GEO[Math.floor(Math.random()*GEO.length)];
     if(sk==="capitais"){
       var ops=emb(pick3(GEO.map(function(x){return x.c;}),it.c).concat([it.c]));
-      return{skill:sk,enun:it.p+" "+it.f+" — qual é a capital?",texto:null,opcoes:ops,correta:ops.indexOf(it.c),explica:"A capital de "+it.p+" é "+it.c+"."};
+      return{skill:sk,enun:it.p+" "+it.f+" — qual é a capital?",texto:null,opcoes:ops,correta:ops.indexOf(it.c),explica:"A capital de "+it.p+" é "+it.c+".",passos:["A capital é a cidade onde fica o governo do país.","A capital de "+it.p+" é "+it.c+"."]};
     }
     var opsm=emb(pick3(GEO.map(function(x){return x.m;}),it.m).concat([it.m]));
-    return{skill:sk,enun:it.p+" "+it.f+" — qual é a moeda?",texto:null,opcoes:opsm,correta:opsm.indexOf(it.m),explica:"A moeda de "+it.p+" é o "+it.m+"."};
+    return{skill:sk,enun:it.p+" "+it.f+" — qual é a moeda?",texto:null,opcoes:opsm,correta:opsm.indexOf(it.m),explica:"A moeda de "+it.p+" é o "+it.m+".",passos:["Cada país usa um tipo de dinheiro, chamado moeda.","A moeda de "+it.p+" é o "+it.m+"."]};
   }
 
   // ---------- geografia do Brasil: estado → capital e estado → gentílico ----------
@@ -427,13 +466,41 @@
     var it=BR[Math.floor(Math.random()*BR.length)];
     if(sk==="estados"){
       var ops=emb(pick3(BR.map(function(x){return x.cap;}),it.cap).concat([it.cap]));
-      return{skill:sk,enun:it.uf+" — qual é a capital?",texto:null,opcoes:ops,correta:ops.indexOf(it.cap),explica:"A capital de "+it.uf+" é "+it.cap+"."};
+      return{skill:sk,enun:it.uf+" — qual é a capital?",texto:null,opcoes:ops,correta:ops.indexOf(it.cap),explica:"A capital de "+it.uf+" é "+it.cap+".",passos:["A capital é a cidade principal do estado, onde fica o governo.","A capital de "+it.uf+" é "+it.cap+"."]};
     }
     var opg=emb(pick3(BR.map(function(x){return x.g;}),it.g).concat([it.g]));
-    return{skill:sk,enun:it.uf+" — como se chama quem nasce lá?",texto:null,opcoes:opg,correta:opg.indexOf(it.g),explica:it.uf+": quem nasce lá é "+it.g+"."};
+    return{skill:sk,enun:it.uf+" — como se chama quem nasce lá?",texto:null,opcoes:opg,correta:opg.indexOf(it.g),explica:it.uf+": quem nasce lá é "+it.g+".",passos:["Gentílico é o nome de quem nasce num lugar.",it.uf+": quem nasce lá é "+it.g+"."]};
   }
   function geoDispatch(sk){ return (sk==="estados"||sk==="gentilico")?genBR(sk):genGeo(sk); }
   function pushRec(q){ if(!recFila.some(function(x){return x.enun===q.enun;}))recFila.push(q); }
+
+  // ---------- história e mundo (fatos reais, com contexto) ----------
+  var HIST=[
+    {id:"h1",enun:"Quem chegou ao Brasil liderando os portugueses, em 1500?",ops:["Pedro Álvares Cabral","Cristóvão Colombo","Santos Dumont","Dom Pedro I"],c:0,ex:"Pedro Álvares Cabral chegou ao Brasil em 1500.",passos:["No ano de 1500, uma frota de Portugal chegou ao litoral do Brasil.","Quem liderava era Pedro Álvares Cabral.","Foi o começo da colonização portuguesa por aqui."]},
+    {id:"h2",enun:"Quem proclamou a Independência do Brasil, em 1822?",ops:["Dom Pedro I","Tiradentes","Getúlio Vargas","Dom João VI"],c:0,ex:"Dom Pedro I proclamou a Independência em 1822.",passos:["Em 7 de setembro de 1822, perto do rio Ipiranga...","Dom Pedro I declarou o Brasil livre de Portugal.","Por isso o 7 de setembro é feriado da Independência."]},
+    {id:"h3",enun:"Quem cruzou o oceano e chegou à América em 1492?",ops:["Cristóvão Colombo","Pedro Álvares Cabral","Napoleão","Marco Polo"],c:0,ex:"Cristóvão Colombo chegou à América em 1492.",passos:["Em 1492, Colombo atravessou o oceano Atlântico de navio.","Ele procurava um caminho para as Índias e acabou na América."]},
+    {id:"h4",enun:"Os faraós eram os reis de qual civilização antiga?",ops:["Egito","Roma","Grécia","China"],c:0,ex:"Faraó era o rei no Antigo Egito.",passos:["No Antigo Egito, o rei era chamado de faraó.","Eles mandavam construir as pirâmides como túmulos.","Um faraó famoso foi Tutancâmon."]},
+    {id:"h5",enun:"Quem foi o primeiro imperador de Roma?",ops:["Augusto","Napoleão","Dom Pedro II","Júlio Verne"],c:0,ex:"Augusto foi o primeiro imperador romano.",passos:["Há mais de 2000 anos, Roma virou um grande império.","O primeiro imperador foi Augusto, por volta do ano 27 a.C.","O Império Romano dominou terras ao redor do mar Mediterrâneo."]},
+    {id:"h6",enun:"Napoleão Bonaparte foi imperador de qual país?",ops:["França","Inglaterra","Brasil","Portugal"],c:0,ex:"Napoleão foi imperador da França.",passos:["Napoleão virou imperador da França por volta de 1804.","Ficou famoso pelas muitas guerras que comandou na Europa."]},
+    {id:"h7",enun:"Dom Pedro II foi imperador de qual país?",ops:["Brasil","Portugal","Espanha","Argentina"],c:0,ex:"Dom Pedro II foi imperador do Brasil.",passos:["Dom Pedro II governou o Brasil por quase 50 anos, no século 19.","Naquela época o Brasil ainda era um Império, não uma República."]},
+    {id:"h8",enun:"Qual país colonizou o Brasil e trouxe a língua portuguesa?",ops:["Portugal","Espanha","França","Inglaterra"],c:0,ex:"Portugal colonizou o Brasil.",passos:["Portugal colonizou o Brasil a partir de 1500.","Por isso falamos português, enquanto vizinhos falam espanhol."]},
+    {id:"h9",enun:"A Grande Muralha foi construída para proteger qual país?",ops:["China","Egito","Itália","Japão"],c:0,ex:"A Grande Muralha fica na China.",passos:["A Grande Muralha da China tem milhares de quilômetros.","Foi feita ao longo de séculos para defender o país de invasões."]},
+    {id:"h10",enun:"Em que país ficam as pirâmides de Gizé?",ops:["Egito","México","Grécia","Índia"],c:0,ex:"As pirâmides de Gizé ficam no Egito.",passos:["As pirâmides de Gizé ficam no Egito, na África.","Foram túmulos de faraós, construídas há mais de 4000 anos."]},
+    {id:"h11",enun:"Em que ano o ser humano pisou na Lua pela primeira vez?",ops:["1969","1500","1822","2010"],c:0,ex:"O homem pisou na Lua em 1969.",passos:["Em 1969, a missão Apollo 11 chegou à Lua.","Neil Armstrong foi o primeiro a pisar nela."]},
+    {id:"h12",enun:"O canguru, que carrega o filhote numa bolsa, é típico de qual país?",ops:["Austrália","Brasil","Canadá","Egito"],c:0,ex:"O canguru é típico da Austrália.",passos:["O canguru vive na Austrália.","A fêmea carrega o filhote numa bolsa na barriga, o marsúpio."]},
+    {id:"h13",enun:"O urso-panda, que come bambu, é natural de qual país?",ops:["China","Rússia","Brasil","México"],c:0,ex:"O panda é natural da China.",passos:["O panda-gigante vive nas montanhas da China.","Ele passa quase o dia todo comendo bambu."]},
+    {id:"h14",enun:"Qual é o maior animal terrestre, que vive na savana africana?",ops:["Elefante","Girafa","Leão","Zebra"],c:0,ex:"O elefante é o maior animal terrestre.",passos:["O elefante africano vive nas savanas da África.","É o maior animal de terra e usa a tromba para comer e beber."]},
+    {id:"h15",enun:"Os Jogos Olímpicos nasceram há muito tempo em qual país?",ops:["Grécia","Brasil","China","Egito"],c:0,ex:"As Olimpíadas nasceram na Grécia Antiga.",passos:["Os Jogos Olímpicos começaram na Grécia Antiga, há mais de 2700 anos.","Hoje acontecem a cada 4 anos, em países diferentes."]},
+    {id:"h16",enun:"A Torre Eiffel, famosa no mundo todo, fica em qual cidade?",ops:["Paris","Londres","Roma","Nova York"],c:0,ex:"A Torre Eiffel fica em Paris.",passos:["A Torre Eiffel fica em Paris, capital da França.","Foi construída em 1889 e virou símbolo da cidade."]},
+    {id:"h17",enun:"Qual é o maior continente do mundo?",ops:["Ásia","África","Europa","Oceania"],c:0,ex:"A Ásia é o maior continente.",passos:["A Ásia é o maior continente em tamanho e em população.","Nela ficam China, Índia, Japão e muitos outros países."]},
+    {id:"h18",enun:"Em qual continente fica o deserto do Saara, o maior deserto quente?",ops:["África","América","Europa","Oceania"],c:0,ex:"O Saara fica na África.",passos:["O Saara fica no norte da África.","É o maior deserto quente do mundo, quase do tamanho do Brasil."]}
+  ];
+  function genHist(){
+    var q=HIST[Math.floor(Math.random()*HIST.length)];
+    var ops=emb(q.ops.map(function(t,i){return{t:t,ok:i===q.c};}));
+    return{skill:"historia",enun:q.enun,texto:null,opcoes:ops.map(function(o){return o.t;}),
+      correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex,passos:q.passos};
+  }
 
   // ---------- motor de seleção (reforça o que erra) ----------
   function peso(sk){var s=P.stats[sk]||{a:0,e:0};return Math.max(1,2+s.e*2-s.a*0.4);}
@@ -441,7 +508,7 @@
     var r=Math.random()*soma;for(i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i];}return pool[pool.length-1];}
   function proxima(){
     var sk=escolherSkill(DISC[discAtual].skills);
-    return discAtual==="mat"?gerarMat(sk):(discAtual==="geo"?geoDispatch(sk):genPort(sk));
+    return discAtual==="mat"?gerarMat(sk):(discAtual==="geo"?geoDispatch(sk):(discAtual==="hist"?genHist():genPort(sk)));
   }
 
   // ---------- fluxo do jogo ----------
@@ -450,7 +517,7 @@
     $("jogoTitulo").textContent=DISC[disc].nome;
     $("jogoEstrelas").textContent="0";
     mostrar("telaJogo");
-    leo(disc==="mat"?"Bora de contas! Capricha 💪":"Vamos ler e escrever! 📖");
+    leo(disc==="mat"?"Bora de contas! Capricha 💪":(disc==="geo"?"Vamos viajar pelo mundo! 🌎":(disc==="hist"?"Bora descobrir histórias do mundo! 🏛️":"Vamos ler e escrever! 📖")));
     render();
   }
   function render(){
@@ -467,12 +534,14 @@
     $("qOps").innerHTML=html;
     var ops=$("qOps").querySelectorAll(".op");
     ops.forEach(function(b){b.addEventListener("click",function(){responder(parseInt(b.dataset.i,10));});});
+    $("btnAjuda").hidden=false;tInicio=Date.now();
     // Léo lê a pergunta
     falar((q.texto?q.texto+". ":"")+q.enun);
   }
   function responder(i){
     if(trava)return;trava=true;
-    var q=faseRec?recFila[recIdx]:rodada[idx];var certo=(i===q.correta);
+    $("btnAjuda").hidden=true;
+    var q=qAtual();var certo=(i===q.correta);var dt=Date.now()-(tInicio||Date.now());
     var ops=$("qOps").querySelectorAll(".op");
     ops.forEach(function(b){var bi=parseInt(b.dataset.i,10);b.disabled=true;
       if(bi===q.correta){b.classList.add("ok");if(!certo)b.classList.add("piscar");}
@@ -497,7 +566,21 @@
       leo(faseRec?"Guarda essa, tá? 💡":"Sem problema, errar faz parte 😊",null);
       falar("Quase! "+q.explica);
     }
-    P.stats[q.skill]=s;salvar();
+    P.stats[q.skill]=s;
+    // adaptação (Matemática): acertando rápido sobe o nível; errando seguido, facilita
+    if(discAtual==="mat"&&!faseRec){
+      P.nivel=P.nivel||{};P.acel=P.acel||{};P.errseq=P.errseq||{};
+      if(certo){
+        P.errseq[q.skill]=0;P.acel[q.skill]=(dt<7000?(P.acel[q.skill]||0)+1:0);
+        if((P.acel[q.skill]||0)>=3&&(P.nivel[q.skill]||1)<4){P.nivel[q.skill]=(P.nivel[q.skill]||1)+1;P.acel[q.skill]=0;
+          fb.innerHTML+='<br>🔼 <b>Você está voando!</b> Vou aumentar o desafio de '+esc(SKILL_NOME[q.skill])+'.';}
+      }else{
+        P.acel[q.skill]=0;P.errseq[q.skill]=(P.errseq[q.skill]||0)+1;
+        if((P.errseq[q.skill]||0)>=2&&(P.nivel[q.skill]||1)>1){P.nivel[q.skill]=(P.nivel[q.skill]||1)-1;P.errseq[q.skill]=0;
+          fb.innerHTML+='<br>🔽 Sem pressa — vou facilitar um pouco pra você treinar.';}
+      }
+    }
+    salvar();
     fb.hidden=false;$("btnProxima").hidden=false;
     var ultima=faseRec?(recIdx>=recFila.length-1):(idx>=9);
     $("btnProxima").textContent=ultima?((!faseRec&&recFila.length)?"Ir para a recuperação 💪":"Ver resultado 🎉"):"Próxima →";
@@ -624,6 +707,14 @@
     $("paisTbl").innerHTML=html;
   }
 
+  function abrirEnsina(q){
+    if(!q)return;
+    $("ensinaQ").textContent=(q.texto?q.texto+"  ":"")+q.enun;
+    var passos=(q.passos&&q.passos.length)?q.passos:[q.explica||"Vamos pensar com calma."];
+    $("ensinaPassos").innerHTML=passos.map(function(p){return "<li>"+esc(p)+"</li>";}).join("");
+    $("ensina").hidden=false;
+    falar("Vamos pensar juntos. "+passos.join(". "));
+  }
   function esc(s){var d=document.createElement("div");d.textContent=(s==null?"":String(s));return d.innerHTML;}
   function escolher(a){return a[Math.floor(Math.random()*a.length)];}
 
@@ -659,6 +750,8 @@
   $("rkFiltro").addEventListener("click",function(){rkPorTurma=!rkPorTurma;renderRanking();});
   $("btnPais").addEventListener("click",abrirPais);
   $("paisBack").addEventListener("click",irHome);
+  $("btnAjuda").addEventListener("click",function(){abrirEnsina(qAtual());});
+  $("ensinaOk").addEventListener("click",function(){$("ensina").hidden=true;if(window.speechSynthesis)speechSynthesis.cancel();});
   $("btnSom").addEventListener("click",function(){somOn=!somOn;$("btnSom").textContent=somOn?"🔊":"🔇";if(!somOn&&window.speechSynthesis)speechSynthesis.cancel();});
 
   // start
