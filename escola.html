@@ -197,7 +197,7 @@
         <button class="disc" style="background:linear-gradient(145deg,#ff8a3d,#f1660f)" data-disc="port">
           <span class="ic">📖</span><b>Português</b><small>Ler, escrever e gramática</small></button>
         <button class="disc" style="grid-column:1/-1;background:linear-gradient(145deg,#14b8a6,#0d8f81)" data-disc="geo">
-          <span class="ic">🌎</span><b>Geografia</b><small>Países, capitais e moedas</small></button>
+          <span class="ic">🌎</span><b>Geografia</b><small>Países, estados, capitais e moedas</small></button>
       </div>
     </div>
     <div class="linha">
@@ -282,16 +282,16 @@
   // ---------- estado ----------
   var AVATARES=["🦁","🐯","🐼","🐸","🦄","🐱","🐶","🦊","🐨","🐵","🐰","🐧"];
   var SERIES=["1º","2º","3º","4º","5º"]; // Fundamental I (piloto 3º)
-  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas"};
+  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos"};
   var DISC={
     mat:{nome:"Matemática",skills:["adicao","subtracao","multiplicacao","divisao","problema"]},
     port:{nome:"Português",skills:["ortografia","gramatica","interpretacao"]},
-    geo:{nome:"Geografia",skills:["capitais","moedas"]}
+    geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]}
   };
   var P=carregar();          // perfil do jogador (localStorage)
   var somOn=true;
   var discAtual="mat", rodada=[], idx=0, trava=false, acertosR=0, estrelasR=0, streakR=0;
-  var reviewQueue=[], resultados=[];
+  var recFila=[], recIdx=0, faseRec=false, resultados=[];
   var usados={};             // ids de português já usados (por skill)
 
   function perfilNovo(){return{apelido:"",avatar:"🦄",serie:"3º",turma:"",estrelas:0,pontos:0,
@@ -406,19 +406,47 @@
     return{skill:sk,enun:it.p+" "+it.f+" — qual é a moeda?",texto:null,opcoes:opsm,correta:opsm.indexOf(it.m),explica:"A moeda de "+it.p+" é o "+it.m+"."};
   }
 
+  // ---------- geografia do Brasil: estado → capital e estado → gentílico ----------
+  var BR=[
+    {uf:"Acre",cap:"Rio Branco",g:"acriano"},{uf:"Alagoas",cap:"Maceió",g:"alagoano"},
+    {uf:"Amapá",cap:"Macapá",g:"amapaense"},{uf:"Amazonas",cap:"Manaus",g:"amazonense"},
+    {uf:"Bahia",cap:"Salvador",g:"baiano"},{uf:"Ceará",cap:"Fortaleza",g:"cearense"},
+    {uf:"Distrito Federal",cap:"Brasília",g:"brasiliense"},{uf:"Espírito Santo",cap:"Vitória",g:"capixaba"},
+    {uf:"Goiás",cap:"Goiânia",g:"goiano"},{uf:"Maranhão",cap:"São Luís",g:"maranhense"},
+    {uf:"Mato Grosso",cap:"Cuiabá",g:"mato-grossense"},{uf:"Mato Grosso do Sul",cap:"Campo Grande",g:"sul-mato-grossense"},
+    {uf:"Minas Gerais",cap:"Belo Horizonte",g:"mineiro"},{uf:"Pará",cap:"Belém",g:"paraense"},
+    {uf:"Paraíba",cap:"João Pessoa",g:"paraibano"},{uf:"Paraná",cap:"Curitiba",g:"paranaense"},
+    {uf:"Pernambuco",cap:"Recife",g:"pernambucano"},{uf:"Piauí",cap:"Teresina",g:"piauiense"},
+    {uf:"Rio de Janeiro",cap:"Rio de Janeiro",g:"fluminense"},{uf:"Rio Grande do Norte",cap:"Natal",g:"potiguar"},
+    {uf:"Rio Grande do Sul",cap:"Porto Alegre",g:"gaúcho"},{uf:"Rondônia",cap:"Porto Velho",g:"rondoniense"},
+    {uf:"Roraima",cap:"Boa Vista",g:"roraimense"},{uf:"Santa Catarina",cap:"Florianópolis",g:"catarinense"},
+    {uf:"São Paulo",cap:"São Paulo",g:"paulista"},{uf:"Sergipe",cap:"Aracaju",g:"sergipano"},
+    {uf:"Tocantins",cap:"Palmas",g:"tocantinense"}
+  ];
+  function genBR(sk){
+    var it=BR[Math.floor(Math.random()*BR.length)];
+    if(sk==="estados"){
+      var ops=emb(pick3(BR.map(function(x){return x.cap;}),it.cap).concat([it.cap]));
+      return{skill:sk,enun:it.uf+" — qual é a capital?",texto:null,opcoes:ops,correta:ops.indexOf(it.cap),explica:"A capital de "+it.uf+" é "+it.cap+"."};
+    }
+    var opg=emb(pick3(BR.map(function(x){return x.g;}),it.g).concat([it.g]));
+    return{skill:sk,enun:it.uf+" — como se chama quem nasce lá?",texto:null,opcoes:opg,correta:opg.indexOf(it.g),explica:it.uf+": quem nasce lá é "+it.g+"."};
+  }
+  function geoDispatch(sk){ return (sk==="estados"||sk==="gentilico")?genBR(sk):genGeo(sk); }
+  function pushRec(q){ if(!recFila.some(function(x){return x.enun===q.enun;}))recFila.push(q); }
+
   // ---------- motor de seleção (reforça o que erra) ----------
   function peso(sk){var s=P.stats[sk]||{a:0,e:0};return Math.max(1,2+s.e*2-s.a*0.4);}
   function escolherSkill(pool){var ws=pool.map(peso),soma=0,i;for(i=0;i<ws.length;i++)soma+=ws[i];
     var r=Math.random()*soma;for(i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i];}return pool[pool.length-1];}
   function proxima(){
-    if(reviewQueue.length&&Math.random()<0.34){return reviewQueue.shift();}
     var sk=escolherSkill(DISC[discAtual].skills);
-    return discAtual==="mat"?gerarMat(sk):(discAtual==="geo"?genGeo(sk):genPort(sk));
+    return discAtual==="mat"?gerarMat(sk):(discAtual==="geo"?geoDispatch(sk):genPort(sk));
   }
 
   // ---------- fluxo do jogo ----------
   function iniciar(disc){
-    discAtual=disc;idx=0;acertosR=0;estrelasR=0;streakR=0;reviewQueue=[];rodada=[];resultados=[];
+    discAtual=disc;idx=0;acertosR=0;estrelasR=0;streakR=0;recFila=[];recIdx=0;faseRec=false;rodada=[];resultados=[];
     $("jogoTitulo").textContent=DISC[disc].nome;
     $("jogoEstrelas").textContent="0";
     mostrar("telaJogo");
@@ -426,9 +454,11 @@
     render();
   }
   function render(){
-    var q=proxima();rodada[idx]=q;trava=false;
-    $("progBar").style.width=(idx/10*100)+"%";
-    $("qConta").textContent="Pergunta "+(idx+1)+" de 10";
+    var q;
+    if(faseRec){q=recFila[recIdx];}else{q=proxima();rodada[idx]=q;}
+    trava=false;
+    if(faseRec){$("progBar").style.width=(recIdx/recFila.length*100)+"%";$("qConta").textContent="Recuperação "+(recIdx+1)+" de "+recFila.length;}
+    else{$("progBar").style.width=(idx/10*100)+"%";$("qConta").textContent="Pergunta "+(idx+1)+" de 10";}
     if(q.texto){$("qTexto").hidden=false;$("qTexto").textContent=q.texto;}else{$("qTexto").hidden=true;}
     $("qEnun").textContent=q.enun;
     $("qFeedback").hidden=true;$("btnProxima").hidden=true;
@@ -442,39 +472,46 @@
   }
   function responder(i){
     if(trava)return;trava=true;
-    var q=rodada[idx];var certo=(i===q.correta);
+    var q=faseRec?recFila[recIdx]:rodada[idx];var certo=(i===q.correta);
     var ops=$("qOps").querySelectorAll(".op");
     ops.forEach(function(b){var bi=parseInt(b.dataset.i,10);b.disabled=true;
       if(bi===q.correta){b.classList.add("ok");if(!certo)b.classList.add("piscar");}
       if(bi===i&&!certo)b.classList.add("no");});
-    resultados.push({enun:q.enun,dada:q.opcoes[i],certa:q.opcoes[q.correta],ok:certo});
+    if(!faseRec)resultados.push({enun:q.enun,dada:q.opcoes[i],certa:q.opcoes[q.correta],ok:certo});
     // estatística
     var s=P.stats[q.skill]||{a:0,e:0};
     var fb=$("qFeedback");
     if(certo){
-      s.a++;acertosR++;streakR++;
-      var ganho=1+(streakR>=3?1:0);estrelasR+=ganho;P.estrelas+=ganho;P.pontos+=10+(streakR>=3?5:0);
-      $("jogoEstrelas").textContent=String(estrelasR);
+      s.a++;if(!faseRec)acertosR++;streakR++;
+      var ganho=1+(streakR>=3?1:0);if(!faseRec)estrelasR+=ganho;P.estrelas+=ganho;P.pontos+=10+(streakR>=3?5:0);
+      if(!faseRec)$("jogoEstrelas").textContent=String(estrelasR);
       somCerto();estrelaPop(i);
-      fb.className="feedback ok";fb.innerHTML="<b>Acertou! "+ (streakR>=3?("🔥 "+streakR+" seguidas!"):"⭐") +"</b><br>"+esc(q.explica);
-      leo(escolher(["Isso! 🎉","Muito bem! 👏","Mandou bem! ⭐","Boa! Você é fera 💪"]),null);
-      falar("Acertou! "+q.explica);
+      fb.className="feedback ok";fb.innerHTML="<b>"+(faseRec?"Agora foi! ✅":"Acertou! "+(streakR>=3?("🔥 "+streakR+" seguidas!"):"⭐"))+"</b><br>"+esc(q.explica);
+      leo(escolher(faseRec?["Isso! Você aprendeu! 🌟","Agora foi! 👏"]:["Isso! 🎉","Muito bem! 👏","Mandou bem! ⭐","Boa! Você é fera 💪"]),null);
+      falar((faseRec?"Agora foi! ":"Acertou! ")+q.explica);
     }else{
       s.e++;streakR=0;
-      reviewQueue.push(q);
+      if(!faseRec)pushRec(q);
       somErro();
-      fb.className="feedback no";fb.innerHTML="<b>Quase! A resposta é "+esc(q.opcoes[q.correta])+"</b><br>"+esc(q.explica);
-      leo("Sem problema, errar faz parte 😊",null);
+      fb.className="feedback no";fb.innerHTML="<b>"+(faseRec?"Ainda não — a resposta é ":"Quase! A resposta é ")+esc(q.opcoes[q.correta])+"</b><br>"+esc(q.explica)+(faseRec?"":"<br>👀 Presta atenção: essa pergunta vai <b>voltar na recuperação</b> no fim!");
+      leo(faseRec?"Guarda essa, tá? 💡":"Sem problema, errar faz parte 😊",null);
       falar("Quase! "+q.explica);
     }
     P.stats[q.skill]=s;salvar();
     fb.hidden=false;$("btnProxima").hidden=false;
-    $("btnProxima").textContent=(idx>=9?"Ver resultado 🎉":"Próxima →");
+    var ultima=faseRec?(recIdx>=recFila.length-1):(idx>=9);
+    $("btnProxima").textContent=ultima?((!faseRec&&recFila.length)?"Ir para a recuperação 💪":"Ver resultado 🎉"):"Próxima →";
   }
   function avancar(){
-    idx++;
-    if(idx>=10){fim();return;}
-    render();
+    if(!faseRec){
+      idx++;
+      if(idx<10){render();return;}
+      if(recFila.length){faseRec=true;recIdx=0;leo("Agora a recuperação! As perguntas que você errou voltam pra você treinar 💪");render();return;}
+      fim();return;
+    }
+    recIdx++;
+    if(recIdx<recFila.length){render();return;}
+    fim();return;
   }
   function fim(){
     $("progBar").style.width="100%";
