@@ -198,7 +198,7 @@
     <div class="card">
       <h3 style="font-size:19px;margin-bottom:4px">O que vamos estudar hoje?</h3>
       <p style="color:var(--muold);font-weight:700;margin:0 0 12px" id="missao"></p>
-      <div class="disc-grid">
+      <div class="disc-grid" id="discFund">
         <button class="disc" style="background:linear-gradient(145deg,#4f93ff,#2f6fe0)" data-disc="mat">
           <span class="ic">🔢</span><b>Matemática</b><small>Contas e probleminhas</small></button>
         <button class="disc" style="background:linear-gradient(145deg,#ff8a3d,#f1660f)" data-disc="port">
@@ -207,6 +207,14 @@
           <span class="ic">🌎</span><b>Geografia</b><small>Países, estados e capitais</small></button>
         <button class="disc" style="background:linear-gradient(145deg,#c77d3a,#9c5a1e)" data-disc="hist">
           <span class="ic">🏛️</span><b>História e Mundo</b><small>Fatos, países e descobertas</small></button>
+      </div>
+      <div class="disc-grid" id="discMedio" hidden>
+        <button class="disc" style="background:linear-gradient(145deg,#4f93ff,#2f6fe0)" data-disc="mat_em">
+          <span class="ic">🧮</span><b>Matemática</b><small>Equações, %, geometria</small></button>
+        <button class="disc" style="background:linear-gradient(145deg,#ff8a3d,#f1660f)" data-disc="port_em">
+          <span class="ic">📚</span><b>Português</b><small>Gramática e figuras</small></button>
+        <button class="disc" style="grid-column:1/-1;background:linear-gradient(145deg,#8b5cf6,#6d28d9)" data-disc="quim_em">
+          <span class="ic">🧪</span><b>Química</b><small>Elementos, fórmulas e reações</small></button>
       </div>
     </div>
     <div class="linha">
@@ -228,6 +236,7 @@
     <div class="card" style="margin-top:12px">
       <div class="qtexto" id="qTexto" hidden></div>
       <div class="enun" id="qEnun"></div>
+      <div style="text-align:center;margin:-6px 0 12px"><button class="tog" id="btnOuvir">🔊 Ouvir de novo</button></div>
       <div class="ops" id="qOps"></div>
       <button class="btn ghost sm" id="btnAjuda" style="margin-top:12px" hidden>🤔 Não tenho certeza — me ensina</button>
       <div class="feedback" id="qFeedback" hidden></div>
@@ -300,18 +309,32 @@
 
   // ---------- estado ----------
   var AVATARES=["🦁","🐯","🐼","🐸","🦄","🐱","🐶","🦊","🐨","🐵","🐰","🐧"];
-  var SERIES=["1º","2º","3º","4º","5º"]; // Fundamental I (piloto 3º)
-  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"História e Mundo"};
+  var SERIES=["1º","2º","3º","4º","5º","1ª EM","2ª EM","3ª EM","PV"]; // Fundamental + Ensino Médio + Pré-vestibular
+  function ehMedio(){return /EM/.test(P.serie)||P.serie==="PV";}
+  // Passo inicial mais suave, mostrado no "me ensina" quando a criança está com dificuldade na habilidade.
+  var DICA_SUAVE={
+    adicao:"Vamos com um exemplo bem fácil: 2 + 3 = 5. Aqui é a mesma ideia, só com outros números.",
+    subtracao:"Exemplo fácil: 5 − 2 é tirar 2 de 5 e sobra 3. É a mesma ideia aqui.",
+    multiplicacao:"Começo fácil: 2 × 3 é 2 grupinhos de 3, que dá 6. Agora com calma no seu.",
+    divisao:"Pense fácil: 6 ÷ 2 é repartir 6 em 2 grupos — fica 3 em cada. É a mesma ideia.",
+    problema:"Leia bem devagar e pense: a história pede para juntar, tirar, multiplicar ou repartir?",
+    matem:"Vamos com muita calma, um passinho de cada vez."
+  };
+  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"História e Mundo",matem:"Matemática",portem:"Português",quimica:"Química"};
   var DISC={
     mat:{nome:"Matemática",skills:["adicao","subtracao","multiplicacao","divisao","problema"]},
     port:{nome:"Português",skills:["ortografia","gramatica","interpretacao"]},
     geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]},
-    hist:{nome:"História e Mundo",skills:["historia"]}
+    hist:{nome:"História e Mundo",skills:["historia"]},
+    mat_em:{nome:"Matemática (EM)",skills:["matem"]},
+    port_em:{nome:"Português (EM)",skills:["portem"]},
+    quim_em:{nome:"Química (EM)",skills:["quimica"]}
   };
   var P=carregar();          // perfil do jogador (localStorage)
   var somOn=true;
   var discAtual="mat", rodada=[], idx=0, trava=false, acertosR=0, estrelasR=0, streakR=0, tInicio=0;
   function qAtual(){return faseRec?recFila[recIdx]:rodada[idx];}
+  function lerPergunta(){var q=qAtual();if(!q)return;var ks=["A","B","C","D"];falar((q.texto?q.texto+". ":"")+q.enun+". "+q.opcoes.map(function(o,k){return ks[k]+": "+o;}).join(". "));}
   var recFila=[], recIdx=0, faseRec=false, resultados=[];
   var usados={};             // ids de português já usados (por skill)
 
@@ -346,21 +369,22 @@
 
   // ---------- gerador de matemática ----------
   function gerarMat(sk){
-    var n=nivelDe(sk),a,b,c,ans,q,ps;
-    if(sk==="adicao"){var tA=180+(n-1)*260;a=ri(10+(n-1)*40,tA);b=ri(8,Math.max(12,Math.floor(tA*0.7)));ans=a+b;q=a+" + "+b+" = ?";
+    var n=nivelDe(sk),e=escala(n),a,b,c,ans,q,ps;
+    if(sk==="adicao"){var tA=Math.round(200*e);a=ri(10,tA);b=ri(8,Math.max(12,Math.round(tA*0.6)));ans=a+b;q=a+" + "+b+" = ?";
       ps=["Somar é juntar duas quantidades.","Comece com "+a+" e acrescente "+b+".","Some por partes: primeiro as dezenas, depois as unidades.",a+" + "+b+" = "+ans+". A resposta é "+ans+"."];
       return wrap(sk,q,montarNum(ans,a+" + "+b+" = "+ans+".",ps));}
-    if(sk==="subtracao"){var tS=250+(n-1)*300;a=ri(40,tS);b=ri(8,a-1);ans=a-b;q=a+" − "+b+" = ?";
+    if(sk==="subtracao"){var tS=Math.round(250*e);a=ri(30,tS);b=ri(8,a-1);ans=a-b;q=a+" − "+b+" = ?";
       ps=["Subtrair é tirar uma parte do total.","Você tem "+a+" e vai tirar "+b+".","Conte para trás a partir de "+a+".",a+" − "+b+" = "+ans+". A resposta é "+ans+"."];
       return wrap(sk,q,montarNum(ans,a+" − "+b+" = "+ans+".",ps));}
-    if(sk==="multiplicacao"){var mx=[0,10,12,20,30][n]||10,mn=n>=3?11:2;a=ri(mn,mx);b=ri(2,n>=3?9:10);ans=a*b;q=a+" × "+b+" = ?";
+    if(sk==="multiplicacao"){var fa=Math.min(12,9+Math.floor((n-1)*0.6)),fb=Math.min(10,5+Math.floor((n-1)*0.6));
+      if(n>=7&&Math.random()<0.5){a=ri(11,20);b=ri(2,9);}else{a=ri(2,fa);b=ri(2,fb);}ans=a*b;q=a+" × "+b+" = ?";
       ps=["Multiplicar é somar o mesmo número várias vezes.",a+" × "+b+" é somar "+b+" um total de "+a+" vezes.","Vá somando de "+b+" em "+b+".",a+" × "+b+" = "+ans+". A resposta é "+ans+"."];
       return wrap(sk,q,montarNum(ans,a+" × "+b+" = "+ans+".",ps));}
-    if(sk==="divisao"){var lim=5+n*2;b=ri(2,lim);c=ri(2,lim);a=b*c;ans=c;q=a+" ÷ "+b+" = ?";
+    if(sk==="divisao"){var lim=5+Math.floor((n-1)*0.6);b=ri(2,lim);c=ri(2,lim);a=b*c;ans=c;q=a+" ÷ "+b+" = ?";
       ps=["Dividir é repartir em partes iguais.","Temos "+a+" para repartir em "+b+" grupos iguais.","Pense: qual número vezes "+b+" dá "+a+"?",b+" × "+c+" = "+a+", então cada grupo fica com "+c+".","A resposta é "+c+"."];
       return wrap(sk,q,montarNum(ans,a+" ÷ "+b+" = "+c+".",ps));}
-    // problema (escala com o nível)
-    var f=1+(n-1)*0.8,t=ri(1,4);
+    // problema (escala suave com o nível)
+    var f=e,t=ri(1,4);
     if(t===1){a=ri(8,Math.floor(40*f));b=ri(5,Math.floor(30*f));ans=a+b;q="Ana tinha "+a+" figurinhas e ganhou mais "+b+". Com quantas ela ficou?";
       ps=["É um probleminha de juntar (somar).","Ela tinha "+a+" e ganhou mais "+b+".",a+" + "+b+" = "+ans+".","A resposta é "+ans+" figurinhas."];
       return wrap(sk,q,montarNum(ans,a+" + "+b+" = "+ans+" figurinhas.",ps));}
@@ -376,6 +400,8 @@
   }
   function wrap(sk,enun,m){return{skill:sk,enun:enun,texto:null,opcoes:m.opcoes,correta:m.correta,explica:m.explica,passos:m.passos||null};}
   function nivelDe(sk){return (P.nivel&&P.nivel[sk])||1;}
+  // Crescimento suave: quase igual nos primeiros níveis, só acelera depois do 5º.
+  function escala(n){return n<=5?(1+(n-1)*0.15):(1.6+(n-5)*0.45);}
 
   // ---------- banco de português ----------
   var PORT=[
@@ -537,13 +563,74 @@
       correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex,passos:q.passos};
   }
 
+  // ---------- Ensino Médio / Pré-vestibular: Matemática, Português e Química ----------
+  var BANK_MATEM=[
+    {id:"m1",enun:"Resolva: 2x + 6 = 14. Qual o valor de x?",ops:["4","5","2","10"],c:0,ex:"x = 4.",passos:["Passe o 6 para o outro lado subtraindo.","2x = 14 − 6 = 8.","x = 8 ÷ 2 = 4."]},
+    {id:"m2",enun:"Quanto é 20% de 150?",ops:["30","15","45","20"],c:0,ex:"20% de 150 = 30.",passos:["20% = 20/100 = 0,2.","0,2 × 150 = 30."]},
+    {id:"m3",enun:"Se 3 kg custam R$ 12, quanto custam 5 kg (preço proporcional)?",ops:["R$ 20","R$ 15","R$ 18","R$ 24"],c:0,ex:"R$ 20.",passos:["Regra de três: ache o preço de 1 kg.","1 kg = 12 ÷ 3 = R$ 4.","5 × 4 = R$ 20."]},
+    {id:"m4",enun:"Qual o valor de 2³ (dois ao cubo)?",ops:["8","6","9","16"],c:0,ex:"2³ = 8.",passos:["2³ = 2 × 2 × 2.","= 8."]},
+    {id:"m5",enun:"Simplifique a fração 4/8.",ops:["1/2","1/4","1/8","2/1"],c:0,ex:"4/8 = 1/2.",passos:["Divida o de cima e o de baixo por 4.","4÷4 e 8÷4 = 1/2."]},
+    {id:"m6",enun:"Na sequência 2, 5, 8, 11... qual é o próximo número?",ops:["14","13","12","15"],c:0,ex:"14.",passos:["A diferença entre os termos é sempre 3.","11 + 3 = 14."]},
+    {id:"m7",enun:"Qual a área de um retângulo de base 5 e altura 3?",ops:["15","8","16","10"],c:0,ex:"15.",passos:["Área do retângulo = base × altura.","5 × 3 = 15."]},
+    {id:"m8",enun:"Qual é a raiz quadrada de 81?",ops:["9","8","7","18"],c:0,ex:"√81 = 9.",passos:["Procure o número que, ao quadrado, dá 81.","9 × 9 = 81, então √81 = 9."]},
+    {id:"m9",enun:"Triângulo retângulo com catetos 3 e 4. Qual a hipotenusa?",ops:["5","6","7","12"],c:0,ex:"5.",passos:["Pitágoras: h² = cateto² + cateto².","h² = 3² + 4² = 9 + 16 = 25.","h = √25 = 5."]},
+    {id:"m10",enun:"Resolva: x/5 = 20. Quanto vale x?",ops:["100","25","4","15"],c:0,ex:"x = 100.",passos:["Multiplique os dois lados por 5.","x = 20 × 5 = 100."]},
+    {id:"m11",enun:"Qual a média de 6, 8 e 10?",ops:["8","7","9","24"],c:0,ex:"Média = 8.",passos:["Some tudo: 6 + 8 + 10 = 24.","Divida pela quantidade (3): 24 ÷ 3 = 8."]},
+    {id:"m12",enun:"Quanto é 10% de 2500?",ops:["250","25","2500","2,5"],c:0,ex:"250.",passos:["10% é o mesmo que dividir por 10.","2500 ÷ 10 = 250."]},
+    {id:"m13",enun:"Transforme 0,5 em fração.",ops:["1/2","1/5","1/10","2/1"],c:0,ex:"0,5 = 1/2.",passos:["0,5 é o mesmo que 5/10.","Simplificando por 5: 1/2."]}
+  ];
+  var BANK_PORTEM=[
+    {id:"pe1",enun:"'Ela chorou rios de lágrimas.' Qual figura de linguagem?",ops:["Hipérbole","Metáfora","Ironia","Eufemismo"],c:0,ex:"Hipérbole (exagero).",passos:["Hipérbole é um exagero proposital.","'Rios de lágrimas' exagera o quanto ela chorou."]},
+    {id:"pe2",enun:"Em 'O tempo voa', há uma:",ops:["Metáfora","Comparação","Onomatopeia","Antítese"],c:0,ex:"Metáfora.",passos:["Metáfora compara sem usar 'como'.","O tempo não voa de verdade: é sentido figurado."]},
+    {id:"pe3",enun:"Qual é o sujeito de 'Os alunos estudaram muito'?",ops:["Os alunos","estudaram","muito","não há"],c:0,ex:"Os alunos.",passos:["Sujeito é quem pratica a ação.","Quem estudou? Os alunos."]},
+    {id:"pe4",enun:"Qual é a forma culta?",ops:["Faz dois anos que ele saiu","Fazem dois anos que ele saiu","Fazem dois ano","Fazerão dois anos"],c:0,ex:"'Faz dois anos'.",passos:["O verbo 'fazer' indicando tempo é impessoal.","Fica no singular: faz dois anos."]},
+    {id:"pe5",enun:"Complete: 'Vou ___ escola.'",ops:["à","a","há","ah"],c:0,ex:"Vou à escola.",passos:["Crase é a junção de a + a.","Vou a + a escola = Vou à escola."]},
+    {id:"pe6",enun:"Qual é o antônimo de 'efêmero'?",ops:["duradouro","passageiro","breve","fugaz"],c:0,ex:"Duradouro.",passos:["Efêmero = que dura pouco.","O contrário é duradouro."]},
+    {id:"pe7",enun:"A que classe pertence 'rapidamente'?",ops:["Advérbio","Adjetivo","Substantivo","Verbo"],c:0,ex:"Advérbio.",passos:["Termina em -mente e indica o modo da ação.","É um advérbio de modo."]},
+    {id:"pe8",enun:"Complete: 'Se eu ___ tempo, viajaria.'",ops:["tivesse","tiver","tinha","tenho"],c:0,ex:"'tivesse'.",passos:["É uma condição hipotética.","Usa-se o subjuntivo: se eu tivesse tempo."]},
+    {id:"pe9",enun:"'O silêncio gritava' é exemplo de:",ops:["Paradoxo","Pleonasmo","Metonímia","Hipérbato"],c:0,ex:"Paradoxo.",passos:["Paradoxo une ideias que se contradizem.","Silêncio não grita: é uma contradição proposital."]},
+    {id:"pe10",enun:"Qual é o plural de 'cidadão'?",ops:["cidadãos","cidadões","cidadans","cidadãoes"],c:0,ex:"Cidadãos.",passos:["Alguns nomes em -ão fazem plural em -ãos.","O plural de cidadão é cidadãos."]},
+    {id:"pe11",enun:"Em 'Comprei frutas: maçã, pera e uva', os dois-pontos servem para:",ops:["Introduzir uma enumeração","Fazer uma pergunta","Indicar uma fala","Terminar a frase"],c:0,ex:"Introduzir uma enumeração.",passos:["Os dois-pontos anunciam uma lista ou explicação.","Aqui, anunciam a lista de frutas."]},
+    {id:"pe12",enun:"'Li Machado de Assis' (a obra dele). Isso é:",ops:["Metonímia","Hipérbole","Eufemismo","Pleonasmo"],c:0,ex:"Metonímia.",passos:["Metonímia troca uma coisa por outra ligada a ela.","Usar o autor no lugar da obra é metonímia."]}
+  ];
+  var BANK_QUIM=[
+    {id:"qu1",enun:"Qual é o símbolo químico do Oxigênio?",ops:["O","Ox","Og","Oi"],c:0,ex:"Oxigênio = O.",passos:["Cada elemento tem um símbolo na tabela periódica.","O oxigênio é representado por O."]},
+    {id:"qu2",enun:"Qual é o símbolo do Sódio?",ops:["Na","So","Sd","S"],c:0,ex:"Sódio = Na.",passos:["O símbolo vem do latim 'natrium'.","Por isso o sódio é Na."]},
+    {id:"qu3",enun:"Qual é a fórmula da água?",ops:["H2O","CO2","O2","NaCl"],c:0,ex:"Água = H2O.",passos:["A água tem 2 hidrogênios e 1 oxigênio.","Fórmula: H2O."]},
+    {id:"qu4",enun:"Qual é a fórmula do gás carbônico?",ops:["CO2","H2O","O2","CH4"],c:0,ex:"Gás carbônico = CO2.",passos:["1 carbono + 2 oxigênios.","Fórmula: CO2."]},
+    {id:"qu5",enun:"Uma solução com pH 7 é:",ops:["Neutra","Ácida","Básica","Gasosa"],c:0,ex:"Neutra.",passos:["pH menor que 7 é ácido; maior que 7 é básico.","pH 7 é neutro, como a água pura."]},
+    {id:"qu6",enun:"Quantos prótons tem o carbono (número atômico 6)?",ops:["6","12","3","0"],c:0,ex:"6 prótons.",passos:["O número atômico é igual ao número de prótons.","Carbono tem número atômico 6: 6 prótons."]},
+    {id:"qu7",enun:"O que a tabela periódica organiza?",ops:["Os elementos químicos","Os planetas","Os números","Os animais"],c:0,ex:"Os elementos químicos.",passos:["A tabela periódica reúne os elementos conhecidos.","Eles ficam organizados por suas propriedades."]},
+    {id:"qu8",enun:"Qual a fórmula do sal de cozinha (cloreto de sódio)?",ops:["NaCl","KCl","H2O","CaCO3"],c:0,ex:"NaCl.",passos:["Sódio (Na) + Cloro (Cl).","Formam o cloreto de sódio: NaCl."]},
+    {id:"qu9",enun:"A passagem de líquido para gás chama-se:",ops:["Vaporização","Fusão","Solidificação","Condensação"],c:0,ex:"Vaporização.",passos:["Líquido → gás é vaporização (água fervendo).","Gás → líquido é condensação."]},
+    {id:"qu10",enun:"A passagem de sólido para líquido chama-se:",ops:["Fusão","Vaporização","Sublimação","Condensação"],c:0,ex:"Fusão.",passos:["Sólido → líquido é fusão (gelo derretendo).","Líquido → sólido é solidificação."]},
+    {id:"qu11",enun:"Qual é o símbolo do Hidrogênio?",ops:["H","Hg","He","Hi"],c:0,ex:"Hidrogênio = H.",passos:["Hidrogênio é o elemento mais leve.","Símbolo H (Hg é mercúrio, He é hélio)."]},
+    {id:"qu12",enun:"Na fotossíntese, as plantas liberam qual gás?",ops:["Oxigênio","Gás carbônico","Nitrogênio","Hidrogênio"],c:0,ex:"Oxigênio.",passos:["As plantas absorvem gás carbônico e luz.","E liberam oxigênio, que a gente respira."]}
+  ];
+  function genBank(bank,skill){
+    usados[skill]=usados[skill]||{};
+    var livres=bank.filter(function(q){return !usados[skill][q.id];});
+    if(!livres.length){usados[skill]={};livres=bank;}
+    var q=livres[Math.floor(Math.random()*livres.length)];
+    usados[skill][q.id]=1;
+    var ops=emb(q.ops.map(function(t,i){return{t:t,ok:i===q.c};}));
+    return{skill:skill,enun:q.enun,texto:q.texto||null,opcoes:ops.map(function(o){return o.t;}),
+      correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex,passos:q.passos||[q.ex]};
+  }
+
   // ---------- motor de seleção (reforça o que erra) ----------
   function peso(sk){var s=P.stats[sk]||{a:0,e:0};return Math.max(1,2+s.e*2-s.a*0.4);}
   function escolherSkill(pool){var ws=pool.map(peso),soma=0,i;for(i=0;i<ws.length;i++)soma+=ws[i];
     var r=Math.random()*soma;for(i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i];}return pool[pool.length-1];}
   function proxima(){
     var sk=escolherSkill(DISC[discAtual].skills);
-    return discAtual==="mat"?gerarMat(sk):(discAtual==="geo"?geoDispatch(sk):(discAtual==="hist"?genHist():genPort(sk)));
+    if(discAtual==="mat")return gerarMat(sk);
+    if(discAtual==="geo")return geoDispatch(sk);
+    if(discAtual==="hist")return genHist();
+    if(discAtual==="mat_em")return genBank(BANK_MATEM,"matem");
+    if(discAtual==="port_em")return genBank(BANK_PORTEM,"portem");
+    if(discAtual==="quim_em")return genBank(BANK_QUIM,"quimica");
+    return genPort(sk);
   }
 
   // ---------- fluxo do jogo ----------
@@ -552,7 +639,7 @@
     $("jogoTitulo").textContent=DISC[disc].nome;
     $("jogoEstrelas").textContent="0";
     mostrar("telaJogo");
-    leo(disc==="mat"?"Bora de contas! Capricha 💪":(disc==="geo"?"Vamos viajar pelo mundo! 🌎":(disc==="hist"?"Bora descobrir histórias do mundo! 🏛️":"Vamos ler e escrever! 📖")));
+    leo(/_em$/.test(disc)?"Bons estudos! Foco total 💪":(disc==="mat"?"Bora de contas! Capricha 💪":(disc==="geo"?"Vamos viajar pelo mundo! 🌎":(disc==="hist"?"Bora descobrir histórias do mundo! 🏛️":"Vamos ler e escrever! 📖"))));
     render();
   }
   function render(){
@@ -602,17 +689,22 @@
       falar("Quase! "+q.explica);
     }
     P.stats[q.skill]=s;
-    // adaptação (Matemática): acertando rápido sobe o nível; errando seguido, facilita
-    if(discAtual==="mat"&&!faseRec){
-      P.nivel=P.nivel||{};P.acel=P.acel||{};P.errseq=P.errseq||{};
+    // leitura de dificuldade em TODAS as matérias: acompanha acertos e erros por habilidade.
+    // Onde o conteúdo é gerado por nível (Matemática), também sobe/desce o grau de dificuldade.
+    P.nivel=P.nivel||{};P.acel=P.acel||{};P.errseq=P.errseq||{};
+    var ehMat=(discAtual==="mat");
+    if(!faseRec){
       if(certo){
-        P.errseq[q.skill]=0;P.acel[q.skill]=(dt<7000?(P.acel[q.skill]||0)+1:0);
-        if((P.acel[q.skill]||0)>=3&&(P.nivel[q.skill]||1)<4){P.nivel[q.skill]=(P.nivel[q.skill]||1)+1;P.acel[q.skill]=0;
-          fb.innerHTML+='<br>🔼 <b>Você está voando!</b> Vou aumentar o desafio de '+esc(SKILL_NOME[q.skill])+'.';}
+        P.errseq[q.skill]=0;
+        if(ehMat){P.acel[q.skill]=(dt<7000?(P.acel[q.skill]||0)+1:0);
+          if((P.acel[q.skill]||0)>=5&&(P.nivel[q.skill]||1)<12){P.nivel[q.skill]=(P.nivel[q.skill]||1)+1;P.acel[q.skill]=0;
+            fb.innerHTML+='<br>🔼 Boa! Um pouquinho mais de desafio em '+esc(SKILL_NOME[q.skill])+'.';}}
       }else{
-        P.acel[q.skill]=0;P.errseq[q.skill]=(P.errseq[q.skill]||0)+1;
-        if((P.errseq[q.skill]||0)>=2&&(P.nivel[q.skill]||1)>1){P.nivel[q.skill]=(P.nivel[q.skill]||1)-1;P.errseq[q.skill]=0;
-          fb.innerHTML+='<br>🔽 Sem pressa — vou facilitar um pouco pra você treinar.';}
+        P.errseq[q.skill]=(P.errseq[q.skill]||0)+1;
+        if(ehMat){P.acel[q.skill]=0;
+          if((P.errseq[q.skill]||0)>=2&&(P.nivel[q.skill]||1)>1){P.nivel[q.skill]=(P.nivel[q.skill]||1)-1;P.errseq[q.skill]=0;
+            fb.innerHTML+='<br>🔽 Sem pressa — vou voltar um pouquinho e ir mais devagar.';}}
+        if((P.errseq[q.skill]||0)>=2){fb.innerHTML+='<br>💡 Toque em <b>🤔 me ensina</b> pra ver o passo a passo com calma.';}
       }
     }
     salvar();
@@ -745,7 +837,8 @@
   function abrirEnsina(q){
     if(!q)return;
     $("ensinaQ").textContent=(q.texto?q.texto+"  ":"")+q.enun;
-    var passos=(q.passos&&q.passos.length)?q.passos:[q.explica||"Vamos pensar com calma."];
+    var passos=(q.passos&&q.passos.length)?q.passos.slice():[q.explica||"Vamos pensar com calma."];
+    if(P.errseq&&(P.errseq[q.skill]||0)>=1){passos.unshift(DICA_SUAVE[q.skill]||"Vamos bem devagar, por partes.");}
     $("ensinaPassos").innerHTML=passos.map(function(p){return "<li>"+esc(p)+"</li>";}).join("");
     $("ensina").hidden=false;
     falar("Vamos pensar juntos. "+passos.join(". "));
@@ -759,13 +852,13 @@
     AVATARES.forEach(function(e){var b=document.createElement("button");b.type="button";b.className="av"+(e===P.avatar?" on":"");b.textContent=e;
       b.addEventListener("click",function(){P.avatar=e;av.querySelectorAll(".av").forEach(function(x){x.classList.remove("on");});b.classList.add("on");});av.appendChild(b);});
     var se=$("series");se.innerHTML="";
-    SERIES.forEach(function(s){var b=document.createElement("button");b.type="button";b.className="serie"+(s===P.serie?" on":"");b.textContent=s+" ano";
+    SERIES.forEach(function(s){var b=document.createElement("button");b.type="button";b.className="serie"+(s===P.serie?" on":"");b.textContent=(s==="PV"?"Pré-vestibular":(/EM/.test(s)?s.replace(" EM","")+" série (EM)":s+" ano"));
       b.addEventListener("click",function(){P.serie=s;se.querySelectorAll(".serie").forEach(function(x){x.classList.remove("on");});b.classList.add("on");});se.appendChild(b);});
     $("inApelido").value=P.apelido||"";$("inTurma").value=P.turma||"";
   }
   function irHome(){atualizarPlacar();
-    var faltam=["adicao","divisao","gramatica","interpretacao"];
-    $("missao").textContent="Missão do dia: acerte 7 numa rodada e ganhe estrelas! ⭐";
+    var em=ehMedio();$("discFund").hidden=em;$("discMedio").hidden=!em;
+    $("missao").textContent=em?"Bons estudos! Escolha uma matéria do Ensino Médio.":"Missão do dia: acerte 7 numa rodada e ganhe estrelas! ⭐";
     mostrar("telaHome");leo("Oi "+(P.apelido||"")+"! Escolhe uma matéria 👇");}
 
   // eventos
@@ -785,6 +878,7 @@
   $("rkFiltro").addEventListener("click",function(){rkPorTurma=!rkPorTurma;renderRanking();});
   $("btnPais").addEventListener("click",abrirPais);
   $("paisBack").addEventListener("click",irHome);
+  $("btnOuvir").addEventListener("click",lerPergunta);
   $("btnAjuda").addEventListener("click",function(){abrirEnsina(qAtual());});
   $("ensinaOk").addEventListener("click",function(){$("ensina").hidden=true;if(window.speechSynthesis)speechSynthesis.cancel();});
   $("btnSom").addEventListener("click",function(){somOn=!somOn;$("btnSom").textContent=somOn?"🔊":"🔇";if(!somOn&&window.speechSynthesis)speechSynthesis.cancel();});
