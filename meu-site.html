@@ -365,6 +365,7 @@
       '</div>' +
 
       '<div class="card"><h2>Seus imóveis</h2><small>Cada imóvel tem um nome, a ficha (venda ou locação, tipo, preço, bairro, quartos, vagas e m²) e as fotos. Tudo é opcional: preencha o que souber. A primeira foto é a capa; toque em ✎ para escrever uma legenda na foto.</small>' +
+        '<datalist id="dlCidades">' + [S.cidade].concat(S.cidades || []).filter(Boolean).map(function(c){ return '<option value="' + esc(c) + '">'; }).join('') + '</datalist>' +
         '<div id="albuns">' + albuns.map(albumHtml).join('') + '</div>' +
         (albuns.length < 12 ? '<button class="btn btn-prim" type="button" id="btnNovoAlbum" style="margin-top:12px;width:100%">➕ Novo imóvel (álbum)</button>' : '') +
       '</div>' +
@@ -394,6 +395,7 @@
         '<select class="aFin">' + opcoes([['VENDA','Venda'],['LOCACAO','Locação']], a.finalidade, 'Venda ou locação?') + '</select>' +
         '<select class="aTipo">' + opcoes(TIPOS_IMOVEL, a.tipo, 'Tipo do imóvel') + '</select>' +
         '<div class="aPrecoBox"><input type="text" class="aPreco" inputmode="numeric" placeholder="Preço (vazio = Sob consulta)" value="' + esc(a.preco ? Number(a.preco).toLocaleString('pt-BR') : '') + '"><small class="aPrecoView"></small></div>' +
+        '<input type="text" class="aCidade" maxlength="60" list="dlCidades" placeholder="Cidade (padrão: ' + esc(S.cidade) + ')" value="' + esc(a.cidade || '') + '">' +
         '<input type="text" class="aBairro" maxlength="60" placeholder="Bairro" value="' + esc(a.bairro) + '">' +
         '<div class="nums">' + num('aDorm', 'Dorm.', a.dorm, 99) + num('aSuites', 'Suítes', a.suites, 99) + num('aVagas', 'Vagas', a.vagas, 99) + num('aArea', 'm²', a.area, 999999) + '</div>' +
         '<textarea class="aDesc" maxlength="600" placeholder="Descrição curta (opcional): lazer, localização, diferenciais…">' + esc(a.descricao) + '</textarea>' +
@@ -424,7 +426,7 @@
       var a = S.albuns[+el.dataset.i]; if (!a) return;
       var v = function(c){ var x = el.querySelector('.' + c); return x ? x.value.trim() : ''; };
       a.titulo = v('aTitulo'); a.finalidade = v('aFin'); a.tipo = v('aTipo'); a.preco = v('aPreco').replace(/\D/g, '');
-      a.bairro = v('aBairro'); a.dorm = v('aDorm'); a.suites = v('aSuites'); a.vagas = v('aVagas'); a.area = v('aArea'); a.descricao = v('aDesc');
+      a.cidade = v('aCidade'); a.bairro = v('aBairro'); a.dorm = v('aDorm'); a.suites = v('aSuites'); a.vagas = v('aVagas'); a.area = v('aArea'); a.descricao = v('aDesc');
     });
   }
   function rerender(){ lerCampos(); render(); }
@@ -568,7 +570,7 @@
       profissao:S.profissao || 'CORRETOR', zonas:S.zonas || [], bairros:S.bairros || [], cidades:S.cidades || [], vaga:S.vaga || null,
       instagram:S.instagram, facebook:S.facebook, linkedin:S.linkedin, youtube:S.youtube,
       albuns:(S.albuns || []).map(function(a){ return { titulo:a.titulo || '', fotos:a.fotos || [], legendas:a.legendas || [],
-        finalidade:a.finalidade || '', tipo:a.tipo || '', preco:a.preco || '', bairro:a.bairro || '',
+        finalidade:a.finalidade || '', tipo:a.tipo || '', preco:a.preco || '', cidade:a.cidade || '', bairro:a.bairro || '',
         dorm:a.dorm || '', suites:a.suites || '', vagas:a.vagas || '', area:a.area || '', descricao:a.descricao || '' }; }) };
     var semFoto = dados.albuns.filter(function(a){ return !a.fotos.length; }).length;
     $('btnSalvar').disabled = true; $('btnSalvar').textContent = 'Salvando…';

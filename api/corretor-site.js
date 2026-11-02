@@ -138,6 +138,11 @@ function render(s, prev, url) {
   };
   const fichas = albuns.map(a => fichaDe(a, false));
   const fichasRede = rede.map(a => fichaDe(a, true));
+  // Cidade por imóvel (o editor agora guarda "cidade" em cada imóvel). Quando há
+  // imóveis em mais de uma cidade, cada card mostra 📍 cidade e aparece um filtro.
+  const imCidadeDe = (a) => (a && a.cidade && String(a.cidade).trim()) || s.cidade;
+  const imCidades = [...new Set(albuns.map(imCidadeDe).filter(Boolean))];
+  const imMultiCidade = imCidades.length > 1;
   // Lightbox: primeiro os imóveis do profissional, depois os da rede (índice continua)
   const todos = [...albuns, ...rede], todasFichas = [...fichas, ...fichasRede];
   const dadosAlbuns = JSON.stringify(todos.map((a, k) => ({
@@ -170,6 +175,27 @@ function render(s, prev, url) {
     <div class="vazio" id="rdVazio" style="display:none">Nenhum lançamento nesta região por enquanto.</div>
   </section>`;
 
+  // Guia rápido para o cliente (igual em todos os sites): conteúdo útil e real,
+  // para a página não ficar "crua" e ajudar no Google. Sem prometer nada falso.
+  const guiaItens = [
+    ['Como funciona o atendimento?', `Você fala direto com ${primeiro} pelo WhatsApp, tira as dúvidas, recebe as opções que combinam com o que procura e agenda a visita. Sem robô e sem compromisso.`],
+    ['Dá para financiar o imóvel?', `Na maioria dos casos, sim. É possível financiar por bancos como Caixa, Itaú, Bradesco e Santander, com simulação gratuita. ${primeiro} ajuda a organizar a documentação e a escolher a melhor condição.`],
+    ['Posso usar o FGTS?', `Em muitos casos, sim — para imóvel residencial e dentro das regras do banco e da Caixa (tempo de conta no FGTS, valor do imóvel e não ter outro financiamento ativo no SFH). Vale conferir a elegibilidade antes de fechar.`],
+    ['Quais documentos eu vou precisar?', `Em geral: RG e CPF, comprovante de renda e de residência e as certidões pedidas pelo banco. ${primeiro} orienta a lista certa conforme o seu caso.`],
+    ['Quanto se paga além do valor do imóvel?', `Normalmente ITBI (imposto de transferência), escritura e registro em cartório. Esses custos variam por cidade; ${primeiro} explica o total estimado antes de você decidir.`]
+  ];
+  const guiaHtml = `
+  <section class="guia"><h2>Guia rápido para quem vai comprar</h2>
+    <p class="sub">Dúvidas comuns de quem está comprando. Qualquer caso específico, é só chamar ${esc(primeiro)} no WhatsApp.</p>
+    ${guiaItens.map(([q, a]) => `<details><summary>${esc(q)}</summary><div>${esc(a)}</div></details>`).join('')}
+    ${wa ? `<a class="btn btn-wa" data-onde="GUIA" href="${esc(wa)}" target="_blank" rel="noopener" style="margin-top:12px">${ICON.wa} Tirar minha dúvida no WhatsApp</a>` : ''}
+  </section>`;
+  const faqLd = prev ? null : {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: guiaItens.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } }))
+  };
+  const faqLdHtml = faqLd ? `<script type="application/ld+json">${JSON.stringify(faqLd).replace(/</g, '\\u003c')}</script>` : '';
+
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -185,6 +211,7 @@ ${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}
 <meta name="theme-color" content="#2b124d">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 ${ldHtml}
+${faqLdHtml}
 <style>
   :root{--roxo:#2b124d;--roxo2:#5b21b6;--lilas:#f4eefb;--laranja:#f97316;--txt:#1f1530;--muted:#6b5e7e;--line:#e9e1f3;--bg:#fbf9fd}
   *{box-sizing:border-box}
@@ -227,6 +254,8 @@ ${ldHtml}
   .quem{flex:1;min-width:200px}
   .quem h1{margin:0;font-size:24px;line-height:1.2;color:var(--roxo)}
   .quem p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .quem .reg{display:inline-block;background:var(--lilas);color:var(--roxo2);font-weight:800;font-size:12px;border-radius:999px;padding:2px 10px;vertical-align:middle}
+  .atua b.cid{background:#eaf2ff;color:#1d4ed8}
   .acoes{display:flex;gap:10px;flex-wrap:wrap}
   .btn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;text-decoration:none;border:0;cursor:pointer}
   .btn svg{width:18px;height:18px}
@@ -289,7 +318,17 @@ ${ldHtml}
   .filtros button.on{background:var(--roxo2);border-color:var(--roxo2);color:#fff}
   .rd{display:contents}
   .rd.fora{display:none}
+  .imv{display:contents}
+  .imv.fora{display:none}
   .lb-ficha .d{font-size:13px;opacity:.85;margin-top:6px;white-space:pre-line}
+  .guia details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;margin-bottom:10px;overflow:hidden}
+  .guia summary{cursor:pointer;list-style:none;padding:15px 18px;font-weight:700;color:var(--roxo);display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .guia summary::-webkit-details-marker{display:none}
+  .guia summary::after{content:"+";font-size:20px;color:var(--roxo2);font-weight:800}
+  .guia details[open] summary::after{content:"\\2013"}
+  .guia details[open] summary{border-bottom:1px solid var(--line)}
+  .guia details>div{padding:14px 18px;color:#3a2d4d;font-size:14.5px}
+  .guia .btn{width:100%;justify-content:center}
 </style>
 </head>
 <body>
@@ -310,8 +349,8 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
     <div class="avatar">${foto ? `<img src="${esc(foto)}" alt="${esc(s.nome)}">` : esc(iniciais)}</div>
     <div class="quem">
       <h1>${esc(s.nome)}</h1>
-      <p>${esc(prof.t)} · ${esc(s.cidade)}${s.creci ? ` · ${esc(prof.reg)} ${esc(s.creci)}` : ''}</p>
-      ${zonas.length || bairros.length || todasRegioes ? `<div class="atua">${todasRegioes ? '<b>Todas as regiões</b>' : ''}${zonas.map(z => `<b>${esc(z)}</b>`).join('')}${bairros.map(b => `<b>${esc(b)}</b>`).join('')}</div>` : ''}
+      <p>${esc(prof.t)} · ${esc(s.cidade)}${s.creci ? ` <span class="reg">${esc(prof.reg)} ${esc(s.creci)}</span>` : ''}</p>
+      ${cidades.length || zonas.length || bairros.length || todasRegioes ? `<div class="atua">${cidades.map(c => `<b class="cid">📍 ${esc(c)}</b>`).join('')}${todasRegioes ? '<b>Todas as regiões</b>' : ''}${zonas.map(z => `<b>${esc(z)}</b>`).join('')}${bairros.map(b => `<b>${esc(b)}</b>`).join('')}</div>` : ''}
     </div>
     <div class="acoes">
       ${wa ? `<a class="btn btn-wa" data-onde="PERFIL" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa} Falar no WhatsApp</a>` : ''}
@@ -326,11 +365,14 @@ ${capa ? `<div class="capa"><img src="${esc(capa)}" alt=""></div>`
   ${vagaHtml}
   <section>
     <h2>Imóveis</h2>
-    ${albuns.length ? `<div class="albuns">${albuns.map((a, i) => cardAlbum(a, fichas[i], i)).join('')}</div>`
+    ${albuns.length ? `${imMultiCidade ? `<div class="filtros" role="group" aria-label="Filtrar por cidade"><button type="button" class="on" data-fi="">Todas as cidades</button>${imCidades.map(c => `<button type="button" data-fi="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
+      <div class="albuns">${albuns.map((a, i) => `<div class="imv" data-cidade="${esc(imCidadeDe(a))}">${cardAlbum(a, { ...fichas[i], local: imMultiCidade ? imCidadeDe(a) : '' }, i)}</div>`).join('')}</div>
+      <div class="vazio" id="imVazio" style="display:none">Nenhum imóvel nesta cidade por enquanto.</div>`
       : rede.length ? `<div class="vazio">Veja abaixo os lançamentos em parceria${wa ? ` ou <a href="${esc(wa)}" target="_blank" rel="noopener"><b>fale pelo WhatsApp</b></a>` : ''}.</div>`
       : `<div class="vazio">Em breve, os imóveis de ${esc(primeiro)} aparecem aqui.${wa ? ` Enquanto isso, <a href="${esc(wa)}" target="_blank" rel="noopener"><b>fale pelo WhatsApp</b></a>.` : ''}</div>`}
   </section>
   ${redeHtml}
+  ${guiaHtml}
 </main>
 
 <footer>
@@ -388,6 +430,16 @@ ${wa ? `<a class="btn btn-wa fixo" data-onde="PERFIL" href="${esc(wa)}" target="
       el.classList.toggle('fora', !ok); if (ok) n++;
     });
     document.getElementById('rdVazio').style.display = n ? 'none' : '';
+  }; });
+  // Filtro dos imóveis do profissional por cidade.
+  var fib = document.querySelectorAll('.filtros [data-fi]');
+  [].forEach.call(fib, function(b){ b.onclick = function(){
+    [].forEach.call(fib, function(x){ x.classList.toggle('on', x === b); });
+    var v = b.getAttribute('data-fi'), n = 0;
+    [].forEach.call(document.querySelectorAll('.imv'), function(el){
+      var ok = !v || el.getAttribute('data-cidade') === v; el.classList.toggle('fora', !ok); if (ok) n++;
+    });
+    var z = document.getElementById('imVazio'); if (z) z.style.display = n ? 'none' : '';
   }; });
   // Cada clique no WhatsApp: conta no admin e aparece no /painel → Leads (/api/site-clique).
   var sid = ''; try { sid = sessionStorage.getItem('rh_sid') || Math.random().toString(36).slice(2, 12); sessionStorage.setItem('rh_sid', sid); } catch (e) {}
