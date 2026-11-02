@@ -403,7 +403,10 @@
       '<div class="fotos">' + (a.fotos || []).map(function(f, k){
         return '<div class="foto"><img src="' + esc(f) + '" alt="" loading="lazy">' + (k === 0 ? '<span class="tag">Capa</span>' : '') +
           (leg[k] ? '<span class="leg">' + esc(leg[k]) + '</span>' : '') +
-          '<div class="acts"><button type="button" data-leg="' + k + '" title="Legenda da foto">✎</button>' + (k > 0 ? '<button type="button" data-capa="' + k + '" title="Usar como capa">★</button>' : '') +
+          '<div class="acts"><button type="button" data-leg="' + k + '" title="Legenda da foto">✎</button>' +
+          (k > 0 ? '<button type="button" data-mesq="' + k + '" title="Mover para trás">◀</button>' : '') +
+          (k < (a.fotos.length - 1) ? '<button type="button" data-mdir="' + k + '" title="Mover para a frente">▶</button>' : '') +
+          (k > 0 ? '<button type="button" data-capa="' + k + '" title="Usar como capa">★</button>' : '') +
           '<button type="button" data-tirar="' + k + '" title="Tirar foto">✕</button></div></div>';
       }).join('') +
       ((a.fotos || []).length < 30 ? '<div class="add aAdd">＋ Fotos</div>' : '') + '</div></div>';
@@ -529,6 +532,11 @@
       var legs = function(){ a.legendas = (a.legendas || []).slice(0, a.fotos.length); while (a.legendas.length < a.fotos.length) a.legendas.push(''); return a.legendas; };
       el.querySelectorAll('[data-tirar]').forEach(function(b){ b.onclick = function(){ lerCampos(); var k = +b.dataset.tirar; legs().splice(k, 1); a.fotos.splice(k, 1); marcaSujo(); render(); }; });
       el.querySelectorAll('[data-capa]').forEach(function(b){ b.onclick = function(){ lerCampos(); var k = +b.dataset.capa; var l = legs().splice(k, 1)[0]; a.legendas.unshift(l); var f = a.fotos.splice(k, 1)[0]; a.fotos.unshift(f); marcaSujo(); render(); }; });
+      // Reordenar: troca a foto com a vizinha (a legenda vai junto).
+      var mover = function(k, dir){ lerCampos(); var j = k + dir, L = legs(); if (j < 0 || j >= a.fotos.length) return;
+        var f = a.fotos[k]; a.fotos[k] = a.fotos[j]; a.fotos[j] = f; var l = L[k]; L[k] = L[j]; L[j] = l; marcaSujo(); render(); };
+      el.querySelectorAll('[data-mesq]').forEach(function(b){ b.onclick = function(){ mover(+b.dataset.mesq, -1); }; });
+      el.querySelectorAll('[data-mdir]').forEach(function(b){ b.onclick = function(){ mover(+b.dataset.mdir, 1); }; });
       el.querySelectorAll('[data-leg]').forEach(function(b){ b.onclick = function(){
         lerCampos(); var k = +b.dataset.leg, l = legs();
         var t = prompt('Legenda desta foto (ex.: Sala integrada, Suíte com closet):', l[k] || '');
