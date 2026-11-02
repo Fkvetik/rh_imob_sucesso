@@ -155,6 +155,11 @@
   .ensina-passos{margin:0 0 14px;padding-left:22px}
   .ensina-passos li{margin:8px 0;font-size:16px;font-weight:600;line-height:1.45}
   .ensina .btn{width:100%}
+  .teclado{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .teclado button{width:34px;height:42px;border:1px solid var(--line);background:#fbfdff;border-radius:9px;font-weight:800;font-family:var(--disp);font-size:16px;color:var(--ink);cursor:pointer}
+  .teclado button:disabled{cursor:default}
+  .teclado button.ok{background:#e7f9f0;border-color:var(--ok);color:#0d7a4f}
+  .teclado button.no{background:#fdecef;border-color:var(--no);color:#b42640;opacity:.7}
   :focus-visible{outline:3px solid #8fb4ff;outline-offset:2px}
   @media (prefers-reduced-motion: reduce){.pop{animation:none;display:none}.btn:active,.op:active{transform:none}.op.ok.piscar{animation:none}}
 </style>
@@ -222,6 +227,10 @@
     <div class="linha">
       <button class="btn star sm" id="btnRanking">🏅 Ranking</button>
       <button class="btn ghost sm" id="btnPais">👨‍👩‍👧 Área dos pais</button>
+    </div>
+    <div class="linha">
+      <button class="btn grape sm" id="btnSabia">💡 Você Sabia?</button>
+      <button class="btn teal sm" id="btnForca">🔤 Jogo de Palavras</button>
     </div>
     <div class="rodape">Protótipo da Escola do Léo • você pode trocar o nome depois</div>
   </section>
@@ -291,6 +300,35 @@
     </div>
   </section>
 
+  <section id="telaSabia" hidden>
+    <div class="mini">
+      <button class="back" id="sabiaBack">← Voltar</button>
+      <div style="font-weight:800;font-family:var(--disp)">💡 Você Sabia?</div>
+      <span style="width:40px"></span>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:42px">💡</div>
+      <div id="sabiaTexto" style="font-size:18px;font-weight:700;line-height:1.5;margin:10px 4px 2px;color:#3a2d4d"></div>
+    </div>
+    <button class="btn teal" id="sabiaProx" style="margin-top:12px">Próxima curiosidade →</button>
+    <button class="btn ghost sm" id="sabiaOuvir" style="margin-top:8px">🔊 Ouvir de novo</button>
+  </section>
+
+  <section id="telaForca" hidden>
+    <div class="mini">
+      <button class="back" id="forcaBack">← Voltar</button>
+      <div style="font-weight:800;font-family:var(--disp)">🔤 Jogo de Palavras</div>
+      <div id="forcaVidas" style="font-size:14px"></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div id="forcaDica" style="font-weight:700;color:var(--muold);margin-bottom:10px"></div>
+      <div id="forcaPalavra" style="font-family:var(--disp);font-size:30px;letter-spacing:6px;margin:6px 0 12px;min-height:36px"></div>
+      <div id="forcaMsg" style="font-weight:800;min-height:22px;margin-bottom:10px"></div>
+      <div id="forcaTeclado" class="teclado"></div>
+      <button class="btn teal" id="forcaNova" style="margin-top:14px" hidden>Nova palavra →</button>
+    </div>
+  </section>
+
   <div id="ensina" class="ensina" hidden>
     <div class="ensina-box">
       <div class="ensina-top">🦉 Léo vai te ensinar</div>
@@ -306,7 +344,7 @@
 (function(){
   "use strict";
   var $=function(id){return document.getElementById(id)};
-  var telas=["telaEntrada","telaHome","telaJogo","telaFim","telaRanking","telaPais"];
+  var telas=["telaEntrada","telaHome","telaJogo","telaFim","telaRanking","telaPais","telaSabia","telaForca"];
   function mostrar(t){telas.forEach(function(x){$(x).hidden=(x!==t)});window.scrollTo(0,0);}
 
   // ---------- estado ----------
@@ -320,7 +358,10 @@
     multiplicacao:"Começo fácil: 2 × 3 é 2 grupinhos de 3, que dá 6. Agora com calma no seu.",
     divisao:"Pense fácil: 6 ÷ 2 é repartir 6 em 2 grupos — fica 3 em cada. É a mesma ideia.",
     problema:"Leia bem devagar e pense: a história pede para juntar, tirar, multiplicar ou repartir?",
-    matem:"Vamos com muita calma, um passinho de cada vez."
+    matem:"Vai com calma, um passo de cada vez: identifique o que a questão pede e isole o que você procura.",
+    portem:"Leia a frase devagar. Pergunte: quem faz a ação? qual é o verbo? Elimine as alternativas que não encaixam.",
+    quimica:"Lembre do básico: cada elemento tem um símbolo e a fórmula diz quantos átomos de cada. Vá por partes.",
+    geral:"Pense no que já ouviu sobre o tema e elimine as opções que você tem certeza que estão erradas."
   };
   var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"Natureza e Mundo",matem:"Matemática",portem:"Português",quimica:"Química",geral:"Mundo e Conhecimentos"};
   var DISC={
@@ -870,6 +911,76 @@
     $("ensina").hidden=false;
     falar("Vamos pensar juntos. "+passos.join(". "));
   }
+  // ---------- 💡 Você Sabia? (curiosidades reais, para navegar) ----------
+  var SABIA=[
+    "O país com mais gente no mundo é a Índia, com mais de 1 bilhão de pessoas!",
+    "A Rússia é o maior país do mundo em tamanho de terra.",
+    "O menor país do mundo é o Vaticano — cabe dentro de uma cidade.",
+    "A girafa é o animal mais alto do mundo: pode passar de 5 metros!",
+    "A baleia-azul é o maior animal do planeta, maior que um ônibus.",
+    "O guepardo é o animal terrestre mais rápido: corre como um carro na estrada.",
+    "O oceano Pacífico é o maior oceano do mundo.",
+    "A Amazônia, no Brasil, é a maior floresta tropical do planeta.",
+    "No espaço não há ar, por isso na Lua não dá para ouvir nenhum som.",
+    "O Sol é tão grande que caberiam mais de um milhão de Terras dentro dele.",
+    "Os pinguins vivem no frio do polo Sul, e não no polo Norte.",
+    "O chocolate vem do cacau, que é o fruto de uma árvore.",
+    "As abelhas 'conversam' dançando para mostrar onde estão as flores.",
+    "O coração do beija-flor bate centenas de vezes por minuto.",
+    "O Monte Everest é a montanha mais alta do mundo.",
+    "Os tubarões existem na Terra há mais tempo do que as árvores!",
+    "A lâmpada elétrica foi popularizada por Thomas Edison.",
+    "O telefone é atribuído a Alexander Graham Bell.",
+    "O brasileiro Santos Dumont foi um dos pioneiros do avião.",
+    "A água vira gelo a 0 grau e ferve a 100 graus.",
+    "O polvo tem três corações e sangue azulado.",
+    "A formiga consegue carregar muito mais que o próprio peso.",
+    "O Japão é formado por milhares de ilhas.",
+    "Há mais estrelas no céu do que grãos de areia em muitas praias."
+  ];
+  var sabiaIdx=-1;
+  function abrirSabia(){mostrar("telaSabia");proxSabia();}
+  function proxSabia(){var i;do{i=Math.floor(Math.random()*SABIA.length);}while(SABIA.length>1&&i===sabiaIdx);sabiaIdx=i;$("sabiaTexto").textContent=SABIA[i];leo("Você sabia? 💡",false);falar("Você sabia? "+SABIA[i]);}
+
+  // ---------- 🔤 Jogo de Palavras (forca) ----------
+  var FORCA=[
+    {w:"GIRAFA",d:"Animal de pescoço bem comprido"},{w:"BANANA",d:"Fruta amarela que o macaco adora"},
+    {w:"ESCOLA",d:"Lugar onde a gente aprende"},{w:"CAVALO",d:"Animal que corre e a gente monta"},
+    {w:"BORBOLETA",d:"Era lagarta e virou um bicho que voa"},{w:"ELEFANTE",d:"Animal grande, de tromba"},
+    {w:"CACHORRO",d:"O melhor amigo do homem, faz au-au"},{w:"ABELHA",d:"Inseto que faz mel"},
+    {w:"LARANJA",d:"É fruta e é cor ao mesmo tempo"},{w:"MELANCIA",d:"Verde por fora, vermelha por dentro"},
+    {w:"FOGUETE",d:"Sobe para o espaço"},{w:"TARTARUGA",d:"Anda devagar e tem casco"},
+    {w:"PINGUIM",d:"Ave que vive no gelo e não voa"},{w:"CASTELO",d:"Onde moravam reis e rainhas"},
+    {w:"SORVETE",d:"Gelado e doce, bom no calor"},{w:"FUTEBOL",d:"Esporte com bola e gol"},
+    {w:"FLORESTA",d:"Muitas árvores juntas"},{w:"MACACO",d:"Sobe em árvore e adora banana"},
+    {w:"CENOURA",d:"Legume laranja que o coelho gosta"},{w:"BALEIA",d:"O maior animal do mar"},
+    {w:"PIPOCA",d:"Estoura e a gente come no cinema"},{w:"JANELA",d:"Abrimos para o ar entrar"},
+    {w:"GUITARRA",d:"Instrumento de música com cordas"},{w:"DINOSSAURO",d:"Animal gigante de milhões de anos atrás"}
+  ];
+  var fcPalavra="",fcDica="",fcAcertos={},fcErradas={},fcVidas=6,fcFim=false;
+  function iniciarForca(){var it=FORCA[Math.floor(Math.random()*FORCA.length)];fcPalavra=it.w;fcDica=it.d;fcAcertos={};fcErradas={};fcVidas=6;fcFim=false;mostrar("telaForca");$("forcaMsg").textContent="";$("forcaNova").hidden=true;renderForca();leo("Adivinha a palavra! 🔤",false);falar("Jogo de palavras. Dica: "+fcDica);}
+  function renderForca(){
+    $("forcaDica").textContent="Dica: "+fcDica;
+    $("forcaVidas").textContent="❤️".repeat(Math.max(0,fcVidas))+"🖤".repeat(6-Math.max(0,fcVidas));
+    $("forcaPalavra").textContent=fcPalavra.split("").map(function(l){return fcAcertos[l]?l:"_";}).join(" ");
+    var tecl=$("forcaTeclado");tecl.innerHTML="";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(function(l){
+      var b=document.createElement("button");b.type="button";b.textContent=l;
+      b.className=fcAcertos[l]?"ok":(fcErradas[l]?"no":"");
+      b.disabled=!!(fcAcertos[l]||fcErradas[l]||fcFim);
+      b.onclick=function(){tentarLetra(l);};tecl.appendChild(b);
+    });
+  }
+  function tentarLetra(l){
+    if(fcFim||fcAcertos[l]||fcErradas[l])return;
+    if(fcPalavra.indexOf(l)>=0){fcAcertos[l]=true;beep(660,.1);}else{fcErradas[l]=true;fcVidas--;beep(200,.2,"triangle");}
+    var ganhou=fcPalavra.split("").every(function(x){return fcAcertos[x];}),perdeu=fcVidas<=0;
+    if(ganhou||perdeu)fcFim=true;
+    renderForca();
+    if(ganhou){$("forcaMsg").innerHTML="🎉 Acertou! A palavra era <b>"+fcPalavra+"</b>.";P.estrelas+=2;P.pontos+=15;salvar();leo("Isso! Mandou bem! 🎉");falar("Parabéns! A palavra era "+fcPalavra+".");$("forcaNova").hidden=false;}
+    else if(perdeu){$("forcaMsg").innerHTML="Dessa vez não — a palavra era <b>"+fcPalavra+"</b>.";leo("Quase! Bora tentar outra 😊");falar("A palavra era "+fcPalavra+".");$("forcaNova").hidden=false;}
+  }
+
   function esc(s){var d=document.createElement("div");d.textContent=(s==null?"":String(s));return d.innerHTML;}
   function escolher(a){return a[Math.floor(Math.random()*a.length)];}
 
@@ -905,6 +1016,13 @@
   $("rkFiltro").addEventListener("click",function(){rkPorTurma=!rkPorTurma;renderRanking();});
   $("btnPais").addEventListener("click",abrirPais);
   $("paisBack").addEventListener("click",irHome);
+  $("btnSabia").addEventListener("click",abrirSabia);
+  $("sabiaProx").addEventListener("click",proxSabia);
+  $("sabiaOuvir").addEventListener("click",function(){if(SABIA[sabiaIdx])falar(SABIA[sabiaIdx]);});
+  $("sabiaBack").addEventListener("click",irHome);
+  $("btnForca").addEventListener("click",iniciarForca);
+  $("forcaNova").addEventListener("click",iniciarForca);
+  $("forcaBack").addEventListener("click",irHome);
   $("btnOuvir").addEventListener("click",lerPergunta);
   $("btnAjuda").addEventListener("click",function(){abrirEnsina(qAtual());});
   $("ensinaOk").addEventListener("click",function(){$("ensina").hidden=true;if(window.speechSynthesis)speechSynthesis.cancel();});
