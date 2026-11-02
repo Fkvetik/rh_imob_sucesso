@@ -360,7 +360,7 @@
 
   // ---------- estado ----------
   var AVATARES=["🦁","🐯","🐼","🐸","🦄","🐱","🐶","🦊","🐨","🐵","🐰","🐧"];
-  var SERIES=["1º","2º","3º","4º","5º","1ª EM","2ª EM","3ª EM","PV"]; // Fundamental + Ensino Médio + Pré-vestibular
+  var SERIES=["1º","2º","3º","4º","5º","6º","7º","8º","9º","1ª EM","2ª EM","3ª EM","PV"]; // Fundamental (1-9) + Ensino Médio + Pré-vestibular
   function ehMedio(){return /EM/.test(P.serie)||P.serie==="PV";}
   // Passo inicial mais suave, mostrado no "me ensina" quando a criança está com dificuldade na habilidade.
   var DICA_SUAVE={
@@ -635,7 +635,13 @@
     {id:"h27",enun:"Quem pintou a Mona Lisa?",ops:["Leonardo da Vinci","Pablo Picasso","Van Gogh","Portinari"],c:0,ex:"Leonardo da Vinci pintou a Mona Lisa.",passos:["Leonardo da Vinci pintou a Mona Lisa há mais de 500 anos.","Ele também foi inventor e cientista."]},
     {id:"h28",enun:"Qual frase está escrita na bandeira do Brasil?",ops:["Ordem e Progresso","Pátria Amada","Deus e Brasil","Verde e Amarelo"],c:0,ex:"Na bandeira se lê Ordem e Progresso.",passos:["No meio da bandeira do Brasil está escrito Ordem e Progresso.","As estrelas representam o céu da Proclamação da República."]},
     {id:"h29",enun:"Qual continente é coberto de gelo e quase sem gente?",ops:["Antártida","África","Europa","Oceania"],c:0,ex:"A Antártida é coberta de gelo.",passos:["A Antártida fica no polo Sul.","É o lugar mais frio da Terra, todo coberto de gelo."]},
-    {id:"h30",enun:"Quantos continentes costumamos contar no mundo?",ops:["6","2","9","20"],c:0,ex:"Costumamos contar 6 continentes.",passos:["Normalmente contamos 6 continentes.","São: América, Europa, Ásia, África, Oceania e Antártida."]}
+    {id:"h30",enun:"Quantos continentes costumamos contar no mundo?",ops:["6","2","9","20"],c:0,ex:"Costumamos contar 6 continentes.",passos:["Normalmente contamos 6 continentes.","São: América, Europa, Ásia, África, Oceania e Antártida."]},
+    {id:"h31",n:2,enun:"Qual é o maior país do mundo em área?",ops:["Rússia","Canadá","China","Brasil"],c:0,ex:"Rússia.",passos:["A Rússia ocupa parte da Europa e da Ásia.","É o maior país do mundo em território."]},
+    {id:"h32",n:2,enun:"Qual país tem a maior população do mundo hoje?",ops:["Índia","China","Estados Unidos","Indonésia"],c:0,ex:"Índia.",passos:["A Índia ultrapassou a China.","Tem mais de 1,4 bilhão de pessoas."]},
+    {id:"h33",n:2,enun:"Em qual continente fica o deserto do Saara?",ops:["África","Ásia","Oceania","Europa"],c:0,ex:"África.",passos:["O Saara fica no norte da África.","É o maior deserto quente do mundo."]},
+    {id:"h34",n:3,enun:"Qual povo criou a escrita na Mesopotâmia, há milhares de anos?",ops:["Sumérios","Maias","Astecas","Vikings"],c:0,ex:"Os sumérios.",passos:["Na Mesopotâmia, entre os rios Tigre e Eufrates...","Os sumérios criaram a escrita cuneiforme."]},
+    {id:"h35",n:3,enun:"A Revolução Industrial começou, no século 18, em qual país?",ops:["Inglaterra","França","Alemanha","Japão"],c:0,ex:"Inglaterra.",passos:["As primeiras fábricas e máquinas a vapor surgiram na Inglaterra.","Depois a indústria se espalhou pelo mundo."]},
+    {id:"h36",n:3,enun:"Quem propôs a teoria da evolução das espécies?",ops:["Charles Darwin","Isaac Newton","Albert Einstein","Galileu"],c:0,ex:"Charles Darwin.",passos:["Darwin viajou o mundo observando animais e plantas.","Ele explicou como as espécies mudam ao longo do tempo."]}
   ];
   // Natureza & Mundo — versão infantil (Fundamental): animais, frutas, plantas, natureza
   var HIST_KIDS=[
@@ -681,7 +687,13 @@
     {id:"m10",enun:"Resolva: x/5 = 20. Quanto vale x?",ops:["100","25","4","15"],c:0,ex:"x = 100.",passos:["Multiplique os dois lados por 5.","x = 20 × 5 = 100."]},
     {id:"m11",enun:"Qual a média de 6, 8 e 10?",ops:["8","7","9","24"],c:0,ex:"Média = 8.",passos:["Some tudo: 6 + 8 + 10 = 24.","Divida pela quantidade (3): 24 ÷ 3 = 8."]},
     {id:"m12",enun:"Quanto é 10% de 2500?",ops:["250","25","2500","2,5"],c:0,ex:"250.",passos:["10% é o mesmo que dividir por 10.","2500 ÷ 10 = 250."]},
-    {id:"m13",enun:"Transforme 0,5 em fração.",ops:["1/2","1/5","1/10","2/1"],c:0,ex:"0,5 = 1/2.",passos:["0,5 é o mesmo que 5/10.","Simplificando por 5: 1/2."]}
+    {id:"m13",enun:"Transforme 0,5 em fração.",ops:["1/2","1/5","1/10","2/1"],c:0,ex:"0,5 = 1/2.",passos:["0,5 é o mesmo que 5/10.","Simplificando por 5: 1/2."]},
+    {id:"m14",n:2,enun:"Resolva: 3x − 5 = 16. Quanto vale x?",ops:["7","5","11","3"],c:0,ex:"x = 7.",passos:["Passe o 5 somando: 3x = 16 + 5 = 21.","x = 21 ÷ 3 = 7."]},
+    {id:"m15",n:2,enun:"Quanto é 15% de 200?",ops:["30","15","45","20"],c:0,ex:"30.",passos:["15% = 0,15.","0,15 × 200 = 30."]},
+    {id:"m16",n:2,enun:"Qual a área de um triângulo de base 6 e altura 4?",ops:["12","24","10","20"],c:0,ex:"12.",passos:["Área do triângulo = base × altura ÷ 2.","6 × 4 ÷ 2 = 12."]},
+    {id:"m17",n:3,enun:"Se x² = 49, qual é o valor positivo de x?",ops:["7","8","6","14"],c:0,ex:"x = 7.",passos:["x é a raiz quadrada de 49.","√49 = 7."]},
+    {id:"m18",n:3,enun:"Qual o valor de 2⁵?",ops:["32","25","10","16"],c:0,ex:"32.",passos:["2⁵ = 2×2×2×2×2.","= 32."]},
+    {id:"m19",n:3,enun:"Se f(x) = 2x + 1, quanto é f(3)?",ops:["7","6","5","9"],c:0,ex:"f(3) = 7.",passos:["Troque x por 3.","2 × 3 + 1 = 7."]}
   ];
   var BANK_PORTEM=[
     {id:"pe1",enun:"'Ela chorou rios de lágrimas.' Qual figura de linguagem?",ops:["Hipérbole","Metáfora","Ironia","Eufemismo"],c:0,ex:"Hipérbole (exagero).",passos:["Hipérbole é um exagero proposital.","'Rios de lágrimas' exagera o quanto ela chorou."]},
@@ -695,7 +707,11 @@
     {id:"pe9",enun:"'O silêncio gritava' é exemplo de:",ops:["Paradoxo","Pleonasmo","Metonímia","Hipérbato"],c:0,ex:"Paradoxo.",passos:["Paradoxo une ideias que se contradizem.","Silêncio não grita: é uma contradição proposital."]},
     {id:"pe10",enun:"Qual é o plural de 'cidadão'?",ops:["cidadãos","cidadões","cidadans","cidadãoes"],c:0,ex:"Cidadãos.",passos:["Alguns nomes em -ão fazem plural em -ãos.","O plural de cidadão é cidadãos."]},
     {id:"pe11",enun:"Em 'Comprei frutas: maçã, pera e uva', os dois-pontos servem para:",ops:["Introduzir uma enumeração","Fazer uma pergunta","Indicar uma fala","Terminar a frase"],c:0,ex:"Introduzir uma enumeração.",passos:["Os dois-pontos anunciam uma lista ou explicação.","Aqui, anunciam a lista de frutas."]},
-    {id:"pe12",enun:"'Li Machado de Assis' (a obra dele). Isso é:",ops:["Metonímia","Hipérbole","Eufemismo","Pleonasmo"],c:0,ex:"Metonímia.",passos:["Metonímia troca uma coisa por outra ligada a ela.","Usar o autor no lugar da obra é metonímia."]}
+    {id:"pe12",enun:"'Li Machado de Assis' (a obra dele). Isso é:",ops:["Metonímia","Hipérbole","Eufemismo","Pleonasmo"],c:0,ex:"Metonímia.",passos:["Metonímia troca uma coisa por outra ligada a ela.","Usar o autor no lugar da obra é metonímia."]},
+    {id:"pe13",n:2,enun:"A expressão 'calcanhar de Aquiles' quer dizer:",ops:["O ponto fraco de alguém","Um pé machucado","Um grande herói","Uma longa viagem"],c:0,ex:"Ponto fraco.",passos:["Vem da mitologia grega: Aquiles só podia ser ferido no calcanhar.","Virou expressão para 'ponto fraco'."]},
+    {id:"pe14",n:2,enun:"Em 'João, venha aqui!', a vírgula serve para:",ops:["Separar o vocativo (quem é chamado)","Terminar a frase","Fazer uma pergunta","Ligar dois números"],c:0,ex:"Separa o vocativo.",passos:["Vocativo é quem a gente chama na frase.","A vírgula separa esse chamado: João, ..."]},
+    {id:"pe15",n:3,enun:"Em 'Choveu a noite toda', o sujeito é:",ops:["Inexistente (oração sem sujeito)","Choveu","A noite","Toda"],c:0,ex:"Oração sem sujeito.",passos:["Verbos de fenômenos da natureza (chover, nevar) não têm sujeito.","É uma oração sem sujeito."]},
+    {id:"pe16",n:3,enun:"'Vossa Excelência' é um pronome de:",ops:["Tratamento","Posse","Pergunta","Lugar"],c:0,ex:"Tratamento.",passos:["Pronomes de tratamento são formas respeitosas de falar com alguém.","Ex.: Vossa Excelência, Senhor, Vossa Senhoria."]}
   ];
   var BANK_QUIM=[
     {id:"qu1",enun:"Qual é o símbolo químico do Oxigênio?",ops:["O","Ox","Og","Oi"],c:0,ex:"Oxigênio = O.",passos:["Cada elemento tem um símbolo na tabela periódica.","O oxigênio é representado por O."]},
@@ -709,12 +725,21 @@
     {id:"qu9",enun:"A passagem de líquido para gás chama-se:",ops:["Vaporização","Fusão","Solidificação","Condensação"],c:0,ex:"Vaporização.",passos:["Líquido → gás é vaporização (água fervendo).","Gás → líquido é condensação."]},
     {id:"qu10",enun:"A passagem de sólido para líquido chama-se:",ops:["Fusão","Vaporização","Sublimação","Condensação"],c:0,ex:"Fusão.",passos:["Sólido → líquido é fusão (gelo derretendo).","Líquido → sólido é solidificação."]},
     {id:"qu11",enun:"Qual é o símbolo do Hidrogênio?",ops:["H","Hg","He","Hi"],c:0,ex:"Hidrogênio = H.",passos:["Hidrogênio é o elemento mais leve.","Símbolo H (Hg é mercúrio, He é hélio)."]},
-    {id:"qu12",enun:"Na fotossíntese, as plantas liberam qual gás?",ops:["Oxigênio","Gás carbônico","Nitrogênio","Hidrogênio"],c:0,ex:"Oxigênio.",passos:["As plantas absorvem gás carbônico e luz.","E liberam oxigênio, que a gente respira."]}
+    {id:"qu12",enun:"Na fotossíntese, as plantas liberam qual gás?",ops:["Oxigênio","Gás carbônico","Nitrogênio","Hidrogênio"],c:0,ex:"Oxigênio.",passos:["As plantas absorvem gás carbônico e luz.","E liberam oxigênio, que a gente respira."]},
+    {id:"qu13",n:2,enun:"Qual é a fórmula do gás oxigênio que respiramos?",ops:["O2","O","CO2","H2O"],c:0,ex:"O2.",passos:["O oxigênio do ar vem em pares de átomos.","Por isso a fórmula é O2."]},
+    {id:"qu14",n:2,enun:"Quantos átomos de hidrogênio há na água (H2O)?",ops:["2","1","3","0"],c:0,ex:"2 átomos.",passos:["O número 2 na frente do H indica 2 hidrogênios.","E 1 oxigênio."]},
+    {id:"qu15",n:3,enun:"O número de massa de um átomo é a soma de:",ops:["Prótons e nêutrons","Prótons e elétrons","Só elétrons","Só nêutrons"],c:0,ex:"Prótons + nêutrons.",passos:["Prótons e nêutrons ficam no núcleo do átomo.","A soma deles é o número de massa."]},
+    {id:"qu16",n:3,enun:"Que tipo de ligação une os átomos na molécula de água?",ops:["Covalente","Iônica","Metálica","Nuclear"],c:0,ex:"Covalente.",passos:["Na água, os átomos compartilham elétrons.","Esse compartilhamento é a ligação covalente."]}
   ];
+  // Tier de dificuldade pela leitura do grau do aluno (1 fácil, 2 médio, 3 avançado).
+  function tierDe(sk){var n=nivelDe(sk);return n<=2?1:(n<=4?2:3);}
   function genBank(bank,skill){
     usados[skill]=usados[skill]||{};
-    var livres=bank.filter(function(q){return !usados[skill][q.id];});
-    if(!livres.length){usados[skill]={};livres=bank;}
+    var tier=tierDe(skill);
+    var pool=bank.filter(function(q){return (q.n||1)<=tier;});
+    if(!pool.length)pool=bank;
+    var livres=pool.filter(function(q){return !usados[skill][q.id];});
+    if(!livres.length){usados[skill]={};livres=pool;}
     var q=livres[Math.floor(Math.random()*livres.length)];
     usados[skill][q.id]=1;
     var ops=emb(q.ops.map(function(t,i){return{t:t,ok:i===q.c};}));
@@ -801,15 +826,16 @@
     if(!faseRec){
       if(certo){
         P.errseq[q.skill]=0;
-        if(ehMat){P.acel[q.skill]=(dt<7000?(P.acel[q.skill]||0)+1:0);
-          if((P.acel[q.skill]||0)>=5&&(P.nivel[q.skill]||1)<12){P.nivel[q.skill]=(P.nivel[q.skill]||1)+1;P.acel[q.skill]=0;
-            fb.innerHTML+='<br>🔼 Boa! Um pouquinho mais de desafio em '+esc(SKILL_NOME[q.skill])+'.';}}
+        var rapido=ehMat?(dt<7000):true; // na Matemática conta a rapidez; nas outras, dominar o assunto
+        P.acel[q.skill]=(rapido?(P.acel[q.skill]||0)+1:0);
+        if((P.acel[q.skill]||0)>=5&&(P.nivel[q.skill]||1)<12){P.nivel[q.skill]=(P.nivel[q.skill]||1)+1;P.acel[q.skill]=0;
+          fb.innerHTML+='<br>🔼 Boa! Vou trazer coisas um pouquinho mais puxadas.';}
       }else{
-        P.errseq[q.skill]=(P.errseq[q.skill]||0)+1;
-        if(ehMat){P.acel[q.skill]=0;
-          if((P.errseq[q.skill]||0)>=2&&(P.nivel[q.skill]||1)>1){P.nivel[q.skill]=(P.nivel[q.skill]||1)-1;P.errseq[q.skill]=0;
-            fb.innerHTML+='<br>🔽 Sem pressa — vou voltar um pouquinho e ir mais devagar.';}}
-        if((P.errseq[q.skill]||0)>=2){fb.innerHTML+='<br>💡 Toque em <b>🤔 me ensina</b> pra ver o passo a passo com calma.';}
+        P.acel[q.skill]=0;P.errseq[q.skill]=(P.errseq[q.skill]||0)+1;
+        var muitos=(P.errseq[q.skill]||0)>=2;
+        if(muitos&&(P.nivel[q.skill]||1)>1){P.nivel[q.skill]=(P.nivel[q.skill]||1)-1;P.errseq[q.skill]=0;
+          fb.innerHTML+='<br>🔽 Sem pressa — vou ajustar pro seu ritmo e ir mais devagar.';}
+        if(muitos){fb.innerHTML+='<br>💡 Toque em <b>🤔 me ensina</b> pra ver o passo a passo com calma.';}
       }
     }
     salvar();
@@ -964,7 +990,11 @@
     {f:"Você sabia que Pelé é considerado um dos maiores jogadores de futebol de todos os tempos?",ensina:"Ele foi tricampeão mundial com a seleção brasileira.",q:"Em qual esporte Pelé brilhou?",ops:["Futebol","Vôlei","Natação","Tênis"],c:0,ex:"Isso! No futebol."},
     {f:"Você sabia que Ayrton Senna foi um piloto brasileiro campeão de Fórmula 1?",ensina:"Ele foi três vezes campeão mundial e é um ídolo no Brasil.",q:"Em que esporte Ayrton Senna foi campeão?",ops:["Fórmula 1 (corrida de carros)","Futebol","Boxe","Surfe"],c:0,ex:"Isso! Fórmula 1."},
     {f:"Você sabia que Albert Einstein foi um dos cientistas mais famosos do mundo?",ensina:"Ele criou ideias importantes sobre o tempo, o espaço e a luz.",q:"Einstein ficou famoso por ser um grande...",ops:["Cientista","Pintor","Cantor","Cozinheiro"],c:0,ex:"Isso! Um grande cientista (físico)."},
-    {f:"Você sabia que a Torre Eiffel fica em Paris, na França?",ensina:"Foi construída em 1889 e virou um dos cartões-postais mais famosos do mundo.",q:"Em qual cidade fica a Torre Eiffel?",ops:["Paris","Londres","Roma","Nova York"],c:0,ex:"Isso! Em Paris."}
+    {f:"Você sabia que a Torre Eiffel fica em Paris, na França?",ensina:"Foi construída em 1889 e virou um dos cartões-postais mais famosos do mundo.",q:"Em qual cidade fica a Torre Eiffel?",ops:["Paris","Londres","Roma","Nova York"],c:0,ex:"Isso! Em Paris."},
+    {f:"Você sabia que a Grande Muralha da China é uma das maiores construções já feitas pelo ser humano?",ensina:"Ela tem milhares de quilômetros e foi feita para defender o país.",q:"Em qual país fica a Grande Muralha?",ops:["China","Japão","Índia","Egito"],c:0,ex:"Isso! Na China."},
+    {f:"Você sabia que a pizza surgiu na Itália?",ensina:"A pizza ficou famosa em Nápoles, na Itália, e se espalhou pelo mundo.",q:"Em qual país surgiu a pizza?",ops:["Itália","Brasil","França","Estados Unidos"],c:0,ex:"Isso! Na Itália."},
+    {f:"Você sabia que a Austrália é, ao mesmo tempo, um país e um continente?",ensina:"Lá vivem animais únicos, como o canguru e o coala.",q:"O canguru é típico de qual país?",ops:["Austrália","Canadá","Rússia","Brasil"],c:0,ex:"Isso! Da Austrália."},
+    {f:"Você sabia que o oceano Pacífico é o maior oceano do planeta?",ensina:"Ele é tão grande que caberiam todos os continentes dentro dele.",q:"Qual é o maior oceano do mundo?",ops:["Pacífico","Atlântico","Índico","Ártico"],c:0,ex:"Isso! O Pacífico."}
   ];
   var sabiaIdx=-1,sabiaCur=null,sabiaFase="fato",sabiaCorreta=0;
   function abrirSabia(){mostrar("telaSabia");novaCuriosidade();}
