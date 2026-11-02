@@ -3601,3 +3601,73 @@ $("lkLista")?.addEventListener("click", async (e) => {
     if (r && r.ok) loadLinks(); else alert("Não apagou.");
   }
 });
+
+// ===== 🏢 Visão por empresa =====
+// Agrupa, por conta_id, os usuários das três bases já carregadas:
+// operadores da extensão, usuários da plataforma NT e do Banco de Corretores.
+// Não busca nada novo no servidor — reaproveita os caches das outras abas.
+function nomeEmpresa_(id) {
+  if (!id) return "Sem empresa (RH IMOB / avulsos)";
+  const a = CONTAS_CACHE.find(x => x.conta_id === id);
+  if (a) return a.nome_conta || id;
+  const b = CONTAS_RHI_CACHE.find(x => x.id === id);
+  if (b) return b.nome_empresa || id;
+  return id;
+}
+function renderPorEmpresa() {
+  const box = document.getElementById("listaPorEmpresa");
+  if (!box) return;
+  const grupos = {};
+  const g = (id) => (grupos[id = id || ""] = grupos[id] || { operadores: [], plataforma: [], corretores: [] });
+  (USUARIOS_COLETOR_CACHE || []).forEach(u => g(u.conta_id_plataforma).operadores.push(u));
+  (USUARIOS_PLAT_CACHE || []).forEach(u => g(u.conta_id).plataforma.push(u));
+  (USUARIOS_RHI_CACHE || []).forEach(u => g(u.conta_id).corretores.push(u));
+
+  const q = (document.getElementById("empBusca")?.value || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  let ids = Object.keys(grupos).sort((a, b) => nomeEmpresa_(a).localeCompare(nomeEmpresa_(b), "pt-BR"));
+  if (q) ids = ids.filter(id => nomeEmpresa_(id).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(q));
+  if (!ids.length) { box.innerHTML = "<small>Nenhuma empresa" + (q ? " com essa busca" : " carregada ainda") + ".</small>"; return; }
+
+  const ativoBadge = (ok) => ok === false ? ' <span style="color:#b91c1c;font-size:11px;font-weight:700">inativo</span>' : "";
+  const linha = (tipo, label, chave, nomeU, sub, ativo) =>
+    `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #eee">
+       <div style="min-width:0"><b>${esc(nomeU || "—")}</b> <span class="badge" style="font-size:9px">${label}</span>${ativoBadge(ativo)}<br><small style="color:#888">${esc(sub || "")}</small></div>
+       <button type="button" class="ghost gerirBtn" data-tipo="${tipo}" data-chave="${esc(chave)}" style="padding:3px 9px;font-size:11px;white-space:nowrap">Gerir ↗</button>
+     </div>`;
+
+  box.innerHTML = ids.map(id => {
+    const grp = grupos[id];
+    const tot = grp.operadores.length + grp.plataforma.length + grp.corretores.length;
+    const corpo =
+      grp.operadores.map(u => linha("operador", "extensão", u.login, u.nome_operador || u.login, u.login, !!u.ativo)).join("") +
+      grp.plataforma.map(u => linha("plataforma", "Novos Talentos", u.usuario_id, u.nome, u.email_login, String(u.status || "").toUpperCase() === "ATIVO")).join("") +
+      grp.corretores.map(u => linha("rhi", "Corretores CRECI", u.id, u.nome, u.email, String(u.status || "").toUpperCase() === "ATIVO")).join("");
+    return `<details style="border:1px solid #e6e0ef;border-radius:10px;padding:8px 12px;margin-bottom:8px;background:#fff">
+        <summary style="cursor:pointer;font-weight:800;color:#33165f">${esc(nomeEmpresa_(id))} <span style="color:#888;font-weight:600;font-size:12px">· ${tot} usuário(s) — ${grp.operadores.length} extensão · ${grp.plataforma.length} NT · ${grp.corretores.length} corretor</span></summary>
+        <div style="margin-top:4px">${corpo || "<small>Sem usuários.</small>"}</div>
+      </details>`;
+  }).join("");
+
+  box.querySelectorAll(".gerirBtn").forEach(b => b.addEventListener("click", () => gerirUsuario_(b.dataset.tipo, b.dataset.chave)));
+}
+function gerirUsuario_(tipo, chave) {
+  const tab = tipo === "operador" ? "tabOperadores" : tipo === "plataforma" ? "tabNT" : "tabCreci";
+  document.querySelector('.tab-btn[data-tab="' + tab + '"]')?.click();
+  const sel = tipo === "operador"
+    ? '#tabOperadores .editBtn[data-login="' + String(chave).replace(/"/g, '\\"') + '"]'
+    : tipo === "plataforma"
+      ? '#tabNT .puEditBtn[data-id="' + String(chave).replace(/"/g, '\\"') + '"]'
+      : '#tabCreci .ruEditBtn[data-id="' + String(chave).replace(/"/g, '\\"') + '"]';
+  setTimeout(() => {
+    const el = document.querySelector(sel), tr = el && el.closest("tr");
+    if (!tr) return;
+    tr.scrollIntoView({ behavior: "smooth", block: "center" });
+    const old = tr.style.backgroundColor;
+    tr.style.transition = "background-color .3s";
+    tr.style.backgroundColor = "#fff3cd";
+    setTimeout(() => { tr.style.backgroundColor = old; }, 2200);
+  }, 180);
+}
+document.querySelector('.tab-btn[data-tab="tabEmpresas"]')?.addEventListener("click", renderPorEmpresa);
+document.getElementById("empBusca")?.addEventListener("input", renderPorEmpresa);
+

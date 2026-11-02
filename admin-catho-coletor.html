@@ -154,6 +154,7 @@
       <button type="button" class="tab-btn active" data-tab="tabNT">🧩 Novos Talentos</button>
       <button type="button" class="tab-btn" data-tab="tabCreci">🏘️ Corretores CRECI</button>
       <button type="button" class="tab-btn" data-tab="tabOperadores">📇 Operadores (Catho Coletor)</button>
+      <button type="button" class="tab-btn" data-tab="tabEmpresas">🏢 Por empresa</button>
       <button type="button" class="tab-btn" data-tab="tabAdmin">🔐 Administração</button>
       <button type="button" class="tab-btn hide" data-tab="tabLinks" id="tabBtnLinks">🧭 Links</button>
     </div>
@@ -673,6 +674,16 @@
     </div>
     </div><!-- /tabOperadores -->
 
+    <!-- Visão por empresa: agrupa os usuários das 3 bases pelo conta_id da empresa -->
+    <div class="tabpanel hide" id="tabEmpresas">
+      <div class="card">
+        <h3 style="margin-top:0;font-size:14px">🏢 Usuários por empresa</h3>
+        <small>Cada empresa aberta mostra os seus usuários das três bases: operadores da extensão (Catho Coletor), usuários da plataforma Novos Talentos e usuários do Banco de Corretores CRECI. "Gerir" leva até a linha da pessoa na aba certa, onde ficam as ações (editar, senha, ativar).</small>
+        <input id="empBusca" placeholder="🔎 Procurar empresa" style="width:100%;margin:10px 0">
+        <div id="listaPorEmpresa" style="margin-top:6px"><small>Abra uma vez as abas Novos Talentos, Corretores CRECI e Operadores para carregar, depois volte aqui.</small></div>
+      </div>
+    </div><!-- /tabEmpresas -->
+
     <!-- Central de links (SQL LINKS_1): os links ficam no banco, não no código (o site é público) -->
     <div class="tabpanel hide" id="tabLinks">
     <div class="card" id="cardLinks">
@@ -819,7 +830,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261101catho"></script>
+<script src="admin-catho-coletor.js?v=20261101empresas"></script>
 <script>
   // Clicar no título de qualquer seção encolhe ou abre a seção.
   (function () {
