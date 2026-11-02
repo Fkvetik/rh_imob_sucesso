@@ -205,16 +205,18 @@
           <span class="ic">📖</span><b>Português</b><small>Ler, escrever e gramática</small></button>
         <button class="disc" style="background:linear-gradient(145deg,#14b8a6,#0d8f81)" data-disc="geo">
           <span class="ic">🌎</span><b>Geografia</b><small>Países, estados e capitais</small></button>
-        <button class="disc" style="background:linear-gradient(145deg,#c77d3a,#9c5a1e)" data-disc="hist">
-          <span class="ic">🏛️</span><b>História e Mundo</b><small>Fatos, países e descobertas</small></button>
+        <button class="disc" style="background:linear-gradient(145deg,#4caf7d,#2e8b5e)" data-disc="hist">
+          <span class="ic">🐾</span><b>Natureza e Mundo</b><small>Animais, frutas e plantas</small></button>
       </div>
       <div class="disc-grid" id="discMedio" hidden>
         <button class="disc" style="background:linear-gradient(145deg,#4f93ff,#2f6fe0)" data-disc="mat_em">
           <span class="ic">🧮</span><b>Matemática</b><small>Equações, %, geometria</small></button>
         <button class="disc" style="background:linear-gradient(145deg,#ff8a3d,#f1660f)" data-disc="port_em">
           <span class="ic">📚</span><b>Português</b><small>Gramática e figuras</small></button>
-        <button class="disc" style="grid-column:1/-1;background:linear-gradient(145deg,#8b5cf6,#6d28d9)" data-disc="quim_em">
+        <button class="disc" style="background:linear-gradient(145deg,#8b5cf6,#6d28d9)" data-disc="quim_em">
           <span class="ic">🧪</span><b>Química</b><small>Elementos, fórmulas e reações</small></button>
+        <button class="disc" style="background:linear-gradient(145deg,#c77d3a,#9c5a1e)" data-disc="geral_em">
+          <span class="ic">🏛️</span><b>Mundo &amp; Conhecimentos</b><small>História, geografia e ciências</small></button>
       </div>
     </div>
     <div class="linha">
@@ -320,15 +322,16 @@
     problema:"Leia bem devagar e pense: a história pede para juntar, tirar, multiplicar ou repartir?",
     matem:"Vamos com muita calma, um passinho de cada vez."
   };
-  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"História e Mundo",matem:"Matemática",portem:"Português",quimica:"Química"};
+  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"Natureza e Mundo",matem:"Matemática",portem:"Português",quimica:"Química",geral:"Mundo e Conhecimentos"};
   var DISC={
     mat:{nome:"Matemática",skills:["adicao","subtracao","multiplicacao","divisao","problema"]},
     port:{nome:"Português",skills:["ortografia","gramatica","interpretacao"]},
     geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]},
-    hist:{nome:"História e Mundo",skills:["historia"]},
+    hist:{nome:"Natureza e Mundo",skills:["historia"]},
     mat_em:{nome:"Matemática (EM)",skills:["matem"]},
     port_em:{nome:"Português (EM)",skills:["portem"]},
-    quim_em:{nome:"Química (EM)",skills:["quimica"]}
+    quim_em:{nome:"Química (EM)",skills:["quimica"]},
+    geral_em:{nome:"Mundo & Conhecimentos",skills:["geral"]}
   };
   var P=carregar();          // perfil do jogador (localStorage)
   var somOn=true;
@@ -556,6 +559,29 @@
     {id:"h29",enun:"Qual continente é coberto de gelo e quase sem gente?",ops:["Antártida","África","Europa","Oceania"],c:0,ex:"A Antártida é coberta de gelo.",passos:["A Antártida fica no polo Sul.","É o lugar mais frio da Terra, todo coberto de gelo."]},
     {id:"h30",enun:"Quantos continentes costumamos contar no mundo?",ops:["6","2","9","20"],c:0,ex:"Costumamos contar 6 continentes.",passos:["Normalmente contamos 6 continentes.","São: América, Europa, Ásia, África, Oceania e Antártida."]}
   ];
+  // Natureza & Mundo — versão infantil (Fundamental): animais, frutas, plantas, natureza
+  var HIST_KIDS=[
+    {id:"k1",enun:"O cachorro é um mamífero. Qual destes também é mamífero?",ops:["Gato","Peixe","Galinha","Abelha"],c:0,ex:"O gato é mamífero.",passos:["Mamíferos mamam leite da mãe quando são bebês.","O gato mama na mãe, então é mamífero."]},
+    {id:"k2",enun:"Qual destes é uma fruta?",ops:["Banana","Cenoura","Alface","Batata"],c:0,ex:"A banana é uma fruta.",passos:["Fruta vem da flor e costuma ter sementes.","A banana é fruta; cenoura, alface e batata são legumes/verduras."]},
+    {id:"k3",enun:"Que alimento a vaca nos dá?",ops:["Leite","Mel","Ovo","Lã"],c:0,ex:"A vaca dá leite.",passos:["A vaca é mamífero e produz leite.","Do leite vêm o queijo e o iogurte."]},
+    {id:"k4",enun:"Quem faz o mel?",ops:["A abelha","A formiga","O pássaro","O peixe"],c:0,ex:"A abelha faz o mel.",passos:["A abelha visita as flores e faz o mel na colmeia."]},
+    {id:"k5",enun:"Qual animal vive na água e respira por guelras?",ops:["Peixe","Cachorro","Gato","Passarinho"],c:0,ex:"O peixe.",passos:["O peixe vive na água.","Ele respira pelas guelras, não pelo nariz."]},
+    {id:"k6",enun:"O que a galinha bota?",ops:["Ovos","Leite","Mel","Lã"],c:0,ex:"A galinha bota ovos.",passos:["A galinha é uma ave e bota ovos.","Dos ovos nascem os pintinhos."]},
+    {id:"k7",enun:"Qual animal tem asas e voa?",ops:["Pássaro","Cavalo","Peixe","Jacaré"],c:0,ex:"O pássaro voa.",passos:["O pássaro é uma ave, tem asas e penas.","Por isso consegue voar."]},
+    {id:"k8",enun:"De que cor costuma ser a folha das árvores?",ops:["Verde","Azul","Roxa","Preta"],c:0,ex:"Verde.",passos:["As folhas têm uma substância verde chamada clorofila.","Por isso a maioria é verde."]},
+    {id:"k9",enun:"Do que a plantinha precisa para crescer?",ops:["Água e sol","Refrigerante","Chocolate","Escuro total"],c:0,ex:"Água e sol.",passos:["A planta bebe água pela raiz e usa a luz do sol.","Assim ela cresce saudável."]},
+    {id:"k10",enun:"Quantas patas tem um cachorro?",ops:["4","2","6","8"],c:0,ex:"4 patas.",passos:["O cachorro anda em quatro patas.","Conte: duas na frente e duas atrás."]},
+    {id:"k11",enun:"Qual destes é um inseto?",ops:["Formiga","Cachorro","Peixe","Gato"],c:0,ex:"A formiga é inseto.",passos:["Os insetos têm 6 patinhas.","A formiga tem 6 patas, então é inseto."]},
+    {id:"k12",enun:"De noite, o que costuma aparecer no céu?",ops:["A Lua","O Sol","O arco-íris","A chuva"],c:0,ex:"A Lua.",passos:["De dia vemos o Sol.","De noite aparecem a Lua e as estrelas."]},
+    {id:"k13",enun:"Como é a água do mar?",ops:["Salgada","Doce","Colorida","Sempre quente"],c:0,ex:"Salgada.",passos:["A água do mar tem sal.","Por isso é salgada; a do rio é doce."]},
+    {id:"k14",enun:"Qual animal da fazenda dá lã?",ops:["Ovelha","Leão","Tubarão","Águia"],c:0,ex:"A ovelha dá lã.",passos:["A ovelha tem lã no corpo.","Da lã fazem roupas de frio."]},
+    {id:"k15",enun:"Como se chama o filhote da vaca?",ops:["Bezerro","Pintinho","Potro","Cordeiro"],c:0,ex:"Bezerro.",passos:["O filhote da vaca é o bezerro.","O do cavalo é o potro e o da ovelha é o cordeiro."]},
+    {id:"k16",enun:"A borboleta, antes de voar, era o quê?",ops:["Lagarta","Formiga","Abelha","Joaninha"],c:0,ex:"Era uma lagarta.",passos:["A borboleta nasce como lagarta.","Depois vira casulo e então borboleta."]},
+    {id:"k17",enun:"Qual fruta é amarela e o macaco adora?",ops:["Banana","Uva","Maçã","Melancia"],c:0,ex:"A banana.",passos:["A banana é amarela e macia.","Os macacos adoram banana."]},
+    {id:"k18",enun:"Qual é um animal selvagem da floresta?",ops:["Onça","Vaca","Galinha","Ovelha"],c:0,ex:"A onça.",passos:["A onça vive na floresta e caça para comer.","Vaca, galinha e ovelha vivem na fazenda, com as pessoas."]},
+    {id:"k19",enun:"O que usamos para respirar?",ops:["O ar","A água","A comida","O sol"],c:0,ex:"O ar.",passos:["Respiramos o ar, que tem oxigênio.","Puxamos o ar pelo nariz para dentro dos pulmões."]},
+    {id:"k20",enun:"Qual destes é uma ave?",ops:["Pato","Cachorro","Cavalo","Peixe"],c:0,ex:"O pato é ave.",passos:["Aves têm penas, asas e bico.","O pato tem penas e bico, então é ave."]}
+  ];
   function genHist(){
     var q=HIST[Math.floor(Math.random()*HIST.length)];
     var ops=emb(q.ops.map(function(t,i){return{t:t,ok:i===q.c};}));
@@ -626,10 +652,11 @@
     var sk=escolherSkill(DISC[discAtual].skills);
     if(discAtual==="mat")return gerarMat(sk);
     if(discAtual==="geo")return geoDispatch(sk);
-    if(discAtual==="hist")return genHist();
+    if(discAtual==="hist")return genBank(HIST_KIDS,"historia");
     if(discAtual==="mat_em")return genBank(BANK_MATEM,"matem");
     if(discAtual==="port_em")return genBank(BANK_PORTEM,"portem");
     if(discAtual==="quim_em")return genBank(BANK_QUIM,"quimica");
+    if(discAtual==="geral_em")return genBank(HIST,"geral");
     return genPort(sk);
   }
 
@@ -639,7 +666,7 @@
     $("jogoTitulo").textContent=DISC[disc].nome;
     $("jogoEstrelas").textContent="0";
     mostrar("telaJogo");
-    leo(/_em$/.test(disc)?"Bons estudos! Foco total 💪":(disc==="mat"?"Bora de contas! Capricha 💪":(disc==="geo"?"Vamos viajar pelo mundo! 🌎":(disc==="hist"?"Bora descobrir histórias do mundo! 🏛️":"Vamos ler e escrever! 📖"))));
+    leo(/_em$/.test(disc)?"Bons estudos! Foco total 💪":(disc==="mat"?"Bora de contas! Capricha 💪":(disc==="geo"?"Vamos viajar pelo mundo! 🌎":(disc==="hist"?"Bora conhecer os animais e a natureza! 🐾":"Vamos ler e escrever! 📖"))));
     render();
   }
   function render(){
