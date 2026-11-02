@@ -398,7 +398,22 @@
     {id:"i3",skill:"interpretacao",texto:"Maria acordou cedo, tomou café e foi para a escola de bicicleta.",enun:"Como Maria foi para a escola?",ops:["De carro","A pé","De bicicleta","De ônibus"],c:2,ex:"O texto diz “de bicicleta”."},
     {id:"i4",skill:"interpretacao",texto:"Maria acordou cedo, tomou café e foi para a escola de bicicleta.",enun:"O que Maria fez antes de ir para a escola?",ops:["Dormiu","Tomou café","Jogou bola","Viu TV"],c:1,ex:"Ela “tomou café” antes de sair."},
     {id:"i5",skill:"interpretacao",texto:"As abelhas vivem em colmeias e produzem mel. Elas são muito trabalhadoras.",enun:"O que as abelhas produzem?",ops:["Leite","Mel","Água","Pão"],c:1,ex:"O texto diz que as abelhas “produzem mel”."},
-    {id:"i6",skill:"interpretacao",enun:"Qual é o contrário (antônimo) de “alegre”?",ops:["feliz","contente","triste","animado"],c:2,ex:"O contrário de alegre é “triste”."}
+    {id:"i6",skill:"interpretacao",enun:"Qual é o contrário (antônimo) de “alegre”?",ops:["feliz","contente","triste","animado"],c:2,ex:"O contrário de alegre é “triste”."},
+    {id:"o7",skill:"ortografia",enun:"Qual está escrita certa?",ops:["feijão","feijao","fejão","feijãu"],c:0,ex:"Feijão: com J e ÃO."},
+    {id:"o8",skill:"ortografia",enun:"Qual está certa?",ops:["árvore","arvore","árvóre","arivore"],c:0,ex:"Árvore leva acento no primeiro A."},
+    {id:"o9",skill:"ortografia",enun:"Qual está certa?",ops:["exercício","exercicio","ezercício","exercísio"],c:0,ex:"Exercício: com X e acento no I."},
+    {id:"o10",skill:"ortografia",enun:"Qual está certa?",ops:["cabeça","cabeca","cabessa","cabeçá"],c:0,ex:"Cabeça: escreve com Ç."},
+    {id:"o11",skill:"ortografia",enun:"Qual está certa?",ops:["guarda-chuva","guardachuva","guarda chuva","guardachuvá"],c:0,ex:"Guarda-chuva leva hífen."},
+    {id:"g9",skill:"gramatica",enun:"Plural de flor:",ops:["flores","flors","floras","florzes"],c:0,ex:"O plural de flor é flores."},
+    {id:"g10",skill:"gramatica",enun:"Qual é o aumentativo de casa?",ops:["casarão","casinha","casebre","casas"],c:0,ex:"Casarão = casa grande (aumentativo)."},
+    {id:"g11",skill:"gramatica",enun:"Qual palavra está no passado?",ops:["brincou","brinca","brincará","brincando"],c:0,ex:"Brincou já aconteceu — é passado."},
+    {id:"g12",skill:"gramatica",enun:"Qual palavra é um pronome?",ops:["ele","correr","bonito","mesa"],c:0,ex:"Ele é pronome: substitui o nome."},
+    {id:"g13",skill:"gramatica",enun:"Quantas sílabas tem a palavra escola?",ops:["3","2","4","1"],c:0,ex:"es-co-la: são 3 sílabas."},
+    {id:"g14",skill:"gramatica",enun:"Qual frase é uma pergunta?",ops:["Você gosta de ler?","Que dia bonito.","Eu corro muito.","O céu é azul."],c:0,ex:"Pergunta termina com ponto de interrogação."},
+    {id:"i7",skill:"interpretacao",texto:"O sol nasce no lado leste e se põe no oeste. De dia ele ilumina e aquece a Terra.",enun:"Onde o sol se põe?",ops:["No oeste","No leste","No norte","No chão"],c:0,ex:"O texto diz que o sol se põe no oeste."},
+    {id:"i8",skill:"interpretacao",texto:"A tartaruga anda bem devagar, mas é muito esperta. Ela leva o casco nas costas como uma casinha.",enun:"O que a tartaruga leva nas costas?",ops:["O casco","Uma mochila","Uma bola","Um chapéu"],c:0,ex:"Ela leva o casco, como uma casinha."},
+    {id:"i9",skill:"interpretacao",enun:"Qual palavra quer dizer o mesmo que bonito?",ops:["belo","feio","grande","rápido"],c:0,ex:"Sinônimo de bonito é belo."},
+    {id:"i10",skill:"interpretacao",enun:"Qual é o contrário de rápido?",ops:["devagar","veloz","ligeiro","apressado"],c:0,ex:"O contrário de rápido é devagar."}
   ];
   function genPort(sk){
     var lista=PORT.filter(function(q){return q.skill===sk;});
@@ -431,7 +446,15 @@
     {p:"Inglaterra",c:"Londres",m:"Libra",f:"🇬🇧"},
     {p:"Japão",c:"Tóquio",m:"Iene",f:"🇯🇵"},
     {p:"China",c:"Pequim",m:"Yuan",f:"🇨🇳"},
-    {p:"Egito",c:"Cairo",m:"Libra egípcia",f:"🇪🇬"}
+    {p:"Egito",c:"Cairo",m:"Libra egípcia",f:"🇪🇬"},
+    {p:"Austrália",c:"Camberra",m:"Dólar australiano",f:"🇦🇺"},
+    {p:"Rússia",c:"Moscou",m:"Rublo",f:"🇷🇺"},
+    {p:"Índia",c:"Nova Déli",m:"Rupia",f:"🇮🇳"},
+    {p:"Colômbia",c:"Bogotá",m:"Peso colombiano",f:"🇨🇴"},
+    {p:"Peru",c:"Lima",m:"Sol",f:"🇵🇪"},
+    {p:"Paraguai",c:"Assunção",m:"Guarani",f:"🇵🇾"},
+    {p:"Grécia",c:"Atenas",m:"Euro",f:"🇬🇷"},
+    {p:"África do Sul",c:"Pretória",m:"Rand",f:"🇿🇦"}
   ];
   function pick3(pool,ans){pool=emb(pool.filter(function(x){return x!==ans;}));var o=[],seen={};
     for(var i=0;i<pool.length&&o.length<3;i++){if(!seen[pool[i]]){seen[pool[i]]=1;o.push(pool[i]);}}return o;}
@@ -493,7 +516,19 @@
     {id:"h15",enun:"Os Jogos Olímpicos nasceram há muito tempo em qual país?",ops:["Grécia","Brasil","China","Egito"],c:0,ex:"As Olimpíadas nasceram na Grécia Antiga.",passos:["Os Jogos Olímpicos começaram na Grécia Antiga, há mais de 2700 anos.","Hoje acontecem a cada 4 anos, em países diferentes."]},
     {id:"h16",enun:"A Torre Eiffel, famosa no mundo todo, fica em qual cidade?",ops:["Paris","Londres","Roma","Nova York"],c:0,ex:"A Torre Eiffel fica em Paris.",passos:["A Torre Eiffel fica em Paris, capital da França.","Foi construída em 1889 e virou símbolo da cidade."]},
     {id:"h17",enun:"Qual é o maior continente do mundo?",ops:["Ásia","África","Europa","Oceania"],c:0,ex:"A Ásia é o maior continente.",passos:["A Ásia é o maior continente em tamanho e em população.","Nela ficam China, Índia, Japão e muitos outros países."]},
-    {id:"h18",enun:"Em qual continente fica o deserto do Saara, o maior deserto quente?",ops:["África","América","Europa","Oceania"],c:0,ex:"O Saara fica na África.",passos:["O Saara fica no norte da África.","É o maior deserto quente do mundo, quase do tamanho do Brasil."]}
+    {id:"h18",enun:"Em qual continente fica o deserto do Saara, o maior deserto quente?",ops:["África","América","Europa","Oceania"],c:0,ex:"O Saara fica na África.",passos:["O Saara fica no norte da África.","É o maior deserto quente do mundo, quase do tamanho do Brasil."]},
+    {id:"h19",enun:"Em qual planeta nós vivemos?",ops:["Terra","Marte","Júpiter","Saturno"],c:0,ex:"Vivemos no planeta Terra.",passos:["Nosso planeta é a Terra.","Ela é o terceiro planeta a partir do Sol e tem muita água."]},
+    {id:"h20",enun:"O que é o Sol?",ops:["Uma estrela","Um planeta","Uma lua","Um cometa"],c:0,ex:"O Sol é uma estrela.",passos:["O Sol é uma estrela bem pertinho da Terra.","Ele dá luz e calor para o nosso planeta."]},
+    {id:"h21",enun:"O brasileiro Santos Dumont ficou famoso por quê?",ops:["Voar com o avião 14-Bis","Pintar quadros","Ser rei","Jogar futebol"],c:0,ex:"Santos Dumont foi pioneiro da aviação.",passos:["Santos Dumont foi um inventor brasileiro.","No começo do século 20 ele voou com o avião 14-Bis em Paris."]},
+    {id:"h22",enun:"Qual oceano banha a costa do Brasil?",ops:["Atlântico","Pacífico","Índico","Glacial Ártico"],c:0,ex:"O Brasil é banhado pelo Atlântico.",passos:["O litoral do Brasil fica no oceano Atlântico, a leste.","É nele que estão as nossas praias."]},
+    {id:"h23",enun:"Qual é o maior rio da floresta Amazônica?",ops:["Rio Amazonas","Rio Tietê","Rio Nilo","Rio Tâmisa"],c:0,ex:"O rio Amazonas é o maior do Brasil.",passos:["O rio Amazonas tem o maior volume de água do mundo.","Ele corre pela floresta Amazônica."]},
+    {id:"h24",enun:"Qual rio famoso corta o Egito?",ops:["Nilo","Amazonas","Sena","Mississipi"],c:0,ex:"O rio Nilo fica no Egito.",passos:["O rio Nilo atravessa o Egito.","Foi nas margens dele que nasceu a civilização egípcia."]},
+    {id:"h25",enun:"Quando viveram os dinossauros?",ops:["Há milhões de anos, antes das pessoas","Na época dos romanos","Há cem anos","Ano passado"],c:0,ex:"Os dinossauros viveram há milhões de anos.",passos:["Os dinossauros viveram há muitos milhões de anos.","Eles sumiram bem antes de existirem seres humanos."]},
+    {id:"h26",enun:"Tóquio é a capital de qual país?",ops:["Japão","China","Coreia do Sul","Tailândia"],c:0,ex:"Tóquio é a capital do Japão.",passos:["Tóquio fica no Japão.","O Japão é famoso pela tecnologia e pelos mangás."]},
+    {id:"h27",enun:"Quem pintou a Mona Lisa?",ops:["Leonardo da Vinci","Pablo Picasso","Van Gogh","Portinari"],c:0,ex:"Leonardo da Vinci pintou a Mona Lisa.",passos:["Leonardo da Vinci pintou a Mona Lisa há mais de 500 anos.","Ele também foi inventor e cientista."]},
+    {id:"h28",enun:"Qual frase está escrita na bandeira do Brasil?",ops:["Ordem e Progresso","Pátria Amada","Deus e Brasil","Verde e Amarelo"],c:0,ex:"Na bandeira se lê Ordem e Progresso.",passos:["No meio da bandeira do Brasil está escrito Ordem e Progresso.","As estrelas representam o céu da Proclamação da República."]},
+    {id:"h29",enun:"Qual continente é coberto de gelo e quase sem gente?",ops:["Antártida","África","Europa","Oceania"],c:0,ex:"A Antártida é coberta de gelo.",passos:["A Antártida fica no polo Sul.","É o lugar mais frio da Terra, todo coberto de gelo."]},
+    {id:"h30",enun:"Quantos continentes costumamos contar no mundo?",ops:["6","2","9","20"],c:0,ex:"Costumamos contar 6 continentes.",passos:["Normalmente contamos 6 continentes.","São: América, Europa, Ásia, África, Oceania e Antártida."]}
   ];
   function genHist(){
     var q=HIST[Math.floor(Math.random()*HIST.length)];
