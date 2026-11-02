@@ -3644,11 +3644,14 @@ function renderPorEmpresa() {
       grp.corretores.map(u => linha("rhi", "Corretores CRECI", u.id, u.nome, u.email, String(u.status || "").toUpperCase() === "ATIVO")).join("");
     return `<details style="border:1px solid #e6e0ef;border-radius:10px;padding:8px 12px;margin-bottom:8px;background:#fff">
         <summary style="cursor:pointer;font-weight:800;color:#33165f">${esc(nomeEmpresa_(id))} <span style="color:#888;font-weight:600;font-size:12px">· ${tot} usuário(s) — ${grp.operadores.length} extensão · ${grp.plataforma.length} NT · ${grp.corretores.length} corretor</span></summary>
+        ${id ? `<div style="margin:6px 0 2px;display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="secondary criarPlatBtn" data-conta="${esc(id)}" style="padding:3px 9px;font-size:11px">+ Usuário Novos Talentos</button><button type="button" class="secondary criarRhiBtn" data-conta="${esc(id)}" style="padding:3px 9px;font-size:11px">+ Usuário Corretores CRECI</button></div>` : ""}
         <div style="margin-top:4px">${corpo || "<small>Sem usuários.</small>"}</div>
       </details>`;
   }).join("");
 
   box.querySelectorAll(".gerirBtn").forEach(b => b.addEventListener("click", () => gerirUsuario_(b.dataset.tipo, b.dataset.chave)));
+  box.querySelectorAll(".criarPlatBtn").forEach(b => b.addEventListener("click", () => criarNaEmpresa_("plataforma", b.dataset.conta)));
+  box.querySelectorAll(".criarRhiBtn").forEach(b => b.addEventListener("click", () => criarNaEmpresa_("rhi", b.dataset.conta)));
 }
 function gerirUsuario_(tipo, chave) {
   const tab = tipo === "operador" ? "tabOperadores" : tipo === "plataforma" ? "tabNT" : "tabCreci";
@@ -3667,6 +3670,17 @@ function gerirUsuario_(tipo, chave) {
     tr.style.backgroundColor = "#fff3cd";
     setTimeout(() => { tr.style.backgroundColor = old; }, 2200);
   }, 180);
+}
+function criarNaEmpresa_(tipo, contaId){
+  if (tipo === "plataforma"){
+    document.querySelector('.tab-btn[data-tab="tabNT"]')?.click();
+    document.getElementById("btnLimparUsuarioPlataforma")?.click();
+    setTimeout(() => { const sel = document.getElementById("puConta"); if (sel) sel.value = contaId; const n = document.getElementById("puNome"); if (n){ n.scrollIntoView({ behavior:"smooth", block:"center" }); n.focus(); } }, 200);
+  } else {
+    document.querySelector('.tab-btn[data-tab="tabCreci"]')?.click();
+    document.getElementById("btnLimparUsuarioRhi")?.click();
+    setTimeout(() => { const sel = document.getElementById("ruConta"); if (sel) sel.value = contaId; const n = document.getElementById("ruNome"); if (n){ n.scrollIntoView({ behavior:"smooth", block:"center" }); n.focus(); } }, 200);
+  }
 }
 document.querySelector('.tab-btn[data-tab="tabEmpresas"]')?.addEventListener("click", renderPorEmpresa);
 document.getElementById("empBusca")?.addEventListener("input", renderPorEmpresa);
