@@ -363,10 +363,10 @@
     quimica:"Lembre do básico: cada elemento tem um símbolo e a fórmula diz quantos átomos de cada. Vá por partes.",
     geral:"Pense no que já ouviu sobre o tema e elimine as opções que você tem certeza que estão erradas."
   };
-  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"Natureza e Mundo",matem:"Matemática",portem:"Português",quimica:"Química",geral:"Mundo e Conhecimentos"};
+  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",uso:"Uso correto",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"Natureza e Mundo",matem:"Matemática",portem:"Português",quimica:"Química",geral:"Mundo e Conhecimentos"};
   var DISC={
     mat:{nome:"Matemática",skills:["adicao","subtracao","multiplicacao","divisao","problema"]},
-    port:{nome:"Português",skills:["ortografia","gramatica","interpretacao"]},
+    port:{nome:"Português",skills:["ortografia","gramatica","interpretacao","uso"]},
     geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]},
     hist:{nome:"Natureza e Mundo",skills:["historia"]},
     mat_em:{nome:"Matemática (EM)",skills:["matem"]},
@@ -483,7 +483,23 @@
     {id:"i7",skill:"interpretacao",texto:"O sol nasce no lado leste e se põe no oeste. De dia ele ilumina e aquece a Terra.",enun:"Onde o sol se põe?",ops:["No oeste","No leste","No norte","No chão"],c:0,ex:"O texto diz que o sol se põe no oeste."},
     {id:"i8",skill:"interpretacao",texto:"A tartaruga anda bem devagar, mas é muito esperta. Ela leva o casco nas costas como uma casinha.",enun:"O que a tartaruga leva nas costas?",ops:["O casco","Uma mochila","Uma bola","Um chapéu"],c:0,ex:"Ela leva o casco, como uma casinha."},
     {id:"i9",skill:"interpretacao",enun:"Qual palavra quer dizer o mesmo que bonito?",ops:["belo","feio","grande","rápido"],c:0,ex:"Sinônimo de bonito é belo."},
-    {id:"i10",skill:"interpretacao",enun:"Qual é o contrário de rápido?",ops:["devagar","veloz","ligeiro","apressado"],c:0,ex:"O contrário de rápido é devagar."}
+    {id:"i10",skill:"interpretacao",enun:"Qual é o contrário de rápido?",ops:["devagar","veloz","ligeiro","apressado"],c:0,ex:"O contrário de rápido é devagar."},
+    {id:"u1",skill:"uso",enun:"Complete: 'Isso é para ___ fazer.'",ops:["eu","mim","im","mín"],c:0,ex:"Quem vai fazer a ação usa 'eu': para EU fazer. 'Mim' não faz ação."},
+    {id:"u2",skill:"uso",enun:"Complete: 'Entregue o presente para ___.'",ops:["mim","eu","im","mín"],c:0,ex:"Depois de 'para' sem verbo, usa-se 'mim': para MIM."},
+    {id:"u3",skill:"uso",enun:"Complete: 'Comprei ___ doces hoje.'",ops:["menos","menas","menus","menoz"],c:0,ex:"'Menas' não existe! O certo é sempre MENOS."},
+    {id:"u4",skill:"uso",enun:"Complete: 'Eu queria ir, ___ estava chovendo.'",ops:["mas","mais","máis","mdas"],c:0,ex:"'Mas' quer dizer 'porém'. 'Mais' é de quantidade."},
+    {id:"u5",skill:"uso",enun:"Complete: 'Quero ___ pipoca, por favor.'",ops:["mais","mas","máis","mães"],c:0,ex:"'Mais' indica quantidade (mais pipoca). 'Mas' é 'porém'."},
+    {id:"u6",skill:"uso",enun:"Complete: 'Ele se comportou ___ na festa.'",ops:["mal","mau","máu","mao"],c:0,ex:"'Mal' é o contrário de bem (como ele agiu). 'Mau' é o contrário de bom."},
+    {id:"u7",skill:"uso",enun:"Complete: 'Ele é um menino ___.'",ops:["mau","mal","máu","maul"],c:0,ex:"'Mau' é o contrário de BOM (adjetivo). 'Mal' é o contrário de bem."},
+    {id:"u8",skill:"uso",enun:"Complete: '___ muito tempo que não te vejo.'",ops:["Há","A","Ah","Hà"],c:0,ex:"Tempo que já passou usa 'há' (verbo haver): HÁ muito tempo."},
+    {id:"u9",skill:"uso",enun:"Complete: 'Volto daqui ___ uma hora.'",ops:["a","há","ah","à"],c:0,ex:"Tempo que ainda vai passar usa 'a': daqui A uma hora."},
+    {id:"u10",skill:"uso",enun:"Qual está escrito certo?",ops:["Ela trouxe o lanche","Ela trousse o lanche","Ela troixe o lanche","Ela trouce o lanche"],c:0,ex:"O certo é TROUXE, com X."},
+    {id:"u11",skill:"uso",enun:"Complete a pergunta: '___ você faltou?'",ops:["Por que","Porque","Porquê","Porqué"],c:0,ex:"Pergunta no começo vai separado: POR QUE você faltou?"},
+    {id:"u12",skill:"uso",enun:"Complete a resposta: 'Faltei ___ fiquei doente.'",ops:["porque","por que","porquê","por quê"],c:0,ex:"Resposta/explicação vai junto: PORQUE fiquei doente."},
+    {id:"u13",skill:"uso",enun:"Complete: '___ você vai agora?' (para qual lugar)",ops:["Aonde","Onde","A onde","Aond"],c:0,ex:"Com movimento (ir A um lugar) usa-se AONDE."},
+    {id:"u14",skill:"uso",enun:"Complete: 'Ela ficou ___ cansada.'",ops:["meio","meia","mei","meios"],c:0,ex:"'Meio' no sentido de 'um pouco' não muda: MEIO cansada."},
+    {id:"u15",skill:"uso",enun:"Qual está certo?",ops:["Havia muitas pessoas","Haviam muitas pessoas","Avia muitas pessoas","Havião muitas pessoas"],c:0,ex:"'Haver' de existir fica no singular: HAVIA muitas pessoas."},
+    {id:"u16",skill:"uso",enun:"Complete: 'Nós ___ ao parque ontem.'",ops:["fomos","fumos","foimos","vámos"],c:0,ex:"O passado de 'nós ir' é NÓS FOMOS."}
   ];
   function genPort(sk){
     var lista=PORT.filter(function(q){return q.skill===sk;});
@@ -494,7 +510,7 @@
     usados[sk][q.id]=1;
     var ops=q.ops.map(function(t,i){return{t:t,ok:i===q.c};});
     ops=emb(ops);
-    var dica={ortografia:"Pense no som da palavra e lembre como ela se escreve certinho.",gramatica:"Leia a frase devagar e pense no que cada palavra faz nela.",interpretacao:"Volte no textinho com calma e procure a informação que a pergunta pede."}[sk]||"Vamos pensar juntos.";
+    var dica={ortografia:"Pense no som da palavra e lembre como ela se escreve certinho.",gramatica:"Leia a frase devagar e pense no que cada palavra faz nela.",interpretacao:"Volte no textinho com calma e procure a informação que a pergunta pede.",uso:"Leia a frase do jeito certo. Cuidado: alguns jeitos que a gente ouve por aí estão errados!"}[sk]||"Vamos pensar juntos.";
     return{skill:sk,enun:q.enun,texto:q.texto||null,opcoes:ops.map(function(o){return o.t;}),
       correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex,passos:[dica,q.ex]};
   }
