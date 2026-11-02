@@ -160,6 +160,7 @@
   .teclado button:disabled{cursor:default}
   .teclado button.ok{background:#e7f9f0;border-color:var(--ok);color:#0d7a4f}
   .teclado button.no{background:#fdecef;border-color:var(--no);color:#b42640;opacity:.7}
+  .btn:disabled{opacity:.45;cursor:default}
   :focus-visible{outline:3px solid #8fb4ff;outline-offset:2px}
   @media (prefers-reduced-motion: reduce){.pop{animation:none;display:none}.btn:active,.op:active{transform:none}.op.ok.piscar{animation:none}}
 </style>
@@ -306,11 +307,21 @@
       <div style="font-weight:800;font-family:var(--disp)">💡 Você Sabia?</div>
       <span style="width:40px"></span>
     </div>
-    <div class="card" style="text-align:center">
-      <div style="font-size:42px">💡</div>
-      <div id="sabiaTexto" style="font-size:18px;font-weight:700;line-height:1.5;margin:10px 4px 2px;color:#3a2d4d"></div>
+    <div class="card">
+      <div style="font-size:42px;text-align:center">💡</div>
+      <div id="sabiaFato" style="font-size:18px;font-weight:700;line-height:1.5;margin:8px 4px 12px;color:#3a2d4d;text-align:center"></div>
+      <div id="sabiaSimNao" class="linha">
+        <button class="btn teal" id="sabiaSim">Sim, sabia! 😃</button>
+        <button class="btn ghost" id="sabiaNao">Não sabia 🤔</button>
+      </div>
+      <div id="sabiaEnsina" class="feedback" style="background:#eef6ff;color:#27406e;border:1px solid #cfe0ff;margin-top:10px" hidden></div>
+      <div id="sabiaPerg" hidden>
+        <div id="sabiaPergTxt" style="font-weight:800;font-family:var(--disp);font-size:17px;margin:12px 0 8px"></div>
+        <div id="sabiaOps" class="ops"></div>
+        <div id="sabiaFb" class="feedback" hidden></div>
+      </div>
     </div>
-    <button class="btn teal" id="sabiaProx" style="margin-top:12px">Próxima curiosidade →</button>
+    <button class="btn teal" id="sabiaProx" style="margin-top:12px" hidden>Próxima curiosidade →</button>
     <button class="btn ghost sm" id="sabiaOuvir" style="margin-top:8px">🔊 Ouvir de novo</button>
   </section>
 
@@ -397,6 +408,16 @@
   var vozPt=null;
   function carregarVoz(){try{var vs=speechSynthesis.getVoices();vozPt=vs.filter(function(v){return /pt/i.test(v.lang)})[0]||null;}catch(e){}}
   function falar(txt){if(!somOn||!("speechSynthesis"in window))return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(txt);u.lang="pt-BR";if(vozPt)u.voice=vozPt;u.rate=1;u.pitch=1.1;speechSynthesis.speak(u);}catch(e){}}
+  // Trava um botão de avançar enquanto o Léo estiver falando; libera quando termina.
+  function travarAteFalar(btn){if(!btn)return;
+    if(!somOn||!("speechSynthesis"in window)){btn.disabled=false;return;}
+    btn.disabled=true;var started=false,ini=Date.now();
+    var iv=setInterval(function(){
+      try{if(speechSynthesis.speaking)started=true;}catch(e){}
+      var fimFala=started&&!speechSynthesis.speaking&&!speechSynthesis.pending;
+      var semFala=!started&&(Date.now()-ini>1600);
+      if(fimFala||semFala||(Date.now()-ini>20000)){clearInterval(iv);btn.disabled=false;}
+    },200);}
   if("speechSynthesis"in window){carregarVoz();speechSynthesis.onvoiceschanged=carregarVoz;}
 
   function leo(msg,fala){$("leoMsg").textContent=msg;if(fala!==false)falar(fala||msg);
@@ -795,6 +816,7 @@
     fb.hidden=false;$("btnProxima").hidden=false;
     var ultima=faseRec?(recIdx>=recFila.length-1):(idx>=9);
     $("btnProxima").textContent=ultima?((!faseRec&&recFila.length)?"Ir para a recuperação 💪":"Ver resultado 🎉"):"Próxima →";
+    travarAteFalar($("btnProxima"));
   }
   function avancar(){
     if(!faseRec){
@@ -929,34 +951,53 @@
   }
   // ---------- 💡 Você Sabia? (curiosidades reais, para navegar) ----------
   var SABIA=[
-    "O país com mais gente no mundo é a Índia, com mais de 1 bilhão de pessoas!",
-    "A Rússia é o maior país do mundo em tamanho de terra.",
-    "O menor país do mundo é o Vaticano — cabe dentro de uma cidade.",
-    "A girafa é o animal mais alto do mundo: pode passar de 5 metros!",
-    "A baleia-azul é o maior animal do planeta, maior que um ônibus.",
-    "O guepardo é o animal terrestre mais rápido: corre como um carro na estrada.",
-    "O oceano Pacífico é o maior oceano do mundo.",
-    "A Amazônia, no Brasil, é a maior floresta tropical do planeta.",
-    "No espaço não há ar, por isso na Lua não dá para ouvir nenhum som.",
-    "O Sol é tão grande que caberiam mais de um milhão de Terras dentro dele.",
-    "Os pinguins vivem no frio do polo Sul, e não no polo Norte.",
-    "O chocolate vem do cacau, que é o fruto de uma árvore.",
-    "As abelhas 'conversam' dançando para mostrar onde estão as flores.",
-    "O coração do beija-flor bate centenas de vezes por minuto.",
-    "O Monte Everest é a montanha mais alta do mundo.",
-    "Os tubarões existem na Terra há mais tempo do que as árvores!",
-    "A lâmpada elétrica foi popularizada por Thomas Edison.",
-    "O telefone é atribuído a Alexander Graham Bell.",
-    "O brasileiro Santos Dumont foi um dos pioneiros do avião.",
-    "A água vira gelo a 0 grau e ferve a 100 graus.",
-    "O polvo tem três corações e sangue azulado.",
-    "A formiga consegue carregar muito mais que o próprio peso.",
-    "O Japão é formado por milhares de ilhas.",
-    "Há mais estrelas no céu do que grãos de areia em muitas praias."
+    {f:"Você sabia que Tarsila do Amaral foi uma pintora brasileira muito famosa?",ensina:"Tarsila ajudou a criar o modernismo no Brasil. O quadro mais famoso dela é o 'Abaporu'.",q:"Que tipo de arte a Tarsila do Amaral fazia?",ops:["Pintura (quadros)","Música","Dança","Futebol"],c:0,ex:"Isso! Ela era pintora, e o 'Abaporu' é a obra mais famosa dela."},
+    {f:"Você sabia que Santos Dumont foi um brasileiro pioneiro da aviação?",ensina:"Em 1906, em Paris, ele voou com um avião chamado 14-Bis.",q:"O que Santos Dumont ajudou a inventar?",ops:["O avião","O telefone","A lâmpada","O rádio"],c:0,ex:"Exato! Ele foi um dos pioneiros do avião."},
+    {f:"Você sabia que Thomas Edison ficou famoso pela lâmpada elétrica?",ensina:"Edison melhorou a lâmpada para durar bastante e iluminar as casas.",q:"Com qual invenção Edison é mais lembrado?",ops:["A lâmpada elétrica","O avião","O carro","O telefone"],c:0,ex:"Isso! A lâmpada que acende as nossas casas."},
+    {f:"Você sabia que o telefone é atribuído a Alexander Graham Bell?",ensina:"O telefone deixou as pessoas conversarem mesmo estando bem longe.",q:"O que Graham Bell ajudou a inventar?",ops:["O telefone","A televisão","A internet","O relógio"],c:0,ex:"Isso! O telefone."},
+    {f:"Você sabia que Monteiro Lobato criou o Sítio do Picapau Amarelo?",ensina:"Ele foi um escritor brasileiro de histórias infantis, com personagens como a Emília.",q:"O que Monteiro Lobato criou?",ops:["Histórias infantis","Um avião","Uma ponte","Um videogame"],c:0,ex:"Isso! Histórias como o Sítio do Picapau Amarelo."},
+    {f:"Você sabia que a Chapada dos Veadeiros fica em Goiás?",ensina:"É um parque nacional famoso por cachoeiras e trilhas lindas.",q:"Em qual estado fica a Chapada dos Veadeiros?",ops:["Goiás","Bahia","Amazonas","Ceará"],c:0,ex:"Isso! Fica em Goiás."},
+    {f:"Você sabia que a Chapada Diamantina fica na Bahia?",ensina:"Ela tem grutas, cachoeiras e o famoso Morro do Pai Inácio.",q:"Em qual estado fica a Chapada Diamantina?",ops:["Bahia","Goiás","Pará","Paraná"],c:0,ex:"Isso! Fica na Bahia."},
+    {f:"Você sabia que o Cristo Redentor fica no Rio de Janeiro?",ensina:"É uma estátua gigante no alto do morro do Corcovado.",q:"Em qual cidade fica o Cristo Redentor?",ops:["Rio de Janeiro","São Paulo","Salvador","Recife"],c:0,ex:"Isso! No Rio de Janeiro."},
+    {f:"Você sabia que as Cataratas do Iguaçu ficam no Paraná?",ensina:"São dezenas de quedas d'água enormes, na fronteira com a Argentina.",q:"Em qual estado ficam as Cataratas do Iguaçu?",ops:["Paraná","Minas Gerais","Bahia","Ceará"],c:0,ex:"Isso! No Paraná."},
+    {f:"Você sabia que a maior parte da floresta Amazônica fica no Brasil?",ensina:"A Amazônia é a maior floresta tropical do mundo e tem muitos animais.",q:"Em qual país fica a maior parte da Amazônia?",ops:["Brasil","Egito","Japão","Portugal"],c:0,ex:"Isso! No Brasil."},
+    {f:"Você sabia que Pelé é considerado um dos maiores jogadores de futebol de todos os tempos?",ensina:"Ele foi tricampeão mundial com a seleção brasileira.",q:"Em qual esporte Pelé brilhou?",ops:["Futebol","Vôlei","Natação","Tênis"],c:0,ex:"Isso! No futebol."},
+    {f:"Você sabia que Ayrton Senna foi um piloto brasileiro campeão de Fórmula 1?",ensina:"Ele foi três vezes campeão mundial e é um ídolo no Brasil.",q:"Em que esporte Ayrton Senna foi campeão?",ops:["Fórmula 1 (corrida de carros)","Futebol","Boxe","Surfe"],c:0,ex:"Isso! Fórmula 1."},
+    {f:"Você sabia que Albert Einstein foi um dos cientistas mais famosos do mundo?",ensina:"Ele criou ideias importantes sobre o tempo, o espaço e a luz.",q:"Einstein ficou famoso por ser um grande...",ops:["Cientista","Pintor","Cantor","Cozinheiro"],c:0,ex:"Isso! Um grande cientista (físico)."},
+    {f:"Você sabia que a Torre Eiffel fica em Paris, na França?",ensina:"Foi construída em 1889 e virou um dos cartões-postais mais famosos do mundo.",q:"Em qual cidade fica a Torre Eiffel?",ops:["Paris","Londres","Roma","Nova York"],c:0,ex:"Isso! Em Paris."}
   ];
-  var sabiaIdx=-1;
-  function abrirSabia(){mostrar("telaSabia");proxSabia();}
-  function proxSabia(){var i;do{i=Math.floor(Math.random()*SABIA.length);}while(SABIA.length>1&&i===sabiaIdx);sabiaIdx=i;$("sabiaTexto").textContent=SABIA[i];leo("Você sabia? 💡",false);falar("Você sabia? "+SABIA[i]);}
+  var sabiaIdx=-1,sabiaCur=null,sabiaFase="fato",sabiaCorreta=0;
+  function abrirSabia(){mostrar("telaSabia");novaCuriosidade();}
+  function novaCuriosidade(){
+    var i;do{i=Math.floor(Math.random()*SABIA.length);}while(SABIA.length>1&&i===sabiaIdx);sabiaIdx=i;sabiaCur=SABIA[i];sabiaFase="fato";
+    $("sabiaFato").textContent=sabiaCur.f;
+    $("sabiaSimNao").hidden=false;$("sabiaEnsina").hidden=true;$("sabiaPerg").hidden=true;$("sabiaFb").hidden=true;$("sabiaProx").hidden=true;
+    leo("Você sabia? 💡",false);falar(sabiaCur.f);
+  }
+  function sabiaResp(sabia){
+    $("sabiaSimNao").hidden=true;var fala;
+    if(!sabia){$("sabiaEnsina").hidden=false;$("sabiaEnsina").textContent="Então olha só: "+sabiaCur.ensina;fala="Então olha só. "+sabiaCur.ensina+". Agora me diz: "+sabiaCur.q;}
+    else{fala="Que legal! Então me diz: "+sabiaCur.q;}
+    sabiaMontaPergunta();
+    falar(fala);
+  }
+  function sabiaMontaPergunta(){
+    sabiaFase="perg";$("sabiaPerg").hidden=false;$("sabiaPergTxt").textContent=sabiaCur.q;
+    var ks=["A","B","C","D"];var arr=emb(sabiaCur.ops.map(function(t,k){return{t:t,ok:k===sabiaCur.c};}));
+    sabiaCorreta=arr.map(function(o){return o.ok;}).indexOf(true);
+    var html="";for(var k=0;k<arr.length;k++){html+='<button class="op" data-i="'+k+'"><span class="k">'+ks[k]+'</span><span>'+esc(arr[k].t)+'</span></button>';}
+    $("sabiaOps").innerHTML=html;
+    $("sabiaOps").querySelectorAll(".op").forEach(function(b){b.addEventListener("click",function(){sabiaResponder(parseInt(b.dataset.i,10));});});
+  }
+  function sabiaResponder(i){
+    var bs=$("sabiaOps").querySelectorAll(".op");if(!bs.length||bs[0].disabled)return;
+    var certo=(i===sabiaCorreta);
+    bs.forEach(function(b){var bi=+b.dataset.i;b.disabled=true;if(bi===sabiaCorreta){b.classList.add("ok");if(!certo)b.classList.add("piscar");}if(bi===i&&!certo)b.classList.add("no");});
+    var fb=$("sabiaFb");fb.hidden=false;
+    if(certo){fb.className="feedback ok";fb.innerHTML="<b>Boa! 🌟</b><br>"+esc(sabiaCur.ex);P.estrelas+=1;P.pontos+=5;salvar();somCerto();leo("Mandou bem! 🌟",false);falar(sabiaCur.ex);}
+    else{fb.className="feedback no";fb.innerHTML="<b>A resposta é "+esc(sabiaCur.ops[sabiaCur.c])+"</b><br>"+esc(sabiaCur.ex);somErro();leo("Agora você já sabe 😉",false);falar(sabiaCur.ops[sabiaCur.c]+". "+sabiaCur.ex);}
+    $("sabiaProx").hidden=false;travarAteFalar($("sabiaProx"));
+  }
 
   // ---------- 🔤 Jogo de Palavras (forca) ----------
   var FORCA=[
@@ -1033,8 +1074,10 @@
   $("btnPais").addEventListener("click",abrirPais);
   $("paisBack").addEventListener("click",irHome);
   $("btnSabia").addEventListener("click",abrirSabia);
-  $("sabiaProx").addEventListener("click",proxSabia);
-  $("sabiaOuvir").addEventListener("click",function(){if(SABIA[sabiaIdx])falar(SABIA[sabiaIdx]);});
+  $("sabiaSim").addEventListener("click",function(){sabiaResp(true);});
+  $("sabiaNao").addEventListener("click",function(){sabiaResp(false);});
+  $("sabiaProx").addEventListener("click",novaCuriosidade);
+  $("sabiaOuvir").addEventListener("click",function(){if(!sabiaCur)return;falar(sabiaFase==="perg"?sabiaCur.q:sabiaCur.f);});
   $("sabiaBack").addEventListener("click",irHome);
   $("btnForca").addEventListener("click",iniciarForca);
   $("forcaNova").addEventListener("click",iniciarForca);
