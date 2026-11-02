@@ -194,6 +194,9 @@ function render(s, prev, url) {
     ['Quais documentos eu vou precisar?', `Em geral: RG e CPF, comprovante de renda e de residência e as certidões pedidas pelo banco. ${primeiro} orienta a lista certa conforme o seu caso.`],
     ['Quanto se paga além do valor do imóvel?', `Normalmente ITBI (imposto de transferência), escritura e registro em cartório. Esses custos variam por cidade; ${primeiro} explica o total estimado antes de você decidir.`]
   ];
+  // Item extra por nicho: quem trabalha com leilão ganha uma pergunta sobre isso.
+  if (/leil[ãa]o/i.test(`${s.bio || ''} ${prof.t}`)) guiaItens.splice(1, 0,
+    ['Como funciona a compra de imóvel em leilão?', `O imóvel é arrematado a partir de um edital, que traz o valor mínimo, o estado do imóvel e as regras (leilão judicial ou extrajudicial). Em muitos casos dá para financiar. ${primeiro} analisa o edital e os riscos (ocupação, dívidas, prazo de desocupação) e acompanha todo o processo com você.`]);
   const guiaHtml = `
   <section class="guia"><h2>Guia rápido para quem vai comprar</h2>
     <p class="sub">Dúvidas comuns de quem está comprando. Qualquer caso específico, é só chamar ${esc(primeiro)} no WhatsApp.</p>

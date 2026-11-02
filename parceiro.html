@@ -182,7 +182,7 @@
         trazerHtml(it) +
         '<h3>📣 Anúncio</h3><small class="d">O que aparece no site dos corretores.</small>' +
         '<label for="fTitulo">Nome do empreendimento</label><input type="text" id="fTitulo" maxlength="80" placeholder="Ex.: Residencial Vista Sul" value="' + esc(a.titulo) + '">' +
-        '<div class="g2"><div><label for="fCidade">Cidade</label><input type="text" id="fCidade" maxlength="60" list="cidades" placeholder="Ex.: São Paulo" value="' + esc(it ? it.cidade : (imob ? D.parceiro.cidade_site || '' : '')) + '">' +
+        '<div class="g2"><div><label for="fCidade">Cidade</label><input type="text" id="fCidade" maxlength="60" list="cidades" placeholder="Ex.: São Paulo" value="' + esc(it ? it.cidade : (a.cidade || (imob ? D.parceiro.cidade_site || '' : ''))) + '">' +
           '<datalist id="cidades">' + (D.cidades || []).map(function(c){ return '<option value="' + esc(c.cidade) + '">' + c.sites + ' corretor(es) com site</option>'; }).join('') + '</datalist></div>' +
           '<div><label for="fBairro">Bairro</label><input type="text" id="fBairro" maxlength="60" value="' + esc(a.bairro) + '"></div></div>' +
         '<div id="zonasBox"><label>Zonas de São Paulo (vazio = cidade toda)</label><div class="zonas" id="fZonas"></div></div>' +
