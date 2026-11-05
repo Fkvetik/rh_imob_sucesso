@@ -225,6 +225,7 @@
           <span class="ic">🏛️</span><b>Mundo &amp; Conhecimentos</b><small>História, geografia e ciências</small></button>
       </div>
     </div>
+    <button class="btn grape" id="btnLicao" style="width:100%;margin-top:12px">📓 Lição do dia</button>
     <div class="linha">
       <button class="btn star sm" id="btnRanking">🏅 Ranking</button>
       <button class="btn ghost sm" id="btnPais">👨‍👩‍👧 Área dos pais</button>
@@ -233,7 +234,45 @@
       <button class="btn grape sm" id="btnSabia">💡 Você Sabia?</button>
       <button class="btn teal sm" id="btnForca">🔤 Jogo de Palavras</button>
     </div>
+    <button class="btn sm" id="btnColorir" style="width:100%;margin-top:10px;background:linear-gradient(145deg,#ff6fae,#e84f93);color:#fff">🎨 Colorir</button>
     <div class="rodape">Protótipo da Escola do Léo • você pode trocar o nome depois</div>
+  </section>
+
+  <!-- LIÇÃO DO DIA -->
+  <section id="telaLicao" hidden>
+    <div class="mini">
+      <button class="back" id="sairLicao">← Voltar</button>
+      <div style="font-weight:800;font-family:var(--disp)">📓 Lição do dia</div>
+      <div></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <p id="licaoIntro" style="font-weight:700;color:var(--muold);margin:0 0 10px"></p>
+      <div id="licaoLista"></div>
+      <button class="btn teal" id="btnConferir" style="width:100%;margin-top:10px">✅ Já resolvi no caderno — conferir</button>
+      <div id="licaoNota" hidden style="margin-top:14px">
+        <p style="font-weight:800;text-align:center;margin:0 0 8px">Quantas você acertou?</p>
+        <div id="licaoNotaBtns" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
+      </div>
+      <button class="btn grape" id="btnConcluirLicao" hidden style="width:100%;margin-top:12px">🎉 Concluir a lição</button>
+    </div>
+  </section>
+
+  <!-- COLORIR -->
+  <section id="telaColorir" hidden>
+    <div class="mini">
+      <button class="back" id="sairColorir">← Voltar</button>
+      <div style="font-weight:800;font-family:var(--disp)">🎨 Colorir</div>
+      <div></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div id="colorPal" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:10px"></div>
+      <div id="colorArea" style="width:100%;max-width:340px;margin:0 auto;touch-action:manipulation"></div>
+      <div class="linha" style="margin-top:12px">
+        <button class="btn ghost sm" id="colorTrocar">🔄 Trocar desenho</button>
+        <button class="btn ghost sm" id="colorLimpar">🧽 Limpar</button>
+      </div>
+      <p style="text-align:center;color:var(--muold);font-weight:700;font-size:13px;margin:8px 0 0">Escolha uma cor e toque nas partes do desenho 🖌️</p>
+    </div>
   </section>
 
   <!-- JOGO -->
@@ -355,7 +394,7 @@
 (function(){
   "use strict";
   var $=function(id){return document.getElementById(id)};
-  var telas=["telaEntrada","telaHome","telaJogo","telaFim","telaRanking","telaPais","telaSabia","telaForca"];
+  var telas=["telaEntrada","telaHome","telaJogo","telaFim","telaRanking","telaPais","telaSabia","telaForca","telaLicao","telaColorir"];
   function mostrar(t){telas.forEach(function(x){$(x).hidden=(x!==t)});window.scrollTo(0,0);}
 
   // ---------- estado ----------
@@ -374,10 +413,10 @@
     quimica:"Lembre do básico: cada elemento tem um símbolo e a fórmula diz quantos átomos de cada. Vá por partes.",
     geral:"Pense no que já ouviu sobre o tema e elimine as opções que você tem certeza que estão erradas."
   };
-  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",uso:"Uso correto",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"Natureza e Mundo",matem:"Matemática",portem:"Português",quimica:"Química",geral:"Mundo e Conhecimentos"};
+  var SKILL_NOME={adicao:"Adição",subtracao:"Subtração",multiplicacao:"Multiplicação",divisao:"Divisão",problema:"Probleminhas",ortografia:"Ortografia",gramatica:"Gramática",interpretacao:"Interpretação",uso:"Uso correto",coletivos:"Substantivos coletivos",capitais:"Capitais",moedas:"Moedas",estados:"Estados do Brasil",gentilico:"Gentílicos",historia:"Natureza e Mundo",matem:"Matemática",portem:"Português",quimica:"Química",geral:"Mundo e Conhecimentos"};
   var DISC={
     mat:{nome:"Matemática",skills:["adicao","subtracao","multiplicacao","divisao","problema"]},
-    port:{nome:"Português",skills:["ortografia","gramatica","interpretacao","uso"]},
+    port:{nome:"Português",skills:["ortografia","gramatica","interpretacao","uso","coletivos"]},
     geo:{nome:"Geografia",skills:["capitais","moedas","estados","gentilico"]},
     hist:{nome:"Natureza e Mundo",skills:["historia"]},
     mat_em:{nome:"Matemática (EM)",skills:["matem"]},
@@ -464,7 +503,12 @@
     return wrap(sk,q,montarNum(ans,a+" ÷ "+b+" = "+ans+" doces para cada criança.",ps));
   }
   function wrap(sk,enun,m){return{skill:sk,enun:enun,texto:null,opcoes:m.opcoes,correta:m.correta,explica:m.explica,passos:m.passos||null};}
-  function nivelDe(sk){return (P.nivel&&P.nivel[sk])||1;}
+  // Cada série começa num grau apropriado (o adaptativo ajusta a partir daí).
+  function serieBase(){var s=P.serie||"3º";
+    if(s==="PV"||s==="3ª EM")return 8;
+    if(/EM/.test(s))return 6;
+    var m=parseInt(s,10)||3;return Math.max(1,Math.min(10,m-1));}
+  function nivelDe(sk){return (P.nivel&&P.nivel[sk]!=null)?P.nivel[sk]:serieBase();}
   // Crescimento suave: quase igual nos primeiros níveis, só acelera depois do 5º.
   function escala(n){return n<=5?(1+(n-1)*0.15):(1.6+(n-5)*0.45);}
 
@@ -520,7 +564,19 @@
     {id:"u13",skill:"uso",enun:"Complete: '___ você vai agora?' (para qual lugar)",ops:["Aonde","Onde","A onde","Aond"],c:0,ex:"Com movimento (ir A um lugar) usa-se AONDE."},
     {id:"u14",skill:"uso",enun:"Complete: 'Ela ficou ___ cansada.'",ops:["meio","meia","mei","meios"],c:0,ex:"'Meio' no sentido de 'um pouco' não muda: MEIO cansada."},
     {id:"u15",skill:"uso",enun:"Qual está certo?",ops:["Havia muitas pessoas","Haviam muitas pessoas","Avia muitas pessoas","Havião muitas pessoas"],c:0,ex:"'Haver' de existir fica no singular: HAVIA muitas pessoas."},
-    {id:"u16",skill:"uso",enun:"Complete: 'Nós ___ ao parque ontem.'",ops:["fomos","fumos","foimos","vámos"],c:0,ex:"O passado de 'nós ir' é NÓS FOMOS."}
+    {id:"u16",skill:"uso",enun:"Complete: 'Nós ___ ao parque ontem.'",ops:["fomos","fumos","foimos","vámos"],c:0,ex:"O passado de 'nós ir' é NÓS FOMOS."},
+    {id:"col1",skill:"coletivos",enun:"Um conjunto de abelhas se chama:",ops:["enxame","cardume","alcateia","matilha"],c:0,ex:"Muitas abelhas juntas = ENXAME."},
+    {id:"col2",skill:"coletivos",enun:"Muitos peixes nadando juntos formam um:",ops:["cardume","enxame","rebanho","bando"],c:0,ex:"Peixes juntos = CARDUME."},
+    {id:"col3",skill:"coletivos",enun:"Um grupo de lobos é uma:",ops:["alcateia","matilha","revoada","cardume"],c:0,ex:"Lobos juntos = ALCATEIA."},
+    {id:"col4",skill:"coletivos",enun:"Um conjunto de vacas e bois é um:",ops:["rebanho","cardume","enxame","buquê"],c:0,ex:"Gado junto = REBANHO."},
+    {id:"col5",skill:"coletivos",enun:"Vários cães de caça juntos formam uma:",ops:["matilha","alcateia","revoada","plateia"],c:0,ex:"Cães juntos = MATILHA."},
+    {id:"col6",skill:"coletivos",enun:"Muitas aves voando juntas formam uma:",ops:["revoada","matilha","cardume","orquestra"],c:0,ex:"Aves voando juntas = REVOADA."},
+    {id:"col7",skill:"coletivos",enun:"Um conjunto de estrelas que forma um desenho no céu é uma:",ops:["constelação","revoada","alcateia","plateia"],c:0,ex:"Estrelas em grupo = CONSTELAÇÃO."},
+    {id:"col8",skill:"coletivos",enun:"Muitas árvores juntas formam uma:",ops:["floresta","matilha","orquestra","revoada"],c:0,ex:"Árvores juntas = FLORESTA (ou mata)."},
+    {id:"col9",skill:"coletivos",enun:"Um grupo de músicos tocando juntos é uma:",ops:["orquestra","plateia","revoada","alcateia"],c:0,ex:"Músicos juntos = ORQUESTRA."},
+    {id:"col10",skill:"coletivos",enun:"As pessoas que assistem a um show são a:",ops:["plateia","orquestra","matilha","revoada"],c:0,ex:"Quem assiste = PLATEIA."},
+    {id:"col11",skill:"coletivos",enun:"Um conjunto de flores juntas é um:",ops:["buquê","cardume","enxame","rebanho"],c:0,ex:"Flores juntas = BUQUÊ (ou ramalhete)."},
+    {id:"col12",skill:"coletivos",enun:"Um grupo de ilhas próximas é um:",ops:["arquipélago","continente","oceano","deserto"],c:0,ex:"Ilhas em grupo = ARQUIPÉLAGO."}
   ];
   function genPort(sk){
     var lista=PORT.filter(function(q){return q.skill===sk;});
@@ -531,7 +587,7 @@
     usados[sk][q.id]=1;
     var ops=q.ops.map(function(t,i){return{t:t,ok:i===q.c};});
     ops=emb(ops);
-    var dica={ortografia:"Pense no som da palavra e lembre como ela se escreve certinho.",gramatica:"Leia a frase devagar e pense no que cada palavra faz nela.",interpretacao:"Volte no textinho com calma e procure a informação que a pergunta pede.",uso:"Leia a frase do jeito certo. Cuidado: alguns jeitos que a gente ouve por aí estão errados!"}[sk]||"Vamos pensar juntos.";
+    var dica={ortografia:"Pense no som da palavra e lembre como ela se escreve certinho.",gramatica:"Leia a frase devagar e pense no que cada palavra faz nela.",interpretacao:"Volte no textinho com calma e procure a informação que a pergunta pede.",uso:"Leia a frase do jeito certo. Cuidado: alguns jeitos que a gente ouve por aí estão errados!",coletivos:"Substantivo coletivo é o nome de um GRUPO de coisas iguais. Ex.: muitas abelhas juntas = um enxame."}[sk]||"Vamos pensar juntos.";
     return{skill:sk,enun:q.enun,texto:q.texto||null,opcoes:ops.map(function(o){return o.t;}),
       correta:ops.map(function(o){return o.ok;}).indexOf(true),explica:q.ex,passos:[dica,q.ex]};
   }
@@ -807,9 +863,11 @@
       var ganho=1+(streakR>=3?1:0);if(!faseRec)estrelasR+=ganho;P.estrelas+=ganho;P.pontos+=10+(streakR>=3?5:0);
       if(!faseRec)$("jogoEstrelas").textContent=String(estrelasR);
       somCerto();estrelaPop(i);
-      fb.className="feedback ok";fb.innerHTML="<b>"+(faseRec?"Agora foi! ✅":"Acertou! "+(streakR>=3?("🔥 "+streakR+" seguidas!"):"⭐"))+"</b><br>"+esc(q.explica);
-      leo(escolher(faseRec?["Isso! Você aprendeu! 🌟","Agora foi! 👏"]:["Isso! 🎉","Muito bem! 👏","Mandou bem! ⭐","Boa! Você é fera 💪"]),null);
-      falar((faseRec?"Agora foi! ":"Acertou! ")+q.explica);
+      // Acerto silencioso: só o sinal de certo (✓) e o som — sem narrar o
+      // resultado por voz. O Léo faz uma carinha feliz, mas não fala (fala só
+      // quando erra, que é quando a criança precisa ouvir a correção).
+      fb.className="feedback ok";fb.innerHTML="<b>✓ "+(faseRec?"Agora foi!":"Acertou!"+(streakR>=3?(" 🔥 "+streakR+" seguidas!"):" ⭐"))+"</b><br>"+esc(q.explica);
+      leo(escolher(faseRec?["Isso! Você aprendeu! 🌟","Agora foi! 👏"]:["Isso! 🎉","Muito bem! 👏","Mandou bem! ⭐","Boa! Você é fera 💪"]),false);
     }else{
       s.e++;streakR=0;
       if(!faseRec)pushRec(q);
@@ -842,7 +900,9 @@
     fb.hidden=false;$("btnProxima").hidden=false;
     var ultima=faseRec?(recIdx>=recFila.length-1):(idx>=9);
     $("btnProxima").textContent=ultima?((!faseRec&&recFila.length)?"Ir para a recuperação 💪":"Ver resultado 🎉"):"Próxima →";
-    travarAteFalar($("btnProxima"));
+    // Acertou: libera "Próxima" na hora (nada a ouvir). Errou: trava até o Léo
+    // terminar de explicar em voz alta.
+    if(certo){$("btnProxima").disabled=false;}else{travarAteFalar($("btnProxima"));}
   }
   function avancar(){
     if(!faseRec){
@@ -1084,7 +1144,140 @@
   function irHome(){atualizarPlacar();
     var em=ehMedio();$("discFund").hidden=em;$("discMedio").hidden=!em;
     $("missao").textContent=em?"Bons estudos! Escolha uma matéria do Ensino Médio.":"Missão do dia: acerte 7 numa rodada e ganhe estrelas! ⭐";
+    refrescarBtnLicao();
     mostrar("telaHome");leo("Oi "+(P.apelido||"")+"! Escolhe uma matéria 👇");}
+
+  // ---------- Lição do dia ----------
+  // Rotina diária para escrever no caderno: o app monta a lição (a MESMA o dia
+  // inteiro), a criança copia e resolve no papel, depois confere aqui e marca
+  // quantas acertou. Conta como presença do dia (ofensiva de dias).
+  function fonteDiscLic(disc){
+    if(disc==="mat")return gerarMat(escolherSkill(DISC.mat.skills));
+    if(disc==="port")return genPort(escolherSkill(DISC.port.skills));
+    if(disc==="mat_em")return genBank(BANK_MATEM,"matem");
+    if(disc==="port_em")return genBank(BANK_PORTEM,"portem");
+    if(disc==="geral_em")return genBank(HIST,"geral");
+    return gerarMat(escolherSkill(DISC.mat.skills));
+  }
+  function montarLicao(){
+    var hoje=new Date().toISOString().slice(0,10);
+    if(P.licaoDia&&P.licaoDia.data===hoje&&P.licaoDia.itens&&P.licaoDia.itens.length)return P.licaoDia;
+    var plano=ehMedio()?[["mat_em",4],["port_em",2],["geral_em",2]]:[["mat",5],["port",3]];
+    var itens=[],vistos={};
+    plano.forEach(function(par){var disc=par[0],n=par[1],tent=0;
+      while(n>0&&tent<50){tent++;var q=fonteDiscLic(disc);
+        if(!q||!q.opcoes){continue;}
+        var resp=q.opcoes[q.correta];var chave=(q.enun||"")+"|"+resp;
+        if(vistos[chave])continue;vistos[chave]=1;
+        itens.push({disc:disc,enun:q.enun||"",texto:q.texto||"",resp:String(resp),explica:q.explica||""});n--;}
+    });
+    P.licaoDia={data:hoje,itens:itens,feito:false};salvar();return P.licaoDia;
+  }
+  var licNota=null;
+  function abrirLicao(){
+    var L=montarLicao();licNota=null;
+    $("licaoIntro").innerHTML=L.feito
+      ? "✅ Você já fez a lição de hoje! Pode refazer pra treinar 💪"
+      : "Pegue o caderno ✏️, copie cada questão e resolva. Quando terminar, toque em <b>conferir</b> e veja quais você acertou.";
+    var html="";
+    L.itens.forEach(function(it,i){
+      html+='<div style="padding:10px 0;border-bottom:1px solid #eee5f2">'
+        +'<div style="font-weight:800">'+(i+1)+') '+(it.texto?esc(it.texto)+' — ':'')+esc(it.enun)+'</div>'
+        +'<div style="color:var(--muold);font-weight:700;margin-top:4px;font-size:13px">✏️ resolva no caderno</div>'
+        +'<div class="licResp" hidden style="margin-top:4px;color:#0d8f81;font-weight:800">Resposta: '+esc(it.resp)+'</div>'
+        +'</div>';
+    });
+    $("licaoLista").innerHTML=html;
+    $("btnConferir").hidden=false;$("btnConferir").disabled=false;
+    $("licaoNota").hidden=true;$("btnConcluirLicao").hidden=true;$("licaoNotaBtns").innerHTML="";
+    mostrar("telaLicao");leo("Lição do dia! Pega o caderno e capricha ✏️",false);
+  }
+  function conferirLicao(){
+    var L=P.licaoDia||montarLicao();
+    $("licaoLista").querySelectorAll(".licResp").forEach(function(e){e.hidden=false;});
+    $("btnConferir").disabled=true;
+    var n=L.itens.length,btns="";
+    for(var k=0;k<=n;k++){btns+='<button type="button" class="btn ghost sm licnb" data-n="'+k+'" style="min-width:46px">'+k+'</button>';}
+    $("licaoNotaBtns").innerHTML=btns;
+    $("licaoNotaBtns").querySelectorAll(".licnb").forEach(function(b){b.addEventListener("click",function(){
+      licNota=parseInt(b.dataset.n,10);
+      $("licaoNotaBtns").querySelectorAll(".licnb").forEach(function(x){x.classList.add("ghost");x.classList.remove("star");});
+      b.classList.remove("ghost");b.classList.add("star");
+      $("btnConcluirLicao").hidden=false;});});
+    $("licaoNota").hidden=false;
+    leo("Confere com calma e marca quantas você acertou 😊",false);
+  }
+  function concluirLicao(){
+    var L=P.licaoDia||montarLicao();var n=L.itens.length;
+    var ac=(licNota==null)?0:licNota;
+    var ganho=ac*2+(ac===n?5:0);
+    P.estrelas+=ganho;P.pontos+=ac*5;L.feito=true;
+    atualizarDia();salvar();
+    mostrar("telaHome");atualizarPlacar();refrescarBtnLicao();
+    leo((ac===n?("PERFEITO! "+n+" de "+n+"! 🏆 "):("Boa! "+ac+" de "+n+" ✅ "))+"Ganhou "+ganho+" estrelas ⭐",false);
+  }
+  function refrescarBtnLicao(){var b=$("btnLicao");if(!b)return;
+    var hoje=new Date().toISOString().slice(0,10);
+    var feita=P.licaoDia&&P.licaoDia.data===hoje&&P.licaoDia.feito;
+    b.textContent=feita?"📓 Lição do dia ✅ (feita hoje)":"📓 Lição do dia";}
+
+  // ---------- Colorir ----------
+  // Passatempo de pintura: escolhe a cor na paleta e toca nas partes do desenho
+  // para preencher. Desenhos feitos em SVG com regiões clicáveis (classe "reg").
+  var COLOR_PAL=["#e74c3c","#ff8a3d","#ffd23f","#4caf50","#14b8a6","#4f93ff","#3f51b5","#8b5cf6","#ff6fae","#8d5a2b","#222222","#ffffff"];
+  var corAtiva="#ff6fae", desIdx=0;
+  function svgPt(cx,cy,r,a){return (cx+r*Math.cos(a)).toFixed(1)+" "+(cy+r*Math.sin(a)).toFixed(1);}
+  function arcSeg(cx,cy,r1,r2,a1,a2){var large=(a2-a1)>Math.PI?1:0;
+    return "M"+svgPt(cx,cy,r2,a1)+"A"+r2+" "+r2+" 0 "+large+" 1 "+svgPt(cx,cy,r2,a2)
+      +"L"+svgPt(cx,cy,r1,a2)+"A"+r1+" "+r1+" 0 "+large+" 0 "+svgPt(cx,cy,r1,a1)+"Z";}
+  function desMandala(){var cx=160,cy=160,aneis=[18,46,78,112,145],seg=[1,10,12,16,16],p="";
+    p+='<circle class="reg" cx="160" cy="160" r="18" fill="#fff" stroke="#6a4a8a" stroke-width="1.3"/>';
+    for(var k=1;k<aneis.length;k++){var r1=aneis[k-1],r2=aneis[k],ns=seg[k];
+      for(var s=0;s<ns;s++){var a1=(s/ns)*2*Math.PI,a2=((s+1)/ns)*2*Math.PI;
+        p+='<path class="reg" d="'+arcSeg(cx,cy,r1,r2,a1,a2)+'" fill="#fff" stroke="#6a4a8a" stroke-width="1.2"/>';}}
+    var nf=16;for(var s2=0;s2<nf;s2++){var a=(s2/nf)*2*Math.PI,x=160+152*Math.cos(a),y=160+152*Math.sin(a);
+      p+='<circle class="reg" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="10" fill="#fff" stroke="#6a4a8a" stroke-width="1.2"/>';}
+    return p;}
+  function desFlor(){var p='',cx=160,cy=120;
+    for(var i=0;i<8;i++){var a=(i/8)*2*Math.PI,x=cx+54*Math.cos(a),y=cy+54*Math.sin(a);
+      p+='<ellipse class="reg" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="26" ry="16" fill="#fff" stroke="#b06a2c" stroke-width="1.6" transform="rotate('+(i*45)+' '+x.toFixed(1)+' '+y.toFixed(1)+')"/>';}
+    p+='<circle class="reg" cx="160" cy="120" r="30" fill="#fff" stroke="#b06a2c" stroke-width="1.8"/>';
+    p+='<rect class="reg" x="152" y="150" width="16" height="120" fill="#fff" stroke="#2e8b5e" stroke-width="1.6"/>';
+    p+='<ellipse class="reg" cx="120" cy="210" rx="34" ry="16" fill="#fff" stroke="#2e8b5e" stroke-width="1.6" transform="rotate(-30 120 210)"/>';
+    p+='<ellipse class="reg" cx="200" cy="235" rx="34" ry="16" fill="#fff" stroke="#2e8b5e" stroke-width="1.6" transform="rotate(30 200 235)"/>';
+    return p;}
+  function desBorboleta(){var p='';
+    p+='<ellipse class="reg" cx="160" cy="160" rx="10" ry="60" fill="#fff" stroke="#333" stroke-width="1.8"/>';
+    p+='<circle class="reg" cx="112" cy="120" r="46" fill="#fff" stroke="#6a4a8a" stroke-width="1.6"/>';
+    p+='<circle class="reg" cx="208" cy="120" r="46" fill="#fff" stroke="#6a4a8a" stroke-width="1.6"/>';
+    p+='<circle class="reg" cx="120" cy="208" r="38" fill="#fff" stroke="#6a4a8a" stroke-width="1.6"/>';
+    p+='<circle class="reg" cx="200" cy="208" r="38" fill="#fff" stroke="#6a4a8a" stroke-width="1.6"/>';
+    p+='<circle class="reg" cx="112" cy="120" r="18" fill="#fff" stroke="#6a4a8a" stroke-width="1.4"/>';
+    p+='<circle class="reg" cx="208" cy="120" r="18" fill="#fff" stroke="#6a4a8a" stroke-width="1.4"/>';
+    return p;}
+  function desCasa(){var p='';
+    p+='<rect class="reg" x="90" y="150" width="140" height="120" fill="#fff" stroke="#8d5a2b" stroke-width="1.8"/>';
+    p+='<path class="reg" d="M74 150 L160 80 L246 150 Z" fill="#fff" stroke="#8d5a2b" stroke-width="1.8"/>';
+    p+='<rect class="reg" x="140" y="200" width="40" height="70" fill="#fff" stroke="#8d5a2b" stroke-width="1.6"/>';
+    p+='<rect class="reg" x="105" y="170" width="34" height="34" fill="#fff" stroke="#8d5a2b" stroke-width="1.4"/>';
+    p+='<rect class="reg" x="182" y="170" width="34" height="34" fill="#fff" stroke="#8d5a2b" stroke-width="1.4"/>';
+    p+='<circle class="reg" cx="250" cy="70" r="24" fill="#fff" stroke="#e0a800" stroke-width="1.6"/>';
+    return p;}
+  var DESENHOS=[{nome:"Mandala",f:desMandala},{nome:"Flor",f:desFlor},{nome:"Borboleta",f:desBorboleta},{nome:"Casinha",f:desCasa}];
+  function renderPaleta(){var el=$("colorPal");el.innerHTML="";
+    COLOR_PAL.forEach(function(c){var b=document.createElement("button");b.type="button";
+      b.style.cssText="width:30px;height:30px;border-radius:50%;cursor:pointer;padding:0;background:"+c+";border:3px solid "+(c===corAtiva?"#111":(c==="#ffffff"?"#ccc":"#fff"))+";box-shadow:0 1px 4px rgba(0,0,0,.2)";
+      b.addEventListener("click",function(){corAtiva=c;renderPaleta();});el.appendChild(b);});}
+  function pintar(e){var t=e.target;if(t&&t.getAttribute&&t.classList&&t.classList.contains("reg")){t.setAttribute("fill",corAtiva);try{beep(520,.04);}catch(_){}}}
+  function renderDesenho(){
+    $("colorArea").innerHTML='<svg viewBox="0 0 320 320" style="width:100%;height:auto;display:block;background:#fff;border-radius:14px;border:1px solid #eee5f2">'+DESENHOS[desIdx].f()+'</svg>';
+    var svg=$("colorArea").querySelector("svg");
+    svg.addEventListener("click",pintar);
+    // pintar arrastando (segurando o dedo/mouse)
+    svg.addEventListener("pointermove",function(e){if(e.buttons===1||e.pressure>0)pintar(e);});}
+  function abrirColorir(){renderPaleta();renderDesenho();mostrar("telaColorir");leo("Escolhe uma cor e vai pintando! 🎨",false);}
+  function trocarDesenho(){desIdx=(desIdx+1)%DESENHOS.length;renderDesenho();leo(DESENHOS[desIdx].nome+"! 🖌️",false);}
+  function limparDesenho(){$("colorArea").querySelectorAll(".reg").forEach(function(e){e.setAttribute("fill","#fff");});}
 
   // eventos
   $("btnEntrar").addEventListener("click",function(){
@@ -1112,6 +1305,14 @@
   $("btnForca").addEventListener("click",iniciarForca);
   $("forcaNova").addEventListener("click",iniciarForca);
   $("forcaBack").addEventListener("click",irHome);
+  $("btnLicao").addEventListener("click",abrirLicao);
+  $("sairLicao").addEventListener("click",irHome);
+  $("btnConferir").addEventListener("click",conferirLicao);
+  $("btnConcluirLicao").addEventListener("click",concluirLicao);
+  $("btnColorir").addEventListener("click",abrirColorir);
+  $("sairColorir").addEventListener("click",irHome);
+  $("colorTrocar").addEventListener("click",trocarDesenho);
+  $("colorLimpar").addEventListener("click",limparDesenho);
   $("btnOuvir").addEventListener("click",lerPergunta);
   $("btnAjuda").addEventListener("click",function(){abrirEnsina(qAtual());});
   $("ensinaOk").addEventListener("click",function(){$("ensina").hidden=true;if(window.speechSynthesis)speechSynthesis.cancel();});
