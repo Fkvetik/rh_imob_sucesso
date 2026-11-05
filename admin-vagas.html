@@ -242,8 +242,8 @@
         '<div class="field"><label>Instagram (URL do post) <span class="dica">(opcional)</span></label>'+f('v-instagram_url',v.instagram_url)+'</div>'+
         '<div class="field"><label>Imagem do anúncio <span class="dica">(aparece no site e no preview do WhatsApp — suba uma imagem ou cole a URL)</span></label>'+
           '<div id="vg-img-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:14px;text-align:center;cursor:pointer;position:relative" ondragover="event.preventDefault();this.style.borderColor=\'#2b124d\'" ondragleave="this.style.borderColor=\'#e0dce8\'" ondrop="vgImgDrop(event)" onclick="document.getElementById(\'vg-img-file\').click()">'+
-            '<div id="vg-img-ph" style="font-size:13px;color:#888;font-weight:700">📷 Clique ou arraste a imagem aqui (máx 5 MB)</div>'+
-            '<div id="vg-img-loading" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando…</div>'+
+            '<div id="vg-img-ph" style="font-size:13px;color:#888;font-weight:700">📷 Clique ou arraste a imagem aqui (máx 5 MB)<br><span style="font-weight:400;font-size:11px">Pode subir a quadrada do GPT — a prévia do WhatsApp (1200×630) é gerada sozinha</span></div>'+
+            '<div id="vg-img-loading" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando e gerando a prévia do WhatsApp…</div>'+
             '<img id="vg-img-preview" alt="" style="display:none;max-width:100%;max-height:220px;border-radius:8px;margin:0 auto" />'+
             '<input type="file" id="vg-img-file" accept="image/*" style="display:none" onchange="vgImgFile(this.files[0])">'+
           '</div>'+
@@ -276,19 +276,63 @@
     function vgImgSync(){ var u=val('v-imagem_url'); var og=document.getElementById('v-imagem_og'); if(og) og.value=u; vgImgShow(u); }
     function vgImgClear(){ var i=document.getElementById('v-imagem_url'); if(i) i.value=''; var og=document.getElementById('v-imagem_og'); if(og) og.value=''; var fl=document.getElementById('vg-img-file'); if(fl) fl.value=''; vgImgShow(''); }
     function vgImgDrop(e){ e.preventDefault(); var a=document.getElementById('vg-img-area'); if(a) a.style.borderColor='#e0dce8'; var file=e.dataTransfer.files[0]; if(file&&file.type.indexOf('image/')===0) vgImgFile(file); }
+    // Gera a versão Open Graph (1200×630, paisagem) a partir de qualquer imagem
+    // enviada — inclusive a quadrada do GPT. A arte entra INTEIRA e centralizada
+    // (sem cortar), e as laterais que sobram ganham um fundo desfocado da própria
+    // imagem. É o que a prévia do WhatsApp/Facebook usa.
+    function vgGerarOG(file){
+      return new Promise(function(resolve){
+        try{
+          var url=URL.createObjectURL(file), im=new Image();
+          im.onload=function(){
+            try{
+              var W=1200, H=630, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+              var ctx=cv.getContext('2d');
+              // fundo desfocado (cobre a tela toda)
+              var cov=Math.max(W/im.width, H/im.height)*1.18, cw=im.width*cov, ch=im.height*cov;
+              try{ ctx.filter='blur(30px)'; }catch(_){}
+              ctx.drawImage(im,(W-cw)/2,(H-ch)/2,cw,ch);
+              try{ ctx.filter='none'; }catch(_){}
+              ctx.fillStyle='rgba(0,0,0,0.14)'; ctx.fillRect(0,0,W,H);
+              // a arte inteira, centralizada, com uma leve sombra
+              var fit=Math.min((W*0.92)/im.width,(H*0.92)/im.height), fw=im.width*fit, fh=im.height*fit;
+              ctx.save(); ctx.shadowColor='rgba(0,0,0,0.28)'; ctx.shadowBlur=26; ctx.shadowOffsetY=6;
+              ctx.drawImage(im,(W-fw)/2,(H-fh)/2,fw,fh); ctx.restore();
+              try{ URL.revokeObjectURL(url); }catch(_){}
+              cv.toBlob(function(b){ resolve(b); },'image/jpeg',0.9);
+            }catch(_){ resolve(null); }
+          };
+          im.onerror=function(){ try{ URL.revokeObjectURL(url); }catch(_){} resolve(null); };
+          im.src=url;
+        }catch(_){ resolve(null); }
+      });
+    }
     async function vgImgFile(file){
       if(!file) return;
       if(file.size>5*1024*1024){ alert('Imagem muito grande (máx 5 MB).'); return; }
       var ph=document.getElementById('vg-img-ph'), ld=document.getElementById('vg-img-loading'), area=document.getElementById('vg-img-area');
       if(ph) ph.style.display='none'; if(ld) ld.style.display='block'; if(area) area.style.pointerEvents='none';
       try{
+        var ts=Date.now();
         var ext=(file.name.split('.').pop()||'jpg').toLowerCase(); if(ext==='jfif'||ext==='jpe') ext='jpg';
-        var caminho='noticias/vaga-'+Date.now()+'.'+ext;
+        // 1) imagem original (como veio) → vai para o site da vaga
+        var caminho='noticias/vaga-'+ts+'.'+ext;
         var res=await fetch(SB_URL+'/storage/v1/object/'+caminho,{ method:'POST', headers:{ 'Authorization':'Bearer '+SB_KEY, 'apikey':SB_KEY, 'Content-Type':file.type||'image/jpeg', 'x-upsert':'true' }, body:file });
         if(!res.ok){ throw new Error(await res.text()); }
         var publicUrl=SB_URL+'/storage/v1/object/public/'+caminho;
+        // 2) versão Open Graph 1200×630 → prévia do WhatsApp
+        var ogUrl=publicUrl;
+        try{
+          var ogBlob=await vgGerarOG(file);
+          if(ogBlob){
+            var ogCaminho='noticias/vaga-'+ts+'-og.jpg';
+            var r2=await fetch(SB_URL+'/storage/v1/object/'+ogCaminho,{ method:'POST', headers:{ 'Authorization':'Bearer '+SB_KEY, 'apikey':SB_KEY, 'Content-Type':'image/jpeg', 'x-upsert':'true' }, body:ogBlob });
+            if(r2.ok) ogUrl=SB_URL+'/storage/v1/object/public/'+ogCaminho;
+          }
+        }catch(_){}
         var i=document.getElementById('v-imagem_url'); if(i) i.value=publicUrl;
-        vgImgSync();
+        var og=document.getElementById('v-imagem_og'); if(og) og.value=ogUrl;
+        vgImgShow(publicUrl);
       }catch(e){ alert('Erro no upload: '+e.message); if(ph) ph.style.display='block'; }
       finally{ if(ld) ld.style.display='none'; if(area) area.style.pointerEvents=''; }
     }
@@ -298,6 +342,11 @@
       var payload={ acao: vagaId?'editar_vaga':'criar_vaga' };
       if(vagaId) payload.vaga_id=vagaId; else { var vid=val('v-vaga_id'); if(vid) payload.vaga_id=vid; }
       campos.forEach(function(c){ payload[c]=val('v-'+c); });
+      // Padroniza os campos usados em busca/agrupamento, para não duplicar por
+      // causa de maiúscula/minúscula ("corretor" x "Corretor"). Preserva siglas
+      // (RH, SP, RE/MAX). UF sempre em maiúsculas.
+      ['categoria','responsavel_cargo','cidade','localidade'].forEach(function(c){ payload[c]=tituloTxt(payload[c]); });
+      if(payload.estado_uf) payload.estado_uf=payload.estado_uf.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
       payload.status=val('v-status'); payload.prioridade=val('v-prioridade');
       if(payload.instagram_url && !payload.imagem_url) payload.midia_tipo='instagram';
       if(!payload.titulo) return modalErr('Informe o título.');
@@ -307,6 +356,21 @@
     }
 
     function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+    // Padroniza texto para busca/agrupamento: 1ª letra de cada palavra maiúscula,
+    // conectores (de/da/do…) minúsculos, mas PRESERVA siglas (RH, SP), nomes com
+    // barra (RE/MAX) ou número. Assim "corretor" e "Corretor" viram a mesma coisa.
+    function tituloTxt(v){
+      var base=String(v||'').replace(/\s+/g,' ').trim();
+      if(!base) return '';
+      var MIN={de:1,da:1,do:1,das:1,dos:1,e:1,di:1,du:1};
+      return base.split(' ').map(function(w,i){
+        if(/[\/]/.test(w) || /\d/.test(w)) return w;                               // RE/MAX, nomes com número
+        if(w.length<=3 && w===w.toUpperCase() && /[A-ZÀ-Ý]/.test(w)) return w;      // siglas: RH, SP, CRM
+        var lw=w.toLowerCase();
+        if(i>0 && MIN[lw]) return lw;
+        return lw.charAt(0).toUpperCase()+lw.slice(1);
+      }).join(' ');
+    }
     function modalErr(m){ var el=document.getElementById('m-err'); if(el){ el.style.display='block'; el.textContent=m; } }
     async function postAcao(payload){
       var r=await fetch('/api/vagas-admin?token='+encodeURIComponent(TOKEN),{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
