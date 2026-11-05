@@ -294,10 +294,12 @@
               ctx.drawImage(im,(W-cw)/2,(H-ch)/2,cw,ch);
               try{ ctx.filter='none'; }catch(_){}
               ctx.fillStyle='rgba(0,0,0,0.14)'; ctx.fillRect(0,0,W,H);
-              // a arte inteira, centralizada, com uma leve sombra
-              var fit=Math.min((W*0.92)/im.width,(H*0.92)/im.height), fw=im.width*fit, fh=im.height*fit;
+              // a arte inteira, um pouco maior e com leve viés pro topo (onde
+              // fica o título da vaga), para o headline sobreviver a qualquer corte
+              var fit=Math.min((W*0.96)/im.width,(H*0.96)/im.height), fw=im.width*fit, fh=im.height*fit;
+              var ox=(W-fw)/2, oy=Math.min((H-fh)/2,(H-fh)*0.32);
               ctx.save(); ctx.shadowColor='rgba(0,0,0,0.28)'; ctx.shadowBlur=26; ctx.shadowOffsetY=6;
-              ctx.drawImage(im,(W-fw)/2,(H-fh)/2,fw,fh); ctx.restore();
+              ctx.drawImage(im,ox,oy,fw,fh); ctx.restore();
               try{ URL.revokeObjectURL(url); }catch(_){}
               cv.toBlob(function(b){ resolve(b); },'image/jpeg',0.9);
             }catch(_){ resolve(null); }
