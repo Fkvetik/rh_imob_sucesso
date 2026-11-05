@@ -51,7 +51,9 @@ function splitList(value) {
 function ogImageUrl(rawUrl) {
   if (!rawUrl) return null;
   if (rawUrl.includes('supabase.co/storage/v1/object/public/')) {
-    return `${BASE}/api/og-image?url=${encodeURIComponent(rawUrl)}`;
+    // &c=2 = versão do recorte do OG (cover+top). Trocar esse número força
+    // WhatsApp/Facebook e o CDN a buscarem a prévia nova em vez do cache antigo.
+    return `${BASE}/api/og-image?url=${encodeURIComponent(rawUrl)}&c=2`;
   }
   return rawUrl;
 }

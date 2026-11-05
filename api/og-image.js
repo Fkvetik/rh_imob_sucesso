@@ -15,7 +15,10 @@ export default async function handler(req, res) {
   }
 
   const stripped = rawUrl.replace(/^https?:\/\//, '');
-  const wsrvUrl = `https://images.weserv.nl/?url=${stripped}&w=1200&h=630&q=75&output=jpg&fit=cover`;
+  // fit=cover&a=top: preenche 1200x630 ancorando no TOPO, para o título da vaga
+  // (que fica em cima na arte) nunca ser cortado. O corte sobra para o rodapé,
+  // cujas informações já aparecem escritas na página da vaga.
+  const wsrvUrl = `https://images.weserv.nl/?url=${stripped}&w=1200&h=630&q=78&output=jpg&fit=cover&a=top`;
 
   try {
     const r = await fetch(wsrvUrl, { signal: AbortSignal.timeout(10000) });
