@@ -1026,6 +1026,41 @@
     }
   }
 
+  // Grava a candidatura de vaga TAMBÉM no site_leads (tabela que o painel lê),
+  // marcada como tipo "candidato" e com origem "Vaga: <título>". Assim a
+  // candidatura aparece no painel de Leads — captura no blur (parcial) e no
+  // envio (enviou_whatsapp=true), igual ao formulário de empresa.
+  function saveLeadVaga(job, data, enviou) {
+    const cfg = getNtSupabaseConfig();
+    if (!cfg) return;
+    const nome = normalize(data.nome), whatsapp = normalize(data.whatsapp);
+    if (!nome && !whatsapp) return; // nada útil ainda
+    const base = ensureLeadSession();
+    const origem = job ? ('Vaga: ' + job.title) : (document.title || location.pathname);
+    const row = {
+      session_id: base + '#' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      nome, whatsapp,
+      cidade: normalize(data.cidade),
+      cargo_vaga: job ? job.title : '',
+      mensagem: [
+        job ? ('Vaga: ' + job.title + (job.location ? ' — ' + job.location : '')) : '',
+        data.inicio ? ('Disponibilidade: ' + data.inicio) : '',
+        job ? ('Link: ' + getJobShareUrl(job)) : ''
+      ].filter(Boolean).join(' | '),
+      tipo: 'candidato',
+      origem,
+      pagina: location.href,
+      enviou_whatsapp: !!enviou
+    };
+    const url = `${cfg.url.replace(/\/$/, '')}/rest/v1/site_leads`;
+    const headers = supabaseHeaders(cfg, { 'Content-Type': 'application/json', Prefer: 'return=minimal' });
+    fetch(url, { method: 'POST', headers, body: JSON.stringify(row) })
+      .then((r) => {
+        if (!r.ok) { const { tipo: _t, ...semTipo } = row; semTipo.origem = '[candidato] ' + semTipo.origem; return fetch(url, { method: 'POST', headers, body: JSON.stringify(semTipo) }); }
+      })
+      .catch(() => {});
+  }
+
   function setupJobModal() {
     const modal = $('#jobModal');
     const form = $('#jobForm');
@@ -1034,6 +1069,20 @@
     $$('[data-close-modal]').forEach((el) => el.addEventListener('click', closeJobModal));
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeJobModal();
+    });
+    // Captura progressiva: salva no painel ao sair dos campos-chave, mesmo sem
+    // concluir (igual ao formulário de empresa).
+    ['nome', 'whatsapp', 'cidade'].forEach((n) => {
+      const el = form.elements[n];
+      if (el) el.addEventListener('blur', () => {
+        const job = getJobById(form.elements.jobId.value);
+        saveLeadVaga(job, {
+          nome: normalize(form.elements.nome?.value),
+          whatsapp: normalize(form.elements.whatsapp?.value),
+          cidade: normalize(form.elements.cidade?.value),
+          inicio: normalize(form.elements.inicio?.value)
+        }, false);
+      });
     });
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -1053,6 +1102,7 @@
         return;
       }
       salvarCandidatura(job, data);
+      saveLeadVaga(job, data, true); // aparece no painel de Leads (tipo candidato)
       const targetWhatsApp = job.responsible?.whatsapp || VAGAS_WHATSAPP;
       openWhatsApp(targetWhatsApp, buildJobMessage(job, data));
     });
