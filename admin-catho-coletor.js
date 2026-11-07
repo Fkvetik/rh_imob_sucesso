@@ -1695,7 +1695,7 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
 
   $("formMsg").textContent = "Salvando...";
   try {
-    const resp = await rpc("rpc_admin_upsert_usuario", {
+    const baseBody = {
       p_admin_password: ADMIN_PASS, p_login: login, p_senha: senha, p_nome: nome,
       p_ativo: ativo, p_horario_coleta: horario,
       p_email_plataforma: emailPlataforma, p_conta_id_plataforma: contaPlataforma,
@@ -1705,10 +1705,21 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
       p_limite_pool: $("fLimitePool").value,
       // Corretores CRECI: só o e-mail; o acesso é gerado pelo servidor.
       p_email_rhi: emailRhi || null,
-      p_senha_rhi: null,
-      p_agenda_tipos: agendaTipos
-    });
+      p_senha_rhi: null
+    };
+    // Tenta com os tipos da agenda; se o banco ainda não tem o AGEND_6 (parâmetro
+    // p_agenda_tipos inexistente), repete sem ele para não travar o salvamento.
+    let resp, semAgenda = false;
+    try {
+      resp = await rpc("rpc_admin_upsert_usuario", { ...baseBody, p_agenda_tipos: agendaTipos });
+    } catch (e) {
+      resp = await rpc("rpc_admin_upsert_usuario", baseBody); semAgenda = true;
+    }
+    if (resp && !resp.ok && /agenda_tipos|p_agenda|function|PGRST|não existe|does not exist/i.test(resp.error || "")) {
+      resp = await rpc("rpc_admin_upsert_usuario", baseBody); semAgenda = true;
+    }
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
+    if (semAgenda) { try { toast && toast("⚠️ Operador salvo, mas os 'Tipos de agenda' não — falta rodar o SQL AGEND_6 no Supabase."); } catch (_) { } }
 
     const novo = !USUARIOS_COLETOR_CACHE.some(u => String(u.login).toLowerCase() === login.toLowerCase());
     if (novo && VALIDADE_PODE_EDITAR) {
