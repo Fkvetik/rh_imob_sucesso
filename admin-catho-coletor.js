@@ -1182,7 +1182,7 @@ function renderUsuarios(list) {
                </small>`
             : `<button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||'')}" class="secondary criarAcessoBtn" style="padding:4px 8px;font-size:11px">+ Criar acesso</button>`}</td>
       <td>
-        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" data-agenda="${esc(u.agenda_tipos||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
@@ -1295,6 +1295,7 @@ function renderUsuarios(list) {
       }
       selConta.value = contaAtual;
       $("fLimitePool").value = btn.dataset.limite || "";
+      setAgendaTipos(btn.dataset.agenda || "");
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
@@ -1635,6 +1636,7 @@ $("btnLimparForm").addEventListener("click", () => {
   $("fLimitePool").value = "";
   $("fEmailRhi").value = "";
   $("fSenhaRhi").value = "";
+  setAgendaTipos(""); // volta a todos marcados
   $("formMsg").textContent = "";
 });
 
@@ -1660,6 +1662,22 @@ async function sincronizarSenhaComPlataforma(login, emailPlataforma, senha) {
   if (!rUpsert.ok) throw new Error("Senha atualizada na plataforma, mas falhou ao gravar no Coletor: " + rUpsert.error);
 }
 
+// Tipos de agenda do operador: checkboxes <-> string "online,presencial,repasse".
+// Vazio (ou as 3 marcadas) = todos. Nenhuma marcada = inválido (null).
+function setAgendaTipos(str){
+  const box = document.getElementById("fAgendaTipos"); if (!box) return;
+  const sel = String(str || "").toLowerCase().split(/[,\s;]+/).filter(Boolean);
+  const todos = sel.length === 0;
+  box.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = todos || sel.includes(cb.value); });
+}
+function getAgendaTipos(){
+  const box = document.getElementById("fAgendaTipos"); if (!box) return "";
+  const m = [...box.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+  if (m.length === 0) return null;      // nenhum marcado = inválido
+  if (m.length === 3) return "";        // todos = vazio
+  return m.join(",");
+}
+
 $("btnSalvarUsuario").addEventListener("click", async () => {
   const login = $("fLogin").value.trim();
   const senha = $("fSenha").value;
@@ -1672,6 +1690,8 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
   const senhaRhi = $("fSenhaRhi").value;
   if (!login) { $("formMsg").textContent = "❌ Login é obrigatório."; return; }
   if (emailPlataforma && !contaPlataforma) { $("formMsg").textContent = "❌ Escolha a conta da plataforma junto com o e-mail."; return; }
+  const agendaTipos = getAgendaTipos();
+  if (agendaTipos === null) { $("formMsg").textContent = "❌ Marque ao menos um tipo de agenda."; return; }
 
   $("formMsg").textContent = "Salvando...";
   try {
@@ -1685,7 +1705,8 @@ $("btnSalvarUsuario").addEventListener("click", async () => {
       p_limite_pool: $("fLimitePool").value,
       // Corretores CRECI: só o e-mail; o acesso é gerado pelo servidor.
       p_email_rhi: emailRhi || null,
-      p_senha_rhi: null
+      p_senha_rhi: null,
+      p_agenda_tipos: agendaTipos
     });
     if (!resp.ok) { $("formMsg").textContent = "❌ " + resp.error; return; }
 
