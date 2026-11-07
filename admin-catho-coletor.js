@@ -1296,7 +1296,11 @@ function renderUsuarios(list) {
       selConta.value = contaAtual;
       $("fLimitePool").value = btn.dataset.limite || "";
       setAgendaTipos(btn.dataset.agenda || "");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // A seção "Adicionar / editar operador" pode estar recolhida (sanfona):
+      // abre ela e rola até o formulário, senão "não aparece nada".
+      const formCard = $("fLogin").closest(".card");
+      if (formCard) { formCard.classList.remove("recolhido"); formCard.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      else window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
 
