@@ -78,34 +78,46 @@ begin
     bairro, cidade, uf, lat, lng, site, instagram_url, instagram_user,
     seguidores, avaliacao, num_avaliacoes, creci, status, estagio, atualizado_em
   )
+  -- Deduplica dentro do próprio lote: se o mesmo place_key vier repetido,
+  -- fica só a ÚLTIMA ocorrência (ordinalidade maior). Sem isto, o
+  -- "ON CONFLICT DO UPDATE" tentaria mexer na mesma linha duas vezes e falha.
   select
-    nullif(btrim(r.place_key), ''),
-    nullif(btrim(r.place_url), ''),
-    nullif(btrim(r.nome), ''),
-    nullif(btrim(r.categoria), ''),
-    nullif(btrim(r.tipo_local), ''),
-    nullif(btrim(r.telefone), ''),
-    nullif(btrim(r.endereco), ''),
-    nullif(btrim(r.bairro), ''),
-    nullif(btrim(r.cidade), ''),
-    nullif(btrim(r.uf), ''),
-    r.lat, r.lng,
-    nullif(btrim(r.site), ''),
-    nullif(btrim(r.instagram_url), ''),
-    nullif(btrim(r.instagram_user), ''),
-    r.seguidores, r.avaliacao, r.num_avaliacoes,
-    nullif(btrim(r.creci), ''),
-    nullif(btrim(r.status), ''),
-    nullif(btrim(r.estagio), ''),
+    nullif(btrim(d.place_key), ''),
+    nullif(btrim(d.place_url), ''),
+    nullif(btrim(d.nome), ''),
+    nullif(btrim(d.categoria), ''),
+    nullif(btrim(d.tipo_local), ''),
+    nullif(btrim(d.telefone), ''),
+    nullif(btrim(d.endereco), ''),
+    nullif(btrim(d.bairro), ''),
+    nullif(btrim(d.cidade), ''),
+    nullif(btrim(d.uf), ''),
+    d.lat, d.lng,
+    nullif(btrim(d.site), ''),
+    nullif(btrim(d.instagram_url), ''),
+    nullif(btrim(d.instagram_user), ''),
+    d.seguidores, d.avaliacao, d.num_avaliacoes,
+    nullif(btrim(d.creci), ''),
+    nullif(btrim(d.status), ''),
+    nullif(btrim(d.estagio), ''),
     now()
-  from jsonb_to_recordset(p_rows) as r(
-    place_key text, place_url text, nome text, categoria text, tipo_local text,
-    telefone text, endereco text, bairro text, cidade text, uf text,
-    lat double precision, lng double precision, site text, instagram_url text,
-    instagram_user text, seguidores integer, avaliacao numeric, num_avaliacoes integer,
-    creci text, status text, estagio text
-  )
-  where nullif(btrim(r.place_key), '') is not null
+  from (
+    select r.*,
+           row_number() over (
+             partition by nullif(btrim(r.place_key), '')
+             order by e.ord desc
+           ) as rn
+    from jsonb_array_elements(p_rows) with ordinality as e(obj, ord)
+    cross join lateral jsonb_to_record(e.obj) as r(
+      place_key text, place_url text, nome text, categoria text, tipo_local text,
+      telefone text, endereco text, bairro text, cidade text, uf text,
+      lat double precision, lng double precision, site text, instagram_url text,
+      instagram_user text, seguidores integer, avaliacao numeric, num_avaliacoes integer,
+      creci text, status text, estagio text
+    )
+    where nullif(btrim(r.place_key), '') is not null
+  ) d
+  where d.rn = 1
   on conflict (place_key) do update set
     place_url      = coalesce(excluded.place_url,      m.place_url),
     nome           = coalesce(excluded.nome,           m.nome),
