@@ -41,15 +41,18 @@ function inteiro(v) {
   return n == null ? null : Math.round(n);
 }
 
-// Coordenada da própria placeUrl do Maps (…/@-23.55,-46.63,17z…). Só é confiável
-// no estágio de coleta (a URL aponta para o local); na busca da central o /@ é o
-// centro do mapa, então ali a coordenada fica de fora.
+// Coordenada do lugar a partir da placeUrl do Maps. O formato das URLs de
+// "place" guarda a coordenada no token data= como …!3d<lat>!4d<lng>… . Em
+// algumas URLs aparece também /@lat,lng (mas numa busca /maps/search o /@ é o
+// centro do mapa, não o lugar) — por isso o /@ só vale em URL de /maps/place/.
 function coordsDaUrl(url) {
-  const m = /@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/.exec(url || '');
+  const u = String(url || '');
+  let m = /!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/.exec(u);          // place: data=…!3d!4d
+  if (!m && /\/maps\/place\//.test(u)) m = /@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/.exec(u); // /@ só em /place/
   if (!m) return { lat: null, lng: null };
   const lat = Number(m[1]), lng = Number(m[2]);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return { lat: null, lng: null };
-  // Dentro do Brasil, senão ignora (evita gravar o centro de uma busca torta).
+  // Dentro do Brasil, senão ignora (evita gravar coordenada torta).
   if (lat < -34 || lat > 6 || lng < -74 || lng > -28) return { lat: null, lng: null };
   return { lat, lng };
 }
