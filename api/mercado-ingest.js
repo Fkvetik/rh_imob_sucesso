@@ -31,6 +31,17 @@ function s(v, max) {
   const t = (v == null ? '' : String(v)).trim();
   return t ? t.slice(0, max || 300) : '';
 }
+
+// Só entra no banco quem é do ramo imobiliário: imobiliária, corretor(a),
+// agente/consultor imobiliário, corretagem, incorporadora, loteadora,
+// administradora de imóveis. Confere nome + categoria + tipo_local (sem acento).
+function ehImovel(r) {
+  const base = [r.nome, r.categoria, r.tipo_local, r.CATEGORIA_INSTAGRAM, r.categoria_instagram]
+    .join(' ')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+  return /(imobiliar|imove|corretor|corretag|agente imobil|consultor(a)? imobil|real estate|incorporador|loteador|administr\w* de imove|habitacional)/.test(base);
+}
 function num(v) {
   if (v == null || v === '') return null;
   const n = Number(String(v).replace(/[^\d.,-]/g, '').replace(',', '.'));
@@ -94,6 +105,7 @@ export default async function handler(req, res) {
   if (rows.length > 500) return send(res, 413, { ok: false, error: 'Lote grande demais (máx. 500 linhas)' });
 
   const limpos = [];
+  let filtrados = 0;
   for (const r of rows) {
     if (!r || typeof r !== 'object') continue;
     const place_key = s(r.place_key, 400);
@@ -102,7 +114,7 @@ export default async function handler(req, res) {
     const { lat, lng } = coordsDaUrl(place_url);
     const endereco = s(r.endereco, 300);
     const p = parseEndereco(endereco);
-    limpos.push({
+    const obj = {
       place_key,
       place_url,
       nome:           s(r.nome || r.cardName, 200),
@@ -122,10 +134,15 @@ export default async function handler(req, res) {
       num_avaliacoes: inteiro(r.num_avaliacoes),
       creci:          s(r.creci || r.CRECI, 60),
       status:         s(r.status, 60),
-      estagio
-    });
+      estagio,
+      CATEGORIA_INSTAGRAM: s(r.CATEGORIA_INSTAGRAM, 160)
+    };
+    // Só imóveis entram no banco. Não bate nos critérios → descarta.
+    if (!ehImovel(obj)) { filtrados++; continue; }
+    delete obj.CATEGORIA_INSTAGRAM; // campo só para o filtro, não vai pro banco
+    limpos.push(obj);
   }
-  if (!limpos.length) return send(res, 400, { ok: false, error: 'Nenhuma linha com place_key válido' });
+  if (!limpos.length) return send(res, 200, { ok: true, recebidos: rows.length, validos: 0, gravados: 0, filtrados, estagio, aviso: 'Nenhuma linha do ramo imobiliário no lote' });
 
   const service = RHI.service();
   if (!service) return send(res, 500, { ok: false, error: 'RHI_SUPABASE_SERVICE_KEY não configurada no servidor' });
@@ -141,5 +158,5 @@ export default async function handler(req, res) {
     const falta = /rhi_mercado_ingest/.test(String(msg));
     return send(res, 502, { ok: false, error: falta ? 'Falta rodar o SQL MERCADO_MAPS_1 no projeto RHI' : msg });
   }
-  return send(res, 200, { ok: true, recebidos: rows.length, validos: limpos.length, gravados: data.gravados, estagio });
+  return send(res, 200, { ok: true, recebidos: rows.length, validos: limpos.length, filtrados, gravados: data.gravados, estagio });
 }
