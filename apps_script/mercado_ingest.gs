@@ -166,3 +166,40 @@ function mercadoTesteConexao() {
   Logger.log(JSON.stringify(r));
   return r;
 }
+
+/* ─── GATILHO DIÁRIO (pega edições manuais) ──────────────────────────────────
+ * A coleta ao vivo já alimenta o banco sozinha. Este gatilho roda o backfill
+ * todo dia de madrugada para capturar também o que você editar À MÃO na
+ * planilha. É upsert — não duplica.
+ *
+ * Como ligar: rode mercadoInstalarGatilhoDiario UMA vez (vai pedir autorização).
+ * Para desligar: rode mercadoRemoverGatilhoDiario.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/** Instala (ou reinstala) o gatilho que roda o backfill todo dia ~3h. */
+function mercadoInstalarGatilhoDiario() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'mercadoBackfillDiario') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('mercadoBackfillDiario').timeBased().everyDays(1).atHour(3).create();
+  Logger.log('Gatilho diário instalado: mercadoBackfillDiario roda ~03h.');
+  return { ok: true };
+}
+
+/** Remove o gatilho diário. */
+function mercadoRemoverGatilhoDiario() {
+  var n = 0;
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'mercadoBackfillDiario') { ScriptApp.deleteTrigger(t); n++; }
+  });
+  Logger.log('Gatilhos diários removidos: ' + n);
+  return { ok: true, removidos: n };
+}
+
+/** Rodada automática do gatilho: sincroniza TRATADOS e Coleta com o banco. */
+function mercadoBackfillDiario() {
+  var t = mercadoBackfillTratados();
+  var c = mercadoBackfillColeta();
+  Logger.log('Backfill diário OK. TRATADOS gravados=' + (t && t.gravados) + ' · Coleta gravados=' + (c && c.gravados));
+  return { ok: true };
+}
