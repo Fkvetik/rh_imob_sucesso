@@ -102,24 +102,12 @@
 <script src="/supabase-config-novos-talentos.js?v=20261112ia"></script>
 <script>
 var EMPRESA_WHATSAPP="5511978725515";
-// Planos reais da plataforma Novos Talentos (fonte: /api/planos-publicos).
-// Usados quando o caminho é a FERRAMENTA (fora de SP, ou SP com assistente).
-var PLANOS_TXT="Os planos da plataforma Novos Talentos:\n• R$ 249/mês — se você já assina a Catho: integramos o seu login e automatizamos a triagem, o filtro e a abordagem (volume conforme a sua conta).\n• R$ 649/mês — se você não assina: a gente fornece o acesso completo e entrega o mesmo processo automatizado, com volume ilimitado.";
-
-// OPERAÇÃO feita pra você (SP). Preço por cargo + quantidade + se tem RH.
-// Preenchido com o que você me passou; as demais combinações eu completo quando
-// você mandar os valores. Chave: "<cargo>|<qtd>|<comRH|semRH>".
-var PRECO_OPERACAO={
-  // Operação padrão = até 5 profissionais/mês (inclui 1 assistente quando sem RH).
-  "corretor|1 a 5|semRH":"3.499",
-  "corretor|1 a 5|comRH":"1.999"
-};
+// Normaliza o cargo escolhido/digitado numa chave de precificação.
 function cargoKey(){var c=(lead.cargo||"").toLowerCase();
   if(c.indexOf("sdr")>=0)return "sdr";
   if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
-  if(c.indexOf("corretor")>=0)return "corretor";return "outro";}
-function custoOperacao(){var est=(lead.estrutura==="Tem RH")?"comRH":"semRH";
-  return PRECO_OPERACAO[cargoKey()+"|"+lead.qtd+"|"+est]||"";}
+  if(c.indexOf("corretor")>=0)return "corretor";
+  if(c.indexOf("novos talentos")>=0||c.indexOf("talento")>=0)return "novostalentos";return "outro";}
 var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
 // id único desta conversa — o painel agrupa pelo prefixo antes do "#".
 var CONV_ID="ia-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
@@ -173,9 +161,9 @@ function jornada(){bot("E a **jornada e as exigências**? (dias e horário, CREC
   askSkip("Ex.: seg a sáb 9–18h, com CRECI, veículo próprio",function(v){lead.exigencias=v;setF("exigencias",v||"—");estrutura()});
 })}
 function estrutura(){bot("Você já tem **RH, assistente ou secretário(a)** cuidando do processo seletivo?",function(){
-  setChips([{label:"Tenho RH",go:function(){lead.estrutura="Tem RH";bot("Ótimo — com o seu RH no processo, a gente roda a operação em conjunto, mais enxuta (reflete no valor).",urgencia)}},
-            {label:"Assistente / secretário(a)",go:function(){lead.estrutura="Tem assistente/secretário";bot("Perfeito. Aí a ferramenta é a extensão RH IMOB Aceleradora (roda no Google Chrome) — o seu assistente opera com ela e cuida da prospecção, abordagem e qualificação.",urgencia)}},
-            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz a operação completa pra você, com a nossa assistente da RH IMOB.",urgencia)}}]);
+  setChips([{label:"Tenho RH",go:function(){lead.estrutura="Tem RH";bot("Ótimo! Com o seu RH, a nossa equipe prospecta, aborda e envia pro seu RH quem tiver interesse — vocês dão andamento.",urgencia)}},
+            {label:"Assistente / secretário(a)",go:function(){lead.estrutura="Tem assistente/secretário";bot("Perfeito! A sua assistente opera a extensão RH IMOB Aceleradora — automatizada (Instagram, site do CRECI, Catho e envio no WhatsApp), com 2 logins, rodando sozinha no computador.",urgencia)}},
+            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz a operação completa pra você, com a nossa assistente dedicada da RH IMOB.",urgencia)}}]);
 })}
 function urgencia(){bot("Qual a urgência pra começar?",function(){
   setChips([{label:"Até 15 dias",go:function(){lead.urgencia="Até 15 dias";setF("urgencia",lead.urgencia);objecao()}},
@@ -185,23 +173,28 @@ function urgencia(){bot("Qual a urgência pra começar?",function(){
 // Resposta de preço, decidida pelo contexto (cargo + região + qtd + estrutura).
 function respostaPreco(cb){
   var sp=(lead.regiao==="São Paulo");
-  var usaFerramenta=(lead.estrutura==="Tem assistente/secretário")||!sp;
+  var ck=cargoKey();
+  // As ferramentas manuais existem dentro E fora de SP — opção de entrada, você conduz.
+  var manual="\n\nSe preferir conduzir você mesmo, dá pra começar só com as ferramentas (integração Catho / Novos Talentos): **R$ 249/mês** se você já assina a Catho, ou **R$ 649/mês** com o acesso completo.";
   var msg;
-  if(usaFerramenta){
-    msg=PLANOS_TXT+"\n\n"+(sp?"No seu caso, como você já tem assistente, ele opera a ferramenta (extensão RH IMOB Aceleradora) com um desses planos.":"Fora de SP, você usa a ferramenta Novos Talentos (integrada à Catho) com um desses planos.");
-  } else if(lead.qtd==="6 ou mais"){
-    msg="A partir de 6 por mês é uma operação sob medida: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
-  } else {
-    var ck=cargoKey(), comRH=(lead.estrutura==="Tem RH");
-    var modo=comRH?"com o seu RH no processo":"completa, com a nossa assistente";
-    if(ck==="corretor"){ var val=custoOperacao();
-      msg=val?("Pra corretor (CRECI) em São Paulo (até 5/mês), a operação "+modo+" fica em R$ "+val+" por mês.\n\nNa proposta eu detalho o escopo e o que está incluso.")
-             :("Pra corretor em São Paulo, a operação "+modo+" — fecho o valor exato na proposta.");
-    } else if(ck==="gerente"||ck==="sdr"){
-      msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo, a operação fica a partir de R$ 1.500 por mês (varia com o perfil e o salário da vaga). Fecho o valor exato na proposta.";
+  if(lead.qtd==="6 ou mais"){
+    msg="A partir de 6 por mês é uma operação **sob medida**: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
+  } else if(ck==="gerente"||ck==="sdr"){
+    msg="Pra "+lead.cargo.toLowerCase()+", a operação fica **a partir de R$ 1.500/mês** (varia com o perfil e o salário da vaga). Fecho o valor exato na proposta.";
+  } else if(ck==="outro"){
+    msg="Pra "+lead.cargo.toLowerCase()+", o investimento fica **em torno do salário da vaga** (até ~70%). Fecho o valor exato na proposta.";
+  } else if(ck==="corretor"||ck==="novostalentos"){
+    if(lead.estrutura==="Tem assistente/secretário"){
+      msg="Como você já tem assistente, o caminho é a **extensão RH IMOB Aceleradora** — **R$ 999/mês, com 2 logins**. Ela roda no computador de forma automatizada (24–48h), abordando corretores e novos talentos (Instagram, site do CRECI, Catho e envio no WhatsApp). O seu assistente só acompanha."+manual;
+    } else if(!sp){
+      msg="A nossa operação com equipe é aqui em **São Paulo**. Na sua região, o caminho é a ferramenta: a **extensão RH IMOB Aceleradora** — **R$ 999/mês, com 2 logins**, rodando automatizada 24–48h (Instagram, site do CRECI, Catho e envio no WhatsApp)."+manual;
+    } else if(lead.estrutura==="Tem RH"){
+      msg="Como você já tem RH, a operação sai por **R$ 1.999/mês**: a nossa equipe prospecta, aborda e envia pro seu RH quem demonstrar interesse — vocês dão andamento."+manual;
     } else {
-      msg="Pra "+lead.cargo.toLowerCase()+", o investimento fica em torno do salário da vaga (até ~70%). Fecho o valor exato na proposta.";
+      msg="Sem estrutura, a gente faz a **operação completa** pra você, com a nossa **assistente dedicada**, por **R$ 3.499/mês**: prospecta, aborda, qualifica e leva os candidatos à reunião."+manual;
     }
+  } else {
+    msg="Me conta o cargo que você precisa que eu já te passo o valor certinho.";
   }
   bot(msg,cb);
 }
