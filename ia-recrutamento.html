@@ -108,7 +108,7 @@ function cargoKey(){var c=(lead.cargo||"").toLowerCase();
   if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
   if(c.indexOf("corretor")>=0)return "corretor";
   if(c.indexOf("novos talentos")>=0||c.indexOf("talento")>=0)return "novostalentos";return "outro";}
-var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
+var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",caminho:"",ferramenta:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
 // id único desta conversa — o painel agrupa pelo prefixo antes do "#".
 var CONV_ID="ia-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 var $=function(id){return document.getElementById(id)};
@@ -145,9 +145,35 @@ function precisa(){bot("O que você precisa contratar?",function(){
             })})}}]);
 })}
 function quantas(){bot("Quantas posições por mês, mais ou menos?",function(){
-  setChips([{label:"1 a 5",go:function(){lead.qtd="1 a 5";setF("qtd",lead.qtd);remun()}},
-            {label:"6 ou mais",go:function(){lead.qtd="6 ou mais";setF("qtd",lead.qtd);remun()}}]);
+  setChips([{label:"1 a 5",go:function(){lead.qtd="1 a 5";setF("qtd",lead.qtd);afterQtd()}},
+            {label:"6 ou mais",go:function(){lead.qtd="6 ou mais";setF("qtd",lead.qtd);afterQtd()}}]);
 })}
+// Fork: pra corretor/novos talentos dá pra seguir pela operação OU pelas ferramentas.
+// Pros demais cargos (gerente/SDR/outro) as ferramentas não localizam o perfil, então
+// segue direto na operação.
+function afterQtd(){var ck=cargoKey();
+  if(ck==="corretor"||ck==="novostalentos"){caminho();}
+  else{lead.caminho="Operação completa";remun();}
+}
+function caminho(){bot("Antes de montar a proposta — qual caminho faz mais sentido pra você?",function(){
+  bot("A gente pode **fazer a operação completa** pra você (prospecção, abordagem e qualificação feitas pela nossa equipe) ou te **disponibilizar as ferramentas** pra rodar por conta — elas ficam na sua máquina, controladas pelo nosso painel, trabalhando 24h e trazendo quem tem interesse. Você só responde quem retorna.",function(){
+    setChips([{label:"Quero a operação completa (vocês fazem)",cls:"primary",go:function(){lead.caminho="Operação completa";remun()}},
+              {label:"Quero conhecer as ferramentas",go:function(){lead.caminho="Ferramentas";ferramentas()}}]);
+  });
+})}
+function ferramentas(){bot("Show! As ferramentas resolvem exatamente isso — rodam sozinhas abordando corretores e novos talentos, e você acompanha os retornos: 👇",function(){
+  bot("**Extensão RH IMOB Aceleradora** — **R$ 999/mês, 2 logins**. Automatizada: integra Instagram, site do CRECI e Catho, com envio no WhatsApp. Fica rodando 24–48h na máquina, controlada pelo painel. É a mais completa pra captar sem depender de equipe.",function(){
+    bot("E as ferramentas manuais da plataforma Novos Talentos (você conduz a seleção):\n• **R$ 249/mês** — se você já assina a Catho: integramos o seu login.\n• **R$ 649/mês** — se não assina: acesso completo ao banco de corretores, com volume ilimitado.",function(){
+      bot("Qual faz mais sentido pra começar?",function(){
+        setChips([{label:"Extensão automatizada (R$ 999)",cls:"primary",go:function(){lead.ferramenta="Extensão RH IMOB Aceleradora (R$ 999/mês, 2 logins)";escolheuFerramenta()}},
+                  {label:"Integração Catho (R$ 249)",go:function(){lead.ferramenta="Integração Catho (R$ 249/mês)";escolheuFerramenta()}},
+                  {label:"Acesso completo (R$ 649)",go:function(){lead.ferramenta="Acesso completo Novos Talentos (R$ 649/mês)";escolheuFerramenta()}},
+                  {label:"Tenho dúvida / quero comparar",go:function(){lead.ferramenta="Quer comparar / tirar dúvida sobre as ferramentas";escolheuFerramenta()}}]);
+      });
+    });
+  });
+})}
+function escolheuFerramenta(){bot("Perfeito! Vou registrar pra liberarmos o acesso e te orientar na configuração — é rápido.",urgencia)}
 function remun(){bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
   setChips([{label:"Ajuda de custo / fixo",go:function(){lead.remuneracao="Ajuda de custo / fixo";setF("remuneracao",lead.remuneracao);benef()}},
             {label:"Mínimo garantido",go:function(){lead.remuneracao="Mínimo garantido";setF("remuneracao",lead.remuneracao);benef()}},
@@ -160,18 +186,22 @@ function benef(){bot("Quais **benefícios** a vaga oferece? (ex.: vale-transport
 function jornada(){bot("E a **jornada e as exigências**? (dias e horário, CRECI, veículo, notebook…)",function(){
   askSkip("Ex.: seg a sáb 9–18h, com CRECI, veículo próprio",function(v){lead.exigencias=v;setF("exigencias",v||"—");estrutura()});
 })}
-function estrutura(){bot("Você já tem **RH, assistente ou secretário(a)** cuidando do processo seletivo?",function(){
-  setChips([{label:"Tenho RH",go:function(){lead.estrutura="Tem RH";bot("Ótimo! Com o seu RH, a nossa equipe prospecta, aborda e envia pro seu RH quem tiver interesse — vocês dão andamento.",urgencia)}},
-            {label:"Assistente / secretário(a)",go:function(){lead.estrutura="Tem assistente/secretário";bot("Perfeito! A sua assistente opera a extensão RH IMOB Aceleradora — automatizada (Instagram, site do CRECI, Catho e envio no WhatsApp), com 2 logins, rodando sozinha no computador.",urgencia)}},
+function estrutura(){bot("Você já tem **RH** (ou alguém) pra receber e dar andamento nos candidatos que a gente levar?",function(){
+  setChips([{label:"Tenho RH / responsável",go:function(){lead.estrutura="Tem RH";bot("Ótimo! A nossa equipe prospecta, aborda e envia pro seu RH quem tiver interesse — vocês dão andamento.",urgencia)}},
             {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz a operação completa pra você, com a nossa assistente dedicada da RH IMOB.",urgencia)}}]);
 })}
 function urgencia(){bot("Qual a urgência pra começar?",function(){
-  setChips([{label:"Até 15 dias",go:function(){lead.urgencia="Até 15 dias";setF("urgencia",lead.urgencia);objecao()}},
-            {label:"Até 30 dias",go:function(){lead.urgencia="Até 30 dias";setF("urgencia",lead.urgencia);objecao()}},
-            {label:"Sem pressa",go:function(){lead.urgencia="Sem pressa";setF("urgencia",lead.urgencia);objecao()}}]);
+  var nx=function(){(lead.caminho==="Ferramentas"?contato:objecao)()};
+  setChips([{label:"Até 15 dias",go:function(){lead.urgencia="Até 15 dias";setF("urgencia",lead.urgencia);nx()}},
+            {label:"Até 30 dias",go:function(){lead.urgencia="Até 30 dias";setF("urgencia",lead.urgencia);nx()}},
+            {label:"Sem pressa",go:function(){lead.urgencia="Sem pressa";setF("urgencia",lead.urgencia);nx()}}]);
 })}
 // Resposta de preço, decidida pelo contexto (cargo + região + qtd + estrutura).
 function respostaPreco(cb){
+  if(lead.caminho==="Ferramentas"){
+    bot("Pelas ferramentas: a **extensão RH IMOB Aceleradora** é **R$ 999/mês** (2 logins, automatizada, rodando 24–48h). As manuais são **R$ 249/mês** (se já assina a Catho) ou **R$ 649/mês** (acesso completo ao banco)."+(lead.ferramenta?"\n\nVocê escolheu: "+lead.ferramenta+".":""),cb);
+    return;
+  }
   var sp=(lead.regiao==="São Paulo");
   var ck=cargoKey();
   // As ferramentas manuais existem dentro E fora de SP — opção de entrada, você conduz.
@@ -235,16 +265,24 @@ function pedirEmpresa(){ask("Empresa / imobiliária",function(v){
   lead.empresa=v;setF("empresa",v);resumo();
 })}
 function resumo(){$("fdot").classList.add("on");
-  var s="Aqui está o que entendi:\n\n• Empresa: "+lead.empresa+"\n• Contato: "+lead.nome+" — "+lead.tel+"\n• Região: "+lead.regiao+"\n• Precisa: "+lead.cargo+" ("+lead.qtd+")\n• Remuneração: "+lead.remuneracao+(lead.beneficios?"\n• Benefícios: "+lead.beneficios:"")+(lead.exigencias?"\n• Jornada/exigências: "+lead.exigencias:"")+"\n• Urgência: "+lead.urgencia;
+  var ferr=(lead.caminho==="Ferramentas");
+  var s="Aqui está o que entendi:\n\n• Empresa: "+lead.empresa+"\n• Contato: "+lead.nome+" — "+lead.tel+"\n• Região: "+lead.regiao+"\n• Precisa: "+lead.cargo+" ("+lead.qtd+")";
+  if(ferr){s+="\n• Caminho: Ferramentas"+(lead.ferramenta?" — "+lead.ferramenta:"");}
+  else{s+="\n• Remuneração: "+lead.remuneracao+(lead.beneficios?"\n• Benefícios: "+lead.beneficios:"")+(lead.exigencias?"\n• Jornada/exigências: "+lead.exigencias:"")+(lead.estrutura?"\n• Estrutura: "+lead.estrutura:"");}
+  s+="\n• Urgência: "+lead.urgencia;
   bot(s,function(){
     enviarParaPainel(false); // registra automaticamente ao concluir
     $("fstatus").textContent="✓ Solicitação registrada";$("fstatus").className="status ok";
-    bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Sua solicitação já foi **registrada** com a RH IMOB — um especialista vai te chamar com a proposta.\n\nSe quiser adiantar, é só enviar no WhatsApp 👇",function(){
+    bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Sua solicitação já foi **registrada** com a RH IMOB — um especialista vai te chamar "+(ferr?"pra liberar o acesso e orientar a configuração":"com a proposta")+".\n\nSe quiser adiantar, é só enviar no WhatsApp 👇",function(){
       setChips([{label:"Enviar no WhatsApp",cls:"wa",silent:true,go:enviarWhats}]);
     });
   });
 }
-function textoWhats(){return "Olá! Vim pela Consultora IA do site da RH IMOB.\n\nNome: "+lead.nome+"\nEmpresa: "+lead.empresa+"\nRegião: "+lead.regiao+"\nPreciso: "+lead.cargo+" ("+lead.qtd+")\nRemuneração: "+lead.remuneracao+(lead.beneficios?"\nBenefícios: "+lead.beneficios:"")+(lead.exigencias?"\nJornada/exigências: "+lead.exigencias:"")+"\nUrgência: "+lead.urgencia+"\n\nPode me mandar a proposta?"}
+function textoWhats(){var ferr=(lead.caminho==="Ferramentas");
+  var corpo=ferr
+    ? ("\nCaminho: Ferramentas"+(lead.ferramenta?"\nFerramenta: "+lead.ferramenta:""))
+    : ("\nRemuneração: "+lead.remuneracao+(lead.beneficios?"\nBenefícios: "+lead.beneficios:"")+(lead.exigencias?"\nJornada/exigências: "+lead.exigencias:"")+(lead.estrutura?"\nEstrutura: "+lead.estrutura:""));
+  return "Olá! Vim pela Consultora IA do site da RH IMOB.\n\nNome: "+lead.nome+"\nEmpresa: "+lead.empresa+"\nRegião: "+lead.regiao+"\nPreciso: "+lead.cargo+" ("+lead.qtd+")"+corpo+"\nUrgência: "+lead.urgencia+"\n\n"+(ferr?"Pode me passar o acesso/liberação?":"Pode me mandar a proposta?")}
 function enviarParaPainel(enviou){
   try{
     var cfg=window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG;if(!cfg||!cfg.url)return;
@@ -252,7 +290,7 @@ function enviarParaPainel(enviou){
     var row={session_id:base,nome:lead.nome,whatsapp:lead.tel,empresa:lead.empresa,cidade:lead.regiao,
       cargo_vaga:lead.cargo,quantidade:lead.qtd,urgencia:lead.urgencia,remuneracao:lead.remuneracao,
       beneficios:lead.beneficios,exigencias:lead.exigencias,
-      mensagem:"Estrutura: "+lead.estrutura+(lead.objecao?(" | Dúvida: "+lead.objecao):""),
+      mensagem:"Caminho: "+(lead.caminho||"—")+(lead.ferramenta?(" | Ferramenta: "+lead.ferramenta):"")+(lead.estrutura?(" | Estrutura: "+lead.estrutura):"")+(lead.objecao?(" | Dúvida: "+lead.objecao):""),
       tipo:"empresa",origem:"Consultora IA",pagina:location.href,enviou_whatsapp:!!enviou};
     var url=cfg.url.replace(/\/$/,"")+"/rest/v1/site_leads";
     var headers={apikey:cfg.publishableKey,Authorization:"Bearer "+cfg.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"};

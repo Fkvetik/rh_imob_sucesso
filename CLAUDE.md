@@ -31,6 +31,35 @@ Planilha **MAPS IMOBILIÁRIAS** (Apps Script) → `POST /api/mercado-ingest` (se
 diário no GAS (`mercadoBackfillDiario`, ~3h). "Perto de mim" lê só contagem
 (`rhi_mercado_perto`). Operador acessa via a extensão (flag do CRECI).
 
+## Consultora IA (`/ia-recrutamento`)
+Chatbot **guiado** (vanilla JS, sem LLM) em `ia-recrutamento.html` que qualifica o
+lead B2B (empresa que quer contratar), registra **automaticamente** no painel ao
+concluir (POST client-side em **NT** `site_leads`, mesma config
+`RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG`) e oferece só **"Enviar no WhatsApp"**
+(`EMPRESA_WHATSAPP=5511978725515`). `CONV_ID` único por conversa (painel agrupa pelo
+prefixo antes do `#`). Perguntas digitadas em campo livre são respondidas e re-perguntadas
+(`pergunta_`/`responderDuvida_`), não gravadas como dado. Estagiário é recusado.
+
+**Fluxo:** região → cargo → quantidade → **(corretor/novos talentos) fork de caminho**
+→ [Operação completa: remuneração→benefícios→jornada→estrutura(tem RH?)→urgência→objeção]
+ou [Ferramentas: escolhe ferramenta→urgência] → contato (nome/WhatsApp/empresa) → registra.
+Gerente/SDR/outro pulam o fork (ferramentas não localizam esses perfis) e seguem na operação.
+
+**Preços (reais, por contexto — nunca "depende"):**
+- **Operação completa (equipe RH IMOB, só SP), corretor/novos talentos:** tem RH →
+  **R$ 1.999/mês** (equipe aborda e envia os interessados pro RH dar andamento);
+  sem estrutura → **R$ 3.499/mês** (assistente dedicada, a gente faz tudo).
+- **Ferramentas (qualquer região, o cliente opera, controladas pelo painel):**
+  extensão **RH IMOB Aceleradora R$ 999/mês** (2 logins, automatizada 24–48h: Instagram,
+  CRECI, Catho, envio WhatsApp); manuais Novos Talentos/Catho **R$ 249** (já assina Catho)
+  / **R$ 649** (acesso completo ao banco) — oferecidas **dentro e fora** de SP.
+- **Fora de SP:** operação com equipe não atende; caminho é ferramenta (extensão R$ 999 + manuais).
+- **6+/mês:** sob medida. **Gerente/SDR:** a partir de R$ 1.500/mês. **Outros cargos:** ~salário (até 70%).
+- Objeção "e se não der certo": a entrega é levar o profissional com aderência à reunião;
+  a conversão depende da proposta da empresa. Sem "contratação garantida" (CLT = reposição).
+
+Home (`index.html`) linka a Consultora IA no nav e no hero.
+
 ## Regras invioláveis
 - **Nunca** expor telefone coletado publicamente. "Perto de mim" = contagem.
 - Dados do Maps = **prospecção · CRECI não verificado** (rotular na UI).
