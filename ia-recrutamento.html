@@ -103,6 +103,33 @@
 <script>
 var EMPRESA_WHATSAPP="5511978725515";
 var FERRAMENTAS={ semEstrutura:"«link da ferramenta p/ quem não tem RH/assistente»", comAssistente:"«link p/ quem já tem assistente/secretário»" };
+
+// ===== TABELA DE PREÇO (preencha com os valores reais) =====
+// A IA já sabe região + cargo + quantidade, então responde o valor na hora.
+// Chave: "<regiao>|<cargo>" — regiao = "São Paulo" ou "Fora".
+// Pode escrever o modelo no texto (ex.: "R$ X por corretor entregue" ou
+// "R$ Y de operação + R$ Z por contratação").
+var PRECOS={
+  "São Paulo|corretor":"«valor — SP · corretor»",
+  "São Paulo|gerente":"«valor — SP · gerente»",
+  "São Paulo|equipe":"«valor — SP · equipe»",
+  "São Paulo|outro":"«valor — SP · outro»",
+  "Fora|corretor":"«valor — fora de SP · corretor»",
+  "Fora|gerente":"«valor — fora de SP · gerente»",
+  "Fora|equipe":"«valor — fora de SP · equipe»",
+  "Fora|outro":"«valor — fora de SP · outro»"
+};
+function cargoKey(){
+  var c=(lead.cargo||"").toLowerCase();
+  if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
+  if(c.indexOf("equipe")>=0)return "equipe";
+  if(c.indexOf("corretor")>=0)return "corretor";
+  return "outro";
+}
+function precoAtual(){
+  var reg=(lead.regiao==="São Paulo")?"São Paulo":"Fora";
+  return PRECOS[reg+"|"+cargoKey()]||"«valor a definir»";
+}
 var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
 var $=function(id){return document.getElementById(id)};
 var msgs=$("msgs"),chips=$("chips"),inbar=$("inbar"),inp=$("inp");
@@ -159,7 +186,7 @@ function urgencia(){bot("Qual a urgência pra começar?",function(){
             {label:"Sem pressa",go:function(){lead.urgencia="Sem pressa";setF("urgencia",lead.urgencia);objecao()}}]);
 })}
 function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
-  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";bot("Depende do perfil e da quantidade. «faixa de investimento / modelo a definir». Monto o valor fechado na proposta.",contato)}},
+  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";bot("Pra "+lead.cargo.toLowerCase()+" em "+lead.regiao+" ("+lead.qtd+" vaga(s)), o investimento é "+precoAtual()+".\n\nNa proposta eu fecho o valor exato conforme o seu perfil.",contato)}},
             {label:"E se não der certo?",go:function(){lead.objecao="garantia";bot("Boa pergunta. A gente trabalha com geração de demanda:\n\n• Corretor — não substituímos o profissional. Geramos demanda qualificada e entregamos os candidatos na reunião; o andamento da contratação fica com você.\n• Posições CLT — aí sim trabalhamos com reposição.",contato)}},
             {label:"Como vocês acham?",go:function(){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",contato)}},
             {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
