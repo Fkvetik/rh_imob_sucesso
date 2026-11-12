@@ -118,10 +118,6 @@ function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</
   .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]*)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--orange,#ff7a1a);font-weight:700">$1</a>')
   .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
 function bot(t,cb){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
-// Balão com um print (imagem do /assets). Mantém o mesmo visual do bot.
-function botImg(src,cap,cb){var r=document.createElement("div");r.className="row bot";
-  r.innerHTML='<span class="mini">RH</span><div class="bub"><img src="'+esc(src)+'" alt="" loading="lazy" style="max-width:100%;border-radius:12px;display:block"/>'+(cap?'<div style="font-size:12px;color:#6b5e7e;margin-top:6px">'+fmt(cap)+'</div>':'')+'</div>';
-  msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,450)}
 function user(t){var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
 function setChips(o){chips.innerHTML="";inbar.hidden=true;o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)})}
 function ask(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)}}
@@ -167,33 +163,48 @@ function caminho(){bot("Antes de montar a proposta — qual caminho faz mais sen
               {label:"Quero conhecer as ferramentas",go:function(){lead.caminho="Ferramentas";ferramentas()}}]);
   });
 })}
-// Caminho ferramentas: alinhado à página /plataformas (fonte dos preços).
-function ferramentas(){bot("Boa! Você/seu time opera, e a nossa **extensão RH IMOB Aceleradora** faz a captação automática. São dois bancos — te mostro rapidinho 👇",function(){
-  bot("**🏠 Plataforma Corretores** — banco de corretores com **CRECI ativo** (80 mil+ em 19 cidades), filtrados por cidade, mercado e experiência. Planos por volume de contatos:\n• **Starter R$ 499/mês** — 500 contatos\n• **Pro R$ 999/mês** — 1.000 contatos (mais escolhido)\n• **Ilimitado R$ 1.499/mês** — contatos ilimitados\n[Ver a Plataforma Corretores →](/corretores)",function(){
-    bot("**🌱 Plataforma Novos Talentos** — candidatos em início de carreira (90 mil+ em 180+ cidades), pré-selecionados:\n• **R$ 249/mês** se você já assina a Catho (integramos o seu login)\n• **R$ 649/mês** com acesso completo, sem Catho própria\n[Ver a Plataforma Novos Talentos →](/novos-talentos)",function(){
-      bot("As duas rodam com a **extensão RH IMOB Aceleradora** (Chrome): integra Instagram, site do CRECI e Catho, com funil e abordagem no WhatsApp. Fica trabalhando na máquina e você acompanha os retornos num kanban. Sem fidelidade, login em até 1 dia útil.",function(){
-        bot("Quer ver como funciona ou já seguir com uma delas?",function(){
-          setChips([{label:"Ver como funciona (prints)",cls:"primary",go:comoFunciona},
-                    {label:"Quero a Plataforma Corretores",go:function(){lead.ferramenta="Plataforma Corretores (CRECI)";escolheuFerramenta()}},
-                    {label:"Quero a Novos Talentos",go:function(){lead.ferramenta="Plataforma Novos Talentos";escolheuFerramenta()}},
-                    {label:"Tenho dúvida / quero comparar",go:function(){lead.ferramenta="Quer comparar / tirar dúvida";escolheuFerramenta()}}]);
-        });
-      });
+// Caminho ferramentas: conversa natural; preços alinhados à página /plataformas.
+function ferramentas(){bot("Boa — esse é o caminho de quem quer autonomia pra tocar com o próprio time. 🙌",function(){
+  bot("Funciona assim: você usa os nossos bancos e a **extensão RH IMOB Aceleradora** faz o trabalho pesado. Ela roda no seu Chrome abordando corretor e novos talentos pelo Instagram, site do CRECI e Catho, dispara as primeiras mensagens no WhatsApp e vai juntando os retornos num funil. Você entra só pra conversar com quem respondeu — sem ficar garimpando contato.",function(){
+    bot("Tem dois bancos, dependendo do perfil que você procura. Qual te atende melhor?",function(){
+      menuFerramentas();
     });
   });
 })}
-// Prints reais da extensão (ficam em /assets).
-function comoFunciona(){bot("Na prática, a extensão capta e aborda sozinha — e os retornos caem no funil, pra você conversar só com quem respondeu. 👇",function(){
-  botImg("/assets/extensao-kanban-crm.jpg","Kanban/CRM da extensão: cada corretor avança por etapa (novo → em conversa → entrevista).",function(){
-    botImg("/assets/extensao-bolha-whatsapp.png","Abordagem direto no WhatsApp, com mensagens prontas por perfil.",function(){
-      bot("É só instalar no Chrome e logar com o seu acesso. [Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)\n\nQuer seguir com qual?",function(){
-        setChips([{label:"Plataforma Corretores",cls:"primary",go:function(){lead.ferramenta="Plataforma Corretores (CRECI)";escolheuFerramenta()}},
-                  {label:"Novos Talentos",go:function(){lead.ferramenta="Plataforma Novos Talentos";escolheuFerramenta()}},
-                  {label:"Prefiro a operação completa",go:function(){lead.caminho="Operação completa";lead.ferramenta="";remun()}}]);
+function menuFerramentas(){
+  setChips([{label:"Corretor com CRECI",cls:"primary",go:planoCorretores},
+            {label:"Novos Talentos",go:planoNT},
+            {label:"Como funciona na prática",go:comoFunciona},
+            {label:"Tenho dúvida / quero comparar",go:function(){lead.ferramenta="Quer comparar / tirar dúvida";escolheuFerramenta()}},
+            {label:"Seguir pra operação completa",go:paraOperacao}]);
+}
+function planoCorretores(){lead.ferramenta="Plataforma Corretores (CRECI)";
+  bot("Fechou. Na **Plataforma Corretores** você acessa o banco de corretores com **CRECI ativo** — mais de 80 mil, em 19 cidades, dá pra filtrar por cidade, mercado e experiência. O valor vai pelo volume de contatos que você quer liberar por mês, e a extensão trabalha pra você em qualquer plano:",function(){
+    bot("• **R$ 499** — 500 contatos/mês\n• **R$ 999** — 1.000/mês (o mais escolhido)\n• **R$ 1.499** — ilimitado\n\nMensal, sem fidelidade, login em 1 dia útil. [Ver a plataforma →](/corretores)",function(){
+      bot("Qual volume faz mais sentido pra começar?",function(){
+        setChips([{label:"500 contatos (R$ 499)",go:function(){lead.ferramenta="Corretores Starter — R$ 499 (500/mês)";escolheuFerramenta()}},
+                  {label:"1.000 contatos (R$ 999)",cls:"primary",go:function(){lead.ferramenta="Corretores Pro — R$ 999 (1.000/mês)";escolheuFerramenta()}},
+                  {label:"Ilimitado (R$ 1.499)",go:function(){lead.ferramenta="Corretores Ilimitado — R$ 1.499";escolheuFerramenta()}},
+                  {label:"Me ajuda a escolher",go:function(){lead.ferramenta="Plataforma Corretores (ajudar a escolher o plano)";escolheuFerramenta()}}]);
       });
     });
   });
+}
+function planoNT(){lead.ferramenta="Plataforma Novos Talentos";
+  bot("Boa. A **Plataforma Novos Talentos** é o banco de quem está começando no imobiliário — mais de 90 mil, em 180+ cidades, pré-selecionados e abertos a formação. Combina bem com quem tem um programa de treino interno pra moldar o time.",function(){
+    bot("O acesso fica **R$ 249/mês** se você já assina a Catho (a gente integra o seu login) ou **R$ 649/mês** com acesso completo, sem Catho própria. [Ver a plataforma →](/novos-talentos)",function(){
+      setChips([{label:"Já assino a Catho (R$ 249)",cls:"primary",go:function(){lead.ferramenta="Novos Talentos c/ Catho — R$ 249";escolheuFerramenta()}},
+                {label:"Não assino (R$ 649)",go:function(){lead.ferramenta="Novos Talentos completo — R$ 649";escolheuFerramenta()}},
+                {label:"Seguir pra operação completa",go:paraOperacao}]);
+    });
+  });
+}
+function comoFunciona(){bot("Na prática é direto: você instala a extensão no Chrome e loga com o seu acesso. A partir daí ela capta e aborda sozinha — puxa corretores e novos talentos do Instagram, do site do CRECI e da Catho, manda as primeiras mensagens no WhatsApp com os modelos prontos e vai empilhando os retornos num funil (novo → em conversa → entrevista).",function(){
+  bot("Ou seja: a prospecção acontece no automático e você entra só na hora de conversar com quem respondeu. Dá pra ter mais de um operador, cada um com o seu login. [Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",function(){
+    bot("Quer seguir com qual?",menuFerramentas);
+  });
 })}
+function paraOperacao(){lead.caminho="Operação completa";lead.ferramenta="";bot("Perfeito — deixa eu te explicar a operação completa então, pra você comparar. 👇",remun)}
 function escolheuFerramenta(){bot("Perfeito! Vou registrar pra liberarmos o acesso (até 1 dia útil) e te orientar na configuração.",urgencia)}
 function remun(){bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
   setChips([{label:"Ajuda de custo / fixo",go:function(){lead.remuneracao="Ajuda de custo / fixo";setF("remuneracao",lead.remuneracao);benef()}},
@@ -263,12 +274,8 @@ function responderDuvida_(t,cb){var s=(t||"").toLowerCase();
   bot("Boa — isso eu detalho na proposta. Deixa eu só terminar de montar aqui:",cb);
 }
 // Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
-function verPlataformas(cb){bot("Além da operação feita por nós, dá pra você mesmo operar com as plataformas + a extensão RH IMOB Aceleradora:",function(){
-  bot("• **Corretores (CRECI)** — a partir de R$ 499/mês. [Ver →](/corretores)\n• **Novos Talentos** — R$ 249 (já assina Catho) / R$ 649. [Ver →](/novos-talentos)\nA extensão integra Instagram, site do CRECI e Catho, com funil e abordagem no WhatsApp.",function(){
-    botImg("/assets/extensao-kanban-crm.jpg","Funil/CRM da extensão: cada corretor avança por etapa.",function(){
-      bot("[Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",cb);
-    });
-  });
+function verPlataformas(cb){bot("Claro. Além da operação feita por nós, dá pra você mesmo operar com os nossos bancos + a extensão RH IMOB Aceleradora — ela roda no Chrome captando e abordando, e você acompanha os retornos num funil:",function(){
+  bot("• **Corretor com CRECI** — a partir de R$ 499/mês (R$ 999 pra 1.000 contatos). [Ver →](/corretores)\n• **Novos Talentos** — R$ 249 (já assina Catho) ou R$ 649. [Ver →](/novos-talentos)\n\nMensal, sem fidelidade. [Extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",cb);
 })}
 function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
   setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";respostaPreco(contato)}},

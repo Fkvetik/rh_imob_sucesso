@@ -55,13 +55,14 @@ registra **automaticamente** no painel ao concluir (POST client-side em **NT** `
 config `RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG`) e oferece só **"Enviar no WhatsApp"**.
 `CONV_ID` único por conversa (painel agrupa pelo prefixo antes do `#`). Perguntas digitadas
 em campo livre são respondidas e re-perguntadas (`pergunta_`/`responderDuvida_`), não gravadas
-como dado. Estagiário é recusado. `fmt()` suporta **`[texto](url)`** e `**negrito**`; `botImg()`
-mostra prints de `/assets`.
+como dado. Estagiário é recusado. `fmt()` suporta **`[texto](url)`** e `**negrito**` (sem
+imagens — prints foram removidos por não soarem bem no chat).
 
 **Fluxo:** região → cargo → quantidade → **(corretor/novos talentos) fork de caminho**
 → [**Operação completa**: remuneração→benefícios→jornada→estrutura(tem assistente/RH pro
 retorno?)→urgência→objeção] ou [**Ferramentas**: mostra as 2 plataformas + extensão, com
-prints e links (`comoFunciona`)→escolhe→urgência] → contato → registra.
+links (`comoFunciona`, `menuFerramentas`, `planoCorretores`/`planoNT`; sempre com saída
+`paraOperacao` pra voltar ao atendimento)→escolhe→urgência] → contato → registra.
 Gerente/SDR/outro pulam o fork (plataformas não localizam esses perfis) e seguem na operação.
 `objecao()` tem atalho "Conhecer as plataformas" (`verPlataformas`).
 
