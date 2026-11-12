@@ -115,8 +115,8 @@ var PRECO_OPERACAO={
   "corretor|1 a 5|comRH":"1.999"
 };
 function cargoKey(){var c=(lead.cargo||"").toLowerCase();
+  if(c.indexOf("sdr")>=0)return "sdr";
   if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
-  if(c.indexOf("equipe")>=0)return "equipe";
   if(c.indexOf("corretor")>=0)return "corretor";return "outro";}
 function custoOperacao(){var est=(lead.estrutura==="Tem RH")?"comRH":"semRH";
   return PRECO_OPERACAO[cargoKey()+"|"+lead.qtd+"|"+est]||"";}
@@ -152,6 +152,7 @@ function precisa(){bot("O que você precisa contratar?",function(){
             {label:"SDR imobiliário",go:function(){lead.cargo="SDR imobiliário";setF("cargo",lead.cargo);quantas()}},
             {label:"Outro",go:function(){bot("Me conta em uma linha o perfil que você precisa:",function(){ask("Ex.: captador, gerente de vendas…",function(v){
               if(ehEstagio(v)){bot("Pra estagiário a gente não consegue ajudar — trabalhamos com corretores (CRECI) e novos talentos. Estagiário não dá pra localizar com precisão na internet. Quer seguir com algum desses?",precisa);return;}
+              if(pergunta_(v)){bot("Me conta primeiro qual perfil você precisa — aí eu já te passo o valor certinho. 👍",precisa);return;}
               lead.cargo=v;setF("cargo",v);quantas();
             })})}}]);
 })}
@@ -181,36 +182,59 @@ function urgencia(){bot("Qual a urgência pra começar?",function(){
             {label:"Até 30 dias",go:function(){lead.urgencia="Até 30 dias";setF("urgencia",lead.urgencia);objecao()}},
             {label:"Sem pressa",go:function(){lead.urgencia="Sem pressa";setF("urgencia",lead.urgencia);objecao()}}]);
 })}
-function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
-  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";
-    var sp=(lead.regiao==="São Paulo");
-    var usaFerramenta=(lead.estrutura==="Tem assistente/secretário")||!sp;
-    var msg;
-    if(usaFerramenta){
-      msg=PLANOS_TXT+"\n\n"+(sp?"No seu caso, como você já tem assistente, ele opera a ferramenta (extensão RH IMOB Aceleradora) com um desses planos.":"Fora de SP, você usa a ferramenta Novos Talentos (integrada à Catho) com um desses planos.");
-    } else if(lead.qtd==="6 ou mais"){
-      msg="A partir de 6 por mês é uma operação sob medida: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
+// Resposta de preço, decidida pelo contexto (cargo + região + qtd + estrutura).
+function respostaPreco(cb){
+  var sp=(lead.regiao==="São Paulo");
+  var usaFerramenta=(lead.estrutura==="Tem assistente/secretário")||!sp;
+  var msg;
+  if(usaFerramenta){
+    msg=PLANOS_TXT+"\n\n"+(sp?"No seu caso, como você já tem assistente, ele opera a ferramenta (extensão RH IMOB Aceleradora) com um desses planos.":"Fora de SP, você usa a ferramenta Novos Talentos (integrada à Catho) com um desses planos.");
+  } else if(lead.qtd==="6 ou mais"){
+    msg="A partir de 6 por mês é uma operação sob medida: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
+  } else {
+    var ck=cargoKey(), comRH=(lead.estrutura==="Tem RH");
+    var modo=comRH?"com o seu RH no processo":"completa, com a nossa assistente";
+    if(ck==="corretor"){ var val=custoOperacao();
+      msg=val?("Pra corretor (CRECI) em São Paulo (até 5/mês), a operação "+modo+" fica em R$ "+val+" por mês.\n\nNa proposta eu detalho o escopo e o que está incluso.")
+             :("Pra corretor em São Paulo, a operação "+modo+" — fecho o valor exato na proposta.");
+    } else if(ck==="gerente"||ck==="sdr"){
+      msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo, a operação fica a partir de R$ 1.500 por mês (varia com o perfil e o salário da vaga). Fecho o valor exato na proposta.";
     } else {
-      var comRH=(lead.estrutura==="Tem RH");
-      var modo=comRH?"com o seu RH no processo":"completa, com a nossa assistente";
-      var val=custoOperacao();
-      if(val){ msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo (até 5/mês), a operação "+modo+" fica em R$ "+val+" por mês.\n\nNa proposta eu detalho o escopo e o que está incluso."; }
-      else { msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo, a operação "+modo+" — fecho o valor exato na proposta, conforme o perfil."; }
+      msg="Pra "+lead.cargo.toLowerCase()+", o investimento fica em torno do salário da vaga (até ~70%). Fecho o valor exato na proposta.";
     }
-    bot(msg,contato);
-  }},
+  }
+  bot(msg,cb);
+}
+// Quando a pessoa faz uma PERGUNTA no lugar de responder, a gente responde e
+// volta a perguntar — sem travar e sem gravar a pergunta como resposta.
+function pergunta_(t){var s=(t||"").toLowerCase();return /\?\s*$/.test(String(t||"").trim())||/(quanto|pre[çc]o|valor|custa|cobra|mensal|garantia|n[aã]o der certo|como funciona|quanto tempo|prazo)/.test(s);}
+function responderDuvida_(t,cb){var s=(t||"").toLowerCase();
+  if(/quanto|pre[çc]o|valor|custa|cobra|mensal/.test(s)){respostaPreco(cb);return;}
+  if(/garantia|n[aã]o der certo/.test(s)){bot("A gente trabalha com geração de demanda: para corretor, não substituímos o profissional — entregamos os candidatos na reunião e o andamento é com você; para posições CLT, aí tem reposição.",cb);return;}
+  if(/como funciona|acha/.test(s)){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",cb);return;}
+  if(/quanto tempo|prazo/.test(s)){bot("A operação começa em poucos dias e roda de forma contínua até fechar as posições.",cb);return;}
+  bot("Boa — isso eu detalho na proposta. Deixa eu só terminar de montar aqui:",cb);
+}
+function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
+  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";respostaPreco(contato)}},
             {label:"E se não der certo?",go:function(){lead.objecao="garantia";bot("Boa pergunta. A gente trabalha com geração de demanda:\n\n• Corretor — não substituímos o profissional. Geramos demanda qualificada e entregamos os candidatos na reunião; o andamento da contratação fica com você.\n• Posições CLT — aí sim trabalhamos com reposição.",contato)}},
             {label:"Como vocês acham?",go:function(){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",contato)}},
             {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
 })}
-function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",function(){
-  ask("Seu nome",function(v){lead.nome=v;setF("nome",v);
-    bot("Prazer, "+v.split(" ")[0]+"! Qual o **WhatsApp** (com DDD)?",function(){
-      ask("(11) 90000-0000",function(t){lead.tel=t;setF("tel",t);
-        bot("E o **nome da sua empresa**?",function(){ask("Empresa / imobiliária",function(e){lead.empresa=e;setF("empresa",e);resumo()})});
-      });
-    });
-  });
+function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",pedirNome)}
+function pedirNome(){ask("Seu nome",function(v){
+  if(pergunta_(v)){responderDuvida_(v,function(){bot("Voltando — como é o seu **nome**?",pedirNome)});return;}
+  lead.nome=v;setF("nome",v);
+  bot("Prazer, "+(v.split(" ")[0]||v)+"! Qual o **WhatsApp** (com DDD)?",pedirTel);
+})}
+function pedirTel(){ask("(11) 90000-0000",function(v){
+  if(pergunta_(v)){responderDuvida_(v,function(){bot("E o seu **WhatsApp** (com DDD)?",pedirTel)});return;}
+  lead.tel=v;setF("tel",v);
+  bot("E o **nome da sua empresa**?",pedirEmpresa);
+})}
+function pedirEmpresa(){ask("Empresa / imobiliária",function(v){
+  if(pergunta_(v)){responderDuvida_(v,function(){bot("E o **nome da sua empresa**?",pedirEmpresa)});return;}
+  lead.empresa=v;setF("empresa",v);resumo();
 })}
 function resumo(){$("fdot").classList.add("on");
   var s="Aqui está o que entendi:\n\n• Empresa: "+lead.empresa+"\n• Contato: "+lead.nome+" — "+lead.tel+"\n• Região: "+lead.regiao+"\n• Precisa: "+lead.cargo+" ("+lead.qtd+")\n• Remuneração: "+lead.remuneracao+(lead.beneficios?"\n• Benefícios: "+lead.beneficios:"")+(lead.exigencias?"\n• Jornada/exigências: "+lead.exigencias:"")+"\n• Urgência: "+lead.urgencia;
