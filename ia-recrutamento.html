@@ -95,41 +95,15 @@
       <div class="f"><span class="k">Jornada / exigências</span><span class="v empty" id="f-exigencias">—</span></div>
       <div class="f"><span class="k">Urgência</span><span class="v empty" id="f-urgencia">—</span></div>
       <div class="status" id="fstatus">Preenchendo pela conversa…</div>
-      <div class="note">Textos em <b>«rosa»</b> ainda são placeholders (valores, regras SP/fora, ferramentas).</div>
+      <div class="note">Planos com valores reais. Operação sob medida fecha na proposta.</div>
     </aside>
   </div>
 
 <script src="/supabase-config-novos-talentos.js?v=20261112ia"></script>
 <script>
 var EMPRESA_WHATSAPP="5511978725515";
-var FERRAMENTAS={ semEstrutura:"«link da ferramenta p/ quem não tem RH/assistente»", comAssistente:"«link p/ quem já tem assistente/secretário»" };
-
-// ===== TABELA DE PREÇO (preencha com os valores reais) =====
-// A IA já sabe região + cargo + quantidade, então responde o valor na hora.
-// Chave: "<regiao>|<cargo>" — regiao = "São Paulo" ou "Fora".
-// Pode escrever o modelo no texto (ex.: "R$ X por corretor entregue" ou
-// "R$ Y de operação + R$ Z por contratação").
-var PRECOS={
-  "São Paulo|corretor":"«valor — SP · corretor»",
-  "São Paulo|gerente":"«valor — SP · gerente»",
-  "São Paulo|equipe":"«valor — SP · equipe»",
-  "São Paulo|outro":"«valor — SP · outro»",
-  "Fora|corretor":"«valor — fora de SP · corretor»",
-  "Fora|gerente":"«valor — fora de SP · gerente»",
-  "Fora|equipe":"«valor — fora de SP · equipe»",
-  "Fora|outro":"«valor — fora de SP · outro»"
-};
-function cargoKey(){
-  var c=(lead.cargo||"").toLowerCase();
-  if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
-  if(c.indexOf("equipe")>=0)return "equipe";
-  if(c.indexOf("corretor")>=0)return "corretor";
-  return "outro";
-}
-function precoAtual(){
-  var reg=(lead.regiao==="São Paulo")?"São Paulo":"Fora";
-  return PRECOS[reg+"|"+cargoKey()]||"«valor a definir»";
-}
+// Planos reais da plataforma Novos Talentos (fonte: /api/planos-publicos).
+var PLANOS_TXT="Os planos da plataforma Novos Talentos:\n• R$ 249/mês — se você já assina a Catho: integramos o seu login e automatizamos a triagem, o filtro e a abordagem (volume conforme a sua conta).\n• R$ 649/mês — se você não assina: a gente fornece o acesso completo e entrega o mesmo processo automatizado, com volume ilimitado.";
 var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
 var $=function(id){return document.getElementById(id)};
 var msgs=$("msgs"),chips=$("chips"),inbar=$("inbar"),inp=$("inp");
@@ -147,8 +121,8 @@ function setF(id,val){var el=$("f-"+id);el.textContent=val||"—";if(val)el.clas
 function start(){
   bot("Oi! Sou a Consultora IA da RH IMOB. 👋\nEm poucos minutos eu entendo sua necessidade de corretores e já deixo tudo encaminhado — sem formulário chato.",function(){
     bot("Sua operação é em **São Paulo** ou em **outra região**?",function(){
-      setChips([{label:"São Paulo",go:function(){lead.regiao="São Paulo";setF("regiao","São Paulo");bot("Perfeito. Em São Paulo trabalhamos assim: «regra/condição de SP a definir».",precisa)}},
-                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);bot("Fora de São Paulo funciona um pouco diferente: «regra/condição fora de SP a definir».",precisa)})})}}]);
+      setChips([{label:"São Paulo",go:function(){lead.regiao="São Paulo";setF("regiao","São Paulo");bot("Perfeito. Em São Paulo a gente roda a operação completa: com o nosso banco de Novos Talentos e as ferramentas, prospectamos, abordamos, qualificamos e direcionamos os corretores pra entrevista com você.",precisa)}},
+                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);bot("Fora de São Paulo, a gente te fornece a ferramenta Novos Talentos (integrada à Catho): ela faz todo o processo — triagem, filtro e abordagem — e entrega os perfis ajustados ao que a sua empresa procura.",precisa)})})}}]);
     });
   });
 }
@@ -176,9 +150,9 @@ function jornada(){bot("E a **jornada e as exigências**? (dias e horário, CREC
   askSkip("Ex.: seg a sáb 9–18h, com CRECI, veículo próprio",function(v){lead.exigencias=v;setF("exigencias",v||"—");estrutura()});
 })}
 function estrutura(){bot("Você já tem **RH, assistente ou secretário(a)** cuidando do processo seletivo?",function(){
-  setChips([{label:"Tenho RH",go:function(){lead.estrutura="Tem RH";bot("Ótimo — a gente integra no seu RH. «condição p/ quem tem RH».",urgencia)}},
-            {label:"Assistente / secretário(a)",go:function(){lead.estrutura="Tem assistente/secretário";bot("Legal. Posso te liberar uma ferramenta que deixa seu assistente mais produtivo:\n→ "+FERRAMENTAS.comAssistente,urgencia)}},
-            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz o processo pra você. E te dou acesso a uma ferramenta que ajuda a tocar sozinho:\n→ "+FERRAMENTAS.semEstrutura,urgencia)}}]);
+  setChips([{label:"Tenho RH",go:function(){lead.estrutura="Tem RH";bot("Ótimo — seu RH opera com a nossa ferramenta: a extensão RH IMOB Aceleradora (roda no Google Chrome), que faz prospecção, abordagem e qualificação.",urgencia)}},
+            {label:"Assistente / secretário(a)",go:function(){lead.estrutura="Tem assistente/secretário";bot("Perfeito. A ferramenta é a extensão RH IMOB Aceleradora (roda no Google Chrome) — o seu assistente opera com ela e cuida da prospecção, abordagem e qualificação.",urgencia)}},
+            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema: a gente disponibiliza uma assistente da RH IMOB pra operar pra você. É aí que entram os planos (te mostro o valor se você quiser).",urgencia)}}]);
 })}
 function urgencia(){bot("Qual a urgência pra começar?",function(){
   setChips([{label:"Até 15 dias",go:function(){lead.urgencia="Até 15 dias";setF("urgencia",lead.urgencia);objecao()}},
@@ -186,7 +160,7 @@ function urgencia(){bot("Qual a urgência pra começar?",function(){
             {label:"Sem pressa",go:function(){lead.urgencia="Sem pressa";setF("urgencia",lead.urgencia);objecao()}}]);
 })}
 function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
-  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";bot("Pra "+lead.cargo.toLowerCase()+" em "+lead.regiao+" ("+lead.qtd+" vaga(s)), o investimento é "+precoAtual()+".\n\nNa proposta eu fecho o valor exato conforme o seu perfil.",contato)}},
+  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";var sp=(lead.regiao==="São Paulo");bot(PLANOS_TXT+"\n\n"+(sp?"Em São Paulo, se preferir, a gente roda a operação pra você (com a nossa assistente) e fecho o pacote na proposta.":"Fora de SP você usa a ferramenta Novos Talentos (integrada à Catho). Se quiser com a nossa assistente operando, fecho o pacote na proposta."),contato)}},
             {label:"E se não der certo?",go:function(){lead.objecao="garantia";bot("Boa pergunta. A gente trabalha com geração de demanda:\n\n• Corretor — não substituímos o profissional. Geramos demanda qualificada e entregamos os candidatos na reunião; o andamento da contratação fica com você.\n• Posições CLT — aí sim trabalhamos com reposição.",contato)}},
             {label:"Como vocês acham?",go:function(){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",contato)}},
             {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
