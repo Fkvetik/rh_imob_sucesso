@@ -114,8 +114,14 @@ var CONV_ID="ia-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 var $=function(id){return document.getElementById(id)};
 var msgs=$("msgs"),chips=$("chips"),inbar=$("inbar"),inp=$("inp");
 function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
-function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</span>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
+function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</span>')
+  .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]*)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--orange,#ff7a1a);font-weight:700">$1</a>')
+  .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
 function bot(t,cb){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
+// Balão com um print (imagem do /assets). Mantém o mesmo visual do bot.
+function botImg(src,cap,cb){var r=document.createElement("div");r.className="row bot";
+  r.innerHTML='<span class="mini">RH</span><div class="bub"><img src="'+esc(src)+'" alt="" loading="lazy" style="max-width:100%;border-radius:12px;display:block"/>'+(cap?'<div style="font-size:12px;color:#6b5e7e;margin-top:6px">'+fmt(cap)+'</div>':'')+'</div>';
+  msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,450)}
 function user(t){var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
 function setChips(o){chips.innerHTML="";inbar.hidden=true;o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)})}
 function ask(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)}}
@@ -161,19 +167,34 @@ function caminho(){bot("Antes de montar a proposta — qual caminho faz mais sen
               {label:"Quero conhecer as ferramentas",go:function(){lead.caminho="Ferramentas";ferramentas()}}]);
   });
 })}
-function ferramentas(){bot("Show! As ferramentas resolvem exatamente isso — rodam sozinhas abordando corretores e novos talentos, e você acompanha os retornos: 👇",function(){
-  bot("**Extensão RH IMOB Aceleradora** — **R$ 999/mês, 2 logins**. Automatizada: integra Instagram, site do CRECI e Catho, com envio no WhatsApp. Fica rodando 24–48h na máquina, controlada pelo painel. É a mais completa pra captar sem depender de equipe.",function(){
-    bot("E as ferramentas manuais da plataforma Novos Talentos (você conduz a seleção):\n• **R$ 249/mês** — se você já assina a Catho: integramos o seu login.\n• **R$ 649/mês** — se não assina: acesso completo ao banco de corretores, com volume ilimitado.",function(){
-      bot("Qual faz mais sentido pra começar?",function(){
-        setChips([{label:"Extensão automatizada (R$ 999)",cls:"primary",go:function(){lead.ferramenta="Extensão RH IMOB Aceleradora (R$ 999/mês, 2 logins)";escolheuFerramenta()}},
-                  {label:"Integração Catho (R$ 249)",go:function(){lead.ferramenta="Integração Catho (R$ 249/mês)";escolheuFerramenta()}},
-                  {label:"Acesso completo (R$ 649)",go:function(){lead.ferramenta="Acesso completo Novos Talentos (R$ 649/mês)";escolheuFerramenta()}},
-                  {label:"Tenho dúvida / quero comparar",go:function(){lead.ferramenta="Quer comparar / tirar dúvida sobre as ferramentas";escolheuFerramenta()}}]);
+// Caminho ferramentas: alinhado à página /plataformas (fonte dos preços).
+function ferramentas(){bot("Boa! Você/seu time opera, e a nossa **extensão RH IMOB Aceleradora** faz a captação automática. São dois bancos — te mostro rapidinho 👇",function(){
+  bot("**🏠 Plataforma Corretores** — banco de corretores com **CRECI ativo** (80 mil+ em 19 cidades), filtrados por cidade, mercado e experiência. Planos por volume de contatos:\n• **Starter R$ 499/mês** — 500 contatos\n• **Pro R$ 999/mês** — 1.000 contatos (mais escolhido)\n• **Ilimitado R$ 1.499/mês** — contatos ilimitados\n[Ver a Plataforma Corretores →](/corretores)",function(){
+    bot("**🌱 Plataforma Novos Talentos** — candidatos em início de carreira (90 mil+ em 180+ cidades), pré-selecionados:\n• **R$ 249/mês** se você já assina a Catho (integramos o seu login)\n• **R$ 649/mês** com acesso completo, sem Catho própria\n[Ver a Plataforma Novos Talentos →](/novos-talentos)",function(){
+      bot("As duas rodam com a **extensão RH IMOB Aceleradora** (Chrome): integra Instagram, site do CRECI e Catho, com funil e abordagem no WhatsApp. Fica trabalhando na máquina e você acompanha os retornos num kanban. Sem fidelidade, login em até 1 dia útil.",function(){
+        bot("Quer ver como funciona ou já seguir com uma delas?",function(){
+          setChips([{label:"Ver como funciona (prints)",cls:"primary",go:comoFunciona},
+                    {label:"Quero a Plataforma Corretores",go:function(){lead.ferramenta="Plataforma Corretores (CRECI)";escolheuFerramenta()}},
+                    {label:"Quero a Novos Talentos",go:function(){lead.ferramenta="Plataforma Novos Talentos";escolheuFerramenta()}},
+                    {label:"Tenho dúvida / quero comparar",go:function(){lead.ferramenta="Quer comparar / tirar dúvida";escolheuFerramenta()}}]);
+        });
       });
     });
   });
 })}
-function escolheuFerramenta(){bot("Perfeito! Vou registrar pra liberarmos o acesso e te orientar na configuração — é rápido.",urgencia)}
+// Prints reais da extensão (ficam em /assets).
+function comoFunciona(){bot("Na prática, a extensão capta e aborda sozinha — e os retornos caem no funil, pra você conversar só com quem respondeu. 👇",function(){
+  botImg("/assets/extensao-kanban-crm.jpg","Kanban/CRM da extensão: cada corretor avança por etapa (novo → em conversa → entrevista).",function(){
+    botImg("/assets/extensao-bolha-whatsapp.png","Abordagem direto no WhatsApp, com mensagens prontas por perfil.",function(){
+      bot("É só instalar no Chrome e logar com o seu acesso. [Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)\n\nQuer seguir com qual?",function(){
+        setChips([{label:"Plataforma Corretores",cls:"primary",go:function(){lead.ferramenta="Plataforma Corretores (CRECI)";escolheuFerramenta()}},
+                  {label:"Novos Talentos",go:function(){lead.ferramenta="Plataforma Novos Talentos";escolheuFerramenta()}},
+                  {label:"Prefiro a operação completa",go:function(){lead.caminho="Operação completa";lead.ferramenta="";remun()}}]);
+      });
+    });
+  });
+})}
+function escolheuFerramenta(){bot("Perfeito! Vou registrar pra liberarmos o acesso (até 1 dia útil) e te orientar na configuração.",urgencia)}
 function remun(){bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
   setChips([{label:"Ajuda de custo / fixo",go:function(){lead.remuneracao="Ajuda de custo / fixo";setF("remuneracao",lead.remuneracao);benef()}},
             {label:"Mínimo garantido",go:function(){lead.remuneracao="Mínimo garantido";setF("remuneracao",lead.remuneracao);benef()}},
@@ -188,7 +209,7 @@ function jornada(){bot("E a **jornada e as exigências**? (dias e horário, CREC
 })}
 function estrutura(){bot("Você já tem **RH** (ou alguém) pra receber e dar andamento nos candidatos que a gente levar?",function(){
   setChips([{label:"Tenho RH / responsável",go:function(){lead.estrutura="Tem RH";bot("Ótimo! A nossa equipe prospecta, aborda e envia pro seu RH quem tiver interesse — vocês dão andamento.",urgencia)}},
-            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz a operação completa pra você, com a nossa assistente dedicada da RH IMOB.",urgencia)}}]);
+            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz a operação completa pra você, com **assistente dedicada da RH IMOB + headhunter** cuidando dos retornos.",urgencia)}}]);
 })}
 function urgencia(){bot("Qual a urgência pra começar?",function(){
   var nx=function(){(lead.caminho==="Ferramentas"?contato:objecao)()};
@@ -199,13 +220,13 @@ function urgencia(){bot("Qual a urgência pra começar?",function(){
 // Resposta de preço, decidida pelo contexto (cargo + região + qtd + estrutura).
 function respostaPreco(cb){
   if(lead.caminho==="Ferramentas"){
-    bot("Pelas ferramentas: a **extensão RH IMOB Aceleradora** é **R$ 999/mês** (2 logins, automatizada, rodando 24–48h). As manuais são **R$ 249/mês** (se já assina a Catho) ou **R$ 649/mês** (acesso completo ao banco)."+(lead.ferramenta?"\n\nVocê escolheu: "+lead.ferramenta+".":""),cb);
+    bot("Pelas plataformas (você opera, com a extensão RH IMOB Aceleradora automatizando):\n• **Corretores (CRECI)** — Starter R$ 499 (500 contatos), Pro R$ 999 (1.000), Ilimitado R$ 1.499.\n• **Novos Talentos** — R$ 249 (já assina Catho) ou R$ 649 (acesso completo).\n[Ver todos os planos →](/plataformas)"+(lead.ferramenta?"\n\nVocê escolheu: "+lead.ferramenta+".":""),cb);
     return;
   }
   var sp=(lead.regiao==="São Paulo");
   var ck=cargoKey();
-  // As ferramentas manuais existem dentro E fora de SP — opção de entrada, você conduz.
-  var manual="\n\nSe preferir conduzir você mesmo, dá pra começar só com as ferramentas (integração Catho / Novos Talentos): **R$ 249/mês** se você já assina a Catho, ou **R$ 649/mês** com o acesso completo.";
+  // As plataformas existem dentro E fora de SP — opção de entrada, você opera (com a extensão).
+  var manual="\n\nSe preferir conduzir você mesmo, dá pra usar as plataformas: **Novos Talentos** a partir de **R$ 249/mês** e **Corretores (CRECI)** a partir de **R$ 499/mês**. [Ver planos →](/plataformas)";
   var msg;
   if(lead.qtd==="6 ou mais"){
     msg="A partir de 6 por mês é uma operação **sob medida**: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
@@ -214,14 +235,12 @@ function respostaPreco(cb){
   } else if(ck==="outro"){
     msg="Pra "+lead.cargo.toLowerCase()+", o investimento fica **em torno do salário da vaga** (até ~70%). Fecho o valor exato na proposta.";
   } else if(ck==="corretor"||ck==="novostalentos"){
-    if(lead.estrutura==="Tem assistente/secretário"){
-      msg="Como você já tem assistente, o caminho é a **extensão RH IMOB Aceleradora** — **R$ 999/mês, com 2 logins**. Ela roda no computador de forma automatizada (24–48h), abordando corretores e novos talentos (Instagram, site do CRECI, Catho e envio no WhatsApp). O seu assistente só acompanha."+manual;
-    } else if(!sp){
-      msg="A nossa operação com equipe é aqui em **São Paulo**. Na sua região, o caminho é a ferramenta: a **extensão RH IMOB Aceleradora** — **R$ 999/mês, com 2 logins**, rodando automatizada 24–48h (Instagram, site do CRECI, Catho e envio no WhatsApp)."+manual;
+    if(!sp){
+      msg="A nossa operação com equipe é aqui em **São Paulo**. Na sua região, o caminho são as plataformas (você opera, com a extensão RH IMOB Aceleradora automatizando): **Corretores (CRECI)** a partir de R$ 499/mês e **Novos Talentos** a partir de R$ 249/mês. [Ver planos →](/plataformas)";
     } else if(lead.estrutura==="Tem RH"){
-      msg="Como você já tem RH, a operação sai por **R$ 1.999/mês**: a nossa equipe prospecta, aborda e envia pro seu RH quem demonstrar interesse — vocês dão andamento."+manual;
+      msg="Como você já tem quem receba os retornos, a **operação completa** sai por **R$ 1.999/mês**: a nossa equipe gera os candidatos, aborda, faz a triagem e entrega em entrevista — e o seu time dá andamento. Volume pra ~5 contratações/mês, setup em 7 dias."+manual;
     } else {
-      msg="Sem estrutura, a gente faz a **operação completa** pra você, com a nossa **assistente dedicada**, por **R$ 3.499/mês**: prospecta, aborda, qualifica e leva os candidatos à reunião."+manual;
+      msg="Sem estrutura, a gente faz a **operação completa** com **assistente dedicada da RH IMOB + headhunter**, por **R$ 3.499/mês**: geração de candidatos, abordagem, triagem e entrega em entrevista online. Volume pra ~5 contratações/mês, setup em 7 dias."+manual;
     }
   } else {
     msg="Me conta o cargo que você precisa que eu já te passo o valor certinho.";
@@ -243,10 +262,19 @@ function responderDuvida_(t,cb){var s=(t||"").toLowerCase();
   if(/quanto tempo|prazo/.test(s)){bot("A operação começa em poucos dias e roda de forma contínua até fechar as posições.",cb);return;}
   bot("Boa — isso eu detalho na proposta. Deixa eu só terminar de montar aqui:",cb);
 }
+// Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
+function verPlataformas(cb){bot("Além da operação feita por nós, dá pra você mesmo operar com as plataformas + a extensão RH IMOB Aceleradora:",function(){
+  bot("• **Corretores (CRECI)** — a partir de R$ 499/mês. [Ver →](/corretores)\n• **Novos Talentos** — R$ 249 (já assina Catho) / R$ 649. [Ver →](/novos-talentos)\nA extensão integra Instagram, site do CRECI e Catho, com funil e abordagem no WhatsApp.",function(){
+    botImg("/assets/extensao-kanban-crm.jpg","Funil/CRM da extensão: cada corretor avança por etapa.",function(){
+      bot("[Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",cb);
+    });
+  });
+})}
 function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
   setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";respostaPreco(contato)}},
             {label:"E se não der certo?",go:function(){lead.objecao="garantia";respostaGarantia(contato)}},
             {label:"Como vocês acham?",go:function(){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",contato)}},
+            {label:"Conhecer as plataformas",go:function(){verPlataformas(objecao)}},
             {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
 })}
 function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",pedirNome)}

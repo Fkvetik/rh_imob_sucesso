@@ -31,34 +31,52 @@ Planilha **MAPS IMOBILIÁRIAS** (Apps Script) → `POST /api/mercado-ingest` (se
 diário no GAS (`mercadoBackfillDiario`, ~3h). "Perto de mim" lê só contagem
 (`rhi_mercado_perto`). Operador acessa via a extensão (flag do CRECI).
 
+## Oferta / produtos (fonte canônica = `plataformas.html` → `/plataformas`)
+**Dois bancos + operação + a extensão que opera tudo.** Preços publicados em `/plataformas`;
+não inventar nem contradizer essa página.
+- **Plataforma Corretores** (banco CRECI ativo, ~80 mil em 19 cidades) → `/corretores`.
+  Por volume de contatos: **Starter R$ 499** (500) · **Pro R$ 999** (1.000, "mais escolhido")
+  · **Ilimitado R$ 1.499**. Usuário adicional = + valor da assinatura. Sem fidelidade.
+- **Plataforma Novos Talentos** (início de carreira, ~90 mil em 180+ cidades) → `/novos-talentos`.
+  **R$ 249/mês** se já assina a Catho (integra o login) · **R$ 649/mês** acesso completo.
+- **Operação completa (RH IMOB gerencia, SP):** geração + abordagem + triagem + entrega em
+  entrevista, ~5 contratações/mês, setup 7 dias. **R$ 1.999/mês** se a empresa já tem
+  assistente pro retorno · **R$ 3.499/mês** com assistente dedicada + headhunter.
+- **Extensão RH IMOB Aceleradora** (Chrome): automatiza as plataformas — integra Instagram,
+  site do CRECI e Catho, funil/abordagem no WhatsApp, kanban CRM. É a ferramenta que o
+  cliente/operador usa. Store: `chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb`.
+  Prints: `assets/extensao-kanban-crm.jpg`, `assets/extensao-bolha-whatsapp.png`.
+- Contato comercial (Mariana): WhatsApp **5511978725515** (`EMPRESA_WHATSAPP`).
+- Outras páginas: `/plataformas`, `/apresentacao-rh-imob`, `/vagas`, `/incorporadoras`.
+
 ## Consultora IA (`/ia-recrutamento`)
-Chatbot **guiado** (vanilla JS, sem LLM) em `ia-recrutamento.html` que qualifica o
-lead B2B (empresa que quer contratar), registra **automaticamente** no painel ao
-concluir (POST client-side em **NT** `site_leads`, mesma config
-`RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG`) e oferece só **"Enviar no WhatsApp"**
-(`EMPRESA_WHATSAPP=5511978725515`). `CONV_ID` único por conversa (painel agrupa pelo
-prefixo antes do `#`). Perguntas digitadas em campo livre são respondidas e re-perguntadas
-(`pergunta_`/`responderDuvida_`), não gravadas como dado. Estagiário é recusado.
+Chatbot **guiado** (vanilla JS, sem LLM) em `ia-recrutamento.html` que qualifica o lead B2B,
+registra **automaticamente** no painel ao concluir (POST client-side em **NT** `site_leads`,
+config `RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG`) e oferece só **"Enviar no WhatsApp"**.
+`CONV_ID` único por conversa (painel agrupa pelo prefixo antes do `#`). Perguntas digitadas
+em campo livre são respondidas e re-perguntadas (`pergunta_`/`responderDuvida_`), não gravadas
+como dado. Estagiário é recusado. `fmt()` suporta **`[texto](url)`** e `**negrito**`; `botImg()`
+mostra prints de `/assets`.
 
 **Fluxo:** região → cargo → quantidade → **(corretor/novos talentos) fork de caminho**
-→ [Operação completa: remuneração→benefícios→jornada→estrutura(tem RH?)→urgência→objeção]
-ou [Ferramentas: escolhe ferramenta→urgência] → contato (nome/WhatsApp/empresa) → registra.
-Gerente/SDR/outro pulam o fork (ferramentas não localizam esses perfis) e seguem na operação.
+→ [**Operação completa**: remuneração→benefícios→jornada→estrutura(tem assistente/RH pro
+retorno?)→urgência→objeção] ou [**Ferramentas**: mostra as 2 plataformas + extensão, com
+prints e links (`comoFunciona`)→escolhe→urgência] → contato → registra.
+Gerente/SDR/outro pulam o fork (plataformas não localizam esses perfis) e seguem na operação.
+`objecao()` tem atalho "Conhecer as plataformas" (`verPlataformas`).
 
-**Preços (reais, por contexto — nunca "depende"):**
-- **Operação completa (equipe RH IMOB, só SP), corretor/novos talentos:** tem RH →
-  **R$ 1.999/mês** (equipe aborda e envia os interessados pro RH dar andamento);
-  sem estrutura → **R$ 3.499/mês** (assistente dedicada, a gente faz tudo).
-- **Ferramentas (qualquer região, o cliente opera, controladas pelo painel):**
-  extensão **RH IMOB Aceleradora R$ 999/mês** (2 logins, automatizada 24–48h: Instagram,
-  CRECI, Catho, envio WhatsApp); manuais Novos Talentos/Catho **R$ 249** (já assina Catho)
-  / **R$ 649** (acesso completo ao banco) — oferecidas **dentro e fora** de SP.
-- **Fora de SP:** operação com equipe não atende; caminho é ferramenta (extensão R$ 999 + manuais).
-- **6+/mês:** sob medida. **Gerente/SDR:** a partir de R$ 1.500/mês. **Outros cargos:** ~salário (até 70%).
+**Preços na IA = os de `/plataformas` (acima).** Resumo do que a IA responde por contexto:
+- Corretor/novos talentos **em SP, operação completa:** tem assistente/RH pro retorno →
+  **R$ 1.999**; sem estrutura → **R$ 3.499** (assistente dedicada + headhunter).
+- **Ferramentas (qualquer região):** Corretores R$ 499/999/1.499 · Novos Talentos R$ 249/649.
+- **Fora de SP:** operação com equipe não atende → caminho é plataformas + extensão.
+- **6+/mês:** sob medida. **Gerente/SDR:** a partir de R$ 1.500. **Outros:** ~salário (até 70%).
 - Objeção "e se não der certo": a entrega é levar o profissional com aderência à reunião;
-  a conversão depende da proposta da empresa. Sem "contratação garantida" (CLT = reposição).
+  conversão depende da proposta da empresa. Sem "contratação garantida" (CLT = reposição).
 
 Home (`index.html`) linka a Consultora IA no nav e no hero.
+⚠️ **Pendência:** o hero da home diz "Ferramenta a partir de R$ 799" — não bate com
+`/plataformas` (Corretores começa em R$ 499). Confirmar com a Mariana e padronizar.
 
 ## Regras invioláveis
 - **Nunca** expor telefone coletado publicamente. "Perto de mim" = contagem.
