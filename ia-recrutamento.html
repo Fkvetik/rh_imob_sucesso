@@ -121,6 +121,8 @@ function cargoKey(){var c=(lead.cargo||"").toLowerCase();
 function custoOperacao(){var est=(lead.estrutura==="Tem RH")?"comRH":"semRH";
   return PRECO_OPERACAO[cargoKey()+"|"+lead.qtd+"|"+est]||"";}
 var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
+// id único desta conversa — o painel agrupa pelo prefixo antes do "#".
+var CONV_ID="ia-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 var $=function(id){return document.getElementById(id)};
 var msgs=$("msgs"),chips=$("chips"),inbar=$("inbar"),inp=$("inp");
 function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
@@ -212,15 +214,19 @@ function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**
 })}
 function resumo(){$("fdot").classList.add("on");
   var s="Aqui está o que entendi:\n\n• Empresa: "+lead.empresa+"\n• Contato: "+lead.nome+" — "+lead.tel+"\n• Região: "+lead.regiao+"\n• Precisa: "+lead.cargo+" ("+lead.qtd+")\n• Remuneração: "+lead.remuneracao+(lead.beneficios?"\n• Benefícios: "+lead.beneficios:"")+(lead.exigencias?"\n• Jornada/exigências: "+lead.exigencias:"")+"\n• Urgência: "+lead.urgencia;
-  bot(s,function(){bot("Já posso registrar isso com a RH IMOB e um especialista fecha sua proposta. Como prefere seguir?",function(){
-    setChips([{label:"Enviar no WhatsApp",cls:"wa",silent:true,go:enviarWhats},{label:"Só registrar p/ me chamarem",cls:"primary",silent:true,go:function(){registrar(false)}}]);
-  })});
+  bot(s,function(){
+    enviarParaPainel(false); // registra automaticamente ao concluir
+    $("fstatus").textContent="✓ Solicitação registrada";$("fstatus").className="status ok";
+    bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Sua solicitação já foi **registrada** com a RH IMOB — um especialista vai te chamar com a proposta.\n\nSe quiser adiantar, é só enviar no WhatsApp 👇",function(){
+      setChips([{label:"Enviar no WhatsApp",cls:"wa",silent:true,go:enviarWhats}]);
+    });
+  });
 }
 function textoWhats(){return "Olá! Vim pela Consultora IA do site da RH IMOB.\n\nNome: "+lead.nome+"\nEmpresa: "+lead.empresa+"\nRegião: "+lead.regiao+"\nPreciso: "+lead.cargo+" ("+lead.qtd+")\nRemuneração: "+lead.remuneracao+(lead.beneficios?"\nBenefícios: "+lead.beneficios:"")+(lead.exigencias?"\nJornada/exigências: "+lead.exigencias:"")+"\nUrgência: "+lead.urgencia+"\n\nPode me mandar a proposta?"}
 function enviarParaPainel(enviou){
   try{
     var cfg=window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG;if(!cfg||!cfg.url)return;
-    var base="ia#"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    var base=CONV_ID+"#"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     var row={session_id:base,nome:lead.nome,whatsapp:lead.tel,empresa:lead.empresa,cidade:lead.regiao,
       cargo_vaga:lead.cargo,quantidade:lead.qtd,urgencia:lead.urgencia,remuneracao:lead.remuneracao,
       beneficios:lead.beneficios,exigencias:lead.exigencias,
@@ -241,7 +247,7 @@ function registrar(viaWhats){
     setChips([{label:"Começar de novo",go:function(){location.reload()}}]);
   });
 }
-function enviarWhats(){registrar(true);window.open("https://wa.me/"+EMPRESA_WHATSAPP+"?text="+encodeURIComponent(textoWhats()),"_blank")}
+function enviarWhats(){enviarParaPainel(true);window.open("https://wa.me/"+EMPRESA_WHATSAPP+"?text="+encodeURIComponent(textoWhats()),"_blank");bot("Abri o WhatsApp com a sua solicitação já preenchida — é só enviar. 👍",function(){setChips([{label:"Começar de novo",go:function(){location.reload()}}]);});}
 start();
 </script>
 </body>
