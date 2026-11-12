@@ -110,8 +110,9 @@ var PLANOS_TXT="Os planos da plataforma Novos Talentos:\n• R$ 249/mês — se 
 // Preenchido com o que você me passou; as demais combinações eu completo quando
 // você mandar os valores. Chave: "<cargo>|<qtd>|<comRH|semRH>".
 var PRECO_OPERACAO={
-  "corretor|3 a 5|semRH":"3.499",
-  "corretor|3 a 5|comRH":"1.999"
+  // Operação padrão = até 5 profissionais/mês (inclui 1 assistente quando sem RH).
+  "corretor|1 a 5|semRH":"3.499",
+  "corretor|1 a 5|comRH":"1.999"
 };
 function cargoKey(){var c=(lead.cargo||"").toLowerCase();
   if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
@@ -152,9 +153,8 @@ function precisa(){bot("O que você precisa contratar?",function(){
               lead.cargo=v;setF("cargo",v);quantas();
             })})}}]);
 })}
-function quantas(){bot("Quantas posições, mais ou menos?",function(){
-  setChips([{label:"1 a 2",go:function(){lead.qtd="1 a 2";setF("qtd",lead.qtd);remun()}},
-            {label:"3 a 5",go:function(){lead.qtd="3 a 5";setF("qtd",lead.qtd);remun()}},
+function quantas(){bot("Quantas posições por mês, mais ou menos?",function(){
+  setChips([{label:"1 a 5",go:function(){lead.qtd="1 a 5";setF("qtd",lead.qtd);remun()}},
             {label:"6 ou mais",go:function(){lead.qtd="6 ou mais";setF("qtd",lead.qtd);remun()}}]);
 })}
 function remun(){bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
@@ -186,12 +186,14 @@ function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvi
     var msg;
     if(usaFerramenta){
       msg=PLANOS_TXT+"\n\n"+(sp?"No seu caso, como você já tem assistente, ele opera a ferramenta (extensão RH IMOB Aceleradora) com um desses planos.":"Fora de SP, você usa a ferramenta Novos Talentos (integrada à Catho) com um desses planos.");
+    } else if(lead.qtd==="6 ou mais"){
+      msg="A partir de 6 por mês é uma operação sob medida: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
     } else {
       var comRH=(lead.estrutura==="Tem RH");
-      var modo=comRH?"com o seu RH no processo":"completa, feita pela gente";
+      var modo=comRH?"com o seu RH no processo":"completa, com a nossa assistente";
       var val=custoOperacao();
-      if(val){ msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo, "+lead.qtd+" vaga(s), a operação "+modo+" fica em R$ "+val+".\n\nNa proposta eu detalho o escopo e o que está incluso."; }
-      else { msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo ("+lead.qtd+"), a operação "+modo+" — eu fecho o valor exato na proposta, conforme o perfil."; }
+      if(val){ msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo (até 5/mês), a operação "+modo+" fica em R$ "+val+" por mês.\n\nNa proposta eu detalho o escopo e o que está incluso."; }
+      else { msg="Pra "+lead.cargo.toLowerCase()+" em São Paulo, a operação "+modo+" — fecho o valor exato na proposta, conforme o perfil."; }
     }
     bot(msg,contato);
   }},
