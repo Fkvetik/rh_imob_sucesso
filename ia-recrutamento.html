@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consultora IA · RH IMOB</title>
+<meta name="description" content="Conte sua necessidade de corretores para a Consultora IA da RH IMOB e receba uma proposta de recrutamento.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+  :root{
+    --bg:#f4f1fb; --card:#fff; --line:#e9e2f5; --fg:#1c1430; --muted:#6b6280;
+    --brand:#2b124d; --brand-2:#3b1a6b; --accent:#ff7a1a; --accent-ink:#8a3d00;
+    --on-brand:#f3eefc; --bot:#f3eefc; --bot-ink:#2b124d; --user:#2b124d; --user-ink:#f6f1ff; --ph:#b9319b;
+    --f-head:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+  h1,h2,h3{font-family:var(--f-head);margin:0;letter-spacing:-.01em}
+  a{color:inherit}
+  .top{background:var(--brand);color:var(--on-brand);padding:12px max(14px,env(safe-area-inset-left,0px));
+    display:flex;align-items:center;gap:10px}
+  .top .b{font-family:var(--f-head);font-weight:700;font-size:16px;flex:1}
+  .top .b span{color:var(--accent)}
+  .top a{color:var(--on-brand);text-decoration:none;font-size:13px;font-weight:600;opacity:.85}
+  .shell{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:1fr 310px;gap:16px;
+    padding:16px max(14px,env(safe-area-inset-left,0px)) 24px max(14px,env(safe-area-inset-right,0px))}
+  @media(max-width:840px){.shell{grid-template-columns:1fr}}
+  .chat{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-height:72vh}
+  .chead{background:linear-gradient(180deg,var(--brand),var(--brand-2));color:var(--on-brand);padding:14px 18px;display:flex;align-items:center;gap:12px}
+  .av{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#1a0b00;font-family:var(--f-head);font-weight:700;display:grid;place-items:center;flex:none}
+  .chead b{font-family:var(--f-head);font-size:16px}
+  .chead small{display:block;color:#bfe3c9;font-weight:600;font-size:12px;margin-top:1px}
+  .chead small::before{content:"● ";color:#53d08a}
+  .msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:9px;max-width:88%}
+  .row .bub{padding:10px 13px;border-radius:14px;font-size:14.5px;white-space:pre-wrap;word-break:break-word}
+  .row.bot{align-self:flex-start}
+  .row.bot .mini{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#1a0b00;font:700 11px/1 var(--f-head);display:grid;place-items:center;flex:none;margin-top:2px}
+  .row.bot .bub{background:var(--bot);color:var(--bot-ink);border-top-left-radius:5px}
+  .row.user{align-self:flex-end}
+  .row.user .bub{background:var(--user);color:var(--user-ink);border-top-right-radius:5px}
+  .ph{color:var(--ph);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 12px}
+  .chip{border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:9px 15px;font:600 13.5px/1 var(--f-body);cursor:pointer}
+  .chip:hover{border-color:var(--accent);color:var(--accent-ink)}
+  .chip.primary{background:var(--accent);border-color:var(--accent);color:#1a0b00}
+  .chip.wa{background:#25d366;border-color:#25d366;color:#07351a}
+  .inbar{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:var(--card)}
+  .inbar input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;font:15px var(--f-body);background:var(--bg);color:var(--fg)}
+  .inbar input:focus{outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
+  .inbar button{border:0;border-radius:12px;background:var(--accent);color:#1a0b00;font-weight:700;padding:0 16px;cursor:pointer}
+  .ficha{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;align-self:start;position:sticky;top:14px}
+  .ficha h3{font-size:14px;display:flex;align-items:center;gap:8px}
+  .ficha h3 .dot{width:8px;height:8px;border-radius:50%;background:#c9b8e6}
+  .ficha h3 .dot.on{background:#25d366}
+  .ficha .f{display:flex;flex-direction:column;gap:2px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .ficha .f:last-of-type{border-bottom:0}
+  .ficha .k{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .ficha .v{font-size:14px;min-height:19px}
+  .ficha .v.empty{color:#c9b8e6}
+  .ficha .status{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center;background:var(--bg);border-radius:10px;padding:9px}
+  .ficha .status.ok{color:#137a3f;background:#e7f7ee}
+  .note{font-size:11px;color:var(--muted);text-align:center;padding:8px}
+  .note b{color:var(--ph)}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="b">RH <span>IMOB</span></div>
+    <a href="/">← Voltar ao site</a>
+  </div>
+  <div class="shell">
+    <div class="chat">
+      <div class="chead">
+        <div class="av">RH</div>
+        <div><b>Consultora IA · RH IMOB</b><small>online — recrutamento imobiliário</small></div>
+      </div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="chips" id="chips"></div>
+      <form class="inbar" id="inbar" hidden><input id="inp" autocomplete="off"><button type="submit">Enviar</button></form>
+    </div>
+    <aside class="ficha">
+      <h3><span class="dot" id="fdot"></span> Sua necessidade</h3>
+      <div class="f"><span class="k">Nome</span><span class="v empty" id="f-nome">—</span></div>
+      <div class="f"><span class="k">WhatsApp</span><span class="v empty" id="f-tel">—</span></div>
+      <div class="f"><span class="k">Empresa</span><span class="v empty" id="f-empresa">—</span></div>
+      <div class="f"><span class="k">Região</span><span class="v empty" id="f-regiao">—</span></div>
+      <div class="f"><span class="k">Precisa</span><span class="v empty" id="f-cargo">—</span></div>
+      <div class="f"><span class="k">Vagas</span><span class="v empty" id="f-qtd">—</span></div>
+      <div class="f"><span class="k">Remuneração</span><span class="v empty" id="f-remuneracao">—</span></div>
+      <div class="f"><span class="k">Benefícios</span><span class="v empty" id="f-beneficios">—</span></div>
+      <div class="f"><span class="k">Jornada / exigências</span><span class="v empty" id="f-exigencias">—</span></div>
+      <div class="f"><span class="k">Urgência</span><span class="v empty" id="f-urgencia">—</span></div>
+      <div class="status" id="fstatus">Preenchendo pela conversa…</div>
+      <div class="note">Textos em <b>«rosa»</b> ainda são placeholders (valores, regras SP/fora, ferramentas).</div>
+    </aside>
+  </div>
+
+<script src="/supabase-config-novos-talentos.js?v=20261112ia"></script>
+<script>
+var EMPRESA_WHATSAPP="5511978725515";
+var FERRAMENTAS={ semEstrutura:"«link da ferramenta p/ quem não tem RH/assistente»", comAssistente:"«link p/ quem já tem assistente/secretário»" };
+var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
+var $=function(id){return document.getElementById(id)};
+var msgs=$("msgs"),chips=$("chips"),inbar=$("inbar"),inp=$("inp");
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</span>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
+function bot(t,cb){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
+function user(t){var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
+function setChips(o){chips.innerHTML="";inbar.hidden=true;o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)})}
+function ask(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)}}
+function askSkip(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();
+  inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)};
+  var b=document.createElement("button");b.className="chip";b.textContent="Pular";b.onclick=function(){inbar.hidden=true;done("")};chips.appendChild(b)}
+function setF(id,val){var el=$("f-"+id);el.textContent=val||"—";if(val)el.classList.remove("empty")}
+
+function start(){
+  bot("Oi! Sou a Consultora IA da RH IMOB. 👋\nEm poucos minutos eu entendo sua necessidade de corretores e já deixo tudo encaminhado — sem formulário chato.",function(){
+    bot("Sua operação é em **São Paulo** ou em **outra região**?",function(){
+      setChips([{label:"São Paulo",go:function(){lead.regiao="São Paulo";setF("regiao","São Paulo");bot("Perfeito. Em São Paulo trabalhamos assim: «regra/condição de SP a definir».",precisa)}},
+                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);bot("Fora de São Paulo funciona um pouco diferente: «regra/condição fora de SP a definir».",precisa)})})}}]);
+    });
+  });
+}
+function precisa(){bot("O que você precisa contratar?",function(){
+  setChips([{label:"Corretor de imóveis",go:function(){lead.cargo="Corretor de imóveis";setF("cargo",lead.cargo);quantas()}},
+            {label:"Gerente / liderança",go:function(){lead.cargo="Gerente / liderança";setF("cargo",lead.cargo);quantas()}},
+            {label:"Equipe inteira",go:function(){lead.cargo="Equipe inteira";setF("cargo",lead.cargo);quantas()}},
+            {label:"Outro",go:function(){bot("Me conta em uma linha:",function(){ask("Ex.: captador, SDR imobiliário…",function(v){lead.cargo=v;setF("cargo",v);quantas()})})}}]);
+})}
+function quantas(){bot("Quantas posições, mais ou menos?",function(){
+  setChips([{label:"1 a 2",go:function(){lead.qtd="1 a 2";setF("qtd",lead.qtd);remun()}},
+            {label:"3 a 5",go:function(){lead.qtd="3 a 5";setF("qtd",lead.qtd);remun()}},
+            {label:"6 ou mais",go:function(){lead.qtd="6 ou mais";setF("qtd",lead.qtd);remun()}}]);
+})}
+function remun(){bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
+  setChips([{label:"Ajuda de custo / fixo",go:function(){lead.remuneracao="Ajuda de custo / fixo";setF("remuneracao",lead.remuneracao);benef()}},
+            {label:"Mínimo garantido",go:function(){lead.remuneracao="Mínimo garantido";setF("remuneracao",lead.remuneracao);benef()}},
+            {label:"Só comissão",go:function(){lead.remuneracao="Só comissão";setF("remuneracao",lead.remuneracao);benef()}},
+            {label:"A definir",go:function(){lead.remuneracao="A definir";setF("remuneracao",lead.remuneracao);benef()}}]);
+})}
+function benef(){bot("Quais **benefícios** a vaga oferece? (ex.: vale-transporte, VR, plano, premiação, leads, descontos…)",function(){
+  askSkip("Liste os benefícios (ou Pular)",function(v){lead.beneficios=v;setF("beneficios",v||"—");jornada()});
+})}
+function jornada(){bot("E a **jornada e as exigências**? (dias e horário, CRECI, veículo, notebook…)",function(){
+  askSkip("Ex.: seg a sáb 9–18h, com CRECI, veículo próprio",function(v){lead.exigencias=v;setF("exigencias",v||"—");estrutura()});
+})}
+function estrutura(){bot("Você já tem **RH, assistente ou secretário(a)** cuidando do processo seletivo?",function(){
+  setChips([{label:"Tenho RH",go:function(){lead.estrutura="Tem RH";bot("Ótimo — a gente integra no seu RH. «condição p/ quem tem RH».",urgencia)}},
+            {label:"Assistente / secretário(a)",go:function(){lead.estrutura="Tem assistente/secretário";bot("Legal. Posso te liberar uma ferramenta que deixa seu assistente mais produtivo:\n→ "+FERRAMENTAS.comAssistente,urgencia)}},
+            {label:"Não tenho",go:function(){lead.estrutura="Sem estrutura";bot("Sem problema — a gente faz o processo pra você. E te dou acesso a uma ferramenta que ajuda a tocar sozinho:\n→ "+FERRAMENTAS.semEstrutura,urgencia)}}]);
+})}
+function urgencia(){bot("Qual a urgência pra começar?",function(){
+  setChips([{label:"Até 15 dias",go:function(){lead.urgencia="Até 15 dias";setF("urgencia",lead.urgencia);objecao()}},
+            {label:"Até 30 dias",go:function(){lead.urgencia="Até 30 dias";setF("urgencia",lead.urgencia);objecao()}},
+            {label:"Sem pressa",go:function(){lead.urgencia="Sem pressa";setF("urgencia",lead.urgencia);objecao()}}]);
+})}
+function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
+  setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";bot("Depende do perfil e da quantidade. «faixa de investimento / modelo a definir». Monto o valor fechado na proposta.",contato)}},
+            {label:"E se não der certo?",go:function(){lead.objecao="garantia";bot("Boa pergunta. A gente trabalha com geração de demanda:\n\n• Corretor — não substituímos o profissional. Geramos demanda qualificada e entregamos os candidatos na reunião; o andamento da contratação fica com você.\n• Posições CLT — aí sim trabalhamos com reposição.",contato)}},
+            {label:"Como vocês acham?",go:function(){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",contato)}},
+            {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
+})}
+function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",function(){
+  ask("Seu nome",function(v){lead.nome=v;setF("nome",v);
+    bot("Prazer, "+v.split(" ")[0]+"! Qual o **WhatsApp** (com DDD)?",function(){
+      ask("(11) 90000-0000",function(t){lead.tel=t;setF("tel",t);
+        bot("E o **nome da sua empresa**?",function(){ask("Empresa / imobiliária",function(e){lead.empresa=e;setF("empresa",e);resumo()})});
+      });
+    });
+  });
+})}
+function resumo(){$("fdot").classList.add("on");
+  var s="Aqui está o que entendi:\n\n• Empresa: "+lead.empresa+"\n• Contato: "+lead.nome+" — "+lead.tel+"\n• Região: "+lead.regiao+"\n• Precisa: "+lead.cargo+" ("+lead.qtd+")\n• Remuneração: "+lead.remuneracao+(lead.beneficios?"\n• Benefícios: "+lead.beneficios:"")+(lead.exigencias?"\n• Jornada/exigências: "+lead.exigencias:"")+"\n• Urgência: "+lead.urgencia;
+  bot(s,function(){bot("Já posso registrar isso com a RH IMOB e um especialista fecha sua proposta. Como prefere seguir?",function(){
+    setChips([{label:"Enviar no WhatsApp",cls:"wa",silent:true,go:enviarWhats},{label:"Só registrar p/ me chamarem",cls:"primary",silent:true,go:function(){registrar(false)}}]);
+  })});
+}
+function textoWhats(){return "Olá! Vim pela Consultora IA do site da RH IMOB.\n\nNome: "+lead.nome+"\nEmpresa: "+lead.empresa+"\nRegião: "+lead.regiao+"\nPreciso: "+lead.cargo+" ("+lead.qtd+")\nRemuneração: "+lead.remuneracao+(lead.beneficios?"\nBenefícios: "+lead.beneficios:"")+(lead.exigencias?"\nJornada/exigências: "+lead.exigencias:"")+"\nUrgência: "+lead.urgencia+"\n\nPode me mandar a proposta?"}
+function enviarParaPainel(enviou){
+  try{
+    var cfg=window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG;if(!cfg||!cfg.url)return;
+    var base="ia#"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    var row={session_id:base,nome:lead.nome,whatsapp:lead.tel,empresa:lead.empresa,cidade:lead.regiao,
+      cargo_vaga:lead.cargo,quantidade:lead.qtd,urgencia:lead.urgencia,remuneracao:lead.remuneracao,
+      beneficios:lead.beneficios,exigencias:lead.exigencias,
+      mensagem:"Estrutura: "+lead.estrutura+(lead.objecao?(" | Dúvida: "+lead.objecao):""),
+      tipo:"empresa",origem:"Consultora IA",pagina:location.href,enviou_whatsapp:!!enviou};
+    var url=cfg.url.replace(/\/$/,"")+"/rest/v1/site_leads";
+    var headers={apikey:cfg.publishableKey,Authorization:"Bearer "+cfg.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"};
+    fetch(url,{method:"POST",headers:headers,body:JSON.stringify(row)}).then(function(r){
+      if(!r.ok){var semTipo=Object.assign({},row);delete semTipo.tipo;semTipo.origem="[empresa] Consultora IA";return fetch(url,{method:"POST",headers:headers,body:JSON.stringify(semTipo)});}
+    }).catch(function(){});
+  }catch(e){}
+}
+function registrar(viaWhats){
+  enviarParaPainel(viaWhats);
+  $("fstatus").textContent="✓ Enviado para a RH IMOB"+(viaWhats?" + WhatsApp":"");$("fstatus").className="status ok";
+  user(viaWhats?"Enviar no WhatsApp":"Só registrar");
+  bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Seu contato e a necessidade já chegaram à RH IMOB. Um especialista te chama com a proposta.",function(){
+    setChips([{label:"Começar de novo",go:function(){location.reload()}}]);
+  });
+}
+function enviarWhats(){registrar(true);window.open("https://wa.me/"+EMPRESA_WHATSAPP+"?text="+encodeURIComponent(textoWhats()),"_blank")}
+start();
+</script>
+</body>
+</html>
