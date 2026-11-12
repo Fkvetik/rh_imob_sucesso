@@ -205,19 +205,24 @@ function respostaPreco(cb){
   }
   bot(msg,cb);
 }
+// "E se não der certo?" — reposiciona: a entrega é levar o profissional com
+// aderência à reunião. A conversão depende da proposta da empresa.
+function respostaGarantia(cb){
+  bot("Deixa eu ser transparente no que a gente entrega: o nosso trabalho é achar profissionais com aderência real ao perfil da sua vaga e levá-los até você — na reunião, online ou presencial.\n\nQuando o candidato comparece e conversa com você, a nossa parte está concluída: a demanda foi gerada e qualificada. A contratação em si depende da sua proposta — o candidato ouve as condições e decide seguir ou não.\n\nPor isso a gente não vende 'contratação garantida': garante colocar na sua frente gente certa, com fit, pronta pra conversar — e ainda te orienta a montar uma proposta que converte.\n\nEm posições CLT, aí sim entra a reposição.",cb);
+}
 // Quando a pessoa faz uma PERGUNTA no lugar de responder, a gente responde e
 // volta a perguntar — sem travar e sem gravar a pergunta como resposta.
 function pergunta_(t){var s=(t||"").toLowerCase();return /\?\s*$/.test(String(t||"").trim())||/(quanto|pre[çc]o|valor|custa|cobra|mensal|garantia|n[aã]o der certo|como funciona|quanto tempo|prazo)/.test(s);}
 function responderDuvida_(t,cb){var s=(t||"").toLowerCase();
   if(/quanto|pre[çc]o|valor|custa|cobra|mensal/.test(s)){respostaPreco(cb);return;}
-  if(/garantia|n[aã]o der certo/.test(s)){bot("A gente trabalha com geração de demanda: para corretor, não substituímos o profissional — entregamos os candidatos na reunião e o andamento é com você; para posições CLT, aí tem reposição.",cb);return;}
+  if(/garantia|n[aã]o der certo/.test(s)){respostaGarantia(cb);return;}
   if(/como funciona|acha/.test(s)){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",cb);return;}
   if(/quanto tempo|prazo/.test(s)){bot("A operação começa em poucos dias e roda de forma contínua até fechar as posições.",cb);return;}
   bot("Boa — isso eu detalho na proposta. Deixa eu só terminar de montar aqui:",cb);
 }
 function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
   setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";respostaPreco(contato)}},
-            {label:"E se não der certo?",go:function(){lead.objecao="garantia";bot("Boa pergunta. A gente trabalha com geração de demanda:\n\n• Corretor — não substituímos o profissional. Geramos demanda qualificada e entregamos os candidatos na reunião; o andamento da contratação fica com você.\n• Posições CLT — aí sim trabalhamos com reposição.",contato)}},
+            {label:"E se não der certo?",go:function(){lead.objecao="garantia";respostaGarantia(contato)}},
             {label:"Como vocês acham?",go:function(){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",contato)}},
             {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
 })}
