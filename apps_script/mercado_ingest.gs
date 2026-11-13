@@ -37,6 +37,22 @@ function mercadoPlaceKey_(url) {
   return url.split(/[?#]/)[0].replace(/\/+$/, '').toLowerCase();
 }
 
+/** Extrai lat/lng do trecho !3d<lat>!4d<lng> da placeUrl do Google Maps.
+ *  Devolve null (não ''), pra não quebrar a conversão numérica no banco. */
+function mercadoCoords_(url) {
+  url = String(url || '');
+  var la = url.match(/!3d(-?\d+(?:\.\d+)?)/);
+  var lo = url.match(/!4d(-?\d+(?:\.\d+)?)/);
+  return { lat: la ? Number(la[1]) : null, lng: lo ? Number(lo[1]) : null };
+}
+/** Prefere a coluna explícita (o.lat/o.lng) se houver; senão, parseia da URL. */
+function mercadoLatLng_(o, url) {
+  var c = mercadoCoords_(url);
+  var lat = (o && o.lat != null && o.lat !== '') ? Number(o.lat) : c.lat;
+  var lng = (o && o.lng != null && o.lng !== '') ? Number(o.lng) : c.lng;
+  return { lat: isFinite(lat) ? lat : null, lng: isFinite(lng) ? lng : null };
+}
+
 /** POST servidor-para-servidor para o /api/mercado-ingest, em lotes. */
 function mercadoIngest_(estagio, rows) {
   rows = (rows || []).filter(function (r) { return r && r.place_key; });
@@ -74,12 +90,16 @@ function mercadoIngest_(estagio, rows) {
 function mercadoOnCentral_(objs) {
   var rows = (objs || []).map(function (o) {
     o = o || {};
+    var url = o.href || o.placeUrl || o.url || '';
+    var ll = mercadoLatLng_(o, url);
     return {
-      place_key: mercadoPlaceKey_(o.href || o.placeUrl || o.url),
-      place_url: o.href || o.placeUrl || o.url || '',
+      place_key: mercadoPlaceKey_(url),
+      place_url: url,
       nome:      o.cardName || o.nome || '',
       telefone:  o.cardPhone || o.fone_maps || '',
-      status:    o.cardStatus || o.state || o.status || ''
+      status:    o.cardStatus || o.state || o.status || '',
+      lat:       ll.lat,
+      lng:       ll.lng
     };
   });
   try { return mercadoIngest_('central', rows); }
@@ -97,6 +117,7 @@ function mercadoOnColeta_(objs) {
 function mercadoLinhaColeta_(o) {
   o = o || {};
   var url = o.placeUrl || o.href || '';
+  var ll = mercadoLatLng_(o, url); // coordenada já sai da coleta
   return {
     place_key:      mercadoPlaceKey_(url),
     place_url:      url,
@@ -106,6 +127,8 @@ function mercadoLinhaColeta_(o) {
     telefone:       o.fone_maps || o.TEL_INSTAGRAM || o.FONE_INSTAGRAM || '',
     endereco:       o.endereco || '',
     cidade:         o.Cidade || o.cidade || '',
+    lat:            ll.lat,
+    lng:            ll.lng,
     site:           o.site_maps || '',
     instagram_url:  o.instagramUrl || '',
     instagram_user: o.igUsername || '',
