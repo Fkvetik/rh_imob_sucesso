@@ -73,19 +73,26 @@ module.exports = async (req, res) => {
       + (transcript ? ("Conversa recente:\n" + transcript + "\n\n") : "")
       + "Visitante agora: " + pergunta;
 
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-haiku-5-5",
-        max_tokens: 400,
-        system: SYSTEM,
-        messages: [{ role: "user", content: userMsg }]
-      })
+    const reqBody = JSON.stringify({
+      model: "claude-haiku-5-5",
+      max_tokens: 400,
+      system: SYSTEM,
+      messages: [{ role: "user", content: userMsg }]
     });
-    if (!r.ok) { res.status(200).json({ reply: "" }); return; }
+    // Retry curto em 429 / sobrecarga (conta nova tem rate limit baixo).
+    let data = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: reqBody
+      });
+      if (r.ok) { data = await r.json(); break; }
+      if (r.status === 429 || r.status >= 500) { await new Promise(function (ok) { setTimeout(ok, 600 * (attempt + 1)); }); continue; }
+      break; // 4xx (ex.: 400/401) não adianta repetir
+    }
+    if (!data) { res.status(200).json({ reply: "" }); return; }
 
-    const data = await r.json();
     let txt = "";
     if (data && Array.isArray(data.content)) {
       data.content.forEach(function (b) { if (b && b.type === "text" && b.text) txt += b.text; });
