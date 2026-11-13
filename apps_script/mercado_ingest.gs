@@ -43,7 +43,11 @@ function mercadoCoords_(url) {
   url = String(url || '');
   var la = url.match(/!3d(-?\d+(?:\.\d+)?)/);
   var lo = url.match(/!4d(-?\d+(?:\.\d+)?)/);
-  return { lat: la ? Number(la[1]) : null, lng: lo ? Number(lo[1]) : null };
+  if (la && lo) return { lat: Number(la[1]), lng: Number(lo[1]) };
+  // Fallback: centro do mapa (@lat,lng,zoom) quando não há o par !3d!4d.
+  var at = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (at) return { lat: Number(at[1]), lng: Number(at[2]) };
+  return { lat: null, lng: null };
 }
 /** Prefere a coluna explícita (o.lat/o.lng) se houver; senão, parseia da URL. */
 function mercadoLatLng_(o, url) {
