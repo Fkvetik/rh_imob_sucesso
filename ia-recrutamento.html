@@ -120,8 +120,11 @@ function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</
   .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]*)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--orange,#ff7a1a);font-weight:700">$1</a>')
   .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
 var ultimoBotTexto="",perguntaAtual="";
-function bot(t,cb){ultimoBotTexto=t;var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
-function user(t){var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
+// Histórico curto da conversa (pra dar memória ao LLM nas perguntas fora do roteiro).
+var convoBuf=[];
+function pushConvo_(role,t){convoBuf.push({role:role,content:String(t).slice(0,400)});if(convoBuf.length>24)convoBuf=convoBuf.slice(-24);}
+function bot(t,cb){ultimoBotTexto=t;pushConvo_("assistant",t);var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
+function user(t){pushConvo_("user",t);var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
 function setChips(o){perguntaAtual=ultimoBotTexto;chips.innerHTML="";o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)});
   // Campo sempre aberto: a pessoa pode digitar uma pergunta em qualquer etapa de botões.
   inbar.hidden=false;inp.value="";inp.placeholder="Prefere digitar? Pergunte o que quiser…";
@@ -364,7 +367,8 @@ function contextoLead_(){var p=[];
 function mostrarPensando_(){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub"><i>digitando…</i></div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;return r;}
 var FALLBACK_IA="Boa pergunta — isso um especialista te confirma certinho junto da proposta. Deixa eu continuar pra não perder o seu contexto: 👍";
 function perguntarIA_(t,cb){var p=mostrarPensando_();
-  fetch("/api/ia-chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({pergunta:t,contexto:contextoLead_()})})
+  var hist=convoBuf.slice(0,-1).slice(-8); // trocas anteriores (a atual já é o 't')
+  fetch("/api/ia-chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({pergunta:t,contexto:contextoLead_(),historico:hist})})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(d){if(p&&p.parentNode)p.parentNode.removeChild(p);
       bot((d&&d.reply)?d.reply:FALLBACK_IA,cb);})

@@ -1,6 +1,7 @@
 // Consultora IA — responde perguntas livres com o Claude (Haiku 5.5).
 // A chave fica SÓ no servidor (env ANTHROPIC_API_KEY na Vercel). O cliente nunca a vê.
 // Modelo híbrido: o chat só chama isto quando a pergunta foge do roteiro de botões.
+// Proteções: só aceita chamadas vindas do próprio site, limita tamanho e faz rate-limit.
 
 const SYSTEM = `Você é a Consultora IA da RH IMOB, especializada em recrutamento imobiliário. Fala português do Brasil, de forma calorosa, consultiva e CURTA (2 a 4 frases). Nunca diga que é um humano nem que é um robô. Seu objetivo é ajudar a empresa (que quer contratar corretores) a entender a oferta e seguir para a proposta ou para agendar uma reunião.
 
@@ -23,8 +24,34 @@ REGRAS:
 - Termine conduzindo: convide a pessoa a seguir (escolher região/cargo, ver as opções, pedir a proposta ou agendar uma reunião).
 - Responda curto. Pode usar **negrito** e no máximo 1 emoji. Não use links a menos que necessário.`;
 
+// Hosts autorizados a chamar o endpoint (bloqueia curl/bots sem origem do site).
+const ALLOW = ["rhimob.com.br", "localhost", "127.0.0.1"];
+function origemOk(req) {
+  const o = String(req.headers["origin"] || "");
+  const r = String(req.headers["referer"] || "");
+  const alvo = o || r;
+  if (!alvo) return false; // navegador real manda origin/referer; sem isso, barra
+  return ALLOW.some(function (h) { return alvo.indexOf("://" + h) >= 0 || alvo.indexOf("." + h) >= 0; });
+}
+
+// Rate-limit best-effort por IP (em memória da instância; a trava forte é o limite de gasto na Console).
+function rateOk(req) {
+  try {
+    const store = global.__iaHits || (global.__iaHits = new Map());
+    if (store.size > 5000) store.clear();
+    const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "x";
+    const now = Date.now();
+    const arr = (store.get(ip) || []).filter(function (t) { return now - t < 60000; });
+    if (arr.length >= 12) return false; // máx. 12 msgs/min por IP
+    arr.push(now); store.set(ip, arr);
+    return true;
+  } catch (e) { return true; }
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "method" }); return; }
+  if (!origemOk(req)) { res.status(403).json({ reply: "" }); return; }
+  if (!rateOk(req)) { res.status(429).json({ reply: "" }); return; }
   try {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) { res.status(200).json({ reply: "" }); return; }
@@ -35,8 +62,16 @@ module.exports = async (req, res) => {
     const contexto = String(body.contexto || "").slice(0, 700);
     if (!pergunta) { res.status(200).json({ reply: "" }); return; }
 
-    const userMsg = (contexto ? ("Contexto da conversa até aqui — " + contexto + "\n\n") : "")
-      + "Mensagem do visitante: " + pergunta;
+    // Memória: transcrição curta das últimas trocas (sem passar a chave nem dados sensíveis).
+    let hist = Array.isArray(body.historico) ? body.historico : [];
+    const transcript = hist.slice(-8).map(function (m) {
+      const who = (m && m.role === "user") ? "Visitante" : "Consultora";
+      return who + ": " + String((m && m.content) || "").slice(0, 400);
+    }).join("\n");
+
+    const userMsg = (contexto ? ("Contexto do lead — " + contexto + "\n\n") : "")
+      + (transcript ? ("Conversa recente:\n" + transcript + "\n\n") : "")
+      + "Visitante agora: " + pergunta;
 
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
