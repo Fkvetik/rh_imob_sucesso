@@ -349,7 +349,26 @@ function responderLivre_(t,cb){var s=norm_(t);var H=function(re){return re.test(
     bot("Olá! 😊 Seja bem-vindo(a) à RH IMOB. Vou te ajudar a encontrar os corretores certos — e pode me perguntar o que quiser no caminho.",cb);return;}
   if(H(/obrigad|valeu|^show|otimo|perfeito|^legal|massa|bacana/)){
     bot("Imagina, tô aqui pra isso! 🙌 Bora seguir:",cb);return;}
-  bot("Boa pergunta. Essa eu prefiro te responder com precisão junto da proposta — registro aqui e um especialista te explica certinho. Deixa eu continuar pra não perder o seu contexto: 👍",cb);
+  perguntarIA_(t,cb); // fora do roteiro conhecido → cérebro de verdade (LLM)
+}
+// —— Ponte com o LLM (função serverless /api/ia-chat). Só entra quando foge do roteiro. ——
+function contextoLead_(){var p=[];
+  if(lead.regiao)p.push("região: "+lead.regiao);
+  if(lead.cargo)p.push("precisa de: "+lead.cargo);
+  if(lead.qtd)p.push("quantidade: "+lead.qtd);
+  if(lead.caminho)p.push("caminho: "+lead.caminho);
+  if(lead.ferramenta)p.push("ferramenta: "+lead.ferramenta);
+  if(lead.estrutura)p.push("estrutura: "+lead.estrutura);
+  if(lead.urgencia)p.push("urgência: "+lead.urgencia);
+  return p.join("; ");}
+function mostrarPensando_(){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub"><i>digitando…</i></div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;return r;}
+var FALLBACK_IA="Boa pergunta — isso um especialista te confirma certinho junto da proposta. Deixa eu continuar pra não perder o seu contexto: 👍";
+function perguntarIA_(t,cb){var p=mostrarPensando_();
+  fetch("/api/ia-chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({pergunta:t,contexto:contextoLead_()})})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){if(p&&p.parentNode)p.parentNode.removeChild(p);
+      bot((d&&d.reply)?d.reply:FALLBACK_IA,cb);})
+    .catch(function(){if(p&&p.parentNode)p.parentNode.removeChild(p);bot(FALLBACK_IA,cb);});
 }
 // Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
 function verPlataformas(cb){bot("Claro. Além da operação feita por nós, dá pra você mesmo tocar a captação. Tem dois níveis:",function(){

@@ -67,7 +67,12 @@ aceita digitação — casa o texto com um botão (atalho) ou manda pro `respond
 acento, `norm_`): preço banco/extensão/operação, "é caro", garantia, prazo/setup, fontes,
 banco×extensão, como a extensão funciona, CLT/PJ, rotatividade, cidades, CRECI, estagiário,
 fidelidade, pagamento, corretor×NT, falar com humano, LGPD, quem é a RH IMOB, volume,
-saudação, e fallback honesto. Ampliar esse repertório = principal alavanca do "parecer IA".
+saudação, e — quando foge do roteiro — o **LLM** (ver abaixo). **Híbrido LLM:** o fallback
+do `responderLivre_` chama `perguntarIA_` → `POST /api/ia-chat` (função serverless) que fala
+com o **Claude Haiku 5.5** usando `process.env.ANTHROPIC_API_KEY` (só no servidor, env na
+Vercel; nunca no cliente). O `SYSTEM` em `api/ia-chat.js` carrega os preços/regras do negócio
+e proíbe inventar valores. Respostas conhecidas continuam locais (grátis/instantâneas); só as
+perguntas fora do roteiro gastam API (centavos). Falha de rede/key → `FALLBACK_IA` estático.
 **Dois princípios (não quebrar):** (1) **continuidade** — ao responder algo digitado numa
 etapa de botão, a IA **retoma a pergunta pendente** (`setChips` guarda `perguntaAtual` e a
 reemite, salvo se a resposta já terminar com "?"), pra conversa nunca "morrer"; (2) **preço
