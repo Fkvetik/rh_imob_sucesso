@@ -68,6 +68,11 @@ acento, `norm_`): preço banco/extensão/operação, "é caro", garantia, prazo/
 banco×extensão, como a extensão funciona, CLT/PJ, rotatividade, cidades, CRECI, estagiário,
 fidelidade, pagamento, corretor×NT, falar com humano, LGPD, quem é a RH IMOB, volume,
 saudação, e fallback honesto. Ampliar esse repertório = principal alavanca do "parecer IA".
+**Dois princípios (não quebrar):** (1) **continuidade** — ao responder algo digitado numa
+etapa de botão, a IA **retoma a pergunta pendente** (`setChips` guarda `perguntaAtual` e a
+reemite, salvo se a resposta já terminar com "?"), pra conversa nunca "morrer"; (2) **preço
+só com contexto** — `respostaPreco` sem `lead.cargo` dá a **visão geral** (249 banco / 999
+extensão / 1.999–3.499 operação) e conduz pra coletar, **nunca** chuta "Pra , ~70%".
 
 **Fluxo:** região → cargo → quantidade → **(corretor/novos talentos) fork de caminho**
 → [**Operação completa**: remuneração→benefícios→jornada→estrutura(tem assistente/RH pro

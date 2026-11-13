@@ -119,9 +119,10 @@ function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;'
 function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</span>')
   .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]*)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--orange,#ff7a1a);font-weight:700">$1</a>')
   .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
-function bot(t,cb){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
+var ultimoBotTexto="",perguntaAtual="";
+function bot(t,cb){ultimoBotTexto=t;var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
 function user(t){var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
-function setChips(o){chips.innerHTML="";o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)});
+function setChips(o){perguntaAtual=ultimoBotTexto;chips.innerHTML="";o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)});
   // Campo sempre aberto: a pessoa pode digitar uma pergunta em qualquer etapa de botões.
   inbar.hidden=false;inp.value="";inp.placeholder="Prefere digitar? Pergunte o que quiser…";
   inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;inp.value="";
@@ -129,7 +130,11 @@ function setChips(o){chips.innerHTML="";o.forEach(function(x){var b=document.cre
     var nv=norm_(v),hit=null;
     if(nv.length>=3){o.forEach(function(x){if(!hit){var nl=norm_(x.label),w0=nl.split(" ")[0];if(nl.indexOf(nv)>=0||(w0.length>3&&nv.indexOf(w0)===0))hit=x;}});}
     if(hit){user(v);if(hit.go)hit.go();return;}
-    user(v);responderLivre_(v,function(){setChips(o);});};
+    var q=perguntaAtual;user(v);responderLivre_(v,function(){
+      // Retoma a pergunta pendente — a não ser que a própria resposta já tenha perguntado algo.
+      if(q&&!/\?\s*$/.test((ultimoBotTexto||"").trim())){bot(q,function(){setChips(o);});}
+      else{setChips(o);}
+    });};
 }
 function ask(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)}}
 function askSkip(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();
@@ -257,6 +262,10 @@ function respostaPreco(cb){
     bot("Pelo caminho das ferramentas tem dois níveis:\n• **Banco manual (entrada)** — Novos Talentos R$ 249 (já assina Catho) ou R$ 649, e Corretor com CRECI a partir de R$ 499. Seu time filtra e aborda na mão.\n• **Extensão (automatizada, escala)** — **R$ 999/mês**: já integrada ao banco, capta e aborda sozinha, sem parar (2 operadores ≈ 5–6 pessoas na mão).\n[Ver detalhes →](/plataformas)"+(lead.ferramenta?"\n\nVocê escolheu: "+lead.ferramenta+".":""),cb);
     return;
   }
+  // Sem saber o cargo, o preço seria chute — então dou a visão geral e conduzo.
+  if(!lead.cargo){
+    bot("O valor **depende da operação** que faz sentido pro seu caso — por isso eu te pergunto rapidinho. Pra adiantar: operar por conta começa em **R$ 249/mês** (banco) e a **extensão** automatizada em **R$ 999/mês**; se preferir que a gente **faça tudo** (em São Paulo), a operação completa vai de **R$ 1.999** a **R$ 3.499/mês**. Me diz o que você precisa contratar que eu já fecho o número certo. 👍",cb);return;
+  }
   var sp=(lead.regiao==="São Paulo");
   var ck=cargoKey();
   // Banco manual (entrada) + extensão (escala) existem dentro E fora de SP.
@@ -336,8 +345,10 @@ function responderLivre_(t,cb){var s=norm_(t);var H=function(re){return re.test(
     bot("A **RH IMOB** é especializada em recrutamento imobiliário: mais de **80 mil corretores** mapeados em 19 cidades e **90 mil novos talentos** em 180+ cidades. A gente capta, qualifica e entrega em entrevista, com setup em 7 dias.",cb);return;}
   if(H(/quantos|volume|quantidade|por mes|capacidade/)){
     bot("A operação padrão atende **até 5 posições por mês**; a partir de 6 a gente dimensiona sob medida, com mais de uma assistente pelo volume de entrevistas.",cb);return;}
-  if(H(/^(oi|ola|opa|bom dia|boa tarde|boa noite|eai|e ai)\b|obrigad|valeu|^show|otimo|perfeito|^legal/)){
-    bot("😊 Tô aqui pra isso. Pode perguntar o que quiser — ou seguir pelas opções que eu vou montando a sua proposta.",cb);return;}
+  if(H(/^(oi|ola|opa|eai|e ai|hey|alo)\b|bom dia|boa tarde|boa noite|tudo bem|tudo bom|como vai/)){
+    bot("Olá! 😊 Seja bem-vindo(a) à RH IMOB. Vou te ajudar a encontrar os corretores certos — e pode me perguntar o que quiser no caminho.",cb);return;}
+  if(H(/obrigad|valeu|^show|otimo|perfeito|^legal|massa|bacana/)){
+    bot("Imagina, tô aqui pra isso! 🙌 Bora seguir:",cb);return;}
   bot("Boa pergunta. Essa eu prefiro te responder com precisão junto da proposta — registro aqui e um especialista te explica certinho. Deixa eu continuar pra não perder o seu contexto: 👍",cb);
 }
 // Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
