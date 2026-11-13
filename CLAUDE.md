@@ -35,8 +35,12 @@ Site público e API serverless da RH IMOB (recrutamento imobiliário). HTML est�
 Planilha **MAPS IMOBILIÁRIAS** (Apps Script) → `POST /api/mercado-ingest` (segredo)
 → `rhi_mercado_maps` (RHI). CENTRAL grava parcial, COLETA completa (upsert por
 `place_key`; coordenada vem do token `!3d<lat>!4d<lng>` da placeUrl). Backfill
-diário no GAS (`mercadoBackfillDiario`, ~3h). "Perto de mim" lê só contagem
-(`rhi_mercado_perto`). Operador acessa via a extensão (flag do CRECI).
+diário no GAS (`mercadoBackfillDiario`, ~3h). **Coordenadas:** vêm do token
+`!3d<lat>!4d<lng>` da placeUrl; o GAS não envia lat/lng, então `MERCADO_MAPS_3_coords.sql`
+(trigger + backfill) extrai da placeUrl — **sem isso `rhi_mercado_perto` conta 0**.
+`/api/perto` chama `rhi_mercado_perto` (RHI, anon) e devolve `mercado.imobiliarias`;
+a página `/perto-de-mim` mostra essa contagem no card de imobiliárias (cai pra Rede se null).
+Operador também acessa via a extensão (flag do CRECI).
 
 ## Oferta / produtos (fontes = `plataformas.html` e `extensao-recrutadora.html`)
 **Modelo:** o cliente pode operar a captação por conta (banco manual, a entrada barata) OU

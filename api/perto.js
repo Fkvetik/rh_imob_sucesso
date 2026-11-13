@@ -5,7 +5,7 @@
 // O ponto de quem consulta é arredondado (~1 km) antes de qualquer coisa —
 // protege quem consulta, impede "varrer" a base ponto a ponto e deixa a
 // resposta cacheável. Nada é guardado.
-import { NT, COLETOR } from './_ext-comum.js';
+import { NT, COLETOR, RHI } from './_ext-comum.js';
 
 const RAIOS = [1, 3, 5, 10, 20, 30];
 
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   if (!service) return enviar(res, 500, { ok: false, error: 'Configuração do servidor incompleta.' });
 
   const corpo = JSON.stringify({ p_lat: lat, p_lng: lng, p_raio_km: raio });
-  const [r, rRede] = await Promise.all([
+  const [r, rRede, rMerc] = await Promise.all([
     fetch(`${NT.url}/rest/v1/rpc/nt_perto`, {
       method: 'POST',
       headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
@@ -59,21 +59,33 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { apikey: COLETOR.anon, Authorization: `Bearer ${COLETOR.anon}`, 'Content-Type': 'application/json' },
       body: corpo
+    }).catch(() => null),
+    // Imobiliárias mapeadas no mercado (Google Maps) — contagem, sem nomes (MERCADO_MAPS).
+    fetch(`${RHI.url}/rest/v1/rpc/rhi_mercado_perto`, {
+      method: 'POST',
+      headers: { apikey: RHI.anon, Authorization: `Bearer ${RHI.anon}`, 'Content-Type': 'application/json' },
+      body: corpo
     }).catch(() => null)
   ]);
   const talentos = r ? await r.json().catch(() => null) : null;
   const parceiros = rRede && rRede.ok ? await rRede.json().catch(() => null) : null;
+  const mercado = rMerc && rMerc.ok ? await rMerc.json().catch(() => null) : null;
   if (!r || !r.ok || !talentos) {
     console.log('[perto] nt_perto falhou', r && r.status, JSON.stringify(talentos).slice(0, 300));
     return enviar(res, 502, { ok: false, error: 'Não foi possível consultar agora. Tente de novo em instantes.' });
   }
 
+  const imobOk = !!(mercado && mercado.ok && mercado.imobiliarias != null);
+  const emBreve = ['lancamentos'];
+  if (!parceiros) emBreve.push('corretores');
+  if (!parceiros && !imobOk) emBreve.push('imobiliarias');
   return enviar(res, 200, {
     ok: true,
     centro: { lat, lng, rotulo },
     raio_km: raio,
     talentos,
     parceiros, // null enquanto o SQL REDE_GEO_1 não roda: a página mostra "em breve"
-    em_breve: parceiros ? ['lancamentos'] : ['corretores', 'imobiliarias', 'lancamentos']
+    mercado,   // imobiliárias mapeadas no Maps (só contagem); null se o SQL/coords ainda não rodaram
+    em_breve: emBreve
   }, 1800);
 }

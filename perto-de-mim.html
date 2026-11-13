@@ -311,9 +311,25 @@
         '<div class="faixa"><span>até ' + f.ate_km + ' km</span><i style="width:' + Math.max(1, Math.round(f.n / max * 100)) + '%"></i><b>' + fmt(f.n) + '</b></div>').join('') : '';
       $('ctaTit').textContent = t.total ? fmt(t.total) + ' profissionais a até ' + d.raio_km + ' km de você' : 'Precisa contratar na sua região?';
       parceirosCartao('nCor', 'subCor', d.parceiros && d.parceiros.corretores, 'corretor', 'corretores');
-      parceirosCartao('nImob', 'subImob', d.parceiros && d.parceiros.imobiliarias, 'imobiliária', 'imobiliárias');
+      imobiliariasCartao(d);
       desenharMapa(d);
       if (window.innerWidth < 860) $('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Imobiliárias: usa a contagem do Mercado (Maps) quando houver; senão,
+    // cai na Rede de Parceiros (que informaram o CEP no painel).
+    function imobiliariasCartao(d) {
+      const m = d.mercado && d.mercado.ok ? d.mercado.imobiliarias : null;
+      if (m != null) {
+        const el = $('nImob'), sub = $('subImob');
+        el.className = 'tipo-num'; el.textContent = fmt(m);
+        sub.hidden = false;
+        sub.innerHTML = m
+          ? (m === 1 ? '1 imobiliária' : fmt(m) + ' imobiliárias') + ' mapeadas no mercado da sua região'
+          : 'Nenhuma mapeada neste raio ainda';
+        return;
+      }
+      parceirosCartao('nImob', 'subImob', d.parceiros && d.parceiros.imobiliarias, 'imobiliária', 'imobiliárias');
     }
 
     // Corretores/imobiliárias da Rede que informaram o CEP no painel.
