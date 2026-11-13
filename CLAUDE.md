@@ -61,7 +61,13 @@ config `RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG`) e oferece só **"Enviar no Whats
 `CONV_ID` único por conversa (painel agrupa pelo prefixo antes do `#`). Perguntas digitadas
 em campo livre são respondidas e re-perguntadas (`pergunta_`/`responderDuvida_`), não gravadas
 como dado. Estagiário é recusado. `fmt()` suporta **`[texto](url)`** e `**negrito**` (sem
-imagens — prints foram removidos por não soarem bem no chat).
+imagens). **Campo de texto sempre aberto** (inclusive nas etapas de botão): `setChips`
+aceita digitação — casa o texto com um botão (atalho) ou manda pro `responderLivre_`.
+`responderLivre_(t,cb)` é o **cérebro de intenções** (regex sobre texto normalizado sem
+acento, `norm_`): preço banco/extensão/operação, "é caro", garantia, prazo/setup, fontes,
+banco×extensão, como a extensão funciona, CLT/PJ, rotatividade, cidades, CRECI, estagiário,
+fidelidade, pagamento, corretor×NT, falar com humano, LGPD, quem é a RH IMOB, volume,
+saudação, e fallback honesto. Ampliar esse repertório = principal alavanca do "parecer IA".
 
 **Fluxo:** região → cargo → quantidade → **(corretor/novos talentos) fork de caminho**
 → [**Operação completa**: remuneração→benefícios→jornada→estrutura(tem assistente/RH pro

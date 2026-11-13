@@ -120,7 +120,16 @@ function fmt(s){return esc(s).replace(/«([^»]*)»/g,'<span class="ph">«$1»</
   .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')}
 function bot(t,cb){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
 function user(t){var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
-function setChips(o){chips.innerHTML="";inbar.hidden=true;o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)})}
+function setChips(o){chips.innerHTML="";o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)});
+  // Campo sempre aberto: a pessoa pode digitar uma pergunta em qualquer etapa de botões.
+  inbar.hidden=false;inp.value="";inp.placeholder="Prefere digitar? Pergunte o que quiser…";
+  inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;inp.value="";
+    // Se o texto casar com um dos botões, segue como se tivesse clicado.
+    var nv=norm_(v),hit=null;
+    if(nv.length>=3){o.forEach(function(x){if(!hit){var nl=norm_(x.label),w0=nl.split(" ")[0];if(nl.indexOf(nv)>=0||(w0.length>3&&nv.indexOf(w0)===0))hit=x;}});}
+    if(hit){user(v);if(hit.go)hit.go();return;}
+    user(v);responderLivre_(v,function(){setChips(o);});};
+}
 function ask(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)}}
 function askSkip(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.placeholder=p;inp.focus();
   inbar.onsubmit=function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;user(v);inbar.hidden=true;done(v)};
@@ -128,10 +137,10 @@ function askSkip(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.
 function setF(id,val){var el=$("f-"+id);el.textContent=val||"—";if(val)el.classList.remove("empty")}
 
 function start(){
-  bot("Oi! Sou a Consultora IA da RH IMOB. 👋\nEm poucos minutos eu entendo sua necessidade de corretores e já deixo tudo encaminhado — sem formulário chato.",function(){
+  bot("Oi! Sou a Consultora IA da RH IMOB. 👋\nEm poucos minutos eu entendo sua necessidade de corretores e já deixo tudo encaminhado — sem formulário chato.\n\nPode clicar nas opções **ou digitar sua pergunta** a qualquer momento.",function(){
     bot("Sua operação é em **São Paulo** ou em **outra região**?",function(){
       setChips([{label:"São Paulo",go:function(){lead.regiao="São Paulo";setF("regiao","São Paulo");bot("Perfeito. Em São Paulo a gente roda a operação completa: com o nosso banco de Novos Talentos e as ferramentas, prospectamos, abordamos, qualificamos e direcionamos os corretores pra entrevista com você.",precisa)}},
-                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);bot("Fora de São Paulo, a gente te fornece a ferramenta Novos Talentos (integrada à Catho): ela faz todo o processo — triagem, filtro e abordagem — e entrega os perfis ajustados ao que a sua empresa procura.",precisa)})})}}]);
+                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);bot("Fora de São Paulo, a operação com a nossa equipe não atende — mas você opera por conta com o nosso **banco de dados + a extensão**, que faz a captação e a abordagem no automático e entrega os perfis ajustados ao que você procura.",precisa)})})}}]);
     });
   });
 }
@@ -143,7 +152,7 @@ function precisa(){bot("O que você precisa contratar?",function(){
             {label:"SDR imobiliário",go:function(){lead.cargo="SDR imobiliário";setF("cargo",lead.cargo);quantas()}},
             {label:"Outro",go:function(){bot("Me conta em uma linha o perfil que você precisa:",function(){ask("Ex.: captador, gerente de vendas…",function(v){
               if(ehEstagio(v)){bot("Pra estagiário a gente não consegue ajudar — trabalhamos com corretores (CRECI) e novos talentos. Estagiário não dá pra localizar com precisão na internet. Quer seguir com algum desses?",precisa);return;}
-              if(pergunta_(v)){bot("Me conta primeiro qual perfil você precisa — aí eu já te passo o valor certinho. 👍",precisa);return;}
+              if(pergunta_(v)){responderLivre_(v,precisa);return;}
               lead.cargo=v;setF("cargo",v);quantas();
             })})}}]);
 })}
@@ -278,13 +287,55 @@ function respostaGarantia(cb){
 }
 // Quando a pessoa faz uma PERGUNTA no lugar de responder, a gente responde e
 // volta a perguntar — sem travar e sem gravar a pergunta como resposta.
-function pergunta_(t){var s=(t||"").toLowerCase();return /\?\s*$/.test(String(t||"").trim())||/(quanto|pre[çc]o|valor|custa|cobra|mensal|garantia|n[aã]o der certo|como funciona|quanto tempo|prazo)/.test(s);}
-function responderDuvida_(t,cb){var s=(t||"").toLowerCase();
-  if(/quanto|pre[çc]o|valor|custa|cobra|mensal/.test(s)){respostaPreco(cb);return;}
-  if(/garantia|n[aã]o der certo/.test(s)){respostaGarantia(cb);return;}
-  if(/como funciona|acha/.test(s)){bot("Captação ativa por região: Google Maps, base CRECI, Catho e Instagram, com abordagem no WhatsApp. Você recebe só os aprovados, em reunião.",cb);return;}
-  if(/quanto tempo|prazo/.test(s)){bot("A operação começa em poucos dias e roda de forma contínua até fechar as posições.",cb);return;}
-  bot("Boa — isso eu detalho na proposta. Deixa eu só terminar de montar aqui:",cb);
+function norm_(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");}
+// Detecta se o texto é uma pergunta/dúvida (em vez de uma resposta esperada).
+function pergunta_(t){var s=norm_(t);return /\?\s*$/.test(String(t||"").trim())||
+  /(quanto|preco|valor|custa|cobra|mensal|investimento|orcamento|caro|desconto|garantia|nao der certo|como funciona|como voces|como fazem|quanto tempo|prazo|quando|demora|de onde|fonte|diferenca|clt|pj|vinculo|creci|estagi|fidelidade|cancelar|pagamento|pagar|cidade|regiao|atende|lgpd|quem (e|sao)|voces sao|duvida|funciona|humano|atendente|whatsapp|falar com)/.test(s);}
+// Cérebro de respostas livres: a pessoa pode digitar o que quiser a qualquer momento.
+function responderLivre_(t,cb){var s=norm_(t);var H=function(re){return re.test(s)};
+  if(H(/(extensao|aceleradora).*(preco|valor|custa|quanto|mensal)|(preco|valor|custa|quanto).*(extensao|aceleradora)/)){
+    bot("A **extensão RH IMOB Aceleradora** fica **R$ 999/mês** (R$ 899/mês no semestral, R$ 799/mês no anual), com **2 acessos** e as bases de corretores e novos talentos já inclusas. Ela roda integrada ao banco, captando e abordando sozinha. [Conhecer →](/extensao-recrutadora)",cb);return;}
+  if(H(/catho/)||(H(/(banco|plataforma|manual)/)&&H(/preco|valor|custa|quanto|mensal/)&&!H(/operacao/))){
+    bot("No **banco** (manual — você/seu time filtra e aborda): **Novos Talentos R$ 249/mês** se você já assina a Catho, ou **R$ 649/mês** com acesso completo. **Corretor com CRECI** a partir de **R$ 499/mês**, por volume de contatos. [Ver →](/plataformas)",cb);return;}
+  if(H(/caro|barato|desconto|cabe no bolso|sem grana|pouco dinheiro|apertad|economiz/)){
+    bot("Entendo. Vale olhar o outro lado: cada mês com a vaga aberta é venda que não acontece. Dá pra começar enxuto pelo **banco** (a partir de R$ 249/mês) e, quando quiser escala, a **extensão** a R$ 999/mês rende o equivalente a 5–6 pessoas abordando na mão. Eu te mostro o caminho mais econômico pro seu caso.",cb);return;}
+  if((H(/quanto/)&&!H(/tempo|demora|prazo/))||H(/preco|valor|custa|cobra|mensal|investimento|orcamento/)){respostaPreco(cb);return;}
+  if(H(/garantia|nao der certo|e se nao|arrepend|reembolso|devolucao/)){respostaGarantia(cb);return;}
+  if(H(/quanto tempo|prazo|quando comeca|quando come|demora|rapido|setup|primeiro corretor|primeira entrevista|quanto demora/)){
+    bot("O setup é rápido: acesso liberado em até 1 dia útil e a operação roda em 7 dias. As primeiras entrevistas costumam sair em **2 a 4 semanas** pra corretor com CRECI e **2 a 3 semanas** pra novos talentos.",cb);return;}
+  if(H(/de onde|fonte|onde voces|como acha|como encontra|como capta|como prospec|prospec/)){
+    bot("A captação é ativa por região: a gente cruza **Instagram, site do CRECI, Catho e Google Maps** com a nossa base própria, e aborda no WhatsApp. Você recebe quem tem fit, já qualificado.",cb);return;}
+  if((H(/diferenca/)&&H(/banco|extensao|manual|automat/))||H(/banco ou extensao|extensao ou banco|manual ou automat|qual a melhor|o que vale mais|melhor opcao/)){
+    bot("Resumo: o **banco** é a entrada manual — você acessa a base e o seu time filtra e aborda (menor investimento). A **extensão** é o passo de escala — já integrada ao banco, capta e aborda sozinha e não para (2 operadores rendem 5–6 pessoas na mão). Banco pra testar/volume baixo; extensão pra consistência mês a mês.",cb);return;}
+  if(H(/como.*(extensao|aceleradora|automat)|(extensao|aceleradora).*(funciona|roda|trabalha)/)){
+    bot("A extensão roda no Chrome **já integrada ao banco**: capta corretores e novos talentos (Instagram, site do CRECI e outras ferramentas), manda as primeiras mensagens no WhatsApp com modelos prontos e organiza os retornos num funil. Você entra só pra conversar com quem respondeu. Vem com 2 acessos.",cb);return;}
+  if(H(/clt|pj|vinculo|carteira|contrato de trabalho|registro|autonomo|comissionad/)){
+    bot("A gente entrega o candidato com fit, pronto pra conversar — o **modelo de contratação** (CLT, PJ ou autônomo/comissionado) é definido por você na proposta ao candidato. Em vagas CLT, a reposição está inclusa.",cb);return;}
+  if(H(/sair|\bsai\b|saiu|rotativ|turnover|desist|larg|abandon|troca muito|depois que contrat/)){
+    bot("Acontece no mercado. Por isso a entrega é **contínua**: o funil não para de trazer gente nova, e em posições CLT a reposição está inclusa — a ideia é você nunca ficar desfalcado.",cb);return;}
+  if(H(/cidade|regiao|atende|minha cidade|fora de sp|interior|estado|aqui em|tem em /)){
+    bot("O banco de corretores cobre **19 cidades** e o de novos talentos passa de **180 cidades**. A operação feita pela nossa equipe é em **São Paulo**; fora de SP, o caminho é o **banco + a extensão** (você opera, com a automação fazendo o trabalho). Me diz a sua cidade que eu já te oriento.",cb);return;}
+  if(H(/estagi/)){
+    bot("Pra estagiário a gente não consegue ajudar — trabalhamos com corretores (CRECI) e novos talentos. Estagiário não dá pra localizar com precisão na internet.",cb);return;}
+  if(H(/creci/)){
+    bot("O banco de **Corretores** é de profissionais com **CRECI ativo**. Se você busca quem está começando (sem CRECI ou recém-habilitado), o banco de **Novos Talentos** é o ideal — perfis abertos a formação.",cb);return;}
+  if(H(/fidelidade|cancelar|cancela|permanencia|multa|carenc/)){
+    bot("Tudo **mensal, sem fidelidade** — você pode ajustar ou encerrar quando quiser.",cb);return;}
+  if(H(/pagamento|pagar|boleto|cartao|\bpix\b|nota fiscal|como pago/)){
+    bot("O pagamento a gente acerta direto com você pelo WhatsApp, junto da proposta. Aqui no chat eu só deixo tudo preparado.",cb);return;}
+  if(H(/corretor.*novos talentos|novos talentos.*corretor|qual banco|qual perfil|diferenca.*talento/)){
+    bot("**Corretor com CRECI** = profissional já atuante, resultado mais imediato em vendas. **Novos Talentos** = quem está começando, ótimo pra quem tem formação interna e quer moldar o time. Muita gente usa os dois.",cb);return;}
+  if(H(/humano|atendente|pessoa|falar com alguem|falar com voces|whatsapp|zap|telefone|ligar|mariana/)){
+    bot("Claro! Posso te colocar com a nossa especialista agora. Me passa seu nome e WhatsApp que eu registro e você já fala direto com a gente. 👍",cb);return;}
+  if(H(/lgpd|privacidade|seguranca dos dados|meus dados/)){
+    bot("Os dados são tratados com responsabilidade e usados só pra conduzir a sua seleção — nada é exposto publicamente.",cb);return;}
+  if(H(/quem (e|sao)|voces sao|referencia|\bcase|confiavel|ha quanto|experiencia de voces|sobre a rh/)){
+    bot("A **RH IMOB** é especializada em recrutamento imobiliário: mais de **80 mil corretores** mapeados em 19 cidades e **90 mil novos talentos** em 180+ cidades. A gente capta, qualifica e entrega em entrevista, com setup em 7 dias.",cb);return;}
+  if(H(/quantos|volume|quantidade|por mes|capacidade/)){
+    bot("A operação padrão atende **até 5 posições por mês**; a partir de 6 a gente dimensiona sob medida, com mais de uma assistente pelo volume de entrevistas.",cb);return;}
+  if(H(/^(oi|ola|opa|bom dia|boa tarde|boa noite|eai|e ai)\b|obrigad|valeu|^show|otimo|perfeito|^legal/)){
+    bot("😊 Tô aqui pra isso. Pode perguntar o que quiser — ou seguir pelas opções que eu vou montando a sua proposta.",cb);return;}
+  bot("Boa pergunta. Essa eu prefiro te responder com precisão junto da proposta — registro aqui e um especialista te explica certinho. Deixa eu continuar pra não perder o seu contexto: 👍",cb);
 }
 // Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
 function verPlataformas(cb){bot("Claro. Além da operação feita por nós, dá pra você mesmo tocar a captação. Tem dois níveis:",function(){
@@ -299,17 +350,17 @@ function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvi
 })}
 function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",pedirNome)}
 function pedirNome(){ask("Seu nome",function(v){
-  if(pergunta_(v)){responderDuvida_(v,function(){bot("Voltando — como é o seu **nome**?",pedirNome)});return;}
+  if(pergunta_(v)){responderLivre_(v,function(){bot("Voltando — como é o seu **nome**?",pedirNome)});return;}
   lead.nome=v;setF("nome",v);
   bot("Prazer, "+(v.split(" ")[0]||v)+"! Qual o **WhatsApp** (com DDD)?",pedirTel);
 })}
 function pedirTel(){ask("(11) 90000-0000",function(v){
-  if(pergunta_(v)){responderDuvida_(v,function(){bot("E o seu **WhatsApp** (com DDD)?",pedirTel)});return;}
+  if(pergunta_(v)){responderLivre_(v,function(){bot("E o seu **WhatsApp** (com DDD)?",pedirTel)});return;}
   lead.tel=v;setF("tel",v);
   bot("E o **nome da sua empresa**?",pedirEmpresa);
 })}
 function pedirEmpresa(){ask("Empresa / imobiliária",function(v){
-  if(pergunta_(v)){responderDuvida_(v,function(){bot("E o **nome da sua empresa**?",pedirEmpresa)});return;}
+  if(pergunta_(v)){responderLivre_(v,function(){bot("E o **nome da sua empresa**?",pedirEmpresa)});return;}
   lead.empresa=v;setF("empresa",v);resumo();
 })}
 function resumo(){$("fdot").classList.add("on");
