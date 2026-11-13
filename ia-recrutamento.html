@@ -163,44 +163,56 @@ function caminho(){bot("Antes de montar a proposta — qual caminho faz mais sen
               {label:"Quero conhecer as ferramentas",go:function(){lead.caminho="Ferramentas";ferramentas()}}]);
   });
 })}
-// Caminho ferramentas: conversa natural; preços alinhados à página /plataformas.
-function ferramentas(){bot("Boa — esse é o caminho de quem quer autonomia pra tocar com o próprio time. 🙌",function(){
-  bot("Funciona assim: você usa os nossos bancos e a **extensão RH IMOB Aceleradora** faz o trabalho pesado. Ela roda no seu Chrome abordando corretor e novos talentos pelo Instagram, site do CRECI e Catho, dispara as primeiras mensagens no WhatsApp e vai juntando os retornos num funil. Você entra só pra conversar com quem respondeu — sem ficar garimpando contato.",function(){
-    bot("Tem dois bancos, dependendo do perfil que você procura. Qual te atende melhor?",function(){
-      menuFerramentas();
+// Caminho ferramentas: banco (entrada manual) x extensão (operação automatizada, escala).
+function ferramentas(){bot("Boa — esse é o caminho de quem quer tocar a captação com o próprio time. Tem do mais enxuto ao que mais escala; deixa eu te situar rapidinho. 👇",function(){
+  bot("**A entrada é o banco (manual):** você acessa a nossa base — **Corretor com CRECI** ou **Novos Talentos** — e a sua equipe filtra e faz a abordagem na mão. É o menor investimento, bom pra testar ou pra volume baixo.",function(){
+    bot("**O que sustenta e escala é a extensão:** a **RH IMOB Aceleradora** já vem integrada ao banco e capta/aborda no automático (Instagram, site do CRECI e outras ferramentas), sem parar. Na prática, **2 operadores na extensão entregam o volume de 5 a 6 pessoas abordando na mão** — por isso ela dá consistência mês a mês.",function(){
+      bot("Por onde faz sentido começar?",menuFerramentas);
     });
   });
 })}
 function menuFerramentas(){
-  setChips([{label:"Corretor com CRECI",cls:"primary",go:planoCorretores},
-            {label:"Novos Talentos",go:planoNT},
+  setChips([{label:"Extensão (automatizar e escalar)",cls:"primary",go:planoExtensao},
+            {label:"Banco manual (entrada enxuta)",go:bancosManuais},
             {label:"Como funciona na prática",go:comoFunciona},
-            {label:"Tenho dúvida / quero comparar",go:function(){lead.ferramenta="Quer comparar / tirar dúvida";escolheuFerramenta()}},
             {label:"Seguir pra operação completa",go:paraOperacao}]);
 }
-function planoCorretores(){lead.ferramenta="Plataforma Corretores (CRECI)";
-  bot("Fechou. Na **Plataforma Corretores** você acessa o banco de corretores com **CRECI ativo** — mais de 80 mil, em 19 cidades, dá pra filtrar por cidade, mercado e experiência. O valor vai pelo volume de contatos que você quer liberar por mês, e a extensão trabalha pra você em qualquer plano:",function(){
-    bot("• **R$ 499** — 500 contatos/mês\n• **R$ 999** — 1.000/mês (o mais escolhido)\n• **R$ 1.499** — ilimitado\n\nMensal, sem fidelidade, login em 1 dia útil. [Ver a plataforma →](/corretores)",function(){
-      bot("Qual volume faz mais sentido pra começar?",function(){
-        setChips([{label:"500 contatos (R$ 499)",go:function(){lead.ferramenta="Corretores Starter — R$ 499 (500/mês)";escolheuFerramenta()}},
-                  {label:"1.000 contatos (R$ 999)",cls:"primary",go:function(){lead.ferramenta="Corretores Pro — R$ 999 (1.000/mês)";escolheuFerramenta()}},
-                  {label:"Ilimitado (R$ 1.499)",go:function(){lead.ferramenta="Corretores Ilimitado — R$ 1.499";escolheuFerramenta()}},
-                  {label:"Me ajuda a escolher",go:function(){lead.ferramenta="Plataforma Corretores (ajudar a escolher o plano)";escolheuFerramenta()}}]);
-      });
-    });
-  });
-}
-function planoNT(){lead.ferramenta="Plataforma Novos Talentos";
-  bot("Boa. A **Plataforma Novos Talentos** é o banco de quem está começando no imobiliário — mais de 90 mil, em 180+ cidades, pré-selecionados e abertos a formação. Combina bem com quem tem um programa de treino interno pra moldar o time.",function(){
-    bot("O acesso fica **R$ 249/mês** se você já assina a Catho (a gente integra o seu login) ou **R$ 649/mês** com acesso completo, sem Catho própria. [Ver a plataforma →](/novos-talentos)",function(){
-      setChips([{label:"Já assino a Catho (R$ 249)",cls:"primary",go:function(){lead.ferramenta="Novos Talentos c/ Catho — R$ 249";escolheuFerramenta()}},
-                {label:"Não assino (R$ 649)",go:function(){lead.ferramenta="Novos Talentos completo — R$ 649";escolheuFerramenta()}},
+function planoExtensao(){lead.ferramenta="Extensão RH IMOB Aceleradora (R$ 999)";
+  bot("Ótima escolha pra quem quer escala. A **extensão RH IMOB Aceleradora** roda no seu Chrome já integrada ao banco e faz a captação e a abordagem no automático — Instagram, site do CRECI e outras ferramentas, com as mensagens saindo no WhatsApp e os retornos caindo num funil. E ela não para: trabalha com 2 operadores direto.",function(){
+    bot("Fica **R$ 999/mês** no mensal — ou mais em conta no semestral (**R$ 899/mês**) e no anual (**R$ 799/mês**). Vem com **2 acessos** e as **bases de corretores e novos talentos já inclusas**. É o passo de quem quer volume com previsibilidade, sem depender de gente garimpando o dia todo. [Conhecer a ferramenta →](/extensao-recrutadora)",function(){
+      setChips([{label:"Quero a extensão",cls:"primary",go:escolheuFerramenta},
+                {label:"Ver o banco manual antes",go:bancosManuais},
                 {label:"Seguir pra operação completa",go:paraOperacao}]);
     });
   });
 }
-function comoFunciona(){bot("Na prática é direto: você instala a extensão no Chrome e loga com o seu acesso. A partir daí ela capta e aborda sozinha — puxa corretores e novos talentos do Instagram, do site do CRECI e da Catho, manda as primeiras mensagens no WhatsApp com os modelos prontos e vai empilhando os retornos num funil (novo → em conversa → entrevista).",function(){
-  bot("Ou seja: a prospecção acontece no automático e você entra só na hora de conversar com quem respondeu. Dá pra ter mais de um operador, cada um com o seu login. [Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",function(){
+function bancosManuais(){bot("Fechou — começando enxuto, no manual. Qual banco combina com o perfil que você procura?",function(){
+  setChips([{label:"Corretor com CRECI",cls:"primary",go:planoCorretores},
+            {label:"Novos Talentos",go:planoNT},
+            {label:"Na dúvida, ver a extensão",go:planoExtensao},
+            {label:"Seguir pra operação completa",go:paraOperacao}]);
+})}
+function planoCorretores(){lead.ferramenta="Banco Corretor com CRECI (manual)";
+  bot("Boa. O **banco Corretor com CRECI** te dá acesso aos corretores com CRECI ativo — mais de 80 mil, em 19 cidades, filtrando por cidade, mercado e experiência. No manual, o seu time libera os contatos e faz a abordagem. Começa em **R$ 499/mês**, por volume de contatos. [Ver planos →](/corretores)",function(){
+    bot("Quer tocar no manual ou já automatizar com a extensão?",function(){
+      setChips([{label:"Manual (a partir de R$ 499)",go:function(){lead.ferramenta="Banco Corretor com CRECI (manual, a partir de R$ 499)";escolheuFerramenta()}},
+                {label:"Automatizar — extensão (R$ 999)",cls:"primary",go:planoExtensao},
+                {label:"Seguir pra operação completa",go:paraOperacao}]);
+    });
+  });
+}
+function planoNT(){lead.ferramenta="Banco Novos Talentos (manual)";
+  bot("Boa. O **banco Novos Talentos** é de quem está começando no imobiliário — mais de 90 mil, em 180+ cidades, pré-selecionados e abertos a formação. Combina com quem tem treino interno pra moldar o time.",function(){
+    bot("Fica **R$ 249/mês** se você já assina a Catho (integramos o seu login e você mesmo filtra e atualiza) ou **R$ 649/mês** com acesso completo, que a gente deixa rodando pra você. [Ver →](/novos-talentos)",function(){
+      setChips([{label:"Já assino a Catho (R$ 249)",go:function(){lead.ferramenta="Novos Talentos c/ Catho — R$ 249";escolheuFerramenta()}},
+                {label:"Não assino (R$ 649)",go:function(){lead.ferramenta="Novos Talentos completo — R$ 649";escolheuFerramenta()}},
+                {label:"Automatizar — extensão (R$ 999)",cls:"primary",go:planoExtensao},
+                {label:"Seguir pra operação completa",go:paraOperacao}]);
+    });
+  });
+}
+function comoFunciona(){bot("Na prática é direto: a extensão roda no Chrome já **integrada ao banco** e faz a captação e a abordagem sozinha — puxa corretores e novos talentos do Instagram e do site do CRECI, manda as primeiras mensagens no WhatsApp com os modelos prontos e vai empilhando os retornos num funil (novo → em conversa → entrevista).",function(){
+  bot("A diferença pro manual é que ela **não para**: 2 operadores rodando entregam o que daria 5 a 6 pessoas abordando na mão. Você entra só pra conversar com quem respondeu. [Ver a extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",function(){
     bot("Quer seguir com qual?",menuFerramentas);
   });
 })}
@@ -231,13 +243,13 @@ function urgencia(){bot("Qual a urgência pra começar?",function(){
 // Resposta de preço, decidida pelo contexto (cargo + região + qtd + estrutura).
 function respostaPreco(cb){
   if(lead.caminho==="Ferramentas"){
-    bot("Pelas plataformas (você opera, com a extensão RH IMOB Aceleradora automatizando):\n• **Corretores (CRECI)** — Starter R$ 499 (500 contatos), Pro R$ 999 (1.000), Ilimitado R$ 1.499.\n• **Novos Talentos** — R$ 249 (já assina Catho) ou R$ 649 (acesso completo).\n[Ver todos os planos →](/plataformas)"+(lead.ferramenta?"\n\nVocê escolheu: "+lead.ferramenta+".":""),cb);
+    bot("Pelo caminho das ferramentas tem dois níveis:\n• **Banco manual (entrada)** — Novos Talentos R$ 249 (já assina Catho) ou R$ 649, e Corretor com CRECI a partir de R$ 499. Seu time filtra e aborda na mão.\n• **Extensão (automatizada, escala)** — **R$ 999/mês**: já integrada ao banco, capta e aborda sozinha, sem parar (2 operadores ≈ 5–6 pessoas na mão).\n[Ver detalhes →](/plataformas)"+(lead.ferramenta?"\n\nVocê escolheu: "+lead.ferramenta+".":""),cb);
     return;
   }
   var sp=(lead.regiao==="São Paulo");
   var ck=cargoKey();
-  // As plataformas existem dentro E fora de SP — opção de entrada, você opera (com a extensão).
-  var manual="\n\nSe preferir conduzir você mesmo, dá pra usar as plataformas: **Novos Talentos** a partir de **R$ 249/mês** e **Corretores (CRECI)** a partir de **R$ 499/mês**. [Ver planos →](/plataformas)";
+  // Banco manual (entrada) + extensão (escala) existem dentro E fora de SP.
+  var manual="\n\nSe preferir conduzir você mesmo, dá pra começar pelo **banco manual** (Novos Talentos a partir de R$ 249, Corretor com CRECI a partir de R$ 499) e **automatizar com a extensão** (R$ 999/mês) quando quiser escalar. [Ver planos →](/plataformas)";
   var msg;
   if(lead.qtd==="6 ou mais"){
     msg="A partir de 6 por mês é uma operação **sob medida**: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
@@ -247,7 +259,7 @@ function respostaPreco(cb){
     msg="Pra "+lead.cargo.toLowerCase()+", o investimento fica **em torno do salário da vaga** (até ~70%). Fecho o valor exato na proposta.";
   } else if(ck==="corretor"||ck==="novostalentos"){
     if(!sp){
-      msg="A nossa operação com equipe é aqui em **São Paulo**. Na sua região, o caminho são as plataformas (você opera, com a extensão RH IMOB Aceleradora automatizando): **Corretores (CRECI)** a partir de R$ 499/mês e **Novos Talentos** a partir de R$ 249/mês. [Ver planos →](/plataformas)";
+      msg="A nossa operação com equipe é aqui em **São Paulo**. Na sua região, o caminho é o **banco + a extensão**: banco manual a partir de R$ 249 (Novos Talentos) / R$ 499 (Corretor com CRECI), ou a **extensão automatizada a R$ 999/mês** — já integrada ao banco, rodando sozinha. [Ver →](/plataformas)";
     } else if(lead.estrutura==="Tem RH"){
       msg="Como você já tem quem receba os retornos, a **operação completa** sai por **R$ 1.999/mês**: a nossa equipe gera os candidatos, aborda, faz a triagem e entrega em entrevista — e o seu time dá andamento. Volume pra ~5 contratações/mês, setup em 7 dias."+manual;
     } else {
@@ -274,8 +286,8 @@ function responderDuvida_(t,cb){var s=(t||"").toLowerCase();
   bot("Boa — isso eu detalho na proposta. Deixa eu só terminar de montar aqui:",cb);
 }
 // Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
-function verPlataformas(cb){bot("Claro. Além da operação feita por nós, dá pra você mesmo operar com os nossos bancos + a extensão RH IMOB Aceleradora — ela roda no Chrome captando e abordando, e você acompanha os retornos num funil:",function(){
-  bot("• **Corretor com CRECI** — a partir de R$ 499/mês (R$ 999 pra 1.000 contatos). [Ver →](/corretores)\n• **Novos Talentos** — R$ 249 (já assina Catho) ou R$ 649. [Ver →](/novos-talentos)\n\nMensal, sem fidelidade. [Extensão na Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",cb);
+function verPlataformas(cb){bot("Claro. Além da operação feita por nós, dá pra você mesmo tocar a captação. Tem dois níveis:",function(){
+  bot("• **Banco manual (entrada)** — Novos Talentos R$ 249 (já assina Catho) / R$ 649, ou Corretor com CRECI a partir de R$ 499. O seu time filtra e aborda. [Ver →](/corretores)\n• **Extensão automatizada (escala)** — R$ 999/mês: já integrada ao banco, capta e aborda sozinha, sem parar (2 operadores ≈ 5–6 pessoas na mão). [Chrome Web Store ↗](https://chromewebstore.google.com/detail/fkcpnophipbcicdbadekbhogihfkplmb)",cb);
 })}
 function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvida?",function(){
   setChips([{label:"Quanto custa?",go:function(){lead.objecao="preço";respostaPreco(contato)}},
