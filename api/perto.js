@@ -11,7 +11,7 @@ const RAIOS = [1, 3, 5, 10, 20, 30];
 
 function enviar(res, status, corpo, cacheSeg) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', cacheSeg ? `public, s-maxage=${cacheSeg}, stale-while-revalidate=86400` : 'no-store');
+  res.setHeader('Cache-Control', cacheSeg ? `public, s-maxage=${cacheSeg}, stale-while-revalidate=300` : 'no-store');
   res.status(status).send(JSON.stringify(corpo));
 }
 
@@ -87,5 +87,5 @@ export default async function handler(req, res) {
     parceiros, // null enquanto o SQL REDE_GEO_1 não roda: a página mostra "em breve"
     mercado,   // imobiliárias mapeadas no Maps (só contagem); null se o SQL/coords ainda não rodaram
     em_breve: emBreve
-  }, 1800);
+  }, 120);
 }
