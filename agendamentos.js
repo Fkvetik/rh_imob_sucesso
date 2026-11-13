@@ -822,14 +822,14 @@ function openEditModal(id) {
     .then(resp => {
       if (!resp.ok) { $("mHistorico").innerHTML = '<small style="color:#aaa">Sem histórico</small>'; return; }
       const h = resp.historico || [];
-      const entrada = a.criado_em ? `<div class="hist-item entrada">📥 <b>Entrou no agendamento</b><br>${new Date(a.criado_em).toLocaleString("pt-BR")} · por ${esc(a.nome_operador || a.login || "operador")}</div>` : "";
-      $("mHistorico").innerHTML = (h.length || entrada)
+      // "Entrou no agendamento" fica só na Jornada (acima) — aqui é só mudança de etapa.
+      $("mHistorico").innerHTML = h.length
         ? h.map(x => {
             const nome = s => { const c = COLUMNS.find(c => c.id === s); return c ? c.label : (s || "—"); };
             if (!x.status_novo) return `<div class="hist-item">${esc(x.motivo || "Registro")}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
             return `<div class="hist-item">${esc(nome(x.status_anterior))} → <b>${esc(nome(x.status_novo))}</b>${x.data_agendamento ? " · entrevista em " + esc(fmtData(x.data_agendamento)) : ""}${x.motivo ? " — " + esc(x.motivo) : ""}<br>${new Date(x.criado_em).toLocaleString("pt-BR")}${x.autor ? " · por " + esc(x.autor) : ""}</div>`;
-          }).join("") + entrada
-        : '<small style="color:#aaa">Sem mudanças registradas ainda</small>';
+          }).join("")
+        : '<small style="color:#aaa">Sem mudanças de etapa ainda</small>';
     })
     .catch(() => { $("mHistorico").innerHTML = '<small style="color:#aaa">Sem histórico</small>'; });
 }
