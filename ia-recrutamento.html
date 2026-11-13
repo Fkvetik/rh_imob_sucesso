@@ -109,7 +109,8 @@ function cargoKey(){var c=(lead.cargo||"").toLowerCase();
   if(c.indexOf("gerente")>=0||c.indexOf("lider")>=0)return "gerente";
   if(c.indexOf("corretor")>=0)return "corretor";
   if(c.indexOf("novos talentos")>=0||c.indexOf("talento")>=0)return "novostalentos";return "outro";}
-var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",caminho:"",ferramenta:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:""};
+var lead={nome:"",tel:"",empresa:"",regiao:"",cargo:"",qtd:"",caminho:"",ferramenta:"",remuneracao:"",beneficios:"",exigencias:"",estrutura:"",urgencia:"",objecao:"",reuniao:""};
+var MEET_LINK="https://meet.google.com/pba-myme-aus";
 // id único desta conversa — o painel agrupa pelo prefixo antes do "#".
 var CONV_ID="ia-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 var $=function(id){return document.getElementById(id)};
@@ -309,6 +310,8 @@ function responderLivre_(t,cb){var s=norm_(t);var H=function(re){return re.test(
     bot("Resumo: o **banco** é a entrada manual — você acessa a base e o seu time filtra e aborda (menor investimento). A **extensão** é o passo de escala — já integrada ao banco, capta e aborda sozinha e não para (2 operadores rendem 5–6 pessoas na mão). Banco pra testar/volume baixo; extensão pra consistência mês a mês.",cb);return;}
   if(H(/como.*(extensao|aceleradora|automat)|(extensao|aceleradora).*(funciona|roda|trabalha)/)){
     bot("A extensão roda no Chrome **já integrada ao banco**: capta corretores e novos talentos (Instagram, site do CRECI e outras ferramentas), manda as primeiras mensagens no WhatsApp com modelos prontos e organiza os retornos num funil. Você entra só pra conversar com quem respondeu. Vem com 2 acessos.",cb);return;}
+  if(H(/como (funciona|e|sera|seria|voces|trabalha|opera)|funciona como|processo de voces|como que (funciona|e)|me explica como|como e a operacao|passo a passo/)){
+    bot("Funciona assim: a gente **capta e qualifica** os profissionais por região (Instagram, site do CRECI, Catho e Google Maps), **aborda no WhatsApp** e entrega só quem tem fit — já em **entrevista**, online ou presencial. Você entrevista e decide. Em São Paulo a nossa equipe faz tudo pra você; se preferir operar por conta, tem o **banco + a extensão**.",cb);return;}
   if(H(/clt|pj|vinculo|carteira|contrato de trabalho|registro|autonomo|comissionad/)){
     bot("A gente entrega o candidato com fit, pronto pra conversar — o **modelo de contratação** (CLT, PJ ou autônomo/comissionado) é definido por você na proposta ao candidato. Em vagas CLT, a reposição está inclusa.",cb);return;}
   if(H(/sair|\bsai\b|saiu|rotativ|turnover|desist|larg|abandon|troca muito|depois que contrat/)){
@@ -372,16 +375,37 @@ function resumo(){$("fdot").classList.add("on");
   bot(s,function(){
     enviarParaPainel(false); // registra automaticamente ao concluir
     $("fstatus").textContent="✓ Solicitação registrada";$("fstatus").className="status ok";
-    bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Sua solicitação já foi **registrada** com a RH IMOB — um especialista vai te chamar "+(ferr?"pra liberar o acesso e orientar a configuração":"com a proposta")+".\n\nSe quiser adiantar, é só enviar no WhatsApp 👇",function(){
-      setChips([{label:"Enviar no WhatsApp",cls:"wa",silent:true,go:enviarWhats}]);
-    });
+    bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Sua solicitação já foi **registrada** com a RH IMOB. "+(ferr?"Um especialista vai te chamar pra liberar o acesso e orientar a configuração.":"Um especialista vai montar e te enviar a proposta."),ofertarReuniao);
   });
 }
+// ——— Agendamento de reunião (Google Meet): dia seguinte, 10h ou 14h, seg–sex, com regra das 24h ———
+var DIAS_=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+function fmtSlot_(d){var dd=("0"+d.getDate()).slice(-2),mm=("0"+(d.getMonth()+1)).slice(-2);return DIAS_[d.getDay()]+", "+dd+"/"+mm+" às "+d.getHours()+"h";}
+function proximosSlots_(n){var out=[],agora=new Date(),limite=agora.getTime()+24*3600*1000,c=new Date();c.setDate(c.getDate()+1);c.setHours(0,0,0,0);var g=0;
+  while(out.length<n&&g<90){var dw=c.getDay();if(dw>=1&&dw<=5){[10,14].forEach(function(hh){if(out.length<n){var d=new Date(c);d.setHours(hh,0,0,0);if(d.getTime()>=limite)out.push(d);}});}c.setDate(c.getDate()+1);g++;}
+  return out;}
+function ofertarReuniao(){bot("Quer **agendar uma reunião online (Google Meet)** com a nossa equipe pra entender como funciona a parceria? Em uns 15 min a gente alinha tudo.",function(){
+  setChips([{label:"📅 Sim, quero agendar",cls:"primary",go:escolherHorario},
+            {label:"Agora não",go:function(){bot("Tranquilo! Qualquer coisa é só chamar no WhatsApp. 👍",finalChips)}}]);
+})}
+function escolherHorario(){var slots=proximosSlots_(4);
+  bot("Perfeito! Olhei a agenda — estes são os próximos horários livres (sempre 10h ou 14h, de seg a sex):",function(){
+    var cs=slots.map(function(d){return {label:fmtSlot_(d),go:function(){confirmarReuniao(d)}};});
+    cs.push({label:"Outro horário (combinar no WhatsApp)",go:function(){lead.reuniao="A combinar no WhatsApp";bot("Sem problema — a gente acerta o melhor horário no WhatsApp. 👍",finalChips)}});
+    setChips(cs);
+  });
+}
+function confirmarReuniao(d){lead.reuniao=fmtSlot_(d);enviarParaPainel(false);
+  $("fstatus").textContent="✓ Reunião agendada";$("fstatus").className="status ok";
+  bot("✅ **Reunião confirmada!**\n\n🗓️ "+fmtSlot_(d)+"\n🔗 [Entrar no Google Meet](https://meet.google.com/pba-myme-aus)\n\nÉ só entrar no link no horário combinado. Vou te mandar essa confirmação no WhatsApp também. 👍",finalChips);
+}
+function finalChips(){setChips([{label:"Enviar no WhatsApp",cls:"wa",silent:true,go:enviarWhats},{label:"Começar de novo",go:function(){location.reload()}}]);}
 function textoWhats(){var ferr=(lead.caminho==="Ferramentas");
   var corpo=ferr
     ? ("\nCaminho: Ferramentas"+(lead.ferramenta?"\nFerramenta: "+lead.ferramenta:""))
     : ("\nRemuneração: "+lead.remuneracao+(lead.beneficios?"\nBenefícios: "+lead.beneficios:"")+(lead.exigencias?"\nJornada/exigências: "+lead.exigencias:"")+(lead.estrutura?"\nEstrutura: "+lead.estrutura:""));
-  return "Olá! Vim pela Consultora IA do site da RH IMOB.\n\nNome: "+lead.nome+"\nEmpresa: "+lead.empresa+"\nRegião: "+lead.regiao+"\nPreciso: "+lead.cargo+" ("+lead.qtd+")"+corpo+"\nUrgência: "+lead.urgencia+"\n\n"+(ferr?"Pode me passar o acesso/liberação?":"Pode me mandar a proposta?")}
+  var reun=lead.reuniao?("\nReunião: "+lead.reuniao+(/combinar/i.test(lead.reuniao)?"":"\nGoogle Meet: "+MEET_LINK)):"";
+  return "Olá! Vim pela Consultora IA do site da RH IMOB.\n\nNome: "+lead.nome+"\nEmpresa: "+lead.empresa+"\nRegião: "+lead.regiao+"\nPreciso: "+lead.cargo+" ("+lead.qtd+")"+corpo+"\nUrgência: "+lead.urgencia+reun+"\n\n"+(lead.reuniao&&!/combinar/i.test(lead.reuniao)?"Confirmo a reunião acima.":(ferr?"Pode me passar o acesso/liberação?":"Pode me mandar a proposta?"))}
 function enviarParaPainel(enviou){
   try{
     var cfg=window.RHIMOB_NOVOS_TALENTOS_SUPABASE_CONFIG;if(!cfg||!cfg.url)return;
@@ -389,7 +413,7 @@ function enviarParaPainel(enviou){
     var row={session_id:base,nome:lead.nome,whatsapp:lead.tel,empresa:lead.empresa,cidade:lead.regiao,
       cargo_vaga:lead.cargo,quantidade:lead.qtd,urgencia:lead.urgencia,remuneracao:lead.remuneracao,
       beneficios:lead.beneficios,exigencias:lead.exigencias,
-      mensagem:"Caminho: "+(lead.caminho||"—")+(lead.ferramenta?(" | Ferramenta: "+lead.ferramenta):"")+(lead.estrutura?(" | Estrutura: "+lead.estrutura):"")+(lead.objecao?(" | Dúvida: "+lead.objecao):""),
+      mensagem:"Caminho: "+(lead.caminho||"—")+(lead.ferramenta?(" | Ferramenta: "+lead.ferramenta):"")+(lead.estrutura?(" | Estrutura: "+lead.estrutura):"")+(lead.objecao?(" | Dúvida: "+lead.objecao):"")+(lead.reuniao?(" | Reunião: "+lead.reuniao+" ("+MEET_LINK+")"):""),
       tipo:"empresa",origem:"Consultora IA",pagina:location.href,enviou_whatsapp:!!enviou};
     var url=cfg.url.replace(/\/$/,"")+"/rest/v1/site_leads";
     var headers={apikey:cfg.publishableKey,Authorization:"Bearer "+cfg.publishableKey,"Content-Type":"application/json",Prefer:"return=minimal"};

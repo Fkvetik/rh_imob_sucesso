@@ -89,6 +89,13 @@ Gerente/SDR/outro pulam o fork (banco/extensão não localizam esses perfis) e s
 - Objeção "e se não der certo": a entrega é levar o profissional com aderência à reunião;
   conversão depende da proposta da empresa. Sem "contratação garantida" (CLT = reposição).
 
+**Agendamento de reunião (Google Meet):** ao concluir, a IA oferece agendar (`ofertarReuniao`
+→ `escolherHorario` → `confirmarReuniao`). Slots = **dia seguinte, 10h ou 14h, seg–sex**,
+com **regra das 24h** (slot só aparece se faltar ≥24h; `proximosSlots_`). Link fixo
+`MEET_LINK` = https://meet.google.com/pba-myme-aus (mesma sala). O horário escolhido vai pro
+painel (campo `mensagem`, "Reunião: …") e pro texto do WhatsApp. A criação do evento real no
+calendário é manual pela equipe (o chat não tem backend de calendário).
+
 Home (`index.html`) linka a Consultora IA no nav e no hero. O card da extensão na home
 confirma o preço escalonado (999/899/799) — **não** é divergência.
 
