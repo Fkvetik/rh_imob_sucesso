@@ -106,6 +106,12 @@ com **regra das 24h** (slot só aparece se faltar ≥24h; `proximosSlots_`). Lin
 painel (campo `mensagem`, "Reunião: …") e pro texto do WhatsApp. A criação do evento real no
 calendário é manual pela equipe (o chat não tem backend de calendário).
 
+**Medição (GA G-NSJD4F675L):** `track(ev,params)` dispara eventos no funil — `ia_inicio`,
+`ia_regiao`, `ia_cargo`, `ia_caminho`, `ia_contato_inicio`, `ia_lead_registrado`,
+`ia_reuniao`, `ia_whatsapp`, e no campo livre `ia_pergunta_livre` (param `q` = pergunta
+truncada), `ia_llm_ok` / `ia_llm_fallback`. Ver em GA → Relatórios → Eventos (ou DebugView).
+Use `ia_pergunta_livre` pra achar perguntas recorrentes e migrá-las pro roteiro local (grátis).
+
 Home (`index.html`) linka a Consultora IA no nav e no hero. O card da extensão na home
 confirma o preço escalonado (999/899/799) — **não** é divergência.
 

@@ -7,6 +7,8 @@
 <meta name="description" content="Conte sua necessidade de corretores para a Consultora IA da RH IMOB e receba uma proposta de recrutamento.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico" sizes="any">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NSJD4F675L"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-NSJD4F675L');</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap">
 <style>
   :root{
@@ -123,6 +125,8 @@ var ultimoBotTexto="",perguntaAtual="";
 // Histórico curto da conversa (pra dar memória ao LLM nas perguntas fora do roteiro).
 var convoBuf=[];
 function pushConvo_(role,t){convoBuf.push({role:role,content:String(t).slice(0,400)});if(convoBuf.length>24)convoBuf=convoBuf.slice(-24);}
+// Medição: dispara eventos no GA (G-NSJD4F675L) por etapa do funil.
+function track(ev,params){try{if(window.gtag)gtag('event',ev,params||{});}catch(e){}}
 function bot(t,cb){ultimoBotTexto=t;pushConvo_("assistant",t);var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub">'+fmt(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;if(cb)setTimeout(cb,350)}
 function user(t){pushConvo_("user",t);var r=document.createElement("div");r.className="row user";r.innerHTML='<div class="bub">'+esc(t)+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
 function setChips(o){perguntaAtual=ultimoBotTexto;chips.innerHTML="";o.forEach(function(x){var b=document.createElement("button");b.className="chip"+(x.cls?(" "+x.cls):"");b.textContent=x.label;b.onclick=function(){if(!x.silent)user(x.label);x.go()};chips.appendChild(b)});
@@ -145,11 +149,11 @@ function askSkip(p,done){chips.innerHTML="";inbar.hidden=false;inp.value="";inp.
   var b=document.createElement("button");b.className="chip";b.textContent="Pular";b.onclick=function(){inbar.hidden=true;done("")};chips.appendChild(b)}
 function setF(id,val){var el=$("f-"+id);el.textContent=val||"—";if(val)el.classList.remove("empty")}
 
-function start(){
+function start(){track('ia_inicio');
   bot("Oi! Sou a Consultora IA da RH IMOB. 👋\nEm poucos minutos eu entendo sua necessidade de corretores e já deixo tudo encaminhado — sem formulário chato.\n\nPode clicar nas opções **ou digitar sua pergunta** a qualquer momento.",function(){
     bot("Sua operação é em **São Paulo** ou em **outra região**?",function(){
-      setChips([{label:"São Paulo",go:function(){lead.regiao="São Paulo";setF("regiao","São Paulo");bot("Perfeito. Em São Paulo a gente roda a operação completa: com o nosso banco de Novos Talentos e as ferramentas, prospectamos, abordamos, qualificamos e direcionamos os corretores pra entrevista com você.",precisa)}},
-                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);bot("Fora de São Paulo, a operação com a nossa equipe não atende — mas você opera por conta com o nosso **banco de dados + a extensão**, que faz a captação e a abordagem no automático e entrega os perfis ajustados ao que você procura.",precisa)})})}}]);
+      setChips([{label:"São Paulo",go:function(){lead.regiao="São Paulo";setF("regiao","São Paulo");track('ia_regiao',{regiao:"São Paulo"});bot("Perfeito. Em São Paulo a gente roda a operação completa: com o nosso banco de Novos Talentos e as ferramentas, prospectamos, abordamos, qualificamos e direcionamos os corretores pra entrevista com você.",precisa)}},
+                {label:"Outra região",go:function(){bot("Qual cidade/estado?",function(){askSkip("Ex.: Goiânia / GO",function(v){lead.regiao=v||"Fora de SP";setF("regiao",lead.regiao);track('ia_regiao',{regiao:"Fora de SP"});bot("Fora de São Paulo, a operação com a nossa equipe não atende — mas você opera por conta com o nosso **banco de dados + a extensão**, que faz a captação e a abordagem no automático e entrega os perfis ajustados ao que você procura.",precisa)})})}}]);
     });
   });
 }
@@ -165,7 +169,7 @@ function precisa(){bot("O que você precisa contratar?",function(){
               lead.cargo=v;setF("cargo",v);quantas();
             })})}}]);
 })}
-function quantas(){bot("Quantas posições por mês, mais ou menos?",function(){
+function quantas(){track('ia_cargo',{cargo:lead.cargo});bot("Quantas posições por mês, mais ou menos?",function(){
   setChips([{label:"1 a 5",go:function(){lead.qtd="1 a 5";setF("qtd",lead.qtd);afterQtd()}},
             {label:"6 ou mais",go:function(){lead.qtd="6 ou mais";setF("qtd",lead.qtd);afterQtd()}}]);
 })}
@@ -183,7 +187,7 @@ function caminho(){bot("Antes de montar a proposta — qual caminho faz mais sen
   });
 })}
 // Caminho ferramentas: banco (entrada manual) x extensão (operação automatizada, escala).
-function ferramentas(){bot("Boa — esse é o caminho de quem quer tocar a captação com o próprio time. Tem do mais enxuto ao que mais escala; deixa eu te situar rapidinho. 👇",function(){
+function ferramentas(){track('ia_caminho',{caminho:"Ferramentas"});bot("Boa — esse é o caminho de quem quer tocar a captação com o próprio time. Tem do mais enxuto ao que mais escala; deixa eu te situar rapidinho. 👇",function(){
   bot("**A entrada é o banco (manual):** você acessa a nossa base — **Corretor com CRECI** ou **Novos Talentos** — e a sua equipe filtra e faz a abordagem na mão. É o menor investimento, bom pra testar ou pra volume baixo.",function(){
     bot("**O que sustenta e escala é a extensão:** a **RH IMOB Aceleradora** já vem integrada ao banco e capta/aborda no automático (Instagram, site do CRECI e outras ferramentas), sem parar. Na prática, **2 operadores na extensão entregam o volume de 5 a 6 pessoas abordando na mão** — por isso ela dá consistência mês a mês.",function(){
       bot("Por onde faz sentido começar?",menuFerramentas);
@@ -237,7 +241,7 @@ function comoFunciona(){bot("Na prática é direto: a extensão roda no Chrome j
 })}
 function paraOperacao(){lead.caminho="Operação completa";lead.ferramenta="";bot("Perfeito — deixa eu te explicar a operação completa então, pra você comparar. 👇",remun)}
 function escolheuFerramenta(){bot("Perfeito! Vou registrar pra liberarmos o acesso (até 1 dia útil) e te orientar na configuração.",urgencia)}
-function remun(){bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
+function remun(){track('ia_caminho',{caminho:lead.caminho||"Operação completa"});bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
   setChips([{label:"Ajuda de custo / fixo",go:function(){lead.remuneracao="Ajuda de custo / fixo";setF("remuneracao",lead.remuneracao);benef()}},
             {label:"Mínimo garantido",go:function(){lead.remuneracao="Mínimo garantido";setF("remuneracao",lead.remuneracao);benef()}},
             {label:"Só comissão",go:function(){lead.remuneracao="Só comissão";setF("remuneracao",lead.remuneracao);benef()}},
@@ -367,12 +371,14 @@ function contextoLead_(){var p=[];
 function mostrarPensando_(){var r=document.createElement("div");r.className="row bot";r.innerHTML='<span class="mini">RH</span><div class="bub"><i>digitando…</i></div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;return r;}
 var FALLBACK_IA="Boa pergunta — isso um especialista te confirma certinho junto da proposta. Deixa eu continuar pra não perder o seu contexto: 👍";
 function perguntarIA_(t,cb){var p=mostrarPensando_();
+  track('ia_pergunta_livre',{q:String(t).slice(0,90)});
   var hist=convoBuf.slice(0,-1).slice(-8); // trocas anteriores (a atual já é o 't')
   fetch("/api/ia-chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({pergunta:t,contexto:contextoLead_(),historico:hist})})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(d){if(p&&p.parentNode)p.parentNode.removeChild(p);
-      bot((d&&d.reply)?d.reply:FALLBACK_IA,cb);})
-    .catch(function(){if(p&&p.parentNode)p.parentNode.removeChild(p);bot(FALLBACK_IA,cb);});
+      var ok=!!(d&&d.reply);track(ok?'ia_llm_ok':'ia_llm_fallback');
+      bot(ok?d.reply:FALLBACK_IA,cb);})
+    .catch(function(){if(p&&p.parentNode)p.parentNode.removeChild(p);track('ia_llm_fallback');bot(FALLBACK_IA,cb);});
 }
 // Mostra as plataformas + extensão (usada tanto no fork quanto como atalho na objeção).
 function verPlataformas(cb){bot("Claro. Além da operação feita por nós, dá pra você mesmo tocar a captação. Tem dois níveis:",function(){
@@ -385,7 +391,7 @@ function objecao(){bot("Antes de montar sua proposta — quer tirar alguma dúvi
             {label:"Conhecer as plataformas",go:function(){verPlataformas(objecao)}},
             {label:"Nenhuma, seguir →",cls:"primary",go:contato}]);
 })}
-function contato(){bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",pedirNome)}
+function contato(){track('ia_contato_inicio',{caminho:lead.caminho||"Operação completa"});bot("Fechado! Pra montar e te enviar a proposta, seu **nome**?",pedirNome)}
 function pedirNome(){ask("Seu nome",function(v){
   if(pergunta_(v)){responderLivre_(v,function(){bot("Voltando — como é o seu **nome**?",pedirNome)});return;}
   lead.nome=v;setF("nome",v);
@@ -408,6 +414,7 @@ function resumo(){$("fdot").classList.add("on");
   s+="\n• Urgência: "+lead.urgencia;
   bot(s,function(){
     enviarParaPainel(false); // registra automaticamente ao concluir
+    track('ia_lead_registrado',{caminho:lead.caminho||"Operação completa"});
     $("fstatus").textContent="✓ Solicitação registrada";$("fstatus").className="status ok";
     bot("Pronto, "+(lead.nome.split(" ")[0]||"")+"! ✅ Sua solicitação já foi **registrada** com a RH IMOB. "+(ferr?"Um especialista vai te chamar pra liberar o acesso e orientar a configuração.":"Um especialista vai montar e te enviar a proposta."),ofertarReuniao);
   });
@@ -429,7 +436,7 @@ function escolherHorario(){var slots=proximosSlots_(4);
     setChips(cs);
   });
 }
-function confirmarReuniao(d){lead.reuniao=fmtSlot_(d);enviarParaPainel(false);
+function confirmarReuniao(d){lead.reuniao=fmtSlot_(d);track('ia_reuniao',{slot:lead.reuniao});enviarParaPainel(false);
   $("fstatus").textContent="✓ Reunião agendada";$("fstatus").className="status ok";
   bot("✅ **Reunião confirmada!**\n\n🗓️ "+fmtSlot_(d)+"\n🔗 [Entrar no Google Meet](https://meet.google.com/pba-myme-aus)\n\nÉ só entrar no link no horário combinado. Vou te mandar essa confirmação no WhatsApp também. 👍",finalChips);
 }
@@ -464,7 +471,7 @@ function registrar(viaWhats){
     setChips([{label:"Começar de novo",go:function(){location.reload()}}]);
   });
 }
-function enviarWhats(){enviarParaPainel(true);window.open("https://wa.me/"+EMPRESA_WHATSAPP+"?text="+encodeURIComponent(textoWhats()),"_blank");bot("Abri o WhatsApp com a sua solicitação já preenchida — é só enviar. 👍",function(){setChips([{label:"Começar de novo",go:function(){location.reload()}}]);});}
+function enviarWhats(){track('ia_whatsapp',{caminho:lead.caminho||"Operação completa"});enviarParaPainel(true);window.open("https://wa.me/"+EMPRESA_WHATSAPP+"?text="+encodeURIComponent(textoWhats()),"_blank");bot("Abri o WhatsApp com a sua solicitação já preenchida — é só enviar. 👍",function(){setChips([{label:"Começar de novo",go:function(){location.reload()}}]);});}
 start();
 </script>
 </body>
