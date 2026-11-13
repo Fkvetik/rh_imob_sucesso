@@ -106,7 +106,11 @@ Gerente/SDR/outro pulam o fork (banco/extensão não localizam esses perfis) e s
   R$ 499) **×** extensão automatizada **R$ 999/mês** (899 semestral / 799 anual, 2 acessos,
   bases inclusas). Pitch sutil: banco = entrada enxuta; extensão = sustentabilidade/escala.
 - **Fora de SP:** operação com equipe não atende → caminho é banco + extensão.
-- **6+/mês:** sob medida. **Gerente/SDR:** a partir de R$ 1.500. **Outros:** ~salário (até 70%).
+- **6+/mês:** dimensionado por **operadora dedicada** (R$ 3.500/mês cada, com ferramentas/acessos):
+  6–10 → 2 op → **R$ 7.000**; 11–20 → 3+ op → **a partir de ~R$ 10.500**; 20+ → setor dedicado
+  (operação grande). **25% de desconto** pra quem vem pela plataforma / operação grande. A IA
+  pergunta a faixa (`faixa6`: 6–10 / 11–20 / 20+) pra dar número concreto.
+- **Gerente/SDR:** a partir de R$ 1.500. **Outros:** ~salário (até 70%).
 - Objeção "e se não der certo": a entrega é levar o profissional com aderência à reunião;
   conversão depende da proposta da empresa. Sem "contratação garantida" (CLT = reposição).
 

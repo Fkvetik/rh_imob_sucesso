@@ -171,7 +171,14 @@ function precisa(){bot("O que você precisa contratar?",function(){
 })}
 function quantas(){track('ia_cargo',{cargo:lead.cargo});bot("Quantas posições por mês, mais ou menos?",function(){
   setChips([{label:"1 a 5",go:function(){lead.qtd="1 a 5";setF("qtd",lead.qtd);afterQtd()}},
-            {label:"6 ou mais",go:function(){lead.qtd="6 ou mais";setF("qtd",lead.qtd);afterQtd()}}]);
+            {label:"6 ou mais",go:faixa6}]);
+})}
+// A partir de 6 a operação é dimensionada por operadora dedicada — pergunta a faixa
+// pra dar um número concreto (não "sob medida" vago).
+function faixa6(){bot("Mais ou menos quantas por mês?",function(){
+  setChips([{label:"6 a 10",go:function(){lead.qtd="6 a 10";setF("qtd",lead.qtd);afterQtd()}},
+            {label:"11 a 20",go:function(){lead.qtd="11 a 20";setF("qtd",lead.qtd);afterQtd()}},
+            {label:"20 ou mais",go:function(){lead.qtd="20 ou mais";setF("qtd",lead.qtd);afterQtd()}}]);
 })}
 // Fork: pra corretor/novos talentos dá pra seguir pela operação OU pelas ferramentas.
 // Pros demais cargos (gerente/SDR/outro) as ferramentas não localizam o perfil, então
@@ -278,8 +285,16 @@ function respostaPreco(cb){
   // Banco manual (entrada) + extensão (escala) existem dentro E fora de SP.
   var manual="\n\nSe preferir conduzir você mesmo, dá pra começar pelo **banco manual** (Novos Talentos a partir de R$ 249, Corretor com CRECI a partir de R$ 499) e **automatizar com a extensão** (R$ 999/mês) quando quiser escalar. [Ver planos →](/plataformas)";
   var msg;
-  if(lead.qtd==="6 ou mais"){
-    msg="A partir de 6 por mês é uma operação **sob medida**: a gente dimensiona com mais de uma assistente, conforme o volume de entrevistas. Desenho o escopo e o valor na proposta.";
+  if(lead.qtd==="6 a 10"||lead.qtd==="11 a 20"||lead.qtd==="20 ou mais"){
+    // A partir de 6 a operação é dimensionada por operadora dedicada (R$ 3.500/mês cada,
+    // já com ferramentas e acessos). A empresa não gasta com mais nada além da operação.
+    if(lead.qtd==="6 a 10"){
+      msg="Pra **6 a 10 por mês**, a gente monta a operação com **2 operadoras dedicadas** (R$ 3.500/mês cada, já com as ferramentas e os acessos pra prospecção): **R$ 7.000/mês**. A sua empresa não gasta com mais nada além da operação. Pra quem vem pela plataforma, dá pra **25% de desconto**. Fecho o valor exato na proposta.";
+    } else if(lead.qtd==="11 a 20"){
+      msg="Pra **11 a 20 por mês**, eu dimensiono com **3 ou mais operadoras dedicadas** (R$ 3.500/mês cada, com ferramentas inclusas) — fica **a partir de ~R$ 10.500/mês**. Pra quem vem pela plataforma ou operação grande, **25% de desconto**. Desenho o escopo e o valor na proposta.";
+    } else {
+      msg="Pra **20+ por mês** é uma operação grande: a gente monta um **setor de recrutamento dedicado** com várias operadoras (R$ 3.500/mês cada, com tudo incluso), e aí entra **25% de desconto** no valor da operação. Desenho o escopo completo e o valor na proposta.";
+    }
   } else if(ck==="gerente"||ck==="sdr"){
     msg="Pra "+lead.cargo.toLowerCase()+", a operação fica **a partir de R$ 1.500/mês** (varia com o perfil e o salário da vaga). Fecho o valor exato na proposta.";
   } else if(ck==="outro"){

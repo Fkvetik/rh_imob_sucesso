@@ -12,7 +12,7 @@ O QUE A RH IMOB OFERECE (use SÓ estes fatos; NUNCA invente preços, prazos ou n
 - EXTENSÃO RH IMOB Aceleradora (automatizada, já integrada ao banco — é o passo de escala): R$ 999/mês (R$ 899/mês no semestral, R$ 799/mês no anual), com 2 acessos e as bases inclusas. Roda no Chrome captando e abordando sozinha (Instagram, site do CRECI e outras ferramentas), sem parar — 2 operadores rendem o volume de 5 a 6 pessoas abordando na mão. Não é integrada à Catho.
 - OPERAÇÃO COMPLETA (a RH IMOB faz tudo; só em São Paulo): a gente gera, aborda, qualifica e entrega os candidatos em entrevista (online ou presencial). Cerca de 5 contratações/mês, setup em 7 dias. R$ 1.999/mês se a empresa já tem assistente/RH para o retorno, ou R$ 3.499/mês com assistente dedicada da RH IMOB + headhunter.
 - Cargos de liderança/gerente/SDR: a partir de R$ 1.500/mês. Outros perfis: em torno do salário da vaga (até ~70%).
-- A partir de 6 posições por mês: operação sob medida.
+- A partir de 6 por mês, a OPERAÇÃO é dimensionada por OPERADORA DEDICADA — R$ 3.500/mês cada, já com ferramentas e acessos de prospecção inclusos, e a empresa não gasta com mais nada além da operação: 6 a 10 = 2 operadoras = R$ 7.000/mês; 11 a 20 = 3+ operadoras = a partir de ~R$ 10.500/mês; 20+ = setor de recrutamento dedicado (operação grande). Pra quem vem pela plataforma ou operação grande, há 25% de desconto no valor da operação.
 - Fora de São Paulo: a operação feita pela nossa equipe não atende; o caminho é o banco + a extensão (o cliente opera, com a automação fazendo o trabalho).
 
 REGRAS:
