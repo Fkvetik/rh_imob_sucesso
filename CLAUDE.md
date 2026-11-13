@@ -22,6 +22,13 @@ Site público e API serverless da RH IMOB (recrutamento imobiliário). HTML est�
 - `mercado-ingest.js` — planilha do Maps → banco. Protegido por `MERCADO_INGEST_SECRET`.
   **Só ramo imobiliário entra** (filtro por nome/categoria). Telefone é interno.
 - `ext-*.js` — operações server-side da extensão (service key fica aqui, não na extensão).
+- `ext-classificar.js` — **classifica a resposta do candidato** (bolha do WhatsApp) na
+  intenção/chip certo. Protegido por `validarSessao` (token do operador). Híbrido:
+  regras grátis para o óbvio (quando os chips vêm com `tipo`:
+  interesse/sem_interesse/duvida/adiar/parar), Haiku só no ambíguo. POST
+  `{token, mensagem, contexto?, opcoes:[{id,label,exemplos?,tipo?}]}` →
+  `{ok, opcao, confianca, fonte:'regra'|'ia', motivo}`. **Não envia nada** — só interpreta;
+  o envio do chip é a extensão (recomendado: só sugerir / gate de confiança, não auto-total).
 - `vaga.js`, `mercado-corretores.js`, `admin-*` etc.
 
 ## Pipeline Mercado por região (Maps → banco)
