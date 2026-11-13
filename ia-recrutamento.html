@@ -307,9 +307,11 @@ function respostaGarantia(cb){
 function norm_(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");}
 // Detecta se o texto é uma pergunta/dúvida (em vez de uma resposta esperada).
 function pergunta_(t){var s=norm_(t);return /\?\s*$/.test(String(t||"").trim())||
-  /(quanto|preco|valor|custa|cobra|mensal|investimento|orcamento|caro|desconto|garantia|nao der certo|como funciona|como voces|como fazem|quanto tempo|prazo|quando|demora|de onde|fonte|diferenca|clt|pj|vinculo|creci|estagi|fidelidade|cancelar|pagamento|pagar|cidade|regiao|atende|lgpd|quem (e|sao)|voces sao|duvida|funciona|humano|atendente|whatsapp|falar com)/.test(s);}
+  /(quanto|preco|valor|custa|cobra|mensal|investimento|orcamento|caro|desconto|garantia|nao der certo|como funciona|como voces|como fazem|quanto tempo|prazo|quando|demora|de onde|fonte|diferenca|clt|pj|vinculo|creci|estagi|fidelidade|cancelar|pagamento|pagar|cidade|regiao|atende|lgpd|quem (e|sao)|voces sao|duvida|funciona|humano|atendente|whatsapp|falar com|plataforma|extensao|aceleradora|ferramenta|conhecer as|quero conhecer|quero saber|me explica)/.test(s);}
 // Cérebro de respostas livres: a pessoa pode digitar o que quiser a qualquer momento.
 function responderLivre_(t,cb){var s=norm_(t);var H=function(re){return re.test(s)};
+  if(H(/plataforma|conhecer as (plataforma|ferramenta|opcoe)|quero conhecer|quais.*(plataforma|ferramenta|opcoe)|ver as (plataforma|ferramenta)/)){
+    bot("Com prazer! Dá pra você mesmo tocar a captação com as nossas opções:\n• **Banco (manual)** — **Novos Talentos** R$ 249 (já assina a Catho) / R$ 649, e **Corretor com CRECI** a partir de R$ 499.\n• **Extensão RH IMOB Aceleradora (automatizada)** — **R$ 999/mês**: já integrada ao banco, capta e aborda sozinha, sem parar. [Ver tudo →](/plataformas)",cb);return;}
   if(H(/(extensao|aceleradora).*(preco|valor|custa|quanto|mensal)|(preco|valor|custa|quanto).*(extensao|aceleradora)/)){
     bot("A **extensão RH IMOB Aceleradora** fica **R$ 999/mês** (R$ 899/mês no semestral, R$ 799/mês no anual), com **2 acessos** e as bases de corretores e novos talentos já inclusas. Ela roda integrada ao banco, captando e abordando sozinha. [Conhecer →](/extensao-recrutadora)",cb);return;}
   if(H(/catho/)||(H(/(banco|plataforma|manual)/)&&H(/preco|valor|custa|quanto|mensal/)&&!H(/operacao/))){
