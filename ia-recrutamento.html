@@ -33,7 +33,8 @@
   .ficha{display:none!important}
   .chat{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-height:72vh}
   .chead{background:linear-gradient(180deg,var(--brand),var(--brand-2));color:var(--on-brand);padding:14px 18px;display:flex;align-items:center;gap:12px}
-  .av{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#1a0b00;font-family:var(--f-head);font-weight:700;display:grid;place-items:center;flex:none}
+  .av{width:40px;height:40px;border-radius:50%;background:#fff;color:#1a0b00;font-family:var(--f-head);font-weight:700;display:grid;place-items:center;flex:none;overflow:hidden}
+  .av img{width:100%;height:100%;object-fit:cover}
   .chead b{font-family:var(--f-head);font-size:16px}
   .chead small{display:block;color:#bfe3c9;font-weight:600;font-size:12px;margin-top:1px}
   .chead small::before{content:"● ";color:#53d08a}
@@ -78,7 +79,7 @@
   <div class="shell">
     <div class="chat">
       <div class="chead">
-        <div class="av">RH</div>
+        <div class="av"><img src="/assets/rhimob-mark.svg" alt="RH IMOB"></div>
         <div><b>Consultora IA · RH IMOB</b><small>online — recrutamento imobiliário</small></div>
       </div>
       <div class="msgs" id="msgs" aria-live="polite"></div>
@@ -249,16 +250,31 @@ function comoFunciona(){bot("Na prática é direto: a extensão roda no Chrome j
 function paraOperacao(){lead.caminho="Operação completa";lead.ferramenta="";bot("Perfeito — deixa eu te explicar a operação completa então, pra você comparar. 👇",remun)}
 function escolheuFerramenta(){bot("Perfeito! Vou registrar pra liberarmos o acesso (até 1 dia útil) e te orientar na configuração.",urgencia)}
 function remun(){track('ia_caminho',{caminho:lead.caminho||"Operação completa"});bot("Sobre a proposta: a vaga tem **fixo, ajuda de custo ou mínimo garantido**? Ou é só comissão?",function(){
-  setChips([{label:"Ajuda de custo / fixo",go:function(){lead.remuneracao="Ajuda de custo / fixo";setF("remuneracao",lead.remuneracao);benef()}},
-            {label:"Mínimo garantido",go:function(){lead.remuneracao="Mínimo garantido";setF("remuneracao",lead.remuneracao);benef()}},
+  setChips([{label:"Ajuda de custo / fixo",go:function(){pedirValorRemun("Ajuda de custo / fixo")}},
+            {label:"Mínimo garantido",go:function(){pedirValorRemun("Mínimo garantido")}},
             {label:"Só comissão",go:function(){lead.remuneracao="Só comissão";setF("remuneracao",lead.remuneracao);benef()}},
             {label:"A definir",go:function(){lead.remuneracao="A definir";setF("remuneracao",lead.remuneracao);benef()}}]);
 })}
+// Fixo / ajuda de custo / mínimo garantido têm valor — abre pra digitar (pode pular).
+function pedirValorRemun(tipo){bot("Qual o valor "+(tipo==="Mínimo garantido"?"do **mínimo garantido**":"**do fixo / ajuda de custo**")+" por mês?",function(){
+  askSkip("Ex.: R$ 1.500 (ou Pular)",function(v){
+    if(v && pergunta_(v)){responderLivre_(v,function(){bot("Voltando — qual o valor por mês?",function(){pedirValorRemun(tipo)})});return;}
+    lead.remuneracao = tipo + (v ? " — " + v : "");
+    setF("remuneracao", lead.remuneracao);
+    benef();
+  });
+})}
 function benef(){bot("Quais **benefícios** a vaga oferece? (ex.: vale-transporte, VR, plano, premiação, leads, descontos…)",function(){
-  askSkip("Liste os benefícios (ou Pular)",function(v){lead.beneficios=v;setF("beneficios",v||"—");jornada()});
+  askSkip("Liste os benefícios (ou Pular)",function(v){
+    if(v && pergunta_(v)){responderLivre_(v,benef);return;}
+    lead.beneficios=v;setF("beneficios",v||"—");jornada();
+  });
 })}
 function jornada(){bot("E a **jornada e as exigências**? (dias e horário, CRECI, veículo, notebook…)",function(){
-  askSkip("Ex.: seg a sáb 9–18h, com CRECI, veículo próprio",function(v){lead.exigencias=v;setF("exigencias",v||"—");estrutura()});
+  askSkip("Ex.: seg a sáb 9–18h, com CRECI, veículo próprio",function(v){
+    if(v && pergunta_(v)){responderLivre_(v,jornada);return;}
+    lead.exigencias=v;setF("exigencias",v||"—");estrutura();
+  });
 })}
 function estrutura(){bot("Você já tem **RH** (ou alguém) pra receber e dar andamento nos candidatos que a gente levar?",function(){
   setChips([{label:"Tenho RH / responsável",go:function(){lead.estrutura="Tem RH";bot("Ótimo! A nossa equipe prospecta, aborda e envia pro seu RH quem tiver interesse — vocês dão andamento.",urgencia)}},
@@ -305,7 +321,7 @@ function respostaPreco(cb){
     } else if(lead.estrutura==="Tem RH"){
       msg="Como você já tem quem receba os retornos, a **operação completa** sai por **R$ 1.999/mês**: a nossa equipe gera os candidatos, aborda, faz a triagem e entrega em entrevista — e o seu time dá andamento. Volume pra ~5 contratações/mês, setup em 7 dias."+manual;
     } else {
-      msg="Sem estrutura, a gente faz a **operação completa** com **assistente dedicada da RH IMOB + headhunter**, por **R$ 3.499/mês**: geração de candidatos, abordagem, triagem e entrega em entrevista online. Volume pra ~5 contratações/mês, setup em 7 dias."+manual;
+      msg="Sem estrutura, a gente faz a **operação completa** com **1 operadora dedicada da RH IMOB** — profissional experiente, já com as ferramentas e os acessos de prospecção inclusos — por **R$ 3.500/mês**. A sua empresa não gasta com mais nada além da operação (geração, abordagem, triagem e entrega em entrevista). Volume pra ~5 contratações/mês, setup em 7 dias."+manual;
     }
   } else {
     msg="Me conta o cargo que você precisa que eu já te passo o valor certinho.";
