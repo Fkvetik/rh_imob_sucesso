@@ -463,6 +463,18 @@ function renderDashboard(d) {
 
   const titulo = (txt, sub) => `<div class="dash-sec">${txt}${sub ? ` <small>${sub}</small>` : ""}</div>`;
 
+  // Os mesmos números, em cartões pequenos, no topo do Kanban (operação inteira).
+  if ($("kanbanKpis")) {
+    const k = (num, rot, sub, alerta) => `<div class="kb-kpi"><b>${num}</b><span>${rot}</span>${sub ? `<small class="${alerta ? "alerta" : ""}">${sub}</small>` : ""}</div>`;
+    const tG = tr ? trG.total : null;
+    $("kanbanKpis").innerHTML =
+      k(baseColetados, "Leads coletados", Math.min(100, pct(abordados, baseColetados)) + "% abordados") +
+      (tG ? k(nn(tG, "taxa_pct") + "%", "Taxa de resposta", nn(tG, "responderam") + " de " + abordados + " abordados responderam")
+          : k(abordados, "Abordados", "")) +
+      (temFunil ? k(nn(tG, "proposta"), "Receberam a proposta", nn(tG, "pararam_na_proposta") + " pararam na proposta") : "") +
+      k(agendamentos.length, "Agendamentos", agAtrasados ? "⚠ " + agAtrasados + " com data vencida" : agAbertos + " em aberto", !!agAtrasados);
+  }
+
   $("dashboard").innerHTML = `
     ${titulo("Funil", "da coleta ao agendamento")}
     <div class="dash-kpis">
