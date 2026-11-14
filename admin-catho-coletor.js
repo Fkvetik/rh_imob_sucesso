@@ -2549,7 +2549,7 @@ async function loadChips(empresa) {
   if (!d || !d.ok) return;                      // banco sem o CHIPS_1: o card fica escondido
   // nomes dos chips na base qualificada (inclui os escondidos e os de cada empresa)
   const rot = d.rotulos || {};
-  (d.chips || []).forEach(c => { rot[c.codigo] = c.rotulo; });
+  (d.chips || []).forEach(c => { if (c.grupo !== "ACAO") rot[c.codigo] = c.rotulo; }); // chips de ação não são zona nem tipo
   const ZON = new Set((d.chips || []).filter(c => c.grupo === "ZONA").map(c => c.codigo));
   Object.keys(rot).forEach(k => { if (ZON.has(k) || BQ_ZONA[k]) BQ_ZONA[k] = rot[k]; else BQ_TIPO[k] = rot[k]; });
   chFiltrosBq(d.chips || []);
@@ -2585,7 +2585,15 @@ function chRender() {
     : CH.herdado ? "Esta empresa usa a lista padrão. Ao salvar, ela passa a ter a lista própria." : "Esta empresa tem a lista própria.";
   const grupo = (g, titulo) => {
     const itens = CH.chips.map((c, i) => ({ c, i })).filter(x => x.c.grupo === g);
-    return `<div style="flex:1;min-width:260px"><b style="font-size:13px">${titulo}</b>
+    const nAtivos = itens.filter(x => x.c.ativo).length;
+    const todosOn = itens.length > 0 && nAtivos === itens.length;
+    return `<div style="flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <b style="font-size:13px">${titulo}</b>
+        <label style="font-size:11px;display:flex;align-items:center;gap:4px;margin:0;color:#555" title="Liga ou desliga de uma vez todos os chips deste grupo na bolha dos operadores">
+          <input type="checkbox" style="width:auto;margin:0" data-ch-todos="${g}" ${todosOn ? "checked" : ""}> todos na bolha
+        </label>
+      </div>
       <table style="margin-top:4px"><tbody>${itens.map(({ c, i }, k) => `<tr style="${c.ativo ? "" : "opacity:.5"}">
         <td style="width:52px;white-space:nowrap"><button class="ghost" data-ch-sobe="${i}" ${k ? "" : "disabled"} title="Subir" style="padding:2px 6px">▲</button><button class="ghost" data-ch-desce="${i}" ${k < itens.length - 1 ? "" : "disabled"} title="Descer" style="padding:2px 6px">▼</button></td>
         <td><input data-ch-rot="${i}" value="${esc(c.rotulo)}" maxlength="40" style="width:100%"></td>
@@ -2593,7 +2601,27 @@ function chRender() {
       </tr>`).join("")}</tbody></table>
       <button class="ghost" data-ch-novo="${g}" style="margin-top:6px">＋ Novo chip</button></div>`;
   };
-  $("chListas").innerHTML = grupo("ZONA", "Zona / região") + grupo("TIPO", "Tipo de profissional");
+  // Chips de ação (SQL CHIPS_2): 🧲 Contratando e 🚫 Nº inválido. Fixos — só
+  // dá para mostrar ou esconder na bolha. Banco sem o CHIPS_2 não manda o
+  // grupo e o bloco nem aparece.
+  const acoes = () => {
+    const itens = CH.chips.map((c, i) => ({ c, i })).filter(x => x.c.grupo === "ACAO");
+    if (!itens.length) return "";
+    const todosOn = itens.every(x => x.c.ativo);
+    return `<div style="flex:1;min-width:220px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <b style="font-size:13px">Chips de ação</b>
+        <label style="font-size:11px;display:flex;align-items:center;gap:4px;margin:0;color:#555" title="Liga ou desliga os dois de uma vez">
+          <input type="checkbox" style="width:auto;margin:0" data-ch-todos="ACAO" ${todosOn ? "checked" : ""}> todos na bolha
+        </label>
+      </div>
+      <table style="margin-top:4px"><tbody>${itens.map(({ c, i }) => `<tr style="${c.ativo ? "" : "opacity:.5"}">
+        <td>${esc(c.rotulo)}</td>
+        <td style="white-space:nowrap"><label style="font-size:12px;display:flex;align-items:center;gap:4px;margin:0"><input type="checkbox" style="width:auto;margin:0" data-ch-ativo="${i}" ${c.ativo ? "checked" : ""}> na bolha</label></td>
+      </tr>`).join("")}</tbody></table>
+      <small style="color:#777">Fazem ações especiais (marcar empresa contratando / número errado). Não dá para renomear; só mostrar ou esconder.</small></div>`;
+  };
+  $("chListas").innerHTML = grupo("ZONA", "Zona / região") + grupo("TIPO", "Tipo de profissional") + acoes();
   $("btnChipsSalvar").disabled = !CH.sujo;
   const L = $("chListas"), suja = () => { CH.sujo = true; $("btnChipsSalvar").disabled = false; $("chMsg").textContent = "Alterações não salvas"; };
   const troca = (i, dir) => {
@@ -2607,6 +2635,15 @@ function chRender() {
   L.querySelectorAll("[data-ch-desce]").forEach(b => b.addEventListener("click", () => troca(+b.dataset.chDesce, 1)));
   L.querySelectorAll("[data-ch-rot]").forEach(inp => inp.addEventListener("input", () => { CH.chips[+inp.dataset.chRot].rotulo = inp.value; suja(); }));
   L.querySelectorAll("[data-ch-ativo]").forEach(cb => cb.addEventListener("change", () => { CH.chips[+cb.dataset.chAtivo].ativo = cb.checked; suja(); chRender(); }));
+  // Mestre do grupo: liga/desliga todos os chips do grupo de uma vez. Fica
+  // "meio marcado" (indeterminate) quando só parte está ativa.
+  L.querySelectorAll("[data-ch-todos]").forEach(cb => {
+    const g = cb.dataset.chTodos;
+    const itens = CH.chips.filter(c => c.grupo === g);
+    const n = itens.filter(c => c.ativo).length;
+    cb.indeterminate = n > 0 && n < itens.length;
+    cb.addEventListener("change", () => { const on = cb.checked; CH.chips.forEach(c => { if (c.grupo === g) c.ativo = on; }); suja(); chRender(); });
+  });
   L.querySelectorAll("[data-ch-novo]").forEach(b => b.addEventListener("click", () => {
     const nome = (prompt(b.dataset.chNovo === "ZONA" ? "Nome da zona ou região (ex.: Campolim):" : "Nome do tipo (ex.: 🏗️ Construtora):") || "").trim();
     if (!nome) return;
