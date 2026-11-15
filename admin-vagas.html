@@ -46,11 +46,16 @@
     .loading{color:#8c809d;padding:20px 0}
 
     /* modal */
-    .modal-bg{display:none;position:fixed;inset:0;background:rgba(43,18,77,.42);z-index:50;align-items:flex-start;justify-content:center;padding:34px 16px;overflow-y:auto}
-    .modal-bg.on{display:flex}
-    .modal{background:#fff;border-radius:20px;padding:24px 24px 20px;max-width:620px;width:100%;box-shadow:0 30px 80px rgba(43,18,77,.28)}
-    .modal h2{font-size:18px;font-weight:900;margin:0 0 2px}
-    .modal .modal-sub{font-size:12.5px;color:#8c809d;margin:0 0 16px}
+    .vgm-bg{display:none;position:fixed;inset:0;background:rgba(43,18,77,.42);z-index:50;align-items:flex-start;justify-content:center;padding:34px 16px;overflow-y:auto}
+    .vgm-bg.on{display:flex}
+    .vgm{background:#fff;border-radius:20px;padding:24px 24px 20px;max-width:620px;width:100%;box-shadow:0 30px 80px rgba(43,18,77,.28)}
+    /* Blindagem: o formulário usa nomes próprios (vgm) e trava posição/forma. Um
+       estilo de fora (ex.: extensão do navegador que estiliza ".modal") deixava
+       a caixa espremida no canto, sem dar para editar. */
+    .vgm{position:static!important;transform:none!important;display:block!important;inset:auto!important;margin:0!important;height:auto!important;max-height:none!important;min-width:0!important;opacity:1!important;visibility:visible!important;flex:0 1 620px!important}
+    .vgm-bg.on{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important}
+    .vgm h2{font-size:18px;font-weight:900;margin:0 0 2px}
+    .vgm .vgm-sub{font-size:12.5px;color:#8c809d;margin:0 0 16px}
     .grp-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#8c809d;margin:16px 0 8px;border-top:1px solid var(--linha);padding-top:14px}
     .grp-title:first-of-type{border-top:none;padding-top:0;margin-top:4px}
     .field{margin-bottom:11px}
@@ -61,9 +66,9 @@
     .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--roxo)}
     .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .modal-actions{display:flex;gap:10px;margin-top:20px;position:sticky;bottom:0;background:#fff;padding-top:6px}
-    .modal-actions .btn{flex:1;padding:12px}
-    .modal-err{color:#e53e3e;font-size:12.5px;margin-top:10px;display:none}
+    .vgm-actions{display:flex;gap:10px;margin-top:20px;position:sticky;bottom:0;background:#fff;padding-top:6px}
+    .vgm-actions .btn{flex:1;padding:12px}
+    .vgm-err{color:#e53e3e;font-size:12.5px;margin-top:10px;display:none}
     @media(max-width:560px){.cols-2,.cols-3{grid-template-columns:1fr}}
   </style>
 </head>
@@ -105,7 +110,7 @@
     <div id="lista"><div class="loading">Carregando...</div></div>
   </div>
 
-  <div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+  <div class="vgm-bg" id="vgm-bg"><div class="vgm" id="vgm"></div></div>
 
   <script>
     var TOKEN=null, VAGAS=[];
@@ -180,8 +185,8 @@
     }
 
     // ───── modal criar/editar ─────
-    function fecharModal(){ document.getElementById('modal-bg').classList.remove('on'); }
-    document.getElementById('modal-bg').addEventListener('click',function(e){ if(e.target===this) fecharModal(); });
+    function fecharModal(){ document.getElementById('vgm-bg').classList.remove('on'); }
+    document.getElementById('vgm-bg').addEventListener('click',function(e){ if(e.target===this) fecharModal(); });
 
     function f(id,v){ return '<input id="'+id+'" value="'+attr(v||'')+'">'; }
     function ta(id,v){ return '<textarea id="'+id+'">'+esc(v||'')+'</textarea>'; }
@@ -189,9 +194,9 @@
     function abrirModal(vagaId){
       var v = vagaId ? VAGAS.find(function(x){return x.vaga_id===vagaId;}) : {};
       var editar = !!vagaId;
-      document.getElementById('modal').innerHTML =
+      document.getElementById('vgm').innerHTML =
         '<h2>'+(editar?'Editar vaga':'Nova vaga')+'</h2>'+
-        '<p class="modal-sub">'+(editar?('URL: /vaga/'+esc(v.vaga_id)):'Preencha os dados. A vaga entra no ar como ATIVA.')+'</p>'+
+        '<p class="vgm-sub">'+(editar?('URL: /vaga/'+esc(v.vaga_id)):'Preencha os dados. A vaga entra no ar como ATIVA.')+'</p>'+
 
         '<div class="grp-title">Básico</div>'+
         '<div class="field"><label>Título *</label>'+f('v-titulo',v.titulo)+'</div>'+
@@ -256,13 +261,13 @@
 
         (editar?'':'<div class="grp-title">Identificador da URL</div><div class="field"><label>vaga_id <span class="dica">(deixe vazio p/ gerar do título)</span></label>'+f('v-vaga_id','')+'</div>')+
 
-        '<p class="modal-err" id="m-err"></p>'+
-        '<div class="modal-actions">'+
+        '<p class="vgm-err" id="m-err"></p>'+
+        '<div class="vgm-actions">'+
           '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>'+
           '<button class="btn btn-primary" id="m-save" onclick="salvar('+(editar?('\''+esc(v.vaga_id)+'\''):'null')+')">'+(editar?'Salvar':'Criar vaga')+'</button>'+
         '</div>';
-      document.getElementById('modal-bg').classList.add('on');
-      document.getElementById('modal-bg').scrollTop=0;
+      document.getElementById('vgm-bg').classList.add('on');
+      document.getElementById('vgm-bg').scrollTop=0;
       vgImgInit();
     }
 
