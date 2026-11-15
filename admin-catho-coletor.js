@@ -3758,3 +3758,41 @@ function criarNaEmpresa_(tipo, contaId){
 document.querySelector('.tab-btn[data-tab="tabEmpresas"]')?.addEventListener("click", renderPorEmpresa);
 document.getElementById("empBusca")?.addEventListener("input", renderPorEmpresa);
 
+
+// ===== 🗺️ Mercado por região: copiar o mapa de bairros e marcar as regiões =====
+// Passos curtos (cada chamada faz um bloco) para não estourar o tempo do
+// servidor: primeiro copia os bairros do Novos Talentos, depois marca os lugares.
+$("btnSyncRegioes")?.addEventListener("click", async () => {
+  const btn = $("btnSyncRegioes"), msg = $("syncRegioesMsg");
+  const chamar = async (corpo) => {
+    const r = await fetch("/api/mercado-sync-bairros", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ senha: ADMIN_PASS, ...corpo }) });
+    const d = await r.json().catch(() => null);
+    if (!d || !d.ok) throw new Error((d && d.error) || ("HTTP " + r.status));
+    return d;
+  };
+  btn.disabled = true;
+  try {
+    let offset = 0, bairros = 0;
+    while (offset != null) {
+      msg.textContent = `⏳ Copiando o mapa de bairros… ${bairros} até agora`;
+      const d = await chamar({ fase: "copiar", offset });
+      bairros += d.copiados || 0;
+      offset = d.proximo;
+    }
+    let apos = null, marcados = 0, fim = null;
+    for (let i = 0; i < 400; i++) {
+      msg.textContent = `⏳ ${bairros} bairros copiados. Marcando as regiões… ${marcados} lugares conferidos`;
+      const d = await chamar({ fase: "marcar", apos });
+      fim = d; marcados += d.feitos || 0;
+      if (!d.feitos || !d.ultima) break;
+      apos = d.ultima;
+    }
+    const f = (fim && fim.por_fonte) || {};
+    msg.textContent = `✅ Pronto. ${bairros} bairros no mapa. ${fim ? fim.com_regiao : "?"} de ${fim ? fim.total : "?"} lugares com região ` +
+      `(CEP: ${f.cep || 0} · bairro: ${f.bairro || 0} · localização: ${f.geo || 0} · sem região: ${f.sem || 0}).`;
+  } catch (e) {
+    msg.textContent = "❌ " + e.message;
+  }
+  btn.disabled = false;
+});

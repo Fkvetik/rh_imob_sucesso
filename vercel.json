@@ -33,6 +33,9 @@
     },
     "api/admin-creci.js": {
       "maxDuration": 60
+    },
+    "api/mercado-sync-bairros.js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [

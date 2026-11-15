@@ -716,6 +716,13 @@
     </div><!-- /tabLinks -->
 
     <div class="tabpanel hide" id="tabAdmin">
+    <!-- Mercado por região: copia o mapa de bairros do Novos Talentos e marca a região de cada lugar (SQL MERCADO_MAPS_9) -->
+    <div class="card" id="cardMercadoRegioes">
+      <h3 style="margin-top:0;font-size:14px">🗺️ Mercado por região — regiões e bairros</h3>
+      <small>Marca cada imobiliária/corretor coletado no Maps com a <b>região</b> (Centro, Zona Norte, Sul, Leste, Oeste…) e a micro-região, usando o CEP, o mapa de bairros do Novos Talentos e a localização. O que o coletor enviar daqui para frente já entra marcado sozinho; use o botão na primeira vez e sempre que o mapa de bairros do Novos Talentos mudar.</small>
+      <div class="btns"><button id="btnSyncRegioes" type="button">🔄 Sincronizar bairros e marcar regiões</button></div>
+      <div id="syncRegioesMsg" class="msg"></div>
+    </div>
     <div class="card" id="cardContatosSite">
       <h3 style="margin-top:0;font-size:14px">📞 Contatos do site</h3>
       <small>Os números de WhatsApp e o e-mail que aparecem no rhimob.com.br. Trocou aqui e salvou: o site inteiro muda em até 10 minutos (páginas, vagas, sites dos corretores e das construtoras). Não precisa mexer em código.</small>
