@@ -575,6 +575,35 @@
         <div id="crAndamento" style="font-size:13px;margin-top:4px"></div>
       </div>
     </div>
+    <div class="card" id="cardFontesPlanilha">
+      <h3 style="margin-top:0;font-size:14px">📊 Fontes de leads — Planilha do Google (automático)</h3>
+      <small>Cadastre a planilha que a agência vai preenchendo. O robô lê ela sozinho a cada 10 minutos e vai colocando os contatos novos na fila do operador escolhido — sem baixar nada, sem subir CSV. Você diz <b>de qual coluna</b> sai cada campo (pelo nome do cabeçalho). O <b>Interesse</b> vira o <code>{vaga}</code> na mensagem ("Você demonstrou interesse na vaga …").</small>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:10px 0 4px;padding:10px;border:1px dashed #d8c7df;border-radius:8px;background:#fcf9fd">
+        <input type="hidden" id="fpId">
+        <div style="flex:2;min-width:180px"><label>Operação de destino (quem recebe os leads)</label><select id="fpOperador"><option value="">Escolha o operador</option></select></div>
+        <div style="flex:2;min-width:160px"><label>Apelido da fonte</label><input id="fpNome" type="text" maxlength="80" placeholder="Ex.: Agência X"></div>
+        <div style="flex:1;min-width:150px"><label>Tipo</label><select id="fpTipo"><option value="talentos">🎓 Novos Talentos</option><option value="corretores">🏘️ Corretores CRECI</option></select></div>
+        <div style="flex-basis:100%"></div>
+        <div style="flex:3;min-width:240px"><label>Link da planilha do Google</label><input id="fpLink" type="text" placeholder="Cole o link inteiro: https://docs.google.com/spreadsheets/d/.../edit"></div>
+        <div style="flex:1;min-width:120px"><label>Nome da aba</label><input id="fpAba" type="text" maxlength="60" placeholder="Ex.: Página1"></div>
+        <small style="flex-basis:100%;color:#888;margin:-2px 0 4px">Abaixo, digite o <b>nome exato</b> de cada coluna como aparece na 1ª linha da planilha. Deixe em branco o que não tiver.</small>
+        <div style="flex:1;min-width:120px"><label>Coluna do Nome *</label><input id="fpColNome" type="text" maxlength="60" placeholder="Nome"></div>
+        <div style="flex:1;min-width:120px"><label>Coluna do Telefone *</label><input id="fpColTel" type="text" maxlength="60" placeholder="Telefone"></div>
+        <div style="flex:1;min-width:120px"><label>Coluna da Cidade</label><input id="fpColCidade" type="text" maxlength="60" placeholder="Cidade"></div>
+        <div style="flex:1;min-width:120px"><label>Coluna da Profissão</label><input id="fpColProf" type="text" maxlength="60" placeholder="Cargo"></div>
+        <div style="flex:1;min-width:120px"><label>Coluna do Interesse → {vaga}</label><input id="fpColInt" type="text" maxlength="60" placeholder="Vaga"></div>
+        <label style="flex-basis:100%;display:flex;gap:6px;align-items:center;font-weight:600;margin-top:4px"><input id="fpAtivo" type="checkbox" checked style="width:auto;margin:0"> Ativa (o robô lê e abastece a fila)</label>
+        <div style="flex-basis:100%;display:flex;gap:8px;margin-top:4px">
+          <button id="btnFpSalvar" class="secondary">💾 Salvar fonte</button>
+          <button id="btnFpLimpar" class="ghost" type="button">Limpar</button>
+        </div>
+        <div id="fpMsg" class="msg" style="flex-basis:100%"></div>
+      </div>
+
+      <h4 style="font-size:13px;margin:12px 0 4px">Planilhas cadastradas</h4>
+      <div id="fpLista" style="font-size:12px">Carregando…</div>
+    </div>
     <div class="card" id="cardSites">
       <h3 style="margin-top:0;font-size:14px">🌐 Sites de corretores — rhimob.com.br/corretor/cidade/nome</h3>
       <small>O site nasce como rascunho (só abre pelo link) e fica público quando o corretor clica em Publicar no painel dele. Crie por aqui ou pela bolha do WhatsApp, nos operadores liberados abaixo.</small>
@@ -846,7 +875,7 @@
     if (salva && document.getElementById(salva)) ativar(salva);
   })();
 </script>
-<script src="admin-catho-coletor.js?v=20261107agenda"></script>
+<script src="admin-catho-coletor.js?v=20261120fontes"></script>
 <script>
   // Clicar no título de qualquer seção encolhe ou abre a seção.
   (function () {

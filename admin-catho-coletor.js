@@ -1160,6 +1160,7 @@ let USUARIOS_COLETOR_CACHE = []; // para o "Entregar para" dos filtros
 function renderUsuarios(list) {
   USUARIOS_COLETOR_CACHE = list || [];
   crPreencherOperadores();
+  fpCarregarLista();
   const tbody = $("listaUsuarios");
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="8"><small>Nenhum operador cadastrado ainda.</small></td></tr>';
@@ -3174,6 +3175,137 @@ $("btnCrCarregar")?.addEventListener("click", crCarregar);
 $("crCampanha")?.addEventListener("input", () => { $("crCampanha").dataset.editado = "1"; });
 $("btnCrContar")?.addEventListener("click", crContar);
 $("btnCrEnviar")?.addEventListener("click", crEnviar);
+
+// ===== Fontes de leads — Planilha do Google (SQL FONTES_1_planilha) =====
+// A extensão não entra aqui: o robô (Apps Script) lê a planilha a cada 10 min
+// via /api/planilha-sync e usa estas RPCs (rpc_admin_fonte_*) com a senha de admin.
+function fpOperadoresHtml(sel) {
+  const atual = sel ? sel.value : "";
+  return '<option value="">Escolha o operador</option>' + (USUARIOS_COLETOR_CACHE || [])
+    .filter(u => u.ativo !== false)
+    .map(u => `<option value="${esc(u.login)}"${u.login === atual ? " selected" : ""}>${esc(u.nome_operador || u.login)}</option>`).join("");
+}
+function fpPreencherOperadores() {
+  const sel = $("fpOperador");
+  if (sel) sel.innerHTML = fpOperadoresHtml(sel);
+}
+// Aceita o link inteiro OU só o ID; devolve só o ID da planilha.
+function fpExtrairSheetId(txt) {
+  const s = String(txt || "").trim();
+  const m = s.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (m) return m[1];
+  if (/^[a-zA-Z0-9-_]{20,}$/.test(s)) return s; // já colou só o ID
+  return "";
+}
+function fpLimparForm() {
+  $("fpId").value = "";
+  ["fpNome","fpLink","fpAba","fpColNome","fpColTel","fpColCidade","fpColProf","fpColInt"].forEach(id => { if ($(id)) $(id).value = ""; });
+  $("fpTipo").value = "talentos";
+  $("fpOperador").value = "";
+  $("fpAtivo").checked = true;
+  $("fpMsg").textContent = "";
+  $("btnFpSalvar").textContent = "💾 Salvar fonte";
+}
+async function fpCarregarLista() {
+  const box = $("fpLista");
+  if (!box) return;
+  fpPreencherOperadores();
+  try {
+    const r = await rpc("rpc_admin_fontes_listar", { p_admin_password: ADMIN_PASS });
+    if (!r || !r.ok) throw new Error((r && r.error) || "Falhou");
+    const fontes = r.fontes || [];
+    if (!fontes.length) { box.innerHTML = '<small style="color:#888">Nenhuma planilha cadastrada ainda. Preencha o formulário acima e salve.</small>'; return; }
+    const nomeOp = (login) => {
+      const u = (USUARIOS_COLETOR_CACHE || []).find(x => x.login === login);
+      return u ? (u.nome_operador || u.login) : login;
+    };
+    const dt = (iso) => { if (!iso) return "nunca"; const d = new Date(iso); return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); };
+    box.innerHTML = `<table style="width:100%;border-collapse:collapse">
+      <thead><tr style="text-align:left;color:#666;border-bottom:1px solid #eee">
+        <th style="padding:4px">Fonte</th><th style="padding:4px">Destino</th><th style="padding:4px">Tipo</th>
+        <th style="padding:4px">Última leitura</th><th style="padding:4px">Importados</th><th style="padding:4px"></th><th style="padding:4px"></th>
+      </tr></thead><tbody>` + fontes.map(f => `
+        <tr style="border-bottom:1px solid #f3f3f3${f.ativo ? "" : ";opacity:.55"}">
+          <td style="padding:4px"><b>${esc(f.nome || "(sem nome)")}</b>${f.ativo ? "" : ' <span style="color:#b00">(pausada)</span>'}</td>
+          <td style="padding:4px">${esc(nomeOp(f.login_destino))}</td>
+          <td style="padding:4px">${f.tipo === "corretores" ? "🏘️ CRECI" : "🎓 Talentos"}</td>
+          <td style="padding:4px">${esc(dt(f.ultima_sync))}</td>
+          <td style="padding:4px">${f.total_importados || 0}</td>
+          <td style="padding:4px"><button class="ghost fpEdit" data-id="${esc(f.id)}" style="padding:4px 8px;font-size:11px">✏️ Editar</button></td>
+          <td style="padding:4px"><button class="ghost fpDel" data-id="${esc(f.id)}" data-nome="${esc(f.nome || "")}" style="padding:4px 8px;font-size:11px;color:#b00">🗑️</button></td>
+        </tr>`).join("") + "</tbody></table>";
+    box._fontes = fontes;
+    box.querySelectorAll(".fpEdit").forEach(b => b.addEventListener("click", () => fpEditar(b.dataset.id)));
+    box.querySelectorAll(".fpDel").forEach(b => b.addEventListener("click", () => fpExcluir(b.dataset.id, b.dataset.nome)));
+  } catch (e) {
+    box.innerHTML = `<small style="color:#b00">⚠️ ${esc(e.message)}${/could not find|does not exist|PGRST202/i.test(e.message) ? " — rode o SQL FONTES_1_planilha no Supabase do Coletor." : ""}</small>`;
+  }
+}
+function fpEditar(id) {
+  const fontes = $("fpLista")._fontes || [];
+  const f = fontes.find(x => String(x.id) === String(id));
+  if (!f) return;
+  $("fpId").value = f.id;
+  $("fpOperador").value = f.login_destino || "";
+  $("fpNome").value = f.nome || "";
+  $("fpTipo").value = f.tipo || "talentos";
+  $("fpLink").value = f.sheet_id || "";
+  $("fpAba").value = f.aba || "";
+  $("fpColNome").value = f.col_nome || "";
+  $("fpColTel").value = f.col_telefone || "";
+  $("fpColCidade").value = f.col_cidade || "";
+  $("fpColProf").value = f.col_profissao || "";
+  $("fpColInt").value = f.col_interesse || "";
+  $("fpAtivo").checked = f.ativo !== false;
+  $("btnFpSalvar").textContent = "💾 Salvar alterações";
+  $("fpMsg").textContent = "Editando “" + (f.nome || "fonte") + "”. Altere e salve.";
+  $("cardFontesPlanilha").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function fpSalvar() {
+  const msg = $("fpMsg");
+  const login = $("fpOperador").value;
+  const sheetId = fpExtrairSheetId($("fpLink").value);
+  if (!login) { msg.textContent = "❌ Escolha a operação de destino."; return; }
+  if (!sheetId) { msg.textContent = "❌ Cole o link da planilha do Google (ou o ID dela)."; return; }
+  if (!$("fpAba").value.trim()) { msg.textContent = "❌ Informe o nome da aba."; return; }
+  if (!$("fpColNome").value.trim() || !$("fpColTel").value.trim()) { msg.textContent = "❌ Mapeie ao menos as colunas de Nome e Telefone."; return; }
+  const fonte = {
+    id: $("fpId").value || null,
+    login_destino: login,
+    nome: $("fpNome").value.trim(),
+    sheet_id: sheetId,
+    aba: $("fpAba").value.trim(),
+    col_nome: $("fpColNome").value.trim(),
+    col_telefone: $("fpColTel").value.trim(),
+    col_cidade: $("fpColCidade").value.trim(),
+    col_profissao: $("fpColProf").value.trim(),
+    col_interesse: $("fpColInt").value.trim(),
+    tipo: $("fpTipo").value || "talentos",
+    ativo: $("fpAtivo").checked
+  };
+  const btn = $("btnFpSalvar");
+  btn.disabled = true;
+  try {
+    const r = await rpc("rpc_admin_fonte_salvar", { p_admin_password: ADMIN_PASS, p_fonte: fonte });
+    if (!r || !r.ok) throw new Error((r && r.error) || "Falhou");
+    msg.textContent = "✅ Salvo. O robô vai ler essa planilha na próxima rodada (até 10 min).";
+    fpLimparForm();
+    fpCarregarLista();
+  } catch (e) { msg.textContent = "⚠️ " + e.message; }
+  btn.disabled = false;
+}
+async function fpExcluir(id, nome) {
+  if (!confirm(`Excluir a fonte “${nome || id}”?\n\nA planilha em si não é apagada — só paramos de ler ela. Os contatos que já entraram na fila continuam lá.`)) return;
+  try {
+    const r = await rpc("rpc_admin_fonte_excluir", { p_admin_password: ADMIN_PASS, p_id: Number(id) });
+    if (!r || !r.ok) throw new Error((r && r.error) || "Falhou");
+    fpCarregarLista();
+  } catch (e) { alert("⚠️ " + e.message); }
+}
+$("btnFpSalvar")?.addEventListener("click", fpSalvar);
+$("btnFpLimpar")?.addEventListener("click", fpLimparForm);
+$("fpOperador")?.addEventListener("focus", fpPreencherOperadores);
+
 // ===== Máquinas (sinal de vida das extensões — SQL SAUDE_1) =====
 let MAQUINAS_INTERVAL = null;
 const COMANDO_DISPARO_PENDENTE = {}; // login -> comando enviado e ainda não confirmado pelo sinal de vida
