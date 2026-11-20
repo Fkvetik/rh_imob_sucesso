@@ -3199,7 +3199,7 @@ function fpExtrairSheetId(txt) {
 }
 function fpLimparForm() {
   $("fpId").value = "";
-  ["fpNome","fpLink","fpAba","fpColNome","fpColTel","fpColCidade","fpColProf","fpColInt"].forEach(id => { if ($(id)) $(id).value = ""; });
+  ["fpNome","fpLink","fpAba","fpColNome","fpColTel","fpColCidade","fpColProf","fpColInt","fpLinkVaga","fpEmpresa"].forEach(id => { if ($(id)) $(id).value = ""; });
   $("fpTipo").value = "talentos";
   $("fpOperador").value = "";
   $("fpAtivo").checked = true;
@@ -3256,6 +3256,9 @@ function fpEditar(id) {
   $("fpColCidade").value = f.col_cidade || "";
   $("fpColProf").value = f.col_profissao || "";
   $("fpColInt").value = f.col_interesse || "";
+  $("fpLinkVaga").value = f.link_vaga || "";
+  const uOp = (USUARIOS_COLETOR_CACHE || []).find(x => x.login === f.login_destino);
+  $("fpEmpresa").value = (uOp && uOp.empresa_msg) || "";
   $("fpAtivo").checked = f.ativo !== false;
   $("btnFpSalvar").textContent = "💾 Salvar alterações";
   $("fpMsg").textContent = "Editando “" + (f.nome || "fonte") + "”. Altere e salve.";
@@ -3280,14 +3283,22 @@ async function fpSalvar() {
     col_cidade: $("fpColCidade").value.trim(),
     col_profissao: $("fpColProf").value.trim(),
     col_interesse: $("fpColInt").value.trim(),
+    link_vaga: $("fpLinkVaga").value.trim(),
     tipo: $("fpTipo").value || "talentos",
     ativo: $("fpAtivo").checked
   };
+  const empresa = $("fpEmpresa").value.trim();
   const btn = $("btnFpSalvar");
   btn.disabled = true;
   try {
     const r = await rpc("rpc_admin_fonte_salvar", { p_admin_password: ADMIN_PASS, p_fonte: fonte });
     if (!r || !r.ok) throw new Error((r && r.error) || "Falhou");
+    // Nome da empresa fica no cadastro do operador (vira {empresa} na mensagem).
+    if (empresa) {
+      await rpc("rpc_admin_set_empresa_msg", { p_admin_password: ADMIN_PASS, p_login: login, p_empresa: empresa })
+        .then(x => { if (x && x.ok) { const u = (USUARIOS_COLETOR_CACHE || []).find(y => y.login === login); if (u) u.empresa_msg = empresa; } })
+        .catch(() => {});
+    }
     msg.textContent = "✅ Salvo. O robô vai ler essa planilha na próxima rodada (até 10 min).";
     fpLimparForm();
     fpCarregarLista();
