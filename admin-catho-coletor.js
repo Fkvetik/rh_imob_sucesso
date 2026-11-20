@@ -3347,7 +3347,7 @@ async function loadMaquinas() {
     r = await rpc("rpc_admin_saude", { p_admin_password: ADMIN_PASS });
     if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="6"><small>${/rpc_admin_saude|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><small>${/rpc_admin_saude|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_1 no Supabase do Coletor." : esc(e.message)}</small></td></tr>`;
     return;
   }
   const lista = r.maquinas || [];
@@ -3357,9 +3357,11 @@ async function loadMaquinas() {
     const nunca = m.minutos_sem_sinal == null;
     const on = !nunca && m.minutos_sem_sinal <= ONLINE_ATE_MIN;
     if (on) online++;
-    const situacao = nunca ? '<span class="selo sem">⚪ Nunca conectou</span><br><small>extensão antiga ou não logada</small>'
+    const emBackoff = m.backoff_min != null && m.backoff_min > 0;
+    const backoffSelo = emBackoff ? `<br><span class="selo logo" title="${esc(m.backoff_motivo || "Catho sem currículos")}">⏸ Backoff ${m.backoff_min} min</span>` : "";
+    const situacao = (nunca ? '<span class="selo sem">⚪ Nunca conectou</span><br><small>extensão antiga ou não logada</small>'
       : on ? `<span class="selo ok">🟢 Online</span><br><small>${tempoDesde(m.minutos_sem_sinal)}${m.coletando ? " · coletando" : ""}</small>`
-      : `<span class="selo vencido">🔴 Offline</span><br><small>último sinal ${tempoDesde(m.minutos_sem_sinal)}</small>`;
+      : `<span class="selo vencido">🔴 Offline</span><br><small>último sinal ${tempoDesde(m.minutos_sem_sinal)}</small>`) + backoffSelo;
     const velha = m.versao && compararVersao(m.versao, versaoMaisNova) < 0;
     const versao = !m.versao ? "—" : velha ? `<span class="selo logo">⚠️ ${esc(m.versao)}</span><br><small>atualizar para ${esc(versaoMaisNova)}</small>` : esc(m.versao);
     const whats = m.whatsapp_aberto == null ? "—" : m.whatsapp_aberto ? "✅ aberto" : "❌ fechado";
@@ -3382,12 +3384,14 @@ async function loadMaquinas() {
       const problema = m.ultima_coleta_erro || m.ultima_coleta_falhas;
       coleta = `${problema ? "⚠️" : "✅"} ${quando}<br><small>${m.ultima_coleta_encontrados || 0} achados · ${m.ultima_coleta_entregues || 0} na fila${m.ultima_coleta_erro ? "<br>" + esc(m.ultima_coleta_erro) : ""}</small>`;
     }
-    if (velha || (m.ultima_coleta_erro) || (on && m.whatsapp_aberto === false && m.disparo === "rodando")) atencao++;
+    const filaCathoCell = m.fila_catho == null ? '<small style="color:#999">—</small>'
+      : `<b>${m.fila_catho}</b>${m.fila_catho >= 10 ? '<br><small style="color:#888">cheia</small>' : (m.fila_catho === 0 ? '<br><small style="color:#888">vazia</small>' : '')}`;
+    if (velha || emBackoff || (m.ultima_coleta_erro) || (on && m.whatsapp_aberto === false && m.disparo === "rodando")) atencao++;
     return `<tr data-maq="${esc(m.login)}" class="usoAbrir" title="Clique para ver o relatório de uso da extensão" style="cursor:pointer${USO_ABERTO === m.login ? ";background:#faf7fc" : ""}">
       <td><b>${esc(m.nome || m.login)}</b> <small style="color:#6C0070">📊 ${USO_ABERTO === m.login ? "fechar" : "uso"}</small><br><small>${esc(m.login)}${m.horario_coleta ? " · ⏰ " + esc(m.horario_coleta) : ""}</small></td>
-      <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}${controle}</td><td>${coleta}</td>
+      <td>${situacao}</td><td>${versao}</td><td>${whats}</td><td>${disparo}${controle}</td><td>${filaCathoCell}</td><td>${coleta}</td>
     </tr>`;
-  }).join("") || '<tr><td colspan="6"><small>Nenhum operador ativo.</small></td></tr>';
+  }).join("") || '<tr><td colspan="7"><small>Nenhum operador ativo.</small></td></tr>';
   // a linha toda abre/fecha o relatório; os botões da linha (Pausar/Iniciar) seguem só com a função deles
   tbody.querySelectorAll(".usoAbrir").forEach(tr => tr.addEventListener("click", (e) => {
     if (e.target.closest("button, a, select, input")) return;
@@ -3444,7 +3448,7 @@ async function usoMostrar(tbody, m) {
   const linha = tbody.querySelector(`tr[data-maq="${CSS.escape(USO_ABERTO)}"]`);
   if (!linha) return;
   const tr = document.createElement("tr");
-  tr.innerHTML = '<td colspan="6" style="background:#faf7fc"><small>Carregando o relatório…</small></td>';
+  tr.innerHTML = '<td colspan="7" style="background:#faf7fc"><small>Carregando o relatório…</small></td>';
   linha.after(tr);
   const chave = USO_ABERTO + "|" + USO_DIAS;
   let r = USO_CACHE[chave];
