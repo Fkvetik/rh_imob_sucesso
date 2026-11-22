@@ -3837,16 +3837,31 @@ function nomeEmpresa_(id) {
 function renderPorEmpresa() {
   const box = document.getElementById("listaPorEmpresa");
   if (!box) return;
+  const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  // Agrupa pelo NOME da empresa (normalizado), não pelo id: o mesmo cliente tem
+  // um conta_id na plataforma/extensão e OUTRO id no Banco de Corretores CRECI
+  // (projetos diferentes) — agrupar por id fazia a empresa aparecer duplicada.
+  // Cada grupo guarda os dois ids (plataforma e CRECI) pros botões "+ Usuário"
+  // usarem o id certo de cada base.
   const grupos = {};
-  const g = (id) => (grupos[id = id || ""] = grupos[id] || { operadores: [], plataforma: [], corretores: [] });
-  (USUARIOS_COLETOR_CACHE || []).forEach(u => g(u.conta_id_plataforma).operadores.push(u));
-  (USUARIOS_PLAT_CACHE || []).forEach(u => g(u.conta_id).plataforma.push(u));
-  (USUARIOS_RHI_CACHE || []).forEach(u => g(u.conta_id).corretores.push(u));
+  const g = (id, tipoId) => {
+    const nome = nomeEmpresa_(id);
+    const chave = id ? norm(nome) : "__sem_empresa__";
+    const grp = grupos[chave] || (grupos[chave] = {
+      nome: nome, operadores: [], plataforma: [], corretores: [], contaPlat: "", contaRhi: ""
+    });
+    if (id && tipoId === "plat" && !grp.contaPlat) grp.contaPlat = id;
+    if (id && tipoId === "rhi" && !grp.contaRhi) grp.contaRhi = id;
+    return grp;
+  };
+  (USUARIOS_COLETOR_CACHE || []).forEach(u => g(u.conta_id_plataforma, "plat").operadores.push(u));
+  (USUARIOS_PLAT_CACHE || []).forEach(u => g(u.conta_id, "plat").plataforma.push(u));
+  (USUARIOS_RHI_CACHE || []).forEach(u => g(u.conta_id, "rhi").corretores.push(u));
 
-  const q = (document.getElementById("empBusca")?.value || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-  let ids = Object.keys(grupos).sort((a, b) => nomeEmpresa_(a).localeCompare(nomeEmpresa_(b), "pt-BR"));
-  if (q) ids = ids.filter(id => nomeEmpresa_(id).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(q));
-  if (!ids.length) { box.innerHTML = "<small>Nenhuma empresa" + (q ? " com essa busca" : " carregada ainda") + ".</small>"; return; }
+  const q = norm(document.getElementById("empBusca")?.value || "");
+  let chaves = Object.keys(grupos).sort((a, b) => grupos[a].nome.localeCompare(grupos[b].nome, "pt-BR"));
+  if (q) chaves = chaves.filter(k => norm(grupos[k].nome).includes(q));
+  if (!chaves.length) { box.innerHTML = "<small>Nenhuma empresa" + (q ? " com essa busca" : " carregada ainda") + ".</small>"; return; }
 
   const ativoBadge = (ok) => ok === false ? ' <span style="color:#b91c1c;font-size:11px;font-weight:700">inativo</span>' : "";
   const linha = (tipo, label, chave, nomeU, sub, ativo) =>
@@ -3855,16 +3870,22 @@ function renderPorEmpresa() {
        <button type="button" class="ghost gerirBtn" data-tipo="${tipo}" data-chave="${esc(chave)}" style="padding:3px 9px;font-size:11px;white-space:nowrap">Gerir ↗</button>
      </div>`;
 
-  box.innerHTML = ids.map(id => {
-    const grp = grupos[id];
+  box.innerHTML = chaves.map(k => {
+    const grp = grupos[k];
     const tot = grp.operadores.length + grp.plataforma.length + grp.corretores.length;
     const corpo =
       grp.operadores.map(u => linha("operador", "extensão", u.login, u.nome_operador || u.login, u.login, !!u.ativo)).join("") +
       grp.plataforma.map(u => linha("plataforma", "Novos Talentos", u.usuario_id, u.nome, u.email_login, String(u.status || "").toUpperCase() === "ATIVO")).join("") +
       grp.corretores.map(u => linha("rhi", "Corretores CRECI", u.id, u.nome, u.email, String(u.status || "").toUpperCase() === "ATIVO")).join("");
+    const btns = (grp.contaPlat || grp.contaRhi)
+      ? `<div style="margin:6px 0 2px;display:flex;gap:6px;flex-wrap:wrap">`
+        + (grp.contaPlat ? `<button type="button" class="secondary criarPlatBtn" data-conta="${esc(grp.contaPlat)}" style="padding:3px 9px;font-size:11px">+ Usuário Novos Talentos</button>` : "")
+        + (grp.contaRhi ? `<button type="button" class="secondary criarRhiBtn" data-conta="${esc(grp.contaRhi)}" style="padding:3px 9px;font-size:11px">+ Usuário Corretores CRECI</button>` : "")
+        + `</div>`
+      : "";
     return `<details style="border:1px solid #e6e0ef;border-radius:10px;padding:8px 12px;margin-bottom:8px;background:#fff">
-        <summary style="cursor:pointer;font-weight:800;color:#33165f">${esc(nomeEmpresa_(id))} <span style="color:#888;font-weight:600;font-size:12px">· ${tot} usuário(s) — ${grp.operadores.length} extensão · ${grp.plataforma.length} NT · ${grp.corretores.length} corretor</span></summary>
-        ${id ? `<div style="margin:6px 0 2px;display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="secondary criarPlatBtn" data-conta="${esc(id)}" style="padding:3px 9px;font-size:11px">+ Usuário Novos Talentos</button><button type="button" class="secondary criarRhiBtn" data-conta="${esc(id)}" style="padding:3px 9px;font-size:11px">+ Usuário Corretores CRECI</button></div>` : ""}
+        <summary style="cursor:pointer;font-weight:800;color:#33165f">${esc(grp.nome)} <span style="color:#888;font-weight:600;font-size:12px">· ${tot} usuário(s) — ${grp.operadores.length} extensão · ${grp.plataforma.length} NT · ${grp.corretores.length} corretor</span></summary>
+        ${btns}
         <div style="margin-top:4px">${corpo || "<small>Sem usuários.</small>"}</div>
       </details>`;
   }).join("");
