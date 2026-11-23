@@ -1170,7 +1170,7 @@ function renderUsuarios(list) {
     <tr>
       <td>${esc(u.login)}<br><small class="statusColetaBadge" data-login-badge="${esc(u.login)}"></small><span class="filtrosBadge" data-filtros-badge="${esc(u.login)}"></span></td>
       <td>${esc(u.nome_operador)}</td>
-      <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
+      <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span><span class="opLive" data-op-live="${esc(u.login)}"></span></td>
       <td>${celulaValidadeOperador(u)}</td>
       <td>${celulaUsoOperador(u)}</td>
       <td>${u.horario_coleta ? `⏰ ${esc(u.horario_coleta)}` : '<small style="color:#999">—</small>'}</td>
@@ -1183,6 +1183,7 @@ function renderUsuarios(list) {
                </small>`
             : `<button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||'')}" class="secondary criarAcessoBtn" style="padding:4px 8px;font-size:11px">+ Criar acesso</button>`}</td>
       <td>
+        <span class="opDisparo" data-op-disparo="${esc(u.login)}"></span>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" data-agenda="${esc(u.agenda_tipos||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
@@ -1239,6 +1240,7 @@ function renderUsuarios(list) {
   aplicarBadgesColeta(); // já aplica o que tiver em cache, sem esperar o próximo poll
   aplicarBadgesFiltros(); // selo "tem filtro" com o que já está em cache
   rastrearFiltros();      // completa em segundo plano quem ainda não foi rastreado
+  aplicarStatusOperadores(); // status online/versão + Pausar/Retomar (cache da Máquinas)
 
   // "Nova contagem" do funil (abordados → responderam → proposta → agendaram).
   // Fica só aqui no painel: a tela /agendamentos também é aberta pelo cliente.
@@ -3382,6 +3384,66 @@ $("fpOperador")?.addEventListener("focus", fpPreencherOperadores);
 let MAQUINAS_INTERVAL = null;
 const COMANDO_DISPARO_PENDENTE = {}; // login -> comando enviado e ainda não confirmado pelo sinal de vida
 const ONLINE_ATE_MIN = 10; // a extensão manda sinal a cada 3 min
+let SAUDE_CACHE = {};        // login -> dados de saúde (da rpc_admin_saude) — alimenta a lista de operadores
+let VERSAO_MAIS_NOVA = "0";  // maior versão vista, pra marcar extensões desatualizadas
+
+// Preenche, na LISTA DE OPERADORES, o status ao vivo (online/offline + versão) e
+// o botão Pausar/Retomar — com os dados já buscados pela Máquinas (um fetch só).
+function aplicarStatusOperadores() {
+  document.querySelectorAll(".opLive").forEach(el => {
+    const m = SAUDE_CACHE[el.dataset.opLive];
+    if (!m){ el.innerHTML = '<br><small style="color:#bbb" title="Extensão nunca enviou sinal (antiga ou nunca logada)">⚪ nunca conectou</small>'; return; }
+    const nunca = m.minutos_sem_sinal == null;
+    const on = !nunca && m.minutos_sem_sinal <= ONLINE_ATE_MIN;
+    const sit = nunca ? '<small style="color:#bbb">⚪ nunca conectou</small>'
+      : on ? '<small style="color:#1a7a3d;font-weight:700">🟢 online</small>'
+      : `<small style="color:#c0392b;font-weight:700">🔴 offline</small> <small style="color:#999">(${tempoDesde(m.minutos_sem_sinal)})</small>`;
+    const velha = m.versao && compararVersao(m.versao, VERSAO_MAIS_NOVA) < 0;
+    const ver = m.versao ? (velha
+      ? ` <small style="color:#b45309" title="Atualizar para ${esc(VERSAO_MAIS_NOVA)}">⚠️ v${esc(m.versao)}</small>`
+      : ` <small style="color:#999">v${esc(m.versao)}</small>`) : '';
+    el.innerHTML = '<br>' + sit + ver;
+  });
+  document.querySelectorAll(".opDisparo").forEach(el => {
+    const login = el.dataset.opDisparo;
+    const m = SAUDE_CACHE[login];
+    if (!m || !m.versao || compararVersao(m.versao, "3.14.1") < 0){ el.innerHTML = ''; return; }
+    const pend = COMANDO_DISPARO_PENDENTE[login];
+    if ((pend === "PAUSAR_DISPARO" && m.disparo === "pausado") || (pend === "RETOMAR_DISPARO" && m.disparo === "rodando")) delete COMANDO_DISPARO_PENDENTE[login];
+    if (COMANDO_DISPARO_PENDENTE[login]){
+      el.innerHTML = `<small style="color:#92400e">⏳ ${COMANDO_DISPARO_PENDENTE[login] === "PAUSAR_DISPARO" ? "pausando" : "retomando"}…</small> `;
+      return;
+    }
+    el.innerHTML = m.disparo === "rodando"
+      ? `<button class="danger opDisparoBtn" data-login="${esc(login)}" data-tipo="PAUSAR_DISPARO" style="padding:4px 8px;font-size:11px">⏸ Pausar</button> `
+      : `<button class="secondary opDisparoBtn" data-login="${esc(login)}" data-tipo="RETOMAR_DISPARO" style="padding:4px 8px;font-size:11px">▶️ ${m.disparo === "pausado" ? "Retomar" : "Iniciar"}</button> `;
+  });
+  document.querySelectorAll(".opDisparoBtn").forEach(b => b.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const login = b.dataset.login, pausar = b.dataset.tipo === "PAUSAR_DISPARO";
+    const m = SAUDE_CACHE[login] || {};
+    if (!confirm(`${pausar ? "Pausar" : "Retomar"} o disparo de ${m.nome || login}?\n\nA extensão recebe o comando em até 3 minutos (precisa estar online).`)) return;
+    b.disabled = true;
+    try {
+      const r = await rpc("rpc_admin_definir_comando", { p_admin_password: ADMIN_PASS, p_login: login, p_comando: { tipo: b.dataset.tipo } });
+      if (r && r.ok === false) throw new Error(r.error || "não enviado");
+      COMANDO_DISPARO_PENDENTE[login] = b.dataset.tipo;
+      setTimeout(() => { delete COMANDO_DISPARO_PENDENTE[login]; aplicarStatusOperadores(); loadMaquinas(); }, 4 * 60 * 1000);
+      aplicarStatusOperadores();
+    } catch (e) { alert("❌ " + e.message); b.disabled = false; }
+  }));
+}
+
+// "Detalhes das máquinas" recolhido por padrão — o essencial (online, versão,
+// pausar/retomar) já aparece na lista de operadores. Clique no título alterna.
+document.getElementById("maquinasToggle")?.addEventListener("click", () => {
+  const body = document.getElementById("maquinasBody");
+  const chev = document.getElementById("maquinasChevron");
+  if (!body) return;
+  const aberto = body.style.display !== "none";
+  body.style.display = aberto ? "none" : "";
+  if (chev) chev.textContent = aberto ? "▸" : "▾";
+});
 
 function compararVersao(a, b) {
   const pa = String(a || "0").split(".").map(Number), pb = String(b || "0").split(".").map(Number);
@@ -3413,6 +3475,10 @@ async function loadMaquinas() {
   }
   const lista = r.maquinas || [];
   const versaoMaisNova = lista.reduce((m, x) => x.versao && compararVersao(x.versao, m) > 0 ? x.versao : m, "0");
+  // Alimenta a LISTA DE OPERADORES com o mesmo dado (um fetch só) e atualiza lá.
+  SAUDE_CACHE = {}; lista.forEach(m => { SAUDE_CACHE[m.login] = m; });
+  VERSAO_MAIS_NOVA = versaoMaisNova;
+  aplicarStatusOperadores();
   let online = 0, atencao = 0;
   tbody.innerHTML = lista.map(m => {
     const nunca = m.minutos_sem_sinal == null;
