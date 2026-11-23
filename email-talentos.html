@@ -139,7 +139,11 @@
           <div class="n" id="destN">0</div>
           <small>talentos selecionados · limite <b id="limiteDia">100</b>/dia</small>
         </div>
-        <button class="btn btn-primary" id="btnSelecionar" type="button">Selecionar talentos</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnSelecionar" type="button">Selecionar talentos</button>
+          <button class="btn" style="background:#fff;border:1px solid #d9cdf0;color:#5b21b6" id="btnCsv" type="button" title="Suba sua própria lista (CSV com e-mail, nome, cidade, cargo)">📄 Minha lista (CSV)</button>
+          <input type="file" id="csvInput" accept=".csv,text/csv" hidden />
+        </div>
       </div>
 
       <div id="selPanel" style="display:none;margin-top:12px;border:1px solid var(--linha);border-radius:12px;padding:12px;background:#faf8fe">
@@ -273,6 +277,52 @@
       selPanel.style.display = abrindo ? 'block' : 'none';
       if (abrindo) initFiltros();
     });
+
+    // ===== Minha lista (CSV) =====
+    document.getElementById('btnCsv').addEventListener('click', function(){ document.getElementById('csvInput').click(); });
+    document.getElementById('csvInput').addEventListener('change', function(){
+      var f = this.files && this.files[0]; this.value = '';
+      if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function(){ importarCsv(String(fr.result || '')); };
+      fr.readAsText(f);
+    });
+    function parseCsvLinhas(texto){
+      var linhas = [], campo = '', linha = [], q = false, s = texto.replace(/^﻿/, '');
+      for (var i = 0; i < s.length; i++){ var c = s[i];
+        if (q){ if (c === '"' && s[i+1] === '"'){ campo += '"'; i++; } else if (c === '"'){ q = false; } else campo += c; }
+        else { if (c === '"') q = true; else if (c === ',' || c === ';' || c === '\t'){ linha.push(campo); campo=''; }
+          else if (c === '\n'){ linha.push(campo); linhas.push(linha); linha=[]; campo=''; }
+          else if (c !== '\r') campo += c; }
+      }
+      if (campo.length || linha.length){ linha.push(campo); linhas.push(linha); }
+      return linhas.filter(function(l){ return l.some(function(x){ return String(x).trim() !== ''; }); });
+    }
+    function importarCsv(texto){
+      var rows = parseCsvLinhas(texto);
+      if (!rows.length){ alert('CSV vazio.'); return; }
+      var head = rows[0].map(function(h){ return String(h).trim().toLowerCase(); });
+      var achaEmail = head.findIndex(function(h){ return /mail/.test(h); });
+      var temHeader = achaEmail >= 0;
+      var iEmail = temHeader ? achaEmail : head.findIndex(function(h){ return /@/.test(h); });
+      var iNome = temHeader ? head.findIndex(function(h){ return /nome|name/.test(h); }) : -1;
+      var iCidade = temHeader ? head.findIndex(function(h){ return /cidade|city/.test(h); }) : -1;
+      var iCargo = temHeader ? head.findIndex(function(h){ return /cargo|profiss|perfil/.test(h); }) : -1;
+      var corpo = temHeader ? rows.slice(1) : rows;
+      if (iEmail < 0){ alert('Não achei a coluna de e-mail no CSV. Use um cabeçalho com "email" (e, se quiser, nome, cidade, cargo).'); return; }
+      var add = 0, pulados = 0;
+      corpo.forEach(function(r){
+        var email = String((r[iEmail]||'')).trim();
+        if (!email || !email.includes('@')){ pulados++; return; }
+        if (Object.keys(selecionados).length >= LIMITE) return;
+        var key = 'csv:' + email.toLowerCase();
+        if (selecionados[key]) return;
+        selecionados[key] = { nome: iNome>=0 ? String(r[iNome]||'').trim() : '', email: email, cidade: iCidade>=0 ? String(r[iCidade]||'').trim() : '', cargo: iCargo>=0 ? String(r[iCargo]||'').trim() : '' };
+        add++;
+      });
+      atualizarContagem();
+      alert('Lista importada: ' + add + ' contato(s) adicionados' + (pulados ? (' · ' + pulados + ' sem e-mail válido (pulados)') : '') + '.' + (Object.keys(selecionados).length >= LIMITE ? '\nLimite de ' + LIMITE + '/dia atingido.' : ''));
+    }
 
     // ===== Dropdowns em cascata =====
     var opcoesCarregadas = false;
