@@ -1,0 +1,11 @@
+texto,esperado
+"Oi, tudo bem? Pode me mandar sim as vagas, tenho interesse",positivo
+"Que vagas são essas? Me conta mais",positivo
+"No momento não tenho interesse, obrigado",negativo
+"Já estou trabalhando numa imobiliária e estou bem, mas obrigado",negativo
+"Quem é? Como conseguiu meu número?",neutro
+"Oi",neutro
+"Para de me mandar mensagem por favor",parar
+"Número errado, não sou corretor",parar
+"Pode mandar! Tô procurando recolocação",positivo
+"Não tenho CRECI ainda, serve?",neutro

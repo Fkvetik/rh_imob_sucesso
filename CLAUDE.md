@@ -144,6 +144,42 @@ telefone. Limpeza pontual de telefones de SP sem substituto:
 `GAS_SP_limpar_telefones.gs` (`ressincronizarSPZerado`). Gatilho diário continua
 sendo só o sync normal (não a limpeza).
 
+## Triagem de interesse por IA (Agente A — em construção, NÃO publicado)
+Classifica a resposta do candidato no WhatsApp como `positivo` / `negativo` /
+`neutro` / `parar`. Modelo **Claude Haiku 5.5** (`claude-haiku-5-5`), barato
+(~fração de centavo por resposta). Spec completa (Agente A + SDR Agente B,
+guardrails, rollout em 3 fases) em
+`../rh-imob-aceleradora/dev/AGENTES_IA_spec.md`.
+
+Arquivos já criados (sintaxe validada, ainda SEM commit/deploy):
+- `api/ia-triagem.js` — Vercel Function. `POST /api/ia-triagem` com header
+  `x-ia-token: <IA_TRIAGEM_SECRET>` (ou `?token=`), body `{texto, contexto?}`.
+  Retorna `{ok, interesse, confianca, motivo, uso:{input,output}}`. Só lê e
+  rotula — **não envia nada ao lead**.
+- `scripts/ia_triagem_teste.mjs` — teste local (Passo 2 / calibração). Compara
+  o rótulo da IA com o que o operador marcou e mostra acerto% + custo real.
+- `scripts/ia_triagem_exemplos.csv` — exemplos `texto,esperado` pra calibrar.
+
+⚠️ O `SYSTEM_PROMPT` é **idêntico** em `api/ia-triagem.js` e no teste `.mjs` —
+mudou num, muda no outro.
+
+Env vars (só na Vercel, nunca no código/GitHub):
+- `ANTHROPIC_API_KEY` — chave da conta Anthropic.
+- `IA_TRIAGEM_SECRET` — senha simples que libera o endpoint.
+
+Fluxo pra retomar quando for ativar:
+1. **Passo 2 (calibrar, local, sem deploy):** criar chave Anthropic com limite
+   de gasto baixo → `$env:ANTHROPIC_API_KEY = "sk-ant-..."` → preencher 20-40
+   respostas reais no CSV → `node scripts/ia_triagem_teste.mjs scripts/ia_triagem_exemplos.csv`
+   → ajustar o `SYSTEM_PROMPT` até o acerto ficar bom.
+2. **Passo 3 (publicar):** pôr as 2 env vars na Vercel → commit + push (deploy).
+3. **Passo 4 (mostrar no painel):** a extensão chama o endpoint e exibe a
+   etiqueta de interesse pro operador (modo sugestão, 1 clique).
+
+Acesso por operador: será uma flag por operação (nem todo operador vai querer
+pagar). Quando a flag está ligada, o painel chama o endpoint; desligada, nada
+é cobrado.
+
 ## Convenções
 - Mensagens de commit terminam com:
   `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
