@@ -143,11 +143,16 @@
       </div>
 
       <div id="selPanel" style="display:none;margin-top:12px;border:1px solid var(--linha);border-radius:12px;padding:12px;background:#faf8fe">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-          <div style="flex:1;min-width:120px"><label class="lbl" style="margin-top:0">Cidade</label><input type="text" id="fCidade" placeholder="Ex.: Sorocaba" /></div>
-          <div style="flex:1;min-width:120px"><label class="lbl" style="margin-top:0">Cargo</label><input type="text" id="fCargo" placeholder="Ex.: Corretor" /></div>
-          <button class="btn btn-primary" id="btnBuscar" type="button" style="padding:9px 16px">Buscar</button>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+          <div><label class="lbl" style="margin-top:0">Cidade</label><input type="text" id="fCidade" placeholder="Ex.: São Paulo" /></div>
+          <div><label class="lbl" style="margin-top:0">Região</label><input type="text" id="fRegiao" placeholder="Ex.: Zona Sul" /></div>
+          <div><label class="lbl" style="margin-top:0">Micro-região</label><input type="text" id="fMicro" placeholder="Ex.: Santo Amaro" /></div>
+          <div><label class="lbl" style="margin-top:0">Bairro</label><input type="text" id="fBairro" placeholder="Ex.: Moema" /></div>
+          <div><label class="lbl" style="margin-top:0">Cargo</label><input type="text" id="fCargo" placeholder="Ex.: Corretor" /></div>
+          <div><label class="lbl" style="margin-top:0">Perfil</label><input type="text" id="fPerfil" placeholder="Ex.: Corretor" /></div>
+          <div><label class="lbl" style="margin-top:0">Faixa etária</label><input type="text" id="fFaixa" placeholder="Ex.: 25-34" /></div>
         </div>
+        <div style="margin-top:8px"><button class="btn btn-primary" id="btnBuscar" type="button" style="padding:9px 18px">Buscar talentos</button></div>
         <div id="selResumo" class="dica" style="margin-top:8px"></div>
         <div id="selLista" style="max-height:280px;overflow:auto;margin-top:6px;border-top:1px solid var(--linha)"></div>
         <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap">
@@ -273,7 +278,14 @@
       btn.disabled = true; selResumo.textContent = 'Buscando…'; selLista.innerHTML = '';
       fetch('/api/ext-email-talentos', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: TOKEN, cidade: document.getElementById('fCidade').value.trim(), cargo: document.getElementById('fCargo').value.trim() })
+        body: JSON.stringify({ token: TOKEN,
+          cidade: document.getElementById('fCidade').value.trim(),
+          regiao: document.getElementById('fRegiao').value.trim(),
+          micro: document.getElementById('fMicro').value.trim(),
+          bairro: document.getElementById('fBairro').value.trim(),
+          cargo: document.getElementById('fCargo').value.trim(),
+          perfil: document.getElementById('fPerfil').value.trim(),
+          faixa: document.getElementById('fFaixa').value.trim() })
       })
       .then(function(r){ return r.json(); })
       .then(function(d){
@@ -284,7 +296,8 @@
         selResumo.textContent = d.total + ' talento(s) com e-mail encontrados. Marque quem recebe (até ' + LIMITE + '/dia).';
         selLista.innerHTML = (d.talentos || []).map(function(t){
           var marcado = selecionados[t.key] ? ' checked' : '';
-          var meta = [t.cidade, t.uf].filter(Boolean).join('/') + (t.cargo ? ' · ' + t.cargo : '');
+          var local = [t.bairro, t.regiao, [t.cidade, t.uf].filter(Boolean).join('/')].filter(Boolean).join(' · ');
+          var meta = local + (t.cargo ? ' · ' + t.cargo : '') + (t.faixa ? ' · ' + t.faixa : '');
           return '<label style="display:flex;gap:9px;align-items:center;padding:7px 4px;border-bottom:1px solid #eee;font-size:13px">' +
             '<input type="checkbox" class="selChk" data-key="' + enc(t.key) + '" data-nome="' + enc(t.nome) + '" data-email="' + enc(t.email) + '" data-cidade="' + enc(t.cidade) + '" data-cargo="' + enc(t.cargo) + '"' + marcado + '>' +
             '<span style="flex:1"><b>' + esc(t.nome || '—') + '</b><br><span style="color:#6b6478">' + esc(t.email) + '</span></span>' +

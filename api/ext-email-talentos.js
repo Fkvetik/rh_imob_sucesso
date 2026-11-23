@@ -1,15 +1,15 @@
-// Disparo de e-mail (Banco de Novos Talentos) — Fase 2: seleção protegida.
-// A extensão/ferramenta manda só o token de sessão do operador; aqui o servidor
-// confere o token no COLETOR, checa se a conta tem email_acesso (admin libera) e,
-// se tiver, lista talentos do NT (nome/e-mail/cidade/cargo) com a chave de serviço
-// — a lista de e-mails (PII) nunca sai sem token válido + acesso liberado.
+// Disparo de e-mail (Banco de Novos Talentos) — seleção protegida.
+// Confere o token no COLETOR + email_acesso e lista talentos do NT com a chave de
+// serviço. Filtro completo (igual ao Novos Talentos): cidade, região, micro-região,
+// bairro, cargo, perfil, faixa etária. A lista de e-mails (PII) só sai com token
+// válido + acesso liberado.
 //
-// POST { token, cidade?, cargo?, limite? } -> { ok, login, limite_dia, total, talentos:[...] }
-// (O ENVIO em si é a Fase 3 — este endpoint só seleciona.)
+// POST { token, cidade?, regiao?, micro?, bairro?, cargo?, perfil?, faixa?, limite? }
+//   -> { ok, login, limite_dia, total, talentos:[{key,nome,email,cidade,uf,bairro,regiao,micro,cargo,perfil,faixa}] }
 
 import { cors, send, lerCorpo, COLETOR, NT } from './_ext-comum.js';
 
-const TETO_LISTA = 500; // quanto a tela pode exibir pra escolher (o envio/dia é outro limite)
+const TETO_LISTA = 500;
 
 export default async function handler(req, res) {
   if (cors(req, res)) return;
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   const body = await lerCorpo(req);
   const token = String(body.token || '').trim();
 
-  // 1) Confere o token e o acesso a e-mail (rpc_email_config — SQL EMAIL_2).
+  // 1) token + acesso a e-mail
   let cfg;
   try {
     const r = await fetch(`${COLETOR.url}/rest/v1/rpc/rpc_email_config`, {
@@ -27,50 +27,51 @@ export default async function handler(req, res) {
       body: JSON.stringify({ p_token: token })
     });
     cfg = await r.json().catch(() => null);
-  } catch (e) {
-    return send(res, 502, { ok: false, error: 'Falha ao conferir a sessão.' });
-  }
+  } catch (e) { return send(res, 502, { ok: false, error: 'Falha ao conferir a sessão.' }); }
   if (!cfg || cfg.ok !== true) return send(res, 401, { ok: false, error: (cfg && cfg.error) || 'Sessão inválida ou expirada.' });
   if (!cfg.email_acesso) return send(res, 403, { ok: false, error: 'Esta conta ainda não tem o disparo de e-mail liberado. Fale com a RH IMOB.' });
 
-  // 2) Lista talentos do NT (chave de serviço — bypassa RLS). Só com e-mail.
-  const cidade = String(body.cidade || '').trim();
-  const cargo = String(body.cargo || '').trim();
-  const pedido = Math.max(1, Math.min(TETO_LISTA, parseInt(body.limite, 10) || TETO_LISTA));
-
+  // 2) monta o filtro (todos opcionais)
   const service = NT.service();
   if (!service) return send(res, 500, { ok: false, error: 'Configuração do servidor incompleta (NT service key).' });
 
-  let url = `${NT.url}/rest/v1/nt_talentos?select=talento_key,nome,email,cidade,estado_uf,cargo`
-    + `&email=not.is.null&nome=not.is.null&order=cidade.asc&limit=${pedido}`;
-  if (cidade) url += `&cidade=ilike.*${encodeURIComponent(cidade)}*`;
-  if (cargo)  url += `&cargo=ilike.*${encodeURIComponent(cargo)}*`;
+  const ilike = (campo, v) => { v = String(v || '').trim(); return v ? `&${campo}=ilike.*${encodeURIComponent(v)}*` : ''; };
+  const pedido = Math.max(1, Math.min(TETO_LISTA, parseInt(body.limite, 10) || TETO_LISTA));
+
+  let url = `${NT.url}/rest/v1/nt_talentos?select=*&email=not.is.null&order=cidade.asc&limit=${pedido}`
+    + ilike('cidade', body.cidade)
+    + ilike('regiao_macro', body.regiao)
+    + ilike('micro_regiao', body.micro)
+    + ilike('bairro', body.bairro)
+    + ilike('cargo', body.cargo)
+    + ilike('perfil', body.perfil)
+    + ilike('faixa_idade', body.faixa);
 
   let lista;
   try {
     const r = await fetch(url, { headers: { apikey: service, Authorization: `Bearer ${service}` } });
-    if (!r.ok) return send(res, 502, { ok: false, error: `Falha ao buscar talentos (HTTP ${r.status}).` });
-    lista = await r.json();
+    const txt = await r.text();
+    if (!r.ok) return send(res, 502, { ok: false, error: `Banco recusou a busca (HTTP ${r.status}): ${txt.slice(0, 300)}` });
+    lista = JSON.parse(txt);
   } catch (e) {
-    return send(res, 502, { ok: false, error: 'Falha ao buscar talentos.' });
+    return send(res, 502, { ok: false, error: 'Falha ao buscar talentos: ' + String(e.message || e) });
   }
 
   const talentos = (Array.isArray(lista) ? lista : [])
     .filter(t => t && t.email && String(t.email).includes('@'))
     .map(t => ({
       key: t.talento_key,
-      nome: t.nome || '',
+      nome: t.primeiro_nome || t.nome || '',
       email: t.email,
       cidade: t.cidade || '',
       uf: t.estado_uf || '',
-      cargo: t.cargo || ''
+      bairro: t.bairro || '',
+      regiao: t.regiao_macro || '',
+      micro: t.micro_regiao || '',
+      cargo: t.cargo || '',
+      perfil: t.perfil || '',
+      faixa: t.faixa_idade || ''
     }));
 
-  return send(res, 200, {
-    ok: true,
-    login: cfg.login,
-    limite_dia: cfg.limite_dia || 100,
-    total: talentos.length,
-    talentos
-  });
+  return send(res, 200, { ok: true, login: cfg.login, limite_dia: cfg.limite_dia || 100, total: talentos.length, talentos });
 }
