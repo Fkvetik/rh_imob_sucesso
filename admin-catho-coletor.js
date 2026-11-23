@@ -1402,15 +1402,23 @@ function aplicarBadgesColeta() {
 // plano e marcamos quem tem ao menos 1 filtro. FILTROS_QTD_CACHE: login -> nº
 // (undefined = ainda não sabido).
 let FILTROS_QTD_CACHE = {};
+let FILTROS_DEST_CACHE = {}; // login -> array de logins de destino ("entrega para")
 let FILTROS_RASTREANDO = false;
+function nomeOperador_(login) {
+  const u = (USUARIOS_COLETOR_CACHE || []).find(x => x.login === login);
+  return (u && u.nome_operador) ? u.nome_operador : login;
+}
 function aplicarBadgesFiltros() {
   document.querySelectorAll(".filtrosBadge").forEach(el => {
     const login = el.dataset.filtrosBadge;
     const n = FILTROS_QTD_CACHE[login];
     if (n === undefined){ el.innerHTML = ''; return; } // ainda rastreando
-    el.innerHTML = n > 0
-      ? `<br><span style="color:#5b21b6;font-weight:800" title="Tem ${n} filtro(s) de coleta cadastrado(s)">📋 ${n} filtro${n > 1 ? 's' : ''}</span>`
-      : '<br><span style="color:#aaa" title="Sem filtro de coleta cadastrado">sem filtro</span>';
+    if (!n){ el.innerHTML = '<br><span style="color:#aaa" title="Sem filtro de coleta cadastrado">sem filtro</span>'; return; }
+    const dests = FILTROS_DEST_CACHE[login] || [];
+    const entrega = dests.length
+      ? `<br><span style="color:#b45309;font-weight:700" title="Coleta aqui e entrega para a fila de outro login">↳ entrega p/ ${dests.map(d => esc(nomeOperador_(d))).join(', ')}</span>`
+      : '<br><span style="color:#888" title="Os contatos entram na própria fila deste login">↳ própria fila</span>';
+    el.innerHTML = `<br><span style="color:#5b21b6;font-weight:800" title="Tem ${n} filtro(s) de coleta cadastrado(s)">📋 ${n} filtro${n > 1 ? 's' : ''}</span>${entrega}`;
   });
 }
 async function rastrearFiltros(force) {
@@ -1426,9 +1434,14 @@ async function rastrearFiltros(force) {
       while (fila.length) {
         const login = fila.shift();
         try {
-          const resp = await rpc("rpc_admin_listar_filtros", { p_admin_password: ADMIN_PASS, p_login: login });
+          const [resp, dest] = await Promise.all([
+            rpc("rpc_admin_listar_filtros", { p_admin_password: ADMIN_PASS, p_login: login }),
+            rpc("rpc_admin_destinos_filtros", { p_admin_password: ADMIN_PASS, p_login: login }).catch(() => null)
+          ]);
           FILTROS_QTD_CACHE[login] = Array.isArray(resp) ? resp.length : 0;
-        } catch (_) { FILTROS_QTD_CACHE[login] = 0; }
+          const ds = (dest && dest.ok) ? (dest.destinos || []) : [];
+          FILTROS_DEST_CACHE[login] = [...new Set(ds.map(d => d.destino_login).filter(Boolean))];
+        } catch (_) { FILTROS_QTD_CACHE[login] = FILTROS_QTD_CACHE[login] || 0; FILTROS_DEST_CACHE[login] = FILTROS_DEST_CACHE[login] || []; }
         aplicarBadgesFiltros();
       }
     };
@@ -1470,8 +1483,9 @@ async function carregarFiltrosOperador(login) {
     const horarios = (dest && dest.ok && (dest.destinos || []).some(d => "horario" in d)) || (dest && dest.ok && !(dest.destinos || []).length)
       ? Object.fromEntries((dest.destinos || []).filter(d => d.horario).map(d => [String(d.id), d.horario])) : null;
     const usuario = USUARIOS_COLETOR_CACHE.find(u => u.login === login);
-    // mantém o selo "tem filtro" em dia sempre que o painel recarrega
+    // mantém o selo "tem filtro / entrega p/" em dia sempre que o painel recarrega
     FILTROS_QTD_CACHE[login] = Array.isArray(resp) ? resp.length : 0;
+    FILTROS_DEST_CACHE[login] = [...new Set((dest && dest.ok ? (dest.destinos || []) : []).map(d => d.destino_login).filter(Boolean))];
     aplicarBadgesFiltros();
     renderFiltrosOperador(login, Array.isArray(resp) ? resp : [], destinos, horarios, usuario && usuario.horario_coleta);
   } catch (e) {
