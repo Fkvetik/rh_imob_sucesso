@@ -157,10 +157,14 @@
 
   <div class="barra-envio">
     <div class="inner">
-      <div style="font-size:13px;color:var(--muted);max-width:620px">
-        <b style="color:#1f1733">Próximo passo:</b> conectar o Gmail da empresa (um clique, uma vez) para o disparo sair da conta dela, no ritmo certo (100–200/dia). Até lá, esta tela é só a composição.
+      <div style="font-size:13px;color:var(--muted);max-width:620px" id="envioInfo">
+        <b style="color:#1f1733" id="gmailStatus">Gmail: não conectado</b><br>
+        <span id="envioSub">Conecte o Gmail da empresa (um clique, uma vez) para o disparo sair da conta dela.</span>
       </div>
-      <button class="btn btn-primary" id="btnEnviar" type="button" disabled title="Disponível após conectar o Gmail (fase 2)">📧 Conectar Gmail e enviar (em breve)</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" style="background:#fff;border:1px solid #d9cdf0;color:#5b21b6" id="btnConectarGmail" type="button">🔗 Conectar Gmail</button>
+        <button class="btn btn-primary" id="btnEnviar" type="button" disabled title="Disponível na próxima etapa (envio)">📧 Enviar (em breve)</button>
+      </div>
     </div>
   </div>
 
@@ -311,9 +315,37 @@
       atualizarContagem();
     });
 
+    // ===== Conexão do Gmail (Fase 3a) =====
+    function checarStatusGmail(){
+      if (!TOKEN) return;
+      fetch('/api/ext-email-status', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: TOKEN }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d || !d.ok) return;
+        LIMITE = d.limite_dia || LIMITE;
+        document.getElementById('limiteDia').textContent = LIMITE;
+        var st = document.getElementById('gmailStatus');
+        if (d.conectado){
+          st.textContent = '✅ Gmail conectado: ' + (d.gmail_email || '');
+          document.getElementById('prevDe').textContent = d.gmail_email || 'sua conta Gmail';
+          document.getElementById('btnConectarGmail').textContent = '🔄 Trocar conta Gmail';
+          document.getElementById('envioSub').textContent = 'Enviados hoje: ' + (d.enviados_hoje || 0) + ' de ' + LIMITE + '.';
+        } else {
+          st.textContent = 'Gmail: não conectado';
+        }
+      }).catch(function(){});
+    }
+    document.getElementById('btnConectarGmail').addEventListener('click', function(){
+      if (!TOKEN){ alert('Abra pela extensão RH IMOB para conectar.'); return; }
+      window.open('/api/gmail-connect?t=' + encodeURIComponent(TOKEN), '_blank', 'width=520,height=640');
+    });
+    // Ao voltar pra aba (depois de conectar no Google), reconfere.
+    window.addEventListener('focus', checarStatusGmail);
+
     document.getElementById('prevDe').textContent = 'a conta Gmail da sua empresa';
     atualizarContagem();
     atualizarPrevia();
+    checarStatusGmail();
   </script>
 </body>
 </html>
