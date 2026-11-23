@@ -76,6 +76,10 @@
     <div class="card">
       <h2>✍️ Escreva o e-mail</h2>
 
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:140px"><label class="lbl" for="fRemetente" style="margin-top:0">Seu nome (remetente)</label><input type="text" id="fRemetente" placeholder="Ex.: Fernando" /></div>
+        <div style="flex:1;min-width:140px"><label class="lbl" for="fEmpresa" style="margin-top:0">Nome da empresa</label><input type="text" id="fEmpresa" placeholder="Ex.: RH IMOB" /></div>
+      </div>
       <label class="lbl" for="assunto">Assunto</label>
       <input type="text" id="assunto" value="{nome}, uma oportunidade para você em {cidade}" placeholder="Ex.: Oportunidade para corretor em {cidade}" />
 
@@ -252,6 +256,7 @@
       var n = Object.keys(selecionados).length;
       destN.textContent = n;
       document.getElementById('selContador').textContent = n + ' selecionado(s)' + (n >= LIMITE ? ' · limite do dia atingido' : '');
+      if (typeof atualizarBotaoEnviar === 'function') atualizarBotaoEnviar();
     }
 
     document.getElementById('btnSelecionar').addEventListener('click', function(){
@@ -281,7 +286,7 @@
           var marcado = selecionados[t.key] ? ' checked' : '';
           var meta = [t.cidade, t.uf].filter(Boolean).join('/') + (t.cargo ? ' · ' + t.cargo : '');
           return '<label style="display:flex;gap:9px;align-items:center;padding:7px 4px;border-bottom:1px solid #eee;font-size:13px">' +
-            '<input type="checkbox" class="selChk" data-key="' + enc(t.key) + '" data-nome="' + enc(t.nome) + '" data-email="' + enc(t.email) + '"' + marcado + '>' +
+            '<input type="checkbox" class="selChk" data-key="' + enc(t.key) + '" data-nome="' + enc(t.nome) + '" data-email="' + enc(t.email) + '" data-cidade="' + enc(t.cidade) + '" data-cargo="' + enc(t.cargo) + '"' + marcado + '>' +
             '<span style="flex:1"><b>' + esc(t.nome || '—') + '</b><br><span style="color:#6b6478">' + esc(t.email) + '</span></span>' +
             '<span style="color:#6b6478;font-size:12px;white-space:nowrap">' + esc(meta) + '</span></label>';
         }).join('') || '<p class="dica" style="padding:10px">Nenhum talento com e-mail para esse filtro.</p>';
@@ -295,7 +300,7 @@
       var c = e.target.closest('.selChk'); if(!c) return;
       if (c.checked){
         if (Object.keys(selecionados).length >= LIMITE){ c.checked = false; alert('Limite de ' + LIMITE + ' e-mails/dia atingido para esta conta.'); return; }
-        selecionados[c.dataset.key] = { nome: c.dataset.nome, email: c.dataset.email };
+        selecionados[c.dataset.key] = { nome: c.dataset.nome, email: c.dataset.email, cidade: c.dataset.cidade, cargo: c.dataset.cargo };
       } else {
         delete selecionados[c.dataset.key];
       }
@@ -307,7 +312,7 @@
       if (e.target.checked){
         for (var i=0;i<chks.length;i++){
           if (Object.keys(selecionados).length >= LIMITE) break;
-          var c = chks[i]; if(!c.checked){ c.checked = true; selecionados[c.dataset.key] = { nome:c.dataset.nome, email:c.dataset.email }; }
+          var c = chks[i]; if(!c.checked){ c.checked = true; selecionados[c.dataset.key] = { nome:c.dataset.nome, email:c.dataset.email, cidade:c.dataset.cidade, cargo:c.dataset.cargo }; }
         }
       } else {
         for (var j=0;j<chks.length;j++){ var k=chks[j]; k.checked=false; delete selecionados[k.dataset.key]; }
@@ -335,12 +340,90 @@
         }
       }).catch(function(){});
     }
+    var CONECTADO = false;
+    function atualizarBotaoEnviar(){
+      var n = Object.keys(selecionados).length;
+      var btn = document.getElementById('btnEnviar');
+      btn.disabled = !(CONECTADO && n > 0);
+      btn.textContent = CONECTADO ? ('📧 Enviar para ' + n + ' talento(s)') : '📧 Enviar (conecte o Gmail)';
+    }
+    // conecta CONECTADO ao status
+    var _checar = checarStatusGmail;
+    checarStatusGmail = function(){
+      if (!TOKEN) return;
+      fetch('/api/ext-email-status', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: TOKEN }) })
+      .then(function(r){ return r.json(); }).then(function(d){
+        if (!d || !d.ok) return;
+        CONECTADO = !!d.conectado;
+        LIMITE = d.limite_dia || LIMITE;
+        document.getElementById('limiteDia').textContent = LIMITE;
+        var st = document.getElementById('gmailStatus');
+        if (d.conectado){
+          st.textContent = '✅ Gmail conectado: ' + (d.gmail_email || '');
+          document.getElementById('prevDe').textContent = d.gmail_email || 'sua conta Gmail';
+          document.getElementById('btnConectarGmail').textContent = '🔄 Trocar conta Gmail';
+          document.getElementById('envioSub').textContent = 'Enviados hoje: ' + (d.enviados_hoje || 0) + ' de ' + LIMITE + '.';
+        } else { st.textContent = 'Gmail: não conectado'; }
+        atualizarBotaoEnviar();
+      }).catch(function(){});
+    };
+
     document.getElementById('btnConectarGmail').addEventListener('click', function(){
       if (!TOKEN){ alert('Abra pela extensão RH IMOB para conectar.'); return; }
       window.open('/api/gmail-connect?t=' + encodeURIComponent(TOKEN), '_blank', 'width=520,height=640');
     });
-    // Ao voltar pra aba (depois de conectar no Google), reconfere.
     window.addEventListener('focus', checarStatusGmail);
+
+    // ===== Envio (Fase 3b) =====
+    function lerAnexosB64(cb){
+      var out = [];
+      if (!anexos.length) return cb(out);
+      var i = 0;
+      (function prox(){
+        if (i >= anexos.length) return cb(out);
+        var f = anexos[i++];
+        var fr = new FileReader();
+        fr.onload = function(){ out.push({ nome: f.name, tipo: f.type || 'application/octet-stream', b64: String(fr.result).split(',')[1] || '' }); prox(); };
+        fr.onerror = function(){ prox(); };
+        fr.readAsDataURL(f);
+      })();
+    }
+    document.getElementById('btnEnviar').addEventListener('click', function(){
+      var lista = Object.keys(selecionados).map(function(k){ return selecionados[k]; });
+      if (!CONECTADO){ alert('Conecte o Gmail primeiro.'); return; }
+      if (!lista.length){ alert('Selecione pelo menos 1 talento.'); return; }
+      if (!document.getElementById('assunto').value.trim() || !editor.innerText.trim()){ alert('Escreva o assunto e a mensagem.'); return; }
+      if (!confirm('Enviar para ' + lista.length + ' talento(s) agora, pela sua conta Gmail?')) return;
+      var btn = this; btn.disabled = true;
+      var base = {
+        assunto: document.getElementById('assunto').value.trim(),
+        corpoHtml: editor.innerHTML,
+        remetente: document.getElementById('fRemetente').value.trim(),
+        empresa: document.getElementById('fEmpresa').value.trim()
+      };
+      lerAnexosB64(function(anexosB64){
+        base.anexos = anexosB64;
+        var enviados = 0, falhas = [], i = 0, LOTE = 25;
+        function proxLote(){
+          if (i >= lista.length){
+            btn.disabled = false;
+            document.getElementById('envioSub').textContent = '✅ Enviados: ' + enviados + (falhas.length ? (' · ' + falhas.length + ' falha(s)') : '') + '.';
+            alert('Pronto! Enviados: ' + enviados + (falhas.length ? ('\nFalhas: ' + falhas.length + '\n' + falhas.slice(0,5).map(function(f){return f.email+': '+f.erro;}).join('\n')) : ''));
+            checarStatusGmail();
+            return;
+          }
+          var lote = lista.slice(i, i + LOTE); i += LOTE;
+          document.getElementById('envioSub').textContent = 'Enviando… ' + Math.min(i, lista.length) + '/' + lista.length;
+          fetch('/api/ext-email-enviar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ token: TOKEN, destinatarios: lote }, base)) })
+          .then(function(r){ return r.json(); }).then(function(d){
+            if (!d || !d.ok){ alert('⚠️ ' + ((d && d.error) || 'Falha no envio.')); btn.disabled = false; return; }
+            enviados += d.enviados || 0; if (Array.isArray(d.falhas)) falhas = falhas.concat(d.falhas);
+            setTimeout(proxLote, 1200); // ritmo entre lotes
+          }).catch(function(){ alert('⚠️ Falha de conexão no envio.'); btn.disabled = false; });
+        }
+        proxLote();
+      });
+    });
 
     document.getElementById('prevDe').textContent = 'a conta Gmail da sua empresa';
     atualizarContagem();
