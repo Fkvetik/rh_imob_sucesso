@@ -1187,6 +1187,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador)}" data-ativo="${u.ativo}" data-horario="${esc(u.horario_coleta||'')}" data-email="${esc(u.email_plataforma||'')}" data-conta="${esc(u.conta_id_plataforma||'')}" data-limite="${u.limite_pool != null ? u.limite_pool : ''}" data-agenda="${esc(u.agenda_tipos||'')}" class="ghost editBtn" style="padding:4px 8px;font-size:11px">Editar</button>
         <button data-login="${esc(u.login)}" data-ativo="${u.ativo}" class="${u.ativo ? 'danger' : 'secondary'} toggleBtn" style="padding:4px 8px;font-size:11px">${u.ativo ? 'Bloquear' : 'Reativar'}</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="danger excluirOperadorBtn" style="padding:4px 8px;font-size:11px">Excluir</button>
+        <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost usoBtn" style="padding:4px 8px;font-size:11px" title="Uso da extensão: tempo ligada, disparos por dia, enviadas/respostas">📊 Uso</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
         ${ACESSO_CATHO ? `<button data-login="${esc(u.login)}" data-ligado="${ACESSO_CATHO.has(u.login) ? '1' : ''}" class="${ACESSO_CATHO.has(u.login) ? 'secondary' : 'ghost'} cathoBtn" style="padding:4px 8px;font-size:11px" title="Mostra a aba Catho em Contatos. Oculta por padrão — parceiros usam só Minha lista (CSV).">🗂 Catho: ${ACESSO_CATHO.has(u.login) ? 'liberada' : 'não'}</button>` : ''}
         ${ACESSO_CRECI_CIDADE ? (() => { const pl = CRECI_IG_PLANOS[ACESSO_CRECI_CIDADE[u.login]] ? ACESSO_CRECI_CIDADE[u.login] : 'gratis', P = CRECI_IG_PLANOS[pl]; return `<button data-login="${esc(u.login)}" data-prox="${P.prox}" class="${P.classe} creciCidadeBtn" style="padding:4px 8px;font-size:11px" title="${P.dica}">📍 CRECI + Instagram: ${P.rot}</button>`; })() : ''}
@@ -1195,10 +1196,14 @@ function renderUsuarios(list) {
       </td>
     </tr>
     <tr class="filtrosRow hide" data-login-row="${esc(u.login)}"><td colspan="8"><div class="filtrosPainel" data-login="${esc(u.login)}"></div></td></tr>
+    <tr class="usoRow hide" data-uso-row="${esc(u.login)}"><td colspan="8" style="background:#faf7fc"></td></tr>
   `).join('');
 
   tbody.querySelectorAll(".filtrosBtn").forEach(btn => {
     btn.addEventListener("click", () => toggleFiltrosPanel(btn.dataset.login));
+  });
+  tbody.querySelectorAll(".usoBtn").forEach(btn => {
+    btn.addEventListener("click", () => toggleUsoOperador(btn.dataset.login, btn.dataset.nome));
   });
   tbody.querySelectorAll(".creciCidadeBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -3571,25 +3576,16 @@ function usoBarra(blocos, semRegistro) {
   return `<div style="display:flex;height:14px;border-radius:4px;overflow:hidden;min-width:220px">${est.slice(USO_INI, USO_FIM).map((e, k) => { const i = k + USO_INI;
     return `<span style="flex:1;background:${USO_COR[e]};${k % 8 === 0 && k ? "box-shadow:inset 1px 0 #9ca3af;" : ""}" title="${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}"></span>`; }).join("")}</div>`;
 }
-async function usoMostrar(tbody, m) {
-  const linha = tbody.querySelector(`tr[data-maq="${CSS.escape(USO_ABERTO)}"]`);
-  if (!linha) return;
-  const tr = document.createElement("tr");
-  tr.innerHTML = '<td colspan="7" style="background:#faf7fc"><small>Carregando o relatório…</small></td>';
-  linha.after(tr);
-  const chave = USO_ABERTO + "|" + USO_DIAS;
+// Monta o HTML do relatório de uso (reutilizado pela Máquinas E pela lista de
+// Operadores). Busca com cache por login+dias. Lança erro se o SQL não existir.
+async function usoRelatorioHtml(login, nome, dias) {
+  const chave = login + "|" + dias;
   let r = USO_CACHE[chave];
   if (!r || Date.now() - r._em > 5 * 60 * 1000) {
-    try {
-      r = await rpc("rpc_admin_uso_operador", { p_admin_password: ADMIN_PASS, p_login: USO_ABERTO, p_dias: USO_DIAS });
-      if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
-      r._em = Date.now(); USO_CACHE[chave] = r;
-    } catch (e) {
-      tr.firstElementChild.innerHTML = `<small>${/rpc_admin_uso_operador|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_2 no Supabase do Coletor." : esc(e.message)}</small>`;
-      return;
-    }
+    r = await rpc("rpc_admin_uso_operador", { p_admin_password: ADMIN_PASS, p_login: login, p_dias: dias });
+    if (!r || !r.ok) throw new Error((r && r.error) || "sem resposta");
+    r._em = Date.now(); USO_CACHE[chave] = r;
   }
-  if (!tr.isConnected) return;
   const L = r.linhas || [];
   const desde = r.historico_desde ? r.historico_desde.slice(6, 10) + "-" + r.historico_desde.slice(3, 5) + "-" + r.historico_desde.slice(0, 2) : null;
   const soma = k => L.reduce((s, x) => s + (x[k] || 0), 0);
@@ -3598,10 +3594,10 @@ async function usoMostrar(tbody, m) {
   const noHorario = L.reduce((t, x) => t + usoNoHorarioMin(x.blocos), 0);
   const pilula = (t, cor) => `<span style="display:inline-block;background:${cor || "#f1ecf4"};color:#3b0a40;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:0 4px 4px 0">${t}</span>`;
   const nomeDia = d => new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
-  tr.firstElementChild.innerHTML = `
+  return `
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-      <b style="font-size:13px">📊 Uso da extensão — ${esc((m && m.nome) || USO_ABERTO)}</b>
-      <select class="usoDias" style="width:auto;padding:3px 6px;font-size:12px">${[7, 14, 30, 60, 90].map(n => `<option value="${n}" ${n === USO_DIAS ? "selected" : ""}>últimos ${n} dias</option>`).join("")}</select>
+      <b style="font-size:13px">📊 Uso da extensão — ${esc(nome || login)}</b>
+      <select class="usoDias" style="width:auto;padding:3px 6px;font-size:12px">${[7, 14, 30, 60, 90].map(n => `<option value="${n}" ${n === dias ? "selected" : ""}>últimos ${n} dias</option>`).join("")}</select>
     </div>
     <div>${pilula(`🖥 ligada ${usoHoras(noHorario)} no horário (8h–20h) em ${diasLigada} de ${L.length} dias`)}${pilula(`▶️ disparando ${usoHoras(soma("min_disparando"))}`, "#dcfce7")}${pilula(`✉️ ${env} enviadas`)}${pilula(`💬 ${resp} respostas${env ? ` (${Math.round(resp * 100 / env)}%)` : ""}`)}${pilula(`🏷 ${soma("qualificados")} qualificados`)}${pilula(`📄 ${soma("propostas")} propostas`)}${pilula(`📅 ${soma("agendados")} agendados`)}</div>
     <small style="color:#666">Barra do dia, no horário de funcionamento (8h às 20h): <span style="color:#9ca3af">■</span> desligada · <span style="color:#d97706">■</span> ligada sem disparar · <span style="color:#16a34a">■</span> disparando (WhatsApp aberto). ${desde ? `Registro de ligada/desligada desde ${esc(r.historico_desde)}; antes disso só as ações.` : "Registro de ligada/desligada começa agora; os dias anteriores mostram só as ações."}</small>
@@ -3617,7 +3613,45 @@ async function usoMostrar(tbody, m) {
         <td>${x.enviadas || "—"}</td><td>${x.respostas || "—"}</td><td>${x.qualificados || "—"}</td><td>${x.propostas || "—"}</td><td>${x.agendados || "—"}</td>
       </tr>`; }).join("")}</tbody>
     </table>`;
-  tr.querySelector(".usoDias").addEventListener("change", e => { USO_DIAS = parseInt(e.target.value, 10) || 7; loadMaquinas(); });
+}
+async function usoMostrar(tbody, m) {
+  const linha = tbody.querySelector(`tr[data-maq="${CSS.escape(USO_ABERTO)}"]`);
+  if (!linha) return;
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td colspan="7" style="background:#faf7fc"><small>Carregando o relatório…</small></td>';
+  linha.after(tr);
+  try {
+    const html = await usoRelatorioHtml(USO_ABERTO, (m && m.nome) || USO_ABERTO, USO_DIAS);
+    if (!tr.isConnected) return;
+    tr.firstElementChild.innerHTML = html;
+    tr.querySelector(".usoDias")?.addEventListener("change", e => { USO_DIAS = parseInt(e.target.value, 10) || 7; loadMaquinas(); });
+  } catch (e) {
+    tr.firstElementChild.innerHTML = `<small>${/rpc_admin_uso_operador|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_2 no Supabase do Coletor." : esc(e.message)}</small>`;
+  }
+}
+
+// ===== Uso da extensão NA LISTA DE OPERADORES (mesmo relatório da Máquinas) =====
+var OP_USO_DIAS = 7;
+async function preencherUsoOperador(login, nome) {
+  const row = document.querySelector(`tr.usoRow[data-uso-row="${CSS.escape(login)}"]`);
+  if (!row) return;
+  const cell = row.firstElementChild;
+  cell.innerHTML = '<small>Carregando o relatório…</small>';
+  try {
+    cell.innerHTML = await usoRelatorioHtml(login, nome, OP_USO_DIAS);
+    cell.querySelector(".usoDias")?.addEventListener("change", e => { OP_USO_DIAS = parseInt(e.target.value, 10) || 7; preencherUsoOperador(login, nome); });
+  } catch (e) {
+    cell.innerHTML = `<small>${/rpc_admin_uso_operador|function|404/i.test(e.message) ? "Falta rodar o SQL SAUDE_2 no Supabase do Coletor." : esc(e.message)}</small>`;
+  }
+}
+function toggleUsoOperador(login, nome) {
+  const row = document.querySelector(`tr.usoRow[data-uso-row="${CSS.escape(login)}"]`);
+  if (!row) return;
+  const estaAberto = !row.classList.contains("hide");
+  document.querySelectorAll("tr.usoRow").forEach(r => r.classList.add("hide"));
+  if (estaAberto) return; // clicou de novo = fecha
+  row.classList.remove("hide");
+  preencherUsoOperador(login, nome);
 }
 
 // Resposta visual a todo clique em botão (pulso rápido) — o "carregando" é o
