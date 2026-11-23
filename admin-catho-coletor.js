@@ -1168,7 +1168,7 @@ function renderUsuarios(list) {
   }
   tbody.innerHTML = list.map(u => `
     <tr>
-      <td>${esc(u.login)}<br><small class="statusColetaBadge" data-login-badge="${esc(u.login)}"></small></td>
+      <td>${esc(u.login)}<br><small class="statusColetaBadge" data-login-badge="${esc(u.login)}"></small><span class="filtrosBadge" data-filtros-badge="${esc(u.login)}"></span></td>
       <td>${esc(u.nome_operador)}</td>
       <td><span class="badge ${u.ativo ? '' : 'bloqueado'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
       <td>${celulaValidadeOperador(u)}</td>
@@ -1237,6 +1237,8 @@ function renderUsuarios(list) {
     btn.addEventListener("click", () => editarValidadeOperador(btn.dataset.login, btn.dataset.modo));
   });
   aplicarBadgesColeta(); // já aplica o que tiver em cache, sem esperar o próximo poll
+  aplicarBadgesFiltros(); // selo "tem filtro" com o que já está em cache
+  rastrearFiltros();      // completa em segundo plano quem ainda não foi rastreado
 
   // "Nova contagem" do funil (abordados → responderam → proposta → agendaram).
   // Fica só aqui no painel: a tela /agendamentos também é aberta pelo cliente.
@@ -1395,6 +1397,48 @@ function aplicarBadgesColeta() {
   });
 }
 
+// Selo "tem filtro cadastrado" por login. Não existe RPC em lote, então
+// rastreamos uma vez (rpc_admin_listar_filtros por login, com cache) em segundo
+// plano e marcamos quem tem ao menos 1 filtro. FILTROS_QTD_CACHE: login -> nº
+// (undefined = ainda não sabido).
+let FILTROS_QTD_CACHE = {};
+let FILTROS_RASTREANDO = false;
+function aplicarBadgesFiltros() {
+  document.querySelectorAll(".filtrosBadge").forEach(el => {
+    const login = el.dataset.filtrosBadge;
+    const n = FILTROS_QTD_CACHE[login];
+    if (n === undefined){ el.innerHTML = ''; return; } // ainda rastreando
+    el.innerHTML = n > 0
+      ? `<br><span style="color:#5b21b6;font-weight:800" title="Tem ${n} filtro(s) de coleta cadastrado(s)">📋 ${n} filtro${n > 1 ? 's' : ''}</span>`
+      : '<br><span style="color:#aaa" title="Sem filtro de coleta cadastrado">sem filtro</span>';
+  });
+}
+async function rastrearFiltros(force) {
+  if (FILTROS_RASTREANDO) return;
+  const logins = (USUARIOS_COLETOR_CACHE || []).map(u => u.login);
+  const pendentes = logins.filter(l => force || FILTROS_QTD_CACHE[l] === undefined);
+  if (!pendentes.length){ aplicarBadgesFiltros(); return; }
+  FILTROS_RASTREANDO = true;
+  try {
+    // concorrência pequena (4 por vez) pra não sobrecarregar o banco
+    const fila = pendentes.slice();
+    const trabalhador = async () => {
+      while (fila.length) {
+        const login = fila.shift();
+        try {
+          const resp = await rpc("rpc_admin_listar_filtros", { p_admin_password: ADMIN_PASS, p_login: login });
+          FILTROS_QTD_CACHE[login] = Array.isArray(resp) ? resp.length : 0;
+        } catch (_) { FILTROS_QTD_CACHE[login] = 0; }
+        aplicarBadgesFiltros();
+      }
+    };
+    await Promise.all([trabalhador(), trabalhador(), trabalhador(), trabalhador()]);
+  } finally {
+    FILTROS_RASTREANDO = false;
+    aplicarBadgesFiltros();
+  }
+}
+
 // ───────────────────────── Filtros de coleta (por operador) ─────────────────────────
 // Antes só existiam no navegador de cada operador. Agora moram no banco —
 // o admin edita de longe e ainda consegue mandar "Rodar agora" remotamente
@@ -1426,6 +1470,9 @@ async function carregarFiltrosOperador(login) {
     const horarios = (dest && dest.ok && (dest.destinos || []).some(d => "horario" in d)) || (dest && dest.ok && !(dest.destinos || []).length)
       ? Object.fromEntries((dest.destinos || []).filter(d => d.horario).map(d => [String(d.id), d.horario])) : null;
     const usuario = USUARIOS_COLETOR_CACHE.find(u => u.login === login);
+    // mantém o selo "tem filtro" em dia sempre que o painel recarrega
+    FILTROS_QTD_CACHE[login] = Array.isArray(resp) ? resp.length : 0;
+    aplicarBadgesFiltros();
     renderFiltrosOperador(login, Array.isArray(resp) ? resp : [], destinos, horarios, usuario && usuario.horario_coleta);
   } catch (e) {
     painel.innerHTML = `<small style="color:#c2410c">❌ ${esc(e.message)}</small>`;
