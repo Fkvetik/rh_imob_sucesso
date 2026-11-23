@@ -133,11 +133,25 @@
       <div class="destinatarios">
         <div>
           <div class="n" id="destN">0</div>
-          <small>talentos selecionados (a conectar na próxima fase)</small>
+          <small>talentos selecionados · limite <b id="limiteDia">100</b>/dia</small>
         </div>
         <button class="btn btn-primary" id="btnSelecionar" type="button">Selecionar talentos</button>
       </div>
-      <p class="dica">Aqui você vai filtrar o banco de Novos Talentos (cidade, cargo) e escolher quem recebe. Essa parte conecta no banco na fase 2.</p>
+
+      <div id="selPanel" style="display:none;margin-top:12px;border:1px solid var(--linha);border-radius:12px;padding:12px;background:#faf8fe">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+          <div style="flex:1;min-width:120px"><label class="lbl" style="margin-top:0">Cidade</label><input type="text" id="fCidade" placeholder="Ex.: Sorocaba" /></div>
+          <div style="flex:1;min-width:120px"><label class="lbl" style="margin-top:0">Cargo</label><input type="text" id="fCargo" placeholder="Ex.: Corretor" /></div>
+          <button class="btn btn-primary" id="btnBuscar" type="button" style="padding:9px 16px">Buscar</button>
+        </div>
+        <div id="selResumo" class="dica" style="margin-top:8px"></div>
+        <div id="selLista" style="max-height:280px;overflow:auto;margin-top:6px;border-top:1px solid var(--linha)"></div>
+        <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap">
+          <label style="font-size:13px;font-weight:700;color:#4a4458;display:flex;gap:6px;align-items:center"><input type="checkbox" id="selTodos" /> Selecionar todos (até o limite)</label>
+          <span class="dica" id="selContador"></span>
+        </div>
+      </div>
+      <p class="dica" id="selDica">Filtre o banco de Novos Talentos por cidade/cargo e marque quem recebe. Só aparecem talentos com e-mail.</p>
     </div>
   </div>
 
@@ -219,10 +233,86 @@
       anexos.splice(+b.dataset.i, 1); renderAnexos();
     });
 
+    // ===== Seleção de talentos (Fase 2) =====
+    // O token da sessão vem da extensão no #t=... (fica no fragmento, não vai pro
+    // servidor nem pro histórico de URL). Sem token = abriu fora da extensão.
+    var TOKEN = (function(){ try { return new URLSearchParams(location.hash.slice(1)).get('t') || ''; } catch(_){ return ''; } })();
+    var LIMITE = 100;
+    var selecionados = {}; // key -> {nome,email}
+    var selPanel = document.getElementById('selPanel');
+    var selLista = document.getElementById('selLista');
+    var selResumo = document.getElementById('selResumo');
+    var destN = document.getElementById('destN');
+
+    function atualizarContagem(){
+      var n = Object.keys(selecionados).length;
+      destN.textContent = n;
+      document.getElementById('selContador').textContent = n + ' selecionado(s)' + (n >= LIMITE ? ' · limite do dia atingido' : '');
+    }
+
     document.getElementById('btnSelecionar').addEventListener('click', function(){
-      alert('A seleção dos talentos (filtro por cidade/cargo + escolher quem recebe) conecta no banco de Novos Talentos na próxima fase.');
+      if (!TOKEN){
+        alert('Abra esta ferramenta pela extensão RH IMOB (botão "E-mail") para carregar os talentos com segurança.');
+        return;
+      }
+      selPanel.style.display = selPanel.style.display === 'none' ? 'block' : 'none';
     });
 
+    document.getElementById('btnBuscar').addEventListener('click', buscarTalentos);
+    function buscarTalentos(){
+      var btn = document.getElementById('btnBuscar');
+      btn.disabled = true; selResumo.textContent = 'Buscando…'; selLista.innerHTML = '';
+      fetch('/api/ext-email-talentos', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: TOKEN, cidade: document.getElementById('fCidade').value.trim(), cargo: document.getElementById('fCargo').value.trim() })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        btn.disabled = false;
+        if (!d || !d.ok){ selResumo.textContent = '⚠️ ' + ((d && d.error) || 'Não foi possível buscar.'); return; }
+        LIMITE = d.limite_dia || 100;
+        document.getElementById('limiteDia').textContent = LIMITE;
+        selResumo.textContent = d.total + ' talento(s) com e-mail encontrados. Marque quem recebe (até ' + LIMITE + '/dia).';
+        selLista.innerHTML = (d.talentos || []).map(function(t){
+          var marcado = selecionados[t.key] ? ' checked' : '';
+          var meta = [t.cidade, t.uf].filter(Boolean).join('/') + (t.cargo ? ' · ' + t.cargo : '');
+          return '<label style="display:flex;gap:9px;align-items:center;padding:7px 4px;border-bottom:1px solid #eee;font-size:13px">' +
+            '<input type="checkbox" class="selChk" data-key="' + enc(t.key) + '" data-nome="' + enc(t.nome) + '" data-email="' + enc(t.email) + '"' + marcado + '>' +
+            '<span style="flex:1"><b>' + esc(t.nome || '—') + '</b><br><span style="color:#6b6478">' + esc(t.email) + '</span></span>' +
+            '<span style="color:#6b6478;font-size:12px;white-space:nowrap">' + esc(meta) + '</span></label>';
+        }).join('') || '<p class="dica" style="padding:10px">Nenhum talento com e-mail para esse filtro.</p>';
+      })
+      .catch(function(){ btn.disabled = false; selResumo.textContent = '⚠️ Falha de conexão.'; });
+    }
+    function enc(s){ return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+    function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    selLista.addEventListener('change', function(e){
+      var c = e.target.closest('.selChk'); if(!c) return;
+      if (c.checked){
+        if (Object.keys(selecionados).length >= LIMITE){ c.checked = false; alert('Limite de ' + LIMITE + ' e-mails/dia atingido para esta conta.'); return; }
+        selecionados[c.dataset.key] = { nome: c.dataset.nome, email: c.dataset.email };
+      } else {
+        delete selecionados[c.dataset.key];
+      }
+      atualizarContagem();
+    });
+
+    document.getElementById('selTodos').addEventListener('change', function(e){
+      var chks = selLista.querySelectorAll('.selChk');
+      if (e.target.checked){
+        for (var i=0;i<chks.length;i++){
+          if (Object.keys(selecionados).length >= LIMITE) break;
+          var c = chks[i]; if(!c.checked){ c.checked = true; selecionados[c.dataset.key] = { nome:c.dataset.nome, email:c.dataset.email }; }
+        }
+      } else {
+        for (var j=0;j<chks.length;j++){ var k=chks[j]; k.checked=false; delete selecionados[k.dataset.key]; }
+      }
+      atualizarContagem();
+    });
+
+    document.getElementById('prevDe').textContent = 'a conta Gmail da sua empresa';
+    atualizarContagem();
     atualizarPrevia();
   </script>
 </body>
