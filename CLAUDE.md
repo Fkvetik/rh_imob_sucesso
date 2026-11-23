@@ -121,9 +121,18 @@ PDF/foto** (≤10 MB, só UI ainda), **placeholders** `{nome} {cidade} {cargo} {
 {empresa} {remetente}`, e **prévia** com template de e-mail profissional + dados de
 exemplo + rodapé de descadastro. Ainda **não envia nem lê o banco**.
 
+**Acesso (FEITO no admin):** logou na extensão → pode usar a ferramenta, MAS só quando
+o admin **libera a conta** no painel Operadores (botão `📧 E-mail: liberado/não`) e define
+o **limite/dia** (botão `✏️ N/dia`, padrão **100**). Mesmo padrão do acesso Catho. Backend:
+SQL `EMAIL_1_acesso_por_login.sql` (repo da extensão, roda no COLETOR) — colunas
+`usuarios.email_acesso` (default false) + `email_limite_dia` (default 100) e a RPC
+`rpc_admin_email_acesso(senha, login, ligar, limite)`. O botão no admin só aparece depois
+que o SQL roda (`EMAIL_ACESSO` null = esconde).
+
 **Próximas fases (a fazer):**
 - Fase 2: **seleção dos talentos** do banco NT (filtro cidade/cargo) via endpoint
-  protegido (e-mails são PII — nunca expor lista no cliente).
+  protegido (valida o token de sessão da extensão + `email_acesso`; e-mails são PII —
+  nunca expor lista no cliente). O envio confere o `email_limite_dia` vs enviados no dia.
 - Fase 3: **conectar Gmail (OAuth)** + envio server-side com personalização dos
   placeholders, anexos (MIME), ritmo e registro de opt-out.
 - LGPD: link de descadastro real + tabela de quem saiu (nunca reenviar).

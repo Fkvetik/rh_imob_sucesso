@@ -1138,6 +1138,16 @@ async function loadAcessoCatho() {
   } catch (_) { ACESSO_CATHO = null; }
 }
 
+// Disparo de e-mail liberado por login + limite/dia (SQL EMAIL_1). Map login->limite.
+// null = SQL ainda não rodou (botão não aparece).
+let EMAIL_ACESSO = null;
+async function loadAcessoEmail() {
+  try {
+    const r = await rpc("rpc_admin_email_acesso", { p_admin_password: ADMIN_PASS });
+    EMAIL_ACESSO = r && r.ok ? new Map((r.contas || []).map(c => [c.login, c.limite])) : null;
+  } catch (_) { EMAIL_ACESSO = null; }
+}
+
 async function loadUsuarios() {
   try {
     const [resp] = await Promise.all([
@@ -1145,7 +1155,8 @@ async function loadUsuarios() {
       loadValidadeOperadores(),
       loadFiltrosAtrasados(),
       loadAcessoCreciCidade(),
-      loadAcessoCatho()
+      loadAcessoCatho(),
+      loadAcessoEmail()
     ]);
     if (!resp.ok) { alert("Sessão expirou: " + resp.error); location.reload(); return; }
     renderUsuarios(resp.usuarios || []);
@@ -1190,6 +1201,7 @@ function renderUsuarios(list) {
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost usoBtn" style="padding:4px 8px;font-size:11px" title="Uso da extensão: tempo ligada, disparos por dia, enviadas/respostas">📊 Uso</button>
         <button data-login="${esc(u.login)}" class="ghost filtrosBtn" style="padding:4px 8px;font-size:11px">📋 Filtros</button>
         ${ACESSO_CATHO ? `<button data-login="${esc(u.login)}" data-ligado="${ACESSO_CATHO.has(u.login) ? '1' : ''}" class="${ACESSO_CATHO.has(u.login) ? 'secondary' : 'ghost'} cathoBtn" style="padding:4px 8px;font-size:11px" title="Mostra a aba Catho em Contatos. Oculta por padrão — parceiros usam só Minha lista (CSV).">🗂 Catho: ${ACESSO_CATHO.has(u.login) ? 'liberada' : 'não'}</button>` : ''}
+        ${EMAIL_ACESSO ? `<button data-login="${esc(u.login)}" data-ligado="${EMAIL_ACESSO.has(u.login) ? '1' : ''}" class="${EMAIL_ACESSO.has(u.login) ? 'secondary' : 'ghost'} emailBtn" style="padding:4px 8px;font-size:11px" title="Libera a ferramenta de disparo de e-mail (Banco de Novos Talentos) para este login.">📧 E-mail: ${EMAIL_ACESSO.has(u.login) ? 'liberado' : 'não'}</button>${EMAIL_ACESSO.has(u.login) ? `<button data-login="${esc(u.login)}" data-limite="${EMAIL_ACESSO.get(u.login)}" class="ghost emailLimiteBtn" style="padding:4px 8px;font-size:11px" title="Quantos e-mails por dia esta conta pode enviar">✏️ ${EMAIL_ACESSO.get(u.login)}/dia</button>` : ''}` : ''}
         ${ACESSO_CRECI_CIDADE ? (() => { const pl = CRECI_IG_PLANOS[ACESSO_CRECI_CIDADE[u.login]] ? ACESSO_CRECI_CIDADE[u.login] : 'gratis', P = CRECI_IG_PLANOS[pl]; return `<button data-login="${esc(u.login)}" data-prox="${P.prox}" class="${P.classe} creciCidadeBtn" style="padding:4px 8px;font-size:11px" title="${P.dica}">📍 CRECI + Instagram: ${P.rot}</button>`; })() : ''}
         <button data-login="${esc(u.login)}" data-conta="${esc(u.conta_id_plataforma||'')}" class="ghost resumoBtn" style="padding:4px 8px;font-size:11px" title="Resumo do período para mandar ao cliente (imprime ou salva em PDF)">📊 Resumo</button>
         <button data-login="${esc(u.login)}" data-nome="${esc(u.nome_operador||u.login)}" class="ghost novaContagemBtn" style="padding:4px 8px;font-size:11px" title="Zera os números do funil deste operador para medir uma nova fase. Não apaga leads nem conversas.">↺ Nova contagem</button>
@@ -1224,6 +1236,36 @@ function renderUsuarios(list) {
         const r = await rpc("rpc_admin_acesso_catho", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_ligar: ligar });
         if (!r || !r.ok) throw new Error((r && r.error) || "Não foi possível salvar");
         ACESSO_CATHO = new Set(r.logins || []);
+        renderUsuarios(USUARIOS_COLETOR_CACHE);
+      } catch (e) { alert(e.message); btn.disabled = false; }
+    });
+  });
+  // E-mail: liberar/bloquear a ferramenta de disparo por login.
+  tbody.querySelectorAll(".emailBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const ligar = !btn.dataset.ligado;
+      btn.disabled = true;
+      try {
+        const r = await rpc("rpc_admin_email_acesso", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_ligar: ligar });
+        if (!r || !r.ok) throw new Error((r && r.error) || "Não foi possível salvar");
+        EMAIL_ACESSO = new Map((r.contas || []).map(c => [c.login, c.limite]));
+        renderUsuarios(USUARIOS_COLETOR_CACHE);
+      } catch (e) { alert(e.message); btn.disabled = false; }
+    });
+  });
+  // E-mail: ajustar quantos envios por dia essa conta pode.
+  tbody.querySelectorAll(".emailLimiteBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const atual = btn.dataset.limite;
+      const v = prompt("Quantos e-mails por dia esta conta pode enviar? (1 a 2000)", atual);
+      if (v === null) return;
+      const n = parseInt(v, 10);
+      if (!n || n < 1 || n > 2000) { alert("Informe um número entre 1 e 2000."); return; }
+      btn.disabled = true;
+      try {
+        const r = await rpc("rpc_admin_email_acesso", { p_admin_password: ADMIN_PASS, p_login: btn.dataset.login, p_limite: n });
+        if (!r || !r.ok) throw new Error((r && r.error) || "Não foi possível salvar");
+        EMAIL_ACESSO = new Map((r.contas || []).map(c => [c.login, c.limite]));
         renderUsuarios(USUARIOS_COLETOR_CACHE);
       } catch (e) { alert(e.message); btn.disabled = false; }
     });
