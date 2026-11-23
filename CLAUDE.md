@@ -65,6 +65,48 @@ Não inventar nem contradizer os preços dessas páginas.
 - Páginas: `/plataformas`, `/extensao-recrutadora`, `/apresentacao-rh-imob`, `/vagas`, `/incorporadoras`.
 - Prints da extensão existem (`assets/extensao-*.jpg/png`) mas **não** entram no chat.
 
+## Parceria de Vagas — R$ 99/mês (EM CONSTRUÇÃO, ainda não publicado)
+**Problema que resolve:** muitos leads que entram pelos sites de geração (vagas,
+construtoras, incorporadoras espalhadas) não querem pagar R$ 999 (extensão) nem
+R$ 3.500 (operação) e **saem do funil sem gerar receita**. A Parceria de Vagas é o
+degrau **mais barato** pra reter esse lead — sem competir com o funil de contratação.
+
+**Como funciona (modelo de negócio):**
+- Empresa com vaga paga **R$ 99/mês** e tem a vaga dela **anunciada junto** nos sites
+  de vaga da RH IMOB (ex.: `/vagas`, `/vaga/:slug`), como já é feito hoje.
+- A RH IMOB **aborda os corretores** que consegue no mês levando esse site (é o que já
+  faz com a extensão/operação).
+- **100% dos R$ 99 vira tráfego pago** levando pro site, **num dia fixo escolhido do
+  mês** (ex.: dia 29/30). **Nada fica com a RH IMOB** — sem participação; tudo volta
+  pra gerar resultado pro parceiro. Isso é o argumento central da apresentação.
+- O parceiro tem **acesso aos painéis de abordagem** (os mesmos da extensão) e aos
+  **Agendamentos / Visão geral** pra acompanhar o que está acontecendo.
+
+**Regra de ouro:** **não pode canibalizar o lead de contratação** da RH IMOB. A
+construção/empresa que entra aqui é pra CONTRATAR corretor (é cliente da vaga), não é
+o corretor-lead. Separar bem na UI e no funil.
+
+**O que já existe pra reaproveitar (não reinventar):**
+- Página `/vagas` (estática, SEO) + vaga individual SSR em `api/vaga.js` (lê
+  `site_vagas_publicas`, projeto NT, `status=ATIVA`, por `vaga_id`/slug) + `admin-vagas.html`.
+- Páginas de parceiro: `recrutamento-para-construtoras.html`,
+  `recrutamento-para-incorporadoras.html`, `rede-de-parceiros.html`, `parceiro.html`.
+
+**Entregáveis a construir (a combinar com o Fernando antes de codar):**
+1. **Página de apresentação da parceria** (pra ele apresentar a quem convida): deixa
+   claro R$ 99/mês, 100% em tráfego pago, zero participação da RH IMOB, o que o parceiro
+   recebe (vaga nos sites + abordagem mensal + acesso a painéis/agendamentos/visão geral).
+2. **Organizar o `/vagas`** pra comportar as vagas de parceiros com imagens, bonito, sem
+   afetar o funil de contratação da RH IMOB.
+3. **Fluxo de entrada do parceiro** (como paga os R$ 99, como a vaga é publicada —
+   self-service via `admin-vagas`/`parceiro.html` ou RH IMOB publica), **a definir**.
+4. **Acesso do parceiro** aos painéis de abordagem + Agendamentos/Visão geral — reaproveitar
+   o que a extensão/admin já têm, com um login/escopo próprio de "parceiro de vaga".
+
+**Decisões em aberto (perguntar antes de construir):** dia fixo do tráfego pago;
+cobrança dos R$ 99 (manual/Pix/assinatura); parceiro publica a própria vaga ou a RH IMOB
+publica; qual exatamente o escopo de acesso do parceiro aos painéis.
+
 ## Consultora IA (`/ia-recrutamento`)
 Chatbot **guiado** (vanilla JS, sem LLM) em `ia-recrutamento.html` que qualifica o lead B2B,
 registra **automaticamente** no painel ao concluir (POST client-side em **NT** `site_leads`,
