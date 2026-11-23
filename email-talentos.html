@@ -142,6 +142,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" id="btnSelecionar" type="button">Selecionar talentos</button>
           <button class="btn" style="background:#fff;border:1px solid #d9cdf0;color:#5b21b6" id="btnCsv" type="button" title="Suba sua própria lista (CSV com e-mail, nome, cidade, cargo)">📄 Minha lista (CSV)</button>
+          <button class="btn" style="background:transparent;border:0;color:#5b21b6;text-decoration:underline;padding:8px 4px" id="btnModeloCsv" type="button" title="Baixe uma planilha de exemplo com as colunas certas">⬇️ Baixar modelo</button>
           <input type="file" id="csvInput" accept=".csv,text/csv" hidden />
         </div>
       </div>
@@ -279,6 +280,17 @@
     });
 
     // ===== Minha lista (CSV) =====
+    document.getElementById('btnModeloCsv').addEventListener('click', function(){
+      var csv = 'nome,email,cidade,cargo\r\n'
+        + 'Maria Silva,maria@email.com,São Paulo,Corretora de imóveis\r\n'
+        + 'João Souza,joao@email.com,Santos,Corretor\r\n';
+      var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'modelo-lista-email.csv';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    });
     document.getElementById('btnCsv').addEventListener('click', function(){ document.getElementById('csvInput').click(); });
     document.getElementById('csvInput').addEventListener('change', function(){
       var f = this.files && this.files[0]; this.value = '';
