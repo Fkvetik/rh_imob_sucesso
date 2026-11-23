@@ -107,6 +107,27 @@ o corretor-lead. Separar bem na UI e no funil.
 cobrança dos R$ 99 (manual/Pix/assinatura); parceiro publica a própria vaga ou a RH IMOB
 publica; qual exatamente o escopo de acesso do parceiro aos painéis.
 
+## Disparo de e-mail — Banco de Novos Talentos (EM CONSTRUÇÃO)
+Ferramenta pra a empresa mandar e-mail de abordagem aos talentos do banco NT (que
+**disponibilizaram o próprio e-mail** pra contato — base de consentimento). Volume
+**100–200/dia** por empresa, **saindo do Gmail da própria empresa** via **Gmail API
+(OAuth)** — conecta a conta uma vez, não precisa ficar com o Gmail aberto; cabe no
+limite do Gmail. Envio **server-side** (função Vercel, token no servidor), com
+**fila/ritmo** e **descadastro (opt-out) obrigatório** em todo e-mail.
+
+**Fase 1 (FEITA, só UI):** `email-talentos.html` (`/email-talentos`, noindex) — painel
+de composição: assunto + editor de texto rico (negrito/itálico/lista/link), **anexo
+PDF/foto** (≤10 MB, só UI ainda), **placeholders** `{nome} {cidade} {cargo} {saudacao}
+{empresa} {remetente}`, e **prévia** com template de e-mail profissional + dados de
+exemplo + rodapé de descadastro. Ainda **não envia nem lê o banco**.
+
+**Próximas fases (a fazer):**
+- Fase 2: **seleção dos talentos** do banco NT (filtro cidade/cargo) via endpoint
+  protegido (e-mails são PII — nunca expor lista no cliente).
+- Fase 3: **conectar Gmail (OAuth)** + envio server-side com personalização dos
+  placeholders, anexos (MIME), ritmo e registro de opt-out.
+- LGPD: link de descadastro real + tabela de quem saiu (nunca reenviar).
+
 ## Consultora IA (`/ia-recrutamento`)
 Chatbot **guiado** (vanilla JS, sem LLM) em `ia-recrutamento.html` que qualifica o lead B2B,
 registra **automaticamente** no painel ao concluir (POST client-side em **NT** `site_leads`,

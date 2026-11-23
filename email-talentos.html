@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Disparo de e-mail — Banco de Novos Talentos | RH IMOB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/favicon.ico?v=20260509anuncie" sizes="any" />
+  <style>
+    :root{
+      --roxo:#2b124d; --roxo-900:#3a1a63; --roxo-700:#5b21b6; --laranja:#ff7a1a;
+      --linha:#e6e1ef; --muted:#6b6478; --bg:#f6f3fb; --ok:#16a34a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#1f1733}
+    header{background:var(--roxo);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    header img{height:30px;border-radius:7px}
+    header h1{font-size:15px;margin:0;font-weight:800;flex:1}
+    header .tag{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:4px 11px;font-size:11px;font-weight:700}
+    .wrap{max-width:1120px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+    @media(max-width:860px){.wrap{grid-template-columns:1fr}}
+    .card{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:18px}
+    .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
+    label.lbl{display:block;font-size:12px;font-weight:700;color:#4a4458;margin:10px 0 5px}
+    input[type=text],input[type=email]{width:100%;padding:10px 12px;border:1px solid var(--linha);border-radius:9px;font-size:14px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:4px;border:1px solid var(--linha);border-bottom:0;border-radius:9px 9px 0 0;padding:6px;background:#faf8fe}
+    .toolbar button{border:1px solid transparent;background:transparent;border-radius:7px;padding:5px 9px;font-size:14px;cursor:pointer;color:#3a2f55;font-weight:700;min-width:32px}
+    .toolbar button:hover{background:#efe8fb}
+    .toolbar .sep{width:1px;background:var(--linha);margin:2px 4px}
+    #editor{min-height:200px;border:1px solid var(--linha);border-radius:0 0 9px 9px;padding:12px 14px;font-size:14px;line-height:1.6;outline:none;background:#fff}
+    #editor:focus{border-color:var(--roxo-700)}
+    #editor a{color:var(--roxo-700)}
+    .vars{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .vars button{border:1px solid var(--linha);background:#faf8fe;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--roxo-700);cursor:pointer}
+    .vars button:hover{background:#efe8fb}
+    .anexos{margin-top:6px}
+    .anexo-drop{border:1.5px dashed #cdbff0;border-radius:10px;padding:14px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;background:#faf8fe}
+    .anexo-drop:hover{background:#f3edfd}
+    .anexo-lista{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .anexo-item{display:flex;align-items:center;gap:8px;border:1px solid var(--linha);border-radius:8px;padding:7px 10px;font-size:13px}
+    .anexo-item .nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .anexo-item .tam{color:var(--muted);font-size:11px}
+    .anexo-item button{border:0;background:#fbeaea;color:#b91c1c;border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;font-weight:700}
+    .prev-frame{border:1px solid var(--linha);border-radius:12px;overflow:hidden}
+    .prev-head{background:#faf8fe;border-bottom:1px solid var(--linha);padding:10px 14px;font-size:12px;color:var(--muted)}
+    .prev-head b{color:#1f1733}
+    .prev-body{padding:18px}
+    .mail{max-width:600px;margin:0 auto;border:1px solid var(--linha);border-radius:12px;overflow:hidden;background:#fff}
+    .mail-top{background:var(--roxo);padding:16px 20px;color:#fff;font-weight:800;font-size:15px}
+    .mail-in{padding:20px;font-size:14px;line-height:1.65;color:#2a2440}
+    .mail-in a{color:var(--roxo-700)}
+    .mail-foot{border-top:1px solid var(--linha);padding:14px 20px;font-size:11px;color:var(--muted);text-align:center}
+    .mail-foot a{color:var(--muted)}
+    .destinatarios{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;background:#faf8fe;border:1px solid var(--linha);border-radius:10px;padding:12px 14px}
+    .destinatarios .n{font-size:22px;font-weight:900;color:var(--roxo-900)}
+    .destinatarios small{color:var(--muted);font-size:12px}
+    .barra-envio{max-width:1120px;margin:0 auto 30px;padding:0 16px}
+    .barra-envio .inner{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .btn{border:0;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:800;cursor:pointer}
+    .btn-primary{background:var(--roxo);color:#fff}
+    .btn-primary:disabled{background:#c9bfe0;cursor:not-allowed}
+    .aviso{background:#fff8f0;border:1px solid #fde8ca;border-radius:10px;padding:10px 13px;font-size:12.5px;color:#7a4b1a;line-height:1.5;margin-top:10px}
+    .aviso b{color:#5a3410}
+    .dica{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/assets/rhimob-logo.jpg" alt="RH IMOB" />
+    <h1>Disparo de e-mail — Banco de Novos Talentos</h1>
+    <span class="tag">Fase 1 · composição (envio em breve)</span>
+  </header>
+
+  <div class="wrap">
+    <!-- Coluna 1: compor -->
+    <div class="card">
+      <h2>✍️ Escreva o e-mail</h2>
+
+      <label class="lbl" for="assunto">Assunto</label>
+      <input type="text" id="assunto" value="{nome}, uma oportunidade para você em {cidade}" placeholder="Ex.: Oportunidade para corretor em {cidade}" />
+
+      <label class="lbl">Mensagem</label>
+      <div class="toolbar" id="toolbar">
+        <button type="button" data-cmd="bold" title="Negrito"><b>B</b></button>
+        <button type="button" data-cmd="italic" title="Itálico"><i>I</i></button>
+        <button type="button" data-cmd="underline" title="Sublinhado"><u>U</u></button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="insertUnorderedList" title="Lista">• Lista</button>
+        <button type="button" data-cmd="createlink" title="Link">🔗 Link</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="removeFormat" title="Limpar formatação">⌫ Limpar</button>
+      </div>
+      <div id="editor" contenteditable="true"><p>{saudacao}, {nome}! Tudo bem?</p><p>Sou {remetente}, da {empresa}. Estamos com oportunidades abertas para profissionais do mercado imobiliário em <b>{cidade}</b> e, pelo seu perfil, acredito que faça sentido conversarmos.</p><p>Se tiver interesse, é só responder este e-mail que te passo os detalhes da vaga e os próximos passos.</p><p>Um abraço,<br>{remetente} — {empresa}</p></div>
+
+      <div class="vars">
+        <span style="font-size:12px;color:var(--muted);font-weight:700;align-self:center">Inserir no texto:</span>
+        <button type="button" data-var="{nome}" title="Primeiro nome do talento">{nome}</button>
+        <button type="button" data-var="{cidade}" title="Cidade do talento">{cidade}</button>
+        <button type="button" data-var="{cargo}" title="Cargo/profissão do talento">{cargo}</button>
+        <button type="button" data-var="{saudacao}" title="Bom dia / Boa tarde / Boa noite (automático)">{saudacao}</button>
+        <button type="button" data-var="{empresa}" title="Nome da sua empresa">{empresa}</button>
+        <button type="button" data-var="{remetente}" title="Seu nome (quem assina)">{remetente}</button>
+      </div>
+      <p class="dica">As variáveis são trocadas pelo dado de cada talento/empresa na hora do envio — cada pessoa recebe um e-mail personalizado. Ex.: <b>{nome}</b> vira o primeiro nome, <b>{saudacao}</b> vira "Bom dia/Boa tarde" conforme a hora.</p>
+
+      <label class="lbl">Anexos (PDF ou foto)</label>
+      <div class="anexos">
+        <div class="anexo-drop" id="anexoDrop">📎 Clique para anexar um PDF ou imagem</div>
+        <input type="file" id="anexoInput" accept=".pdf,image/*" multiple hidden />
+        <div class="anexo-lista" id="anexoLista"></div>
+      </div>
+
+      <div class="aviso">
+        <b>Descadastro automático:</b> todo e-mail enviado já inclui um link de "não quero mais receber". Quem clicar sai da lista e não recebe de novo — é o que mantém o envio dentro da lei e longe do spam.
+      </div>
+    </div>
+
+    <!-- Coluna 2: prévia -->
+    <div class="card">
+      <h2>👁️ Prévia — assim o talento recebe</h2>
+      <div class="prev-frame">
+        <div class="prev-head">De: <b id="prevDe">a conta Gmail da sua empresa</b> · Assunto: <b id="prevAssunto">—</b></div>
+        <div class="prev-body">
+          <div class="mail">
+            <div class="mail-top"><img src="/assets/rhimob-logo.jpg" alt="" style="height:26px;border-radius:6px;vertical-align:middle;margin-right:9px">Oportunidades no mercado imobiliário</div>
+            <div class="mail-in" id="prevCorpo"></div>
+            <div class="mail-foot">Você recebeu este e-mail porque disponibilizou seu contato para receber oportunidades.<br><a href="#">Não quero mais receber e-mails</a></div>
+          </div>
+          <p style="text-align:center;font-size:11px;color:var(--muted);margin:10px 0 0">Prévia com dados de exemplo — no envio, cada talento recebe com os dados dele.</p>
+        </div>
+      </div>
+
+      <div class="destinatarios">
+        <div>
+          <div class="n" id="destN">0</div>
+          <small>talentos selecionados (a conectar na próxima fase)</small>
+        </div>
+        <button class="btn btn-primary" id="btnSelecionar" type="button">Selecionar talentos</button>
+      </div>
+      <p class="dica">Aqui você vai filtrar o banco de Novos Talentos (cidade, cargo) e escolher quem recebe. Essa parte conecta no banco na fase 2.</p>
+    </div>
+  </div>
+
+  <div class="barra-envio">
+    <div class="inner">
+      <div style="font-size:13px;color:var(--muted);max-width:620px">
+        <b style="color:#1f1733">Próximo passo:</b> conectar o Gmail da empresa (um clique, uma vez) para o disparo sair da conta dela, no ritmo certo (100–200/dia). Até lá, esta tela é só a composição.
+      </div>
+      <button class="btn btn-primary" id="btnEnviar" type="button" disabled title="Disponível após conectar o Gmail (fase 2)">📧 Conectar Gmail e enviar (em breve)</button>
+    </div>
+  </div>
+
+  <script>
+    var editor = document.getElementById('editor');
+    var assunto = document.getElementById('assunto');
+    var prevCorpo = document.getElementById('prevCorpo');
+    var prevAssunto = document.getElementById('prevAssunto');
+
+    // Barra de formatação (execCommand é suficiente pra um editor simples)
+    document.getElementById('toolbar').addEventListener('click', function(e){
+      var b = e.target.closest('button[data-cmd]'); if(!b) return;
+      var cmd = b.dataset.cmd;
+      if(cmd === 'createlink'){
+        var url = prompt('Endereço do link (https://...)'); if(!url) return;
+        document.execCommand('createLink', false, url);
+      } else {
+        document.execCommand(cmd, false, null);
+      }
+      editor.focus(); atualizarPrevia();
+    });
+
+    // Inserir variável no ponto do cursor
+    document.querySelector('.vars').addEventListener('click', function(e){
+      var b = e.target.closest('button[data-var]'); if(!b) return;
+      editor.focus();
+      document.execCommand('insertText', false, b.dataset.var);
+      atualizarPrevia();
+    });
+
+    function saudacaoAgora(){
+      var h = new Date().getHours();
+      return h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite');
+    }
+    // Troca os placeholders por dados de EXEMPLO só na prévia (o envio real usa o
+    // dado de cada talento). Mantém o visual profissional e legível.
+    var EXEMPLO = { '{nome}':'Mariana', '{cidade}':'Sorocaba', '{cargo}':'Corretora de imóveis', '{saudacao}':saudacaoAgora(), '{empresa}':'Sua Empresa', '{remetente}':'Fernando' };
+    function comExemplo(txt){
+      return String(txt).replace(/\{nome\}|\{cidade\}|\{cargo\}|\{saudacao\}|\{empresa\}|\{remetente\}/g, function(m){ return EXEMPLO[m] || m; });
+    }
+    function atualizarPrevia(){
+      prevAssunto.textContent = comExemplo(assunto.value.trim() || '—');
+      prevCorpo.innerHTML = comExemplo(editor.innerHTML || '<p style="color:#999">(mensagem vazia)</p>');
+    }
+    editor.addEventListener('input', atualizarPrevia);
+    assunto.addEventListener('input', atualizarPrevia);
+
+    // Anexos (só UI + validação de tamanho; o upload real vai na fase de envio)
+    var anexoInput = document.getElementById('anexoInput');
+    var anexoLista = document.getElementById('anexoLista');
+    var anexos = [];
+    document.getElementById('anexoDrop').addEventListener('click', function(){ anexoInput.click(); });
+    anexoInput.addEventListener('change', function(){
+      Array.prototype.forEach.call(anexoInput.files, function(f){
+        if(f.size > 10 * 1024 * 1024){ alert('“' + f.name + '” passa de 10 MB — o Gmail não aceita anexo tão grande.'); return; }
+        anexos.push(f);
+      });
+      anexoInput.value = '';
+      renderAnexos();
+    });
+    function renderAnexos(){
+      anexoLista.innerHTML = anexos.map(function(f, i){
+        var kb = f.size < 1024*1024 ? (Math.round(f.size/1024) + ' KB') : ((f.size/1048576).toFixed(1) + ' MB');
+        var ico = f.type.indexOf('image') === 0 ? '🖼️' : '📄';
+        return '<div class="anexo-item">' + ico + ' <span class="nome">' + f.name.replace(/[<>&]/g,'') + '</span><span class="tam">' + kb + '</span><button data-i="' + i + '">remover</button></div>';
+      }).join('');
+    }
+    anexoLista.addEventListener('click', function(e){
+      var b = e.target.closest('button[data-i]'); if(!b) return;
+      anexos.splice(+b.dataset.i, 1); renderAnexos();
+    });
+
+    document.getElementById('btnSelecionar').addEventListener('click', function(){
+      alert('A seleção dos talentos (filtro por cidade/cargo + escolher quem recebe) conecta no banco de Novos Talentos na próxima fase.');
+    });
+
+    atualizarPrevia();
+  </script>
+</body>
+</html>
