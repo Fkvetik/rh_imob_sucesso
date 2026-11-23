@@ -47,12 +47,14 @@ export default async function handler(req, res) {
     + ilike('perfil', body.perfil)
     + ilike('faixa_idade', body.faixa);
 
-  let lista;
+  let lista, totalGeral = null;
   try {
-    const r = await fetch(url, { headers: { apikey: service, Authorization: `Bearer ${service}` } });
+    const r = await fetch(url, { headers: { apikey: service, Authorization: `Bearer ${service}`, Prefer: 'count=exact', 'Range-Unit': 'items', Range: `0-${pedido - 1}` } });
     const txt = await r.text();
-    if (!r.ok) return send(res, 502, { ok: false, error: `Banco recusou a busca (HTTP ${r.status}): ${txt.slice(0, 300)}` });
+    if (!r.ok && r.status !== 206) return send(res, 502, { ok: false, error: `Banco recusou a busca (HTTP ${r.status}): ${txt.slice(0, 300)}` });
     lista = JSON.parse(txt);
+    const cr = r.headers.get('content-range'); // ex.: 0-499/12345
+    if (cr && cr.includes('/')) { const n = parseInt(cr.split('/')[1], 10); if (!isNaN(n)) totalGeral = n; }
   } catch (e) {
     return send(res, 502, { ok: false, error: 'Falha ao buscar talentos: ' + String(e.message || e) });
   }
@@ -73,5 +75,5 @@ export default async function handler(req, res) {
       faixa: t.faixa_idade || ''
     }));
 
-  return send(res, 200, { ok: true, login: cfg.login, limite_dia: cfg.limite_dia || 100, total: talentos.length, talentos });
+  return send(res, 200, { ok: true, login: cfg.login, limite_dia: cfg.limite_dia || 100, total: talentos.length, total_geral: (totalGeral != null ? totalGeral : talentos.length), talentos });
 }

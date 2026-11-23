@@ -143,14 +143,14 @@
       </div>
 
       <div id="selPanel" style="display:none;margin-top:12px;border:1px solid var(--linha);border-radius:12px;padding:12px;background:#faf8fe">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
-          <div><label class="lbl" style="margin-top:0">Cidade</label><input type="text" id="fCidade" placeholder="Ex.: São Paulo" /></div>
-          <div><label class="lbl" style="margin-top:0">Região</label><input type="text" id="fRegiao" placeholder="Ex.: Zona Sul" /></div>
-          <div><label class="lbl" style="margin-top:0">Micro-região</label><input type="text" id="fMicro" placeholder="Ex.: Santo Amaro" /></div>
-          <div><label class="lbl" style="margin-top:0">Bairro</label><input type="text" id="fBairro" placeholder="Ex.: Moema" /></div>
-          <div><label class="lbl" style="margin-top:0">Cargo</label><input type="text" id="fCargo" placeholder="Ex.: Corretor" /></div>
-          <div><label class="lbl" style="margin-top:0">Perfil</label><input type="text" id="fPerfil" placeholder="Ex.: Corretor" /></div>
-          <div><label class="lbl" style="margin-top:0">Faixa etária</label><input type="text" id="fFaixa" placeholder="Ex.: 25-34" /></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+          <div><label class="lbl" style="margin-top:0">Cidade</label><select id="fCidade"><option value="">Todas</option></select></div>
+          <div><label class="lbl" style="margin-top:0">Região</label><select id="fRegiao"><option value="">Todas</option></select></div>
+          <div><label class="lbl" style="margin-top:0">Micro-região</label><select id="fMicro"><option value="">Todas</option></select></div>
+          <div><label class="lbl" style="margin-top:0">Bairro</label><select id="fBairro"><option value="">Todos</option></select></div>
+          <div><label class="lbl" style="margin-top:0">Cargo</label><select id="fCargo"><option value="">Todos</option></select></div>
+          <div><label class="lbl" style="margin-top:0">Perfil</label><select id="fPerfil"><option value="">Todos</option></select></div>
+          <div><label class="lbl" style="margin-top:0">Faixa etária</label><select id="fFaixa"><option value="">Todas</option></select></div>
         </div>
         <div style="margin-top:8px"><button class="btn btn-primary" id="btnBuscar" type="button" style="padding:9px 18px">Buscar talentos</button></div>
         <div id="selResumo" class="dica" style="margin-top:8px"></div>
@@ -269,7 +269,40 @@
         alert('Abra esta ferramenta pela extensão RH IMOB (botão "E-mail") para carregar os talentos com segurança.');
         return;
       }
-      selPanel.style.display = selPanel.style.display === 'none' ? 'block' : 'none';
+      var abrindo = selPanel.style.display === 'none';
+      selPanel.style.display = abrindo ? 'block' : 'none';
+      if (abrindo) initFiltros();
+    });
+
+    // ===== Dropdowns em cascata =====
+    var opcoesCarregadas = false;
+    function encherSelect(selId, opcoes, labelTodos){
+      var sel = document.getElementById(selId); if(!sel) return;
+      var atual = sel.value;
+      sel.innerHTML = '<option value="">' + labelTodos + '</option>' +
+        (opcoes || []).map(function(o){ return '<option value="' + enc(o) + '"' + (o === atual ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+    }
+    function carregarOpcoes(campo, parents, selId, labelTodos){
+      fetch('/api/ext-email-filtros', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ token: TOKEN, campo: campo }, parents || {})) })
+      .then(function(r){ return r.json(); }).then(function(d){ if (d && d.ok) encherSelect(selId, d.opcoes, labelTodos); }).catch(function(){});
+    }
+    function initFiltros(){
+      if (opcoesCarregadas || !TOKEN) return; opcoesCarregadas = true;
+      carregarOpcoes('cidade', {}, 'fCidade', 'Todas');
+      carregarOpcoes('cargo', {}, 'fCargo', 'Todos');
+      carregarOpcoes('perfil', {}, 'fPerfil', 'Todos');
+      carregarOpcoes('faixa', {}, 'fFaixa', 'Todas');
+    }
+    document.getElementById('fCidade').addEventListener('change', function(){
+      carregarOpcoes('regiao', { cidade: this.value }, 'fRegiao', 'Todas');
+      encherSelect('fMicro', [], 'Todas'); encherSelect('fBairro', [], 'Todos');
+    });
+    document.getElementById('fRegiao').addEventListener('change', function(){
+      carregarOpcoes('micro', { cidade: document.getElementById('fCidade').value, regiao: this.value }, 'fMicro', 'Todas');
+      encherSelect('fBairro', [], 'Todos');
+    });
+    document.getElementById('fMicro').addEventListener('change', function(){
+      carregarOpcoes('bairro', { cidade: document.getElementById('fCidade').value, regiao: document.getElementById('fRegiao').value, micro: this.value }, 'fBairro', 'Todos');
     });
 
     document.getElementById('btnBuscar').addEventListener('click', buscarTalentos);
@@ -293,7 +326,8 @@
         if (!d || !d.ok){ selResumo.textContent = '⚠️ ' + ((d && d.error) || 'Não foi possível buscar.'); return; }
         LIMITE = d.limite_dia || 100;
         document.getElementById('limiteDia').textContent = LIMITE;
-        selResumo.textContent = d.total + ' talento(s) com e-mail encontrados. Marque quem recebe (até ' + LIMITE + '/dia).';
+        var tg = (typeof d.total_geral === 'number') ? d.total_geral : d.total;
+        selResumo.textContent = tg.toLocaleString('pt-BR') + ' talento(s) com e-mail no filtro' + (tg > d.total ? (' · exibindo ' + d.total) : '') + '. Marque quem recebe (até ' + LIMITE + '/dia).';
         selLista.innerHTML = (d.talentos || []).map(function(t){
           var marcado = selecionados[t.key] ? ' checked' : '';
           var local = [t.bairro, t.regiao, [t.cidade, t.uf].filter(Boolean).join('/')].filter(Boolean).join(' · ');
