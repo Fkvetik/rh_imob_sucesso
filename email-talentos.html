@@ -440,7 +440,7 @@
       if (!CONECTADO){ alert('Conecte o Gmail primeiro.'); return; }
       if (!lista.length){ alert('Selecione pelo menos 1 talento.'); return; }
       if (!document.getElementById('assunto').value.trim() || !editor.innerText.trim()){ alert('Escreva o assunto e a mensagem.'); return; }
-      if (!confirm('Enviar para ' + lista.length + ' talento(s) agora, pela sua conta Gmail?')) return;
+      if (!confirm('Colocar ' + lista.length + ' e-mail(s) na fila?\n\nEles saem pela sua conta Gmail, 1 a cada 2-3 minutos (automático, pode fechar a aba), respeitando o limite do dia.')) return;
       var btn = this; btn.disabled = true;
       var base = {
         assunto: document.getElementById('assunto').value.trim(),
@@ -448,27 +448,19 @@
         remetente: document.getElementById('fRemetente').value.trim(),
         empresa: document.getElementById('fEmpresa').value.trim()
       };
+      document.getElementById('envioSub').textContent = 'Agendando os envios…';
       lerAnexosB64(function(anexosB64){
         base.anexos = anexosB64;
-        var enviados = 0, falhas = [], i = 0, LOTE = 25;
-        function proxLote(){
-          if (i >= lista.length){
-            btn.disabled = false;
-            document.getElementById('envioSub').textContent = '✅ Enviados: ' + enviados + (falhas.length ? (' · ' + falhas.length + ' falha(s)') : '') + '.';
-            alert('Pronto! Enviados: ' + enviados + (falhas.length ? ('\nFalhas: ' + falhas.length + '\n' + falhas.slice(0,5).map(function(f){return f.email+': '+f.erro;}).join('\n')) : ''));
-            checarStatusGmail();
-            return;
-          }
-          var lote = lista.slice(i, i + LOTE); i += LOTE;
-          document.getElementById('envioSub').textContent = 'Enviando… ' + Math.min(i, lista.length) + '/' + lista.length;
-          fetch('/api/ext-email-enviar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ token: TOKEN, destinatarios: lote }, base)) })
-          .then(function(r){ return r.json(); }).then(function(d){
-            if (!d || !d.ok){ alert('⚠️ ' + ((d && d.error) || 'Falha no envio.')); btn.disabled = false; return; }
-            enviados += d.enviados || 0; if (Array.isArray(d.falhas)) falhas = falhas.concat(d.falhas);
-            setTimeout(proxLote, 1200); // ritmo entre lotes
-          }).catch(function(){ alert('⚠️ Falha de conexão no envio.'); btn.disabled = false; });
-        }
-        proxLote();
+        fetch('/api/ext-email-agendar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ token: TOKEN, destinatarios: lista }, base)) })
+        .then(function(r){ return r.json(); }).then(function(d){
+          btn.disabled = false;
+          if (!d || !d.ok){ alert('⚠️ ' + ((d && d.error) || 'Não foi possível agendar.')); return; }
+          document.getElementById('envioSub').textContent = '✅ ' + d.enfileirados + ' e-mail(s) na fila — saem 1 a cada 2-3 min, sozinho. Pode fechar a aba.';
+          alert('Pronto! ' + d.enfileirados + ' e-mail(s) entraram na fila.\n\nEles vão sair automaticamente, 1 a cada 2-3 minutos, respeitando o limite do dia. Você pode fechar esta aba.');
+          selecionados = {}; atualizarContagem();
+          selLista.querySelectorAll('.selChk').forEach(function(c){ c.checked = false; });
+          checarStatusGmail();
+        }).catch(function(){ btn.disabled = false; alert('⚠️ Falha de conexão ao agendar.'); });
       });
     });
 

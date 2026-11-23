@@ -19,9 +19,16 @@
     {
       "path": "/api/push-enviar",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/email-cron",
+      "schedule": "*/2 * * * *"
     }
   ],
   "functions": {
+    "api/email-cron.js": {
+      "maxDuration": 60
+    },
     "api/incorporadora.js": {
       "includeFiles": "data/incorporadoras.json"
     },
