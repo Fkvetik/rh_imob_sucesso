@@ -154,7 +154,6 @@
           <div><label class="lbl" style="margin-top:0">Micro-região</label><select id="fMicro"><option value="">Todas</option></select></div>
           <div><label class="lbl" style="margin-top:0">Bairro</label><select id="fBairro"><option value="">Todos</option></select></div>
           <div><label class="lbl" style="margin-top:0">Cargo</label><select id="fCargo"><option value="">Todos</option></select></div>
-          <div><label class="lbl" style="margin-top:0">Perfil</label><select id="fPerfil"><option value="">Todos</option></select></div>
           <div><label class="lbl" style="margin-top:0">Faixa etária</label><select id="fFaixa"><option value="">Todas</option></select></div>
         </div>
         <div style="margin-top:8px"><button class="btn btn-primary" id="btnBuscar" type="button" style="padding:9px 18px">Buscar talentos</button></div>
@@ -352,7 +351,6 @@
       if (opcoesCarregadas || !TOKEN) return; opcoesCarregadas = true;
       carregarOpcoes('cidade', {}, 'fCidade', 'Todas');
       carregarOpcoes('cargo', {}, 'fCargo', 'Todos');
-      carregarOpcoes('perfil', {}, 'fPerfil', 'Todos');
       carregarOpcoes('faixa', {}, 'fFaixa', 'Todas');
     }
     document.getElementById('fCidade').addEventListener('change', function(){
@@ -379,7 +377,6 @@
           micro: document.getElementById('fMicro').value.trim(),
           bairro: document.getElementById('fBairro').value.trim(),
           cargo: document.getElementById('fCargo').value.trim(),
-          perfil: document.getElementById('fPerfil').value.trim(),
           faixa: document.getElementById('fFaixa').value.trim() })
       })
       .then(function(r){ return r.json(); })

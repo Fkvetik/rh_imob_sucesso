@@ -44,7 +44,6 @@ export default async function handler(req, res) {
     + ilike('micro_regiao', body.micro)
     + ilike('bairro', body.bairro)
     + ilike('cargo', body.cargo)
-    + ilike('perfil', body.perfil)
     + ilike('faixa_idade', body.faixa);
 
   let lista, totalGeral = null;
@@ -71,7 +70,6 @@ export default async function handler(req, res) {
       regiao: t.regiao_macro || '',
       micro: t.micro_regiao || '',
       cargo: t.cargo || '',
-      perfil: t.perfil || '',
       faixa: t.faixa_idade || ''
     }));
 
