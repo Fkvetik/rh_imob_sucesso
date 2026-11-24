@@ -354,15 +354,24 @@
       carregarOpcoes('faixa', {}, 'fFaixa', 'Todas');
     }
     document.getElementById('fCidade').addEventListener('change', function(){
+      // Limpa os filhos NA HORA (os de baixo são recarregados logo abaixo, async),
+      // pra busca não levar uma região/micro/bairro de outra cidade.
+      encherSelect('fRegiao', [], 'Todas'); encherSelect('fMicro', [], 'Todas'); encherSelect('fBairro', [], 'Todos');
       carregarOpcoes('regiao', { cidade: this.value }, 'fRegiao', 'Todas');
-      encherSelect('fMicro', [], 'Todas'); encherSelect('fBairro', [], 'Todos');
+      buscarTalentos();
     });
     document.getElementById('fRegiao').addEventListener('change', function(){
+      encherSelect('fMicro', [], 'Todas'); encherSelect('fBairro', [], 'Todos');
       carregarOpcoes('micro', { cidade: document.getElementById('fCidade').value, regiao: this.value }, 'fMicro', 'Todas');
-      encherSelect('fBairro', [], 'Todos');
+      buscarTalentos();
     });
     document.getElementById('fMicro').addEventListener('change', function(){
       carregarOpcoes('bairro', { cidade: document.getElementById('fCidade').value, regiao: document.getElementById('fRegiao').value, micro: this.value }, 'fBairro', 'Todos');
+      buscarTalentos();
+    });
+    // Filtros folha: mudou, já busca (sem precisar clicar em "Buscar talentos").
+    ['fBairro','fCargo','fFaixa'].forEach(function(id){
+      document.getElementById(id).addEventListener('change', buscarTalentos);
     });
 
     document.getElementById('btnBuscar').addEventListener('click', buscarTalentos);
