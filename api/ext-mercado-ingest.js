@@ -140,5 +140,16 @@ export default async function handler(req, res) {
     const falta = /rhi_mercado_ingest/.test(String(msg));
     return send(res, 502, { ok: false, error: falta ? 'Falta rodar o SQL MERCADO_MAPS_1 no projeto RHI' : msg });
   }
+
+  // Marca QUEM coletou (pro CSV e pra "completar faltantes"). Não quebra o ingest
+  // se o SQL MERCADO_MAPS_10 ainda não tiver sido rodado.
+  if (login) {
+    fetch(`${RHI.url}/rest/v1/rpc/rhi_mercado_registrar_coleta`, {
+      method: 'POST',
+      headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_place_keys: limpos.map(o => o.place_key), p_login: login })
+    }).catch(() => {});
+  }
+
   return send(res, 200, { ok: true, login, recebidos: rows.length, validos: limpos.length, filtrados, gravados: data.gravados, estagio });
 }
