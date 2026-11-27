@@ -304,6 +304,19 @@
           '</div>'+
           '<input type="hidden" id="v-imagem_og" value="'+attr(v.imagem_og||v.imagem_url)+'">'+
         '</div>'+
+        '<div class="field"><label>PDF da empresa <span class="dica">(apresentação, lançamentos, pipeline — vira botão “Saiba mais” na vaga)</span></label>'+
+          '<div id="vg-pdf-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:12px;text-align:center;cursor:pointer" ondragover="event.preventDefault();this.style.borderColor=\'#2b124d\'" ondragleave="this.style.borderColor=\'#e0dce8\'" ondrop="vgPdfDrop(event)" onclick="document.getElementById(\'vg-pdf-file\').click()">'+
+            '<div id="vg-pdf-ph" style="font-size:13px;color:#888;font-weight:700">📄 Clique ou arraste o PDF (máx 15 MB)</div>'+
+            '<div id="vg-pdf-ld" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando PDF…</div>'+
+            '<div id="vg-pdf-ok" style="display:none;font-size:13px;color:#166534;font-weight:700">✅ PDF anexado</div>'+
+            '<input type="file" id="vg-pdf-file" accept="application/pdf" style="display:none" onchange="vgPdfFile(this.files[0])">'+
+          '</div>'+
+          '<div style="display:flex;gap:8px;margin-top:8px;align-items:center">'+
+            '<input id="v-pdf_url" value="'+attr(v.pdf_url)+'" placeholder="ou cole a URL do PDF" oninput="vgPdfShow(this.value)" style="flex:1">'+
+            '<button type="button" class="btn btn-ghost" onclick="vgPdfClear()">Remover</button>'+
+          '</div>'+
+          '<input id="v-pdf_label" value="'+attr(v.pdf_label)+'" placeholder="Texto do botão (ex.: Apresentação da empresa)" style="margin-top:8px">'+
+        '</div>'+
 
         (editar?'':'<div class="grp-title">Identificador da URL</div><div class="field"><label>vaga_id <span class="dica">(deixe vazio p/ gerar do título)</span></label>'+f('v-vaga_id','')+'</div>')+
 
@@ -316,6 +329,31 @@
       document.getElementById('vgm-bg').scrollTop=0;
       vgImgInit();
       vgFotoShow(val('v-responsavel_foto_url'));
+      vgPdfShow(val('v-pdf_url'));
+    }
+
+    // ── Upload do PDF da empresa (bucket público) ──
+    function vgPdfShow(url){
+      var ph=document.getElementById('vg-pdf-ph'), ok=document.getElementById('vg-pdf-ok'); if(!ph||!ok) return;
+      if(url){ ph.style.display='none'; ok.style.display='block'; } else { ph.style.display='block'; ok.style.display='none'; }
+    }
+    function vgPdfClear(){ var i=document.getElementById('v-pdf_url'); if(i) i.value=''; var fl=document.getElementById('vg-pdf-file'); if(fl) fl.value=''; vgPdfShow(''); }
+    function vgPdfDrop(e){ e.preventDefault(); var a=document.getElementById('vg-pdf-area'); if(a) a.style.borderColor='#e0dce8'; var f=e.dataTransfer.files[0]; if(f&&f.type==='application/pdf') vgPdfFile(f); }
+    async function vgPdfFile(file){
+      if(!file) return;
+      if(file.type!=='application/pdf'){ alert('Envie um arquivo PDF.'); return; }
+      if(file.size>15*1024*1024){ alert('PDF muito grande (máx 15 MB).'); return; }
+      var ph=document.getElementById('vg-pdf-ph'), ld=document.getElementById('vg-pdf-ld'), ok=document.getElementById('vg-pdf-ok'), area=document.getElementById('vg-pdf-area');
+      if(ph) ph.style.display='none'; if(ok) ok.style.display='none'; if(ld) ld.style.display='block'; if(area) area.style.pointerEvents='none';
+      try{
+        var caminho='noticias/vaga-pdf-'+Date.now()+'.pdf';
+        var res=await fetch(SB_URL+'/storage/v1/object/'+caminho,{ method:'POST', headers:{ 'Authorization':'Bearer '+SB_KEY, 'apikey':SB_KEY, 'Content-Type':'application/pdf', 'x-upsert':'true' }, body:file });
+        if(!res.ok){ throw new Error(await res.text()); }
+        var publicUrl=SB_URL+'/storage/v1/object/public/'+caminho;
+        var i=document.getElementById('v-pdf_url'); if(i) i.value=publicUrl;
+        vgPdfShow(publicUrl);
+      }catch(e){ alert('Erro no upload do PDF: '+e.message); if(ph) ph.style.display='block'; }
+      finally{ if(ld) ld.style.display='none'; if(area) area.style.pointerEvents=''; }
     }
 
     // ── Upload da foto/logo do responsável (mesmo bucket das notícias) ──
@@ -417,7 +455,7 @@
     }
 
     async function salvar(vagaId){
-      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og'];
+      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og','pdf_url','pdf_label'];
       var payload={ acao: vagaId?'editar_vaga':'criar_vaga' };
       if(vagaId) payload.vaga_id=vagaId; else { var vid=val('v-vaga_id'); if(vid) payload.vaga_id=vid; }
       campos.forEach(function(c){ payload[c]=val('v-'+c); });

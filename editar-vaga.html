@@ -144,6 +144,18 @@
         <input type="hidden" id="f-imagem_og">
       </div>
 
+      <div class="grp">PDF da empresa <span class="dica">(apresentação, lançamentos, pipeline)</span></div>
+      <div class="field">
+        <div class="drop" id="pdf-drop" ondragover="event.preventDefault()" ondrop="dropPdf(event)" onclick="document.getElementById('pdf-file').click()">
+          <div id="pdf-ph" style="font-size:13px;color:#888;font-weight:700">📄 Clique ou arraste o PDF (máx 15 MB)</div>
+          <div id="pdf-ld" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando PDF…</div>
+          <div id="pdf-ok" style="display:none;font-size:13px;color:#166534;font-weight:700">✅ PDF anexado</div>
+          <input type="file" id="pdf-file" accept="application/pdf" style="display:none" onchange="subirPdf(this.files[0])">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px"><input id="f-pdf_url" placeholder="ou cole a URL do PDF" oninput="pdfShow(this.value);pv()" style="flex:1"><button type="button" class="btn btn-ghost" onclick="limparPdf()">Remover</button></div>
+        <input id="f-pdf_label" placeholder="Texto do botão (ex.: Apresentação da empresa)" oninput="pv()" style="margin-top:8px">
+      </div>
+
       <div class="savebar">
         <button class="btn btn-primary" id="salvar" onclick="salvar()">Salvar e publicar</button>
         <span class="ok" id="ok">✅ Publicado!</span>
@@ -163,7 +175,7 @@
 
   <script>
     var VID='', TOK='', OGVAL='';
-    var CAMPOS=['titulo','categoria','selo','localidade','cidade','estado_uf','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','detalhes','requisitos','atividades','instagram_url','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','imagem_url','imagem_og'];
+    var CAMPOS=['titulo','categoria','selo','localidade','cidade','estado_uf','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','detalhes','requisitos','atividades','instagram_url','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','imagem_url','imagem_og','pdf_url','pdf_label'];
     // Bucket público (mesmo das notícias/admin)
     var SB_URL='https://tnzmxpoxvdlckmjwdala.supabase.co';
     var SB_KEY='sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv';
@@ -192,7 +204,7 @@
       CAMPOS.forEach(function(c){ var el=document.getElementById('f-'+c); if(el&&v[c]!=null) el.value=v[c]; });
       OGVAL=v.imagem_og||v.imagem_url||'';
       var og=document.getElementById('f-imagem_og'); if(og) og.value=OGVAL;
-      fotoShow(v.responsavel_foto_url); imgShow(v.imagem_url);
+      fotoShow(v.responsavel_foto_url); imgShow(v.imagem_url); pdfShow(v.pdf_url);
     }
 
     // ---------- prévia ao vivo ----------
@@ -210,6 +222,7 @@
       var li=function(a){ return a.map(function(i){return '<li>'+esc(i)+'</li>';}).join(''); };
       var resp=val('f-responsavel_nome')||'Mariana';
       var foto=val('f-responsavel_foto_url')||'/assets/mariana-v3.jpg';
+      var pdf=val('f-pdf_url'), pdfLabel=val('f-pdf_label')||'Apresentação da empresa';
       var html=''+
         '<div class="pv-hero">'+
           '<div class="pv-kick">Vaga · '+esc(cat)+'</div>'+
@@ -224,6 +237,7 @@
           (val('f-sobre_empresa')?'<h4>Sobre a empresa</h4><p>'+esc(val('f-sobre_empresa'))+'</p>':'')+
           (atividades.length?'<h4>Principais atividades</h4><ul>'+li(atividades)+'</ul>':'')+
           (requisitos.length?'<h4>Requisitos e perfil</h4><ul>'+li(requisitos)+'</ul>':'')+
+          (pdf?'<h4>Saiba mais sobre a empresa</h4><div style="display:flex;align-items:center;gap:10px;border:1.5px solid #e8e0ff;border-radius:12px;padding:12px 14px"><span style="font-size:22px">📄</span><div style="flex:1;min-width:0"><strong style="display:block;font-size:14px;color:#2b124d">'+esc(pdfLabel)+'</strong><small style="font-size:12px;color:#6f6283">Produtos, lançamentos e pipeline · PDF</small></div><span style="font-weight:800;font-size:12px;color:#ff7a1a">Abrir →</span></div>':'')+
           '<h4>Responsável pela vaga</h4>'+
           '<div class="pv-resp"><div class="av" style="background-image:url(\''+esc(foto)+'\')"></div>'+
             '<div><strong>'+esc(resp)+'</strong><span>'+esc(val('f-responsavel_cargo')||'Recrutamento imobiliário')+' · '+esc(val('f-responsavel_empresa')||'RH IMOB')+'</span></div></div>'+
@@ -237,6 +251,21 @@
     function imgShow(u){ var ph=document.getElementById('img-ph'),im=document.getElementById('img-prev'); if(u){im.src=u;im.style.display='block';ph.style.display='none';}else{im.removeAttribute('src');im.style.display='none';ph.style.display='block';} }
     function limparImg(){ document.getElementById('f-imagem_url').value=''; document.getElementById('f-imagem_og').value=''; OGVAL=''; document.getElementById('img-file').value=''; imgShow(''); pv(); }
     function dropFile(e,kind){ e.preventDefault(); var f=e.dataTransfer.files[0]; if(f&&f.type.indexOf('image/')===0){ kind==='foto'?subirFoto(f):subirImg(f); } }
+    function pdfShow(u){ var ph=document.getElementById('pdf-ph'),ok=document.getElementById('pdf-ok'); if(u){ph.style.display='none';ok.style.display='block';}else{ph.style.display='block';ok.style.display='none';} }
+    function limparPdf(){ document.getElementById('f-pdf_url').value=''; document.getElementById('pdf-file').value=''; pdfShow(''); pv(); }
+    function dropPdf(e){ e.preventDefault(); var f=e.dataTransfer.files[0]; if(f&&f.type==='application/pdf') subirPdf(f); }
+    async function subirPdf(file){
+      if(!file) return; if(file.type!=='application/pdf'){ alert('Envie um arquivo PDF.'); return; } if(file.size>15*1024*1024){ alert('PDF muito grande (máx 15 MB).'); return; }
+      var ph=document.getElementById('pdf-ph'),ld=document.getElementById('pdf-ld'),drop=document.getElementById('pdf-drop');
+      ph.style.display='none';ld.style.display='block';drop.style.pointerEvents='none';
+      try{
+        var caminho='noticias/vaga-pdf-'+Date.now()+'.pdf';
+        var res=await fetch(SB_URL+'/storage/v1/object/'+caminho,{ method:'POST', headers:{ 'Authorization':'Bearer '+SB_KEY, 'apikey':SB_KEY, 'Content-Type':'application/pdf', 'x-upsert':'true' }, body:file });
+        if(!res.ok) throw new Error(await res.text());
+        document.getElementById('f-pdf_url').value=SB_URL+'/storage/v1/object/public/'+caminho; pdfShow('x'); pv();
+      }catch(e){ alert('Erro no upload do PDF: '+e.message); ph.style.display='block'; }
+      finally{ ld.style.display='none';drop.style.pointerEvents=''; }
+    }
 
     async function upload(file,prefix){
       var ext=(file.name.split('.').pop()||'jpg').toLowerCase(); if(ext==='jfif'||ext==='jpe') ext='jpg';

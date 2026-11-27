@@ -17,6 +17,7 @@ const CAMPOS = [
   'remuneracao', 'horario', 'resumo', 'destaques', 'sobre_empresa', 'detalhes', 'requisitos',
   'atividades', 'selo', 'whatsapp_destino',
   'imagem_url', 'video_url', 'instagram_url', 'midia_tipo', 'midia_alt', 'imagem_og',
+  'pdf_url', 'pdf_label',
   'responsavel_nome', 'responsavel_whatsapp', 'responsavel_empresa',
   'responsavel_cargo', 'responsavel_email', 'responsavel_foto_url', 'slug'
 ];

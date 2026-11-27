@@ -205,6 +205,16 @@ function renderVaga(v, slug, FALLBACK_WA) {
     .vg-block li::before{content:'';position:absolute;left:0;top:7px;width:16px;height:16px;border-radius:50%;background:#f0e9ff;border:1.5px solid #7c3aed}
     .vg-block li::after{content:'✓';position:absolute;left:3.5px;top:4px;font-size:11px;font-weight:900;color:#7c3aed}
     .vg-resp{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#faf7ff,#f3eeff);border:1px solid #e8e0ff;border-radius:18px;padding:22px 24px;margin-top:8px}
+    .vg-resp-link{text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
+    .vg-resp-link:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(43,18,77,.14);border-color:#25d366}
+    .vg-resp-wa{margin-left:auto;width:44px;height:44px;border-radius:50%;background:#25d366;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(37,211,102,.4)}
+    .vg-pdf{display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #e8e0ff;border-radius:16px;padding:16px 18px;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
+    .vg-pdf:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(43,18,77,.14);border-color:#ff7a1a}
+    .vg-pdf-ic{font-size:26px;flex-shrink:0}
+    .vg-pdf-tx{display:flex;flex-direction:column;min-width:0}
+    .vg-pdf-tx strong{font-size:15.5px;color:#2b124d;font-weight:800}
+    .vg-pdf-tx small{font-size:12.5px;color:#6f6283}
+    .vg-pdf-go{margin-left:auto;font-weight:800;font-size:13px;color:#ff7a1a;white-space:nowrap}
     .vg-resp-av{width:56px;height:56px;border-radius:50%;background:#fff center/cover;flex-shrink:0;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)}
     .vg-resp strong{display:block;font-size:16px;color:#2b124d;font-weight:800}
     .vg-resp span{font-size:13px;color:#6f6283}
@@ -302,15 +312,25 @@ function renderVaga(v, slug, FALLBACK_WA) {
       ${atividades.length ? `<div class="vg-block"><h2>Principais atividades</h2><ul>${liList(atividades)}</ul></div>` : ''}
       ${requisitos.length ? `<div class="vg-block"><h2>Requisitos e perfil</h2><ul>${liList(requisitos)}</ul></div>` : ''}
 
+      ${v.pdf_url ? `<div class="vg-block">
+        <h2>Saiba mais sobre a empresa</h2>
+        <a class="vg-pdf" href="${esc(v.pdf_url)}" target="_blank" rel="noopener" onclick="gtag&&gtag('event','pdf_vaga',{vaga:'${escJs(slug)}'})">
+          <span class="vg-pdf-ic">📄</span>
+          <span class="vg-pdf-tx"><strong>${esc(v.pdf_label || 'Apresentação da empresa')}</strong><small>Produtos, lançamentos e pipeline · PDF</small></span>
+          <span class="vg-pdf-go">Abrir →</span>
+        </a>
+      </div>` : ''}
+
       <div class="vg-block">
         <h2>Responsável pela vaga</h2>
-        <div class="vg-resp">
+        <a class="vg-resp vg-resp-link" href="${waCandidatar}" target="_blank" rel="noopener" onclick="capturarInteresseVaga()">
           <div class="vg-resp-av" role="img" aria-label="${esc(respNome)}" style="background-image:url('${esc(respFoto)}')"></div>
           <div>
             <strong>${esc(respNome)}</strong>
             <span>${esc(v.responsavel_cargo || 'Recrutamento imobiliário')} · ${esc(v.responsavel_empresa || 'RH IMOB')}</span>
           </div>
-        </div>
+          <span class="vg-resp-wa" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></span>
+        </a>
       </div>
 
       <div class="vg-cta">
