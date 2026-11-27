@@ -60,6 +60,11 @@ function ogImageUrl(rawUrl) {
 function liList(items) {
   return items.map(i => `<li>${esc(i)}</li>`).join('');
 }
+// Igual ao liList, mas tira um marcador de bullet no começo da linha (•, -, –),
+// porque o CSS já põe o próprio ✓ — senão ficaria "✓ • texto".
+function liListTexto(items) {
+  return items.map(i => `<li>${esc(String(i).replace(/^\s*[•\-–*]\s*/, ''))}</li>`).join('');
+}
 
 function renderVaga(v, slug, FALLBACK_WA) {
   const url      = `${BASE}/vaga/${slug}`;
@@ -80,7 +85,13 @@ function renderVaga(v, slug, FALLBACK_WA) {
   const respFoto = v.responsavel_foto_url || '/assets/mariana-v3.jpg';
 
   const destaques  = splitList(v.destaques);
-  const atividades = splitList(v.detalhes || v.atividades);
+  // Atividades e Detalhes são seções SEPARADAS. Antes detalhes só servia de
+  // reserva pra atividades (v.detalhes || v.atividades), então sumia quando
+  // atividades estava preenchido. Agora cada um tem seu bloco; se só um existir,
+  // só ele aparece (vagas antigas que punham as atividades em "detalhes" seguem
+  // mostrando o conteúdo, agora sob "Detalhes da vaga").
+  const atividades = splitList(v.atividades);
+  const detalhes   = splitList(v.detalhes);
   const requisitos = splitList(v.requisitos);
 
   const ogImg   = ogImageUrl(v.imagem_url) || `${BASE}/assets/og-vaga.jpg`;
@@ -112,7 +123,7 @@ function renderVaga(v, slug, FALLBACK_WA) {
   const jobLD = JSON.stringify({
     '@context': 'https://schema.org/', '@type': 'JobPosting',
     title: titulo,
-    description: [v.resumo, ...atividades, ...requisitos].filter(Boolean).join('. '),
+    description: [v.resumo, ...atividades, ...detalhes, ...requisitos].filter(Boolean).join('. '),
     datePosted,
     validThrough,
     employmentType: /clt/i.test(modal) ? 'FULL_TIME' : /pj|autôn|autonom/i.test(modal) ? 'CONTRACTOR' : 'OTHER',
@@ -311,6 +322,7 @@ function renderVaga(v, slug, FALLBACK_WA) {
       ${v.sobre_empresa ? `<div class="vg-block"><h2>Sobre a empresa</h2><p>${esc(v.sobre_empresa)}</p></div>` : ''}
       ${atividades.length ? `<div class="vg-block"><h2>Principais atividades</h2><ul>${liList(atividades)}</ul></div>` : ''}
       ${requisitos.length ? `<div class="vg-block"><h2>Requisitos e perfil</h2><ul>${liList(requisitos)}</ul></div>` : ''}
+      ${detalhes.length ? `<div class="vg-block"><h2>Detalhes da vaga</h2><ul>${liListTexto(detalhes)}</ul></div>` : ''}
 
       ${v.pdf_url ? `<div class="vg-block">
         <h2>Saiba mais sobre a empresa</h2>

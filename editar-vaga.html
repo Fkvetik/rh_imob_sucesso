@@ -218,8 +218,9 @@
       if(local) tags+='<span class="pv-tag">📍 '+esc(local)+'</span>';
       if(modal) tags+='<span class="pv-tag">💼 '+esc(modal)+'</span>';
       if(remun) tags+='<span class="pv-tag pay">💰 '+esc(remun)+'</span>';
-      var destaques=splitList(val('f-destaques')), atividades=splitList(val('f-atividades')||val('f-detalhes')), requisitos=splitList(val('f-requisitos'));
+      var destaques=splitList(val('f-destaques')), atividades=splitList(val('f-atividades')), detalhes=splitList(val('f-detalhes')), requisitos=splitList(val('f-requisitos'));
       var li=function(a){ return a.map(function(i){return '<li>'+esc(i)+'</li>';}).join(''); };
+      var liTx=function(a){ return a.map(function(i){return '<li>'+esc(String(i).replace(/^\s*[•\-–*]\s*/,''))+'</li>';}).join(''); };
       var resp=val('f-responsavel_nome')||'Mariana';
       var foto=val('f-responsavel_foto_url')||'/assets/mariana-v3.jpg';
       var pdf=val('f-pdf_url'), pdfLabel=val('f-pdf_label')||'Apresentação da empresa';
@@ -237,6 +238,7 @@
           (val('f-sobre_empresa')?'<h4>Sobre a empresa</h4><p>'+esc(val('f-sobre_empresa'))+'</p>':'')+
           (atividades.length?'<h4>Principais atividades</h4><ul>'+li(atividades)+'</ul>':'')+
           (requisitos.length?'<h4>Requisitos e perfil</h4><ul>'+li(requisitos)+'</ul>':'')+
+          (detalhes.length?'<h4>Detalhes da vaga</h4><ul>'+liTx(detalhes)+'</ul>':'')+
           (pdf?'<h4>Saiba mais sobre a empresa</h4><div style="display:flex;align-items:center;gap:10px;border:1.5px solid #e8e0ff;border-radius:12px;padding:12px 14px"><span style="font-size:22px">📄</span><div style="flex:1;min-width:0"><strong style="display:block;font-size:14px;color:#2b124d">'+esc(pdfLabel)+'</strong><small style="font-size:12px;color:#6f6283">Produtos, lançamentos e pipeline · PDF</small></div><span style="font-weight:800;font-size:12px;color:#ff7a1a">Abrir →</span></div>':'')+
           '<h4>Responsável pela vaga</h4>'+
           '<div class="pv-resp"><div class="av" style="background-image:url(\''+esc(foto)+'\')"></div>'+
