@@ -27,7 +27,7 @@
     .bar .brand img{width:30px;height:30px;border-radius:50%}
     .bar .out{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:13px;font-weight:700;padding:7px 14px;border-radius:9px;cursor:pointer}
     .tabs{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--linha);padding:0 8px;flex-shrink:0;overflow-x:auto}
-    .tab{padding:14px 18px;font-size:14px;font-weight:800;color:#8c809d;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px}
+    .tab{padding:14px 18px;font-size:14px;font-weight:800;color:#8c809d;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px;text-decoration:none}
     .tab.on{color:var(--roxo);border-color:#ff7a1a}
     .frames{flex:1;position:relative;background:#faf8ff;overflow:hidden}
     .frames iframe{position:absolute;inset:0;width:100%;height:100%;border:none;display:none;background:#faf8ff}
@@ -64,15 +64,15 @@
       <button class="out" onclick="sair()">Sair</button>
     </div>
     <div class="tabs">
-      <button class="tab on" data-tab="leads"      data-src="/admin-leads.html"          onclick="abrir(this)">📊 Leads</button>
-      <button class="tab"    data-tab="noticias"   data-src="/admin-noticias.html"       onclick="abrir(this)">📰 Notícias</button>
-      <button class="tab"    data-tab="compartilhar" data-src="/central-compartilhar.html" onclick="abrir(this)">🔗 Compartilhar</button>
-      <button class="tab"    data-tab="avaliacoes" data-src="/admin-avaliacoes.html"     onclick="abrir(this)">🧭 Avaliações</button>
-      <button class="tab"    data-tab="vagas"      data-src="/admin-vagas.html"          onclick="abrir(this)">💼 Vagas</button>
-      <button class="tab"    data-tab="mercado"    data-src="/admin-mercado.html"        onclick="abrir(this)">🏗️ Mercado</button>
-      <button class="tab"    data-tab="contas"     data-src="/admin-contas.html"         onclick="abrir(this)">🏢 Contas</button>
-      <button class="tab"    data-tab="leiloes"    data-src="/admin-leiloes.html"        onclick="abrir(this)">🔨 Leilões</button>
-      <button class="tab"    data-tab="extensao"   data-src="/admin-catho-coletor.html"  onclick="abrir(this)">🧩 Extensão</button>
+      <a class="tab on" data-tab="leads"      data-src="/admin-leads.html"          href="/admin-leads.html"          onclick="return abrir(this,event)">📊 Leads</a>
+      <a class="tab"    data-tab="noticias"   data-src="/admin-noticias.html"       href="/admin-noticias.html"       onclick="return abrir(this,event)">📰 Notícias</a>
+      <a class="tab"    data-tab="compartilhar" data-src="/central-compartilhar.html" href="/central-compartilhar.html" onclick="return abrir(this,event)">🔗 Compartilhar</a>
+      <a class="tab"    data-tab="avaliacoes" data-src="/admin-avaliacoes.html"     href="/admin-avaliacoes.html"     onclick="return abrir(this,event)">🧭 Avaliações</a>
+      <a class="tab"    data-tab="vagas"      data-src="/admin-vagas.html"          href="/admin-vagas.html"          onclick="return abrir(this,event)">💼 Vagas</a>
+      <a class="tab"    data-tab="mercado"    data-src="/admin-mercado.html"        href="/admin-mercado.html"        onclick="return abrir(this,event)">🏗️ Mercado</a>
+      <a class="tab"    data-tab="contas"     data-src="/admin-contas.html"         href="/admin-contas.html"         onclick="return abrir(this,event)">🏢 Contas</a>
+      <a class="tab"    data-tab="leiloes"    data-src="/admin-leiloes.html"        href="/admin-leiloes.html"        onclick="return abrir(this,event)">🔨 Leilões</a>
+      <a class="tab"    data-tab="extensao"   data-src="/admin-catho-coletor.html"  href="/admin-catho-coletor.html"  onclick="return abrir(this,event)">🧩 Extensão</a>
     </div>
     <div class="frames" id="frames">
       <div class="placeholder" id="ph">Carregando…</div>
@@ -100,7 +100,13 @@
       abrir(document.querySelector('.tab.on'));
     }
 
-    function abrir(tab){
+    function abrir(tab, ev){
+      // Ctrl/Cmd/Shift + clique (ou botão do meio) → deixa o navegador abrir o
+      // link em nova aba. Clique normal → troca a seção aqui dentro.
+      if(ev){
+        if(ev.ctrlKey||ev.metaKey||ev.shiftKey||ev.button===1) return true;
+        ev.preventDefault();
+      }
       var id = tab.dataset.tab;
       document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('on', t===tab); });
       // cria o iframe na primeira vez
