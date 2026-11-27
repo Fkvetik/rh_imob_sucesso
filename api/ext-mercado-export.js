@@ -54,5 +54,10 @@ export default async function handler(req, res) {
   const linhas = rows.map(row => COLS.map(c => celula(row[c[0]])).join(','));
   const csv = '﻿' + [head].concat(linhas).join('\r\n'); // BOM p/ Excel abrir com acento
 
-  return send(res, 200, { ok: true, login, total: rows.length, csv });
+  // Também devolve as linhas (só os campos que a tela mostra), pra extensão
+  // exibir a PRÉVIA antes de baixar e montar a planilha (.xls) no cliente.
+  const colunas = COLS.map(c => c[1]);
+  const dados = rows.map(row => { const o = {}; for (const c of COLS) o[c[1]] = (row[c[0]] == null ? '' : String(row[c[0]])); return o; });
+
+  return send(res, 200, { ok: true, login, total: rows.length, colunas, rows: dados, csv });
 }
