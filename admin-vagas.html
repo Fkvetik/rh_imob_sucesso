@@ -180,6 +180,7 @@
             '</select>'+
             '<a class="btn btn-ghost btn-sm" href="/vaga/'+encodeURIComponent(v.vaga_id)+'" target="_blank" rel="noopener">Ver</a>'+
             '<button class="btn btn-ghost btn-sm" onclick="abrirModal(\''+vid+'\')">Editar</button>'+
+            '<button class="btn btn-ghost btn-sm" onclick="duplicar(\''+vid+'\')">⧉ Duplicar</button>'+
             '<button class="btn btn-ghost btn-sm" onclick="enviarProDono(\''+vid+'\',this)">🔗 Enviar pro dono</button>'+
             '<button class="btn btn-ghost btn-sm" style="color:#c53030;border-color:#fecaca" onclick="excluir(\''+vid+'\')">Excluir</button>'+
           '</div>'+
@@ -225,9 +226,22 @@
     function f(id,v){ return '<input id="'+id+'" value="'+attr(v||'')+'">'; }
     function ta(id,v){ return '<textarea id="'+id+'">'+esc(v||'')+'</textarea>'; }
 
-    function abrirModal(vagaId){
-      var v = vagaId ? VAGAS.find(function(x){return x.vaga_id===vagaId;}) : {};
-      var editar = !!vagaId;
+    // Duplicar: abre o modal em modo "nova vaga" já preenchido com os dados da
+    // vaga escolhida (sem vaga_id/token). A operadora troca telefone e foto (ou
+    // o que quiser) e clica em Criar — útil pra repetir a mesma vaga pra outra
+    // assistente da mesma empresa.
+    function duplicar(vagaId){
+      var v = VAGAS.find(function(x){return x.vaga_id===vagaId;});
+      if(!v){ alert('Vaga não encontrada.'); return; }
+      var c = Object.assign({}, v);
+      delete c.vaga_id; delete c.slug; delete c.edit_token; delete c.created_at; delete c.updated_at;
+      c.titulo = (c.titulo||'') + ' (cópia)';
+      abrirModal(null, c);
+    }
+
+    function abrirModal(vagaId, prefill){
+      var v = prefill ? prefill : (vagaId ? VAGAS.find(function(x){return x.vaga_id===vagaId;}) : {});
+      var editar = !!vagaId && !prefill;
       document.getElementById('vgm').innerHTML =
         '<h2>'+(editar?'Editar vaga':'Nova vaga')+'</h2>'+
         '<p class="vgm-sub">'+(editar?('URL: /vaga/'+esc(v.vaga_id)):'Preencha os dados. A vaga entra no ar como ATIVA.')+'</p>'+

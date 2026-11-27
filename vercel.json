@@ -71,6 +71,10 @@
       "destination": "/api/artigo?slug=:slug"
     },
     {
+      "source": "/vagas/empresa/:empresa",
+      "destination": "/api/vagas-empresa?empresa=:empresa"
+    },
+    {
       "source": "/vaga/:slug",
       "destination": "/api/vaga?slug=:slug"
     },
