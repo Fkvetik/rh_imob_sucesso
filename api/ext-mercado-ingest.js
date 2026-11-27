@@ -141,6 +141,18 @@ export default async function handler(req, res) {
   const service = RHI.service();
   if (!service) return send(res, 500, { ok: false, error: 'RHI_SUPABASE_SERVICE_KEY não configurada no servidor' });
 
+  // Quantos do lote JÁ estavam no banco (pro painel mostrar "novos × já no banco").
+  // Antes do upsert. Best-effort: se o SQL MERCADO_MAPS_11 não rodou, fica null.
+  let jaExistiam = null;
+  try {
+    const rc = await fetch(`${RHI.url}/rest/v1/rpc/rhi_mercado_existentes`, {
+      method: 'POST',
+      headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_keys: limpos.map(o => o.place_key) })
+    });
+    if (rc.ok) { const n = await rc.json().catch(() => null); if (Number.isFinite(n)) jaExistiam = n; }
+  } catch (_) {}
+
   const r = await fetch(`${RHI.url}/rest/v1/rpc/rhi_mercado_ingest`, {
     method: 'POST',
     headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
@@ -167,5 +179,6 @@ export default async function handler(req, res) {
     } catch (_) {}
   }
 
-  return send(res, 200, { ok: true, login, recebidos: rows.length, validos: limpos.length, filtrados, gravados: data.gravados, estagio });
+  const novos = jaExistiam == null ? null : Math.max(0, limpos.length - jaExistiam);
+  return send(res, 200, { ok: true, login, recebidos: rows.length, validos: limpos.length, filtrados, gravados: data.gravados, estagio, novos, jaExistiam });
 }
