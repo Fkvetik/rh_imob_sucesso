@@ -8,8 +8,11 @@
 // A página pública (/vagas) só mostra status=ATIVA; desativar tira do ar
 // sem apagar. Excluir remove de vez.
 
+import { pingIndexNow } from './_indexnow.js';
+
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const TABELA = 'site_vagas_publicas';
+const SITE = 'https://www.rhimob.com.br';
 
 // campos texto livres aceitos em criar/editar
 const CAMPOS = [
@@ -87,7 +90,10 @@ async function criarVaga(res, headers, body) {
   });
   if (!r.ok) return supabaseErr(res, r);
   const created = await r.json();
-  return send(res, 200, { ok: true, vaga: Array.isArray(created) ? created[0] : created });
+  const nova = Array.isArray(created) ? created[0] : created;
+  // Avisa os buscadores na hora (só se entrou pública). Best-effort.
+  if (nova && nova.status === 'ATIVA') await pingIndexNow(`${SITE}/vaga/${nova.vaga_id}`);
+  return send(res, 200, { ok: true, vaga: nova });
 }
 
 async function editarVaga(res, headers, body) {
@@ -102,6 +108,7 @@ async function editarVaga(res, headers, body) {
     method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
   });
   if (!r.ok) return supabaseErr(res, r);
+  await pingIndexNow(`${SITE}/vaga/${body.vaga_id}`); // reindexar após editar
   return send(res, 200, { ok: true });
 }
 
@@ -133,6 +140,7 @@ async function definirEstado(res, headers, body) {
     body: JSON.stringify({ ...alvo, updated_at: new Date().toISOString() })
   });
   if (!r.ok) return supabaseErr(res, r);
+  if (alvo.status === 'ATIVA') await pingIndexNow(`${SITE}/vaga/${body.vaga_id}`);
   return send(res, 200, { ok: true });
 }
 

@@ -7,6 +7,8 @@
 // POST { vaga_id, edit_token, ...}   → grava o conteúdo (status/grade/prioridade
 //                                       NÃO mudam aqui — isso é só no admin)
 
+import { pingIndexNow } from './_indexnow.js';
+
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const TABELA = 'site_vagas_publicas';
 
@@ -45,6 +47,7 @@ export default async function handler(req, res) {
         method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
       });
       if (!r.ok) return supabaseErr(res, r);
+      await pingIndexNow(`https://www.rhimob.com.br/vaga/${vagaId}`); // dono publicou → avisa buscadores
       return send(res, 200, { ok: true });
     }
 
