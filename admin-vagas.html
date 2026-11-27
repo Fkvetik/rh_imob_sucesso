@@ -197,8 +197,34 @@
             '<div class="emp-link"><a href="'+link+'" target="_blank" rel="noopener">'+link+'</a></div>'+
             '<div class="emp-acoes"><a class="btn btn-ghost btn-sm" href="'+link+'" target="_blank" rel="noopener">Abrir</a>'+
             '<button class="btn btn-ghost btn-sm" onclick="copiarLink(event,\''+link+'\')">Copiar</button></div>'+
+            '<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px" onclick="duplicarOperacao(\''+e.slug+'\')">⧉ Duplicar operação (nova assistente)</button>'+
           '</div>';
         }).join('')+'</div>';
+    }
+
+    // Duplica TODAS as vagas ativas de uma empresa para uma nova assistente
+    // (mesma empresa, telefone novo), entrando FORA DA GRADE. Copia as frases
+    // todas; a foto você sobe depois em uma vaga e ela vale pras outras (segue o
+    // telefone). Serve pra montar a operação de outra assistente de uma vez.
+    async function duplicarOperacao(sl){
+      var vagas = VAGAS.filter(function(v){ return v.responsavel_empresa && slugEmpresa(v.responsavel_empresa)===sl && v.status==='ATIVA'; });
+      if(!vagas.length){ alert('Nenhuma vaga ativa nessa empresa.'); return; }
+      var nomeEmp = vagas[0].responsavel_empresa;
+      var nome = prompt('Duplicar '+vagas.length+' vaga(s) da '+nomeEmp+' para uma NOVA assistente (mesma empresa).\n\nNome da nova responsável:');
+      if(nome==null) return; nome=nome.trim(); if(!nome){ alert('Informe o nome.'); return; }
+      var tel = prompt('WhatsApp da nova responsável (só números, com DDD):\nex.: 5511999998888');
+      if(tel==null) return; tel=(tel||'').replace(/\D/g,''); if(tel.length<10){ alert('WhatsApp inválido.'); return; }
+      if(!confirm('Vou criar '+vagas.length+' vaga(s) FORA DA GRADE para '+nome+' ('+tel+').\nAs frases são copiadas; a foto você sobe depois. Confirmar?')) return;
+      var CP=['titulo','categoria','selo','cidade','estado_uf','localidade','endereco','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','requisitos','atividades','detalhes','responsavel_empresa','responsavel_cargo','instagram_url','imagem_url','imagem_og','pdf_url','pdf_label'];
+      var okc=0, fail=0;
+      for(var i=0;i<vagas.length;i++){
+        var v=vagas[i];
+        var payload={acao:'criar_vaga', responsavel_nome:nome, responsavel_whatsapp:tel, status:'ATIVA', na_grade:false, prioridade:(v.prioridade!=null?v.prioridade:50)};
+        CP.forEach(function(c){ if(v[c]!=null) payload[c]=v[c]; });
+        try{ await postAcao(payload); okc++; }catch(e){ fail++; }
+      }
+      alert('✅ '+okc+' vaga(s) criada(s) para '+nome+(fail?(' · '+fail+' falha(s)'):'')+'.\nEntraram FORA DA GRADE. Agora é só subir a foto da '+nome+' em uma delas — vale pra todas (segue o telefone).');
+      recarregar();
     }
 
     function render(){
