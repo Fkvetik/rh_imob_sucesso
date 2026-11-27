@@ -144,6 +144,15 @@
 
     function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
     function attr(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+    // Slug da empresa igual ao do servidor (api/vagas-empresa.js) — monta o link
+    // /vagas/empresa/<slug> que agrupa as vagas daquela empresa.
+    function slugEmpresa(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+    function copiarLink(ev, path){
+      ev.preventDefault();
+      var url = location.origin + path;
+      try{ navigator.clipboard.writeText(url); var b=ev.target; var t=b.textContent; b.textContent='copiado!'; setTimeout(function(){b.textContent=t;},1200); }
+      catch(e){ prompt('Copie o link:', url); }
+    }
     // Formata o WhatsApp pra leitura: tira o 55, mostra (DD) 9xxxx-xxxx.
     function fmtTel(v){
       var d=String(v||'').replace(/\D/g,''); if(d.length>11&&d.indexOf('55')===0) d=d.slice(2);
@@ -171,6 +180,7 @@
             '<p class="vaga-titulo">'+esc(v.titulo||'(sem título)')+'<span class="badge '+bcls+'">'+btxt+'</span></p>'+
             '<p class="vaga-meta">'+esc([v.categoria,v.localidade||((v.cidade||'')+'/'+(v.estado_uf||''))].filter(Boolean).join(' · '))+' · prio '+(v.prioridade!=null?v.prioridade:'—')+'</p>'+
             '<p class="vaga-meta" style="color:#5a1fd4">👤 '+esc(v.responsavel_nome||'Mariana')+(v.responsavel_whatsapp?' · 📱 '+esc(fmtTel(v.responsavel_whatsapp)):'')+'</p>'+
+            (v.responsavel_empresa ? '<p class="vaga-meta">🔗 Página da empresa: <a href="/vagas/empresa/'+slugEmpresa(v.responsavel_empresa)+'" target="_blank" rel="noopener" style="color:#1e9e5a;font-weight:700">/vagas/empresa/'+slugEmpresa(v.responsavel_empresa)+'</a> <button class="btn btn-ghost btn-sm" style="padding:1px 7px;font-size:11px" onclick="copiarLink(event,\'/vagas/empresa/'+slugEmpresa(v.responsavel_empresa)+'\')">copiar</button></p>' : '')+
           '</div>'+
           '<div class="vaga-acoes">'+
             '<select class="btn btn-ghost btn-sm" title="Estado de publicação" onchange="definirEstado(\''+vid+'\',this.value,this)">'+
