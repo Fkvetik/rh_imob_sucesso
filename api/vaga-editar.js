@@ -14,7 +14,7 @@ const TABELA = 'site_vagas_publicas';
 
 // Só conteúdo. Nada de status, na_grade, prioridade, edit_token, vaga_id.
 const CAMPOS = [
-  'titulo', 'categoria', 'selo', 'localidade', 'cidade', 'estado_uf', 'modalidade',
+  'titulo', 'categoria', 'selo', 'localidade', 'cidade', 'estado_uf', 'endereco', 'modalidade',
   'remuneracao', 'horario', 'resumo', 'destaques', 'sobre_empresa', 'detalhes',
   'requisitos', 'atividades',
   'imagem_url', 'imagem_og', 'instagram_url', 'midia_tipo', 'pdf_url', 'pdf_label',

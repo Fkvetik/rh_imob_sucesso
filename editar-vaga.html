@@ -99,6 +99,7 @@
         <div class="field"><label>UF</label><input id="f-estado_uf" maxlength="2" oninput="pv()"></div>
         <div class="field"><label>Região/zona</label><input id="f-localidade" oninput="pv()"></div>
       </div>
+      <div class="field"><label>Endereço do plantão <span class="dica">(rua e número — vira “Como chegar” na vaga)</span></label><input id="f-endereco" oninput="pv()"></div>
       <div class="cols-3">
         <div class="field"><label>Modalidade <span class="dica">(CLT, PJ…)</span></label><input id="f-modalidade" oninput="pv()"></div>
         <div class="field"><label>Remuneração</label><input id="f-remuneracao" oninput="pv()"></div>
@@ -175,7 +176,7 @@
 
   <script>
     var VID='', TOK='', OGVAL='';
-    var CAMPOS=['titulo','categoria','selo','localidade','cidade','estado_uf','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','detalhes','requisitos','atividades','instagram_url','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','imagem_url','imagem_og','pdf_url','pdf_label'];
+    var CAMPOS=['titulo','categoria','selo','localidade','cidade','estado_uf','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','detalhes','requisitos','atividades','endereco','instagram_url','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','imagem_url','imagem_og','pdf_url','pdf_label'];
     // Bucket público (mesmo das notícias/admin)
     var SB_URL='https://tnzmxpoxvdlckmjwdala.supabase.co';
     var SB_KEY='sb_publishable_C_KCEs0Kd_l6NoDOFPmNOA_qBuyIxSv';
@@ -239,6 +240,7 @@
           (atividades.length?'<h4>Principais atividades</h4><ul>'+li(atividades)+'</ul>':'')+
           (requisitos.length?'<h4>Requisitos e perfil</h4><ul>'+li(requisitos)+'</ul>':'')+
           (detalhes.length?'<h4>Detalhes da vaga</h4><ul>'+liTx(detalhes)+'</ul>':'')+
+          (val('f-endereco')?'<h4>Como chegar</h4><div style="display:flex;align-items:center;gap:10px;border:1.5px solid #e8e0ff;border-radius:12px;padding:12px 14px"><span style="font-size:22px">📍</span><div style="flex:1;min-width:0"><strong style="display:block;font-size:14px;color:#2b124d">'+esc(val("f-endereco"))+'</strong><small style="font-size:12px;color:#6f6283">abrir no Google Maps</small></div></div>':'')+
           (pdf?'<h4>Saiba mais sobre a empresa</h4><div style="display:flex;align-items:center;gap:10px;border:1.5px solid #e8e0ff;border-radius:12px;padding:12px 14px"><span style="font-size:22px">📄</span><div style="flex:1;min-width:0"><strong style="display:block;font-size:14px;color:#2b124d">'+esc(pdfLabel)+'</strong><small style="font-size:12px;color:#6f6283">Produtos, lançamentos e pipeline · PDF</small></div><span style="font-weight:800;font-size:12px;color:#ff7a1a">Abrir →</span></div>':'')+
           '<h4>Responsável pela vaga</h4>'+
           '<div class="pv-resp"><div class="av" style="background-image:url(\''+esc(foto)+'\')"></div>'+

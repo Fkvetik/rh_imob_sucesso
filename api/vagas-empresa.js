@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
   let vagas = [];
   try {
-    const sel = 'vaga_id,titulo,localidade,cidade,estado_uf,modalidade,remuneracao,resumo,selo,categoria,responsavel_empresa,responsavel_nome,imagem_url,imagem_og,prioridade';
+    const sel = 'vaga_id,titulo,localidade,cidade,estado_uf,endereco,modalidade,remuneracao,resumo,selo,categoria,responsavel_empresa,responsavel_nome,imagem_url,imagem_og,prioridade';
     const r = await fetch(`${SB}/rest/v1/site_vagas_publicas?status=eq.ATIVA&select=${sel}&order=prioridade.asc,updated_at.desc`,
       { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
     const data = await r.json();
@@ -65,6 +65,7 @@ function card(v) {
     ${v.selo ? `<span class="selo">${esc(v.selo)}</span>` : ''}
     <h3>${esc(v.titulo || 'Vaga')}</h3>
     ${v.resumo ? `<p>${esc(v.resumo)}</p>` : ''}
+    ${v.endereco ? `<div class="end">📍 ${esc(v.endereco)}</div>` : ''}
     <div class="tags">${tags}</div>
     <span class="go">Ver vaga e candidatar-se →</span>
   </a>`;
@@ -135,6 +136,7 @@ function render(nomeEmpresa, alvo, vagas) {
   .card .selo{position:absolute;top:14px;right:14px;background:#f0e9ff;color:#7c3aed;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px}
   .card h3{font-size:16px;font-weight:800;color:#2b124d;margin:0;padding-right:70px;line-height:1.3}
   .card p{font-size:13.5px;color:#555;margin:0;line-height:1.55}
+  .card .end{font-size:12px;color:#7c3aed;font-weight:700;margin-top:2px}
   .card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
   .card .t{font-size:11.5px;font-weight:700;background:#faf7ff;border:1px solid #ece6fb;color:#4b3a6b;border-radius:20px;padding:4px 10px}
   .card .t.pay{background:#eafff1;border-color:#c6f0d6;color:#0a7d2c}

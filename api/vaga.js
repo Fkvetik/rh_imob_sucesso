@@ -226,6 +226,13 @@ function renderVaga(v, slug, FALLBACK_WA) {
     .vg-pdf-tx strong{font-size:15.5px;color:#2b124d;font-weight:800}
     .vg-pdf-tx small{font-size:12.5px;color:#6f6283}
     .vg-pdf-go{margin-left:auto;font-weight:800;font-size:13px;color:#ff7a1a;white-space:nowrap}
+    .vg-mapa{display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #e8e0ff;border-radius:16px;padding:16px 18px;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
+    .vg-mapa:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(43,18,77,.14);border-color:#25d366}
+    .vg-mapa-ic{font-size:26px;flex-shrink:0}
+    .vg-mapa-tx{display:flex;flex-direction:column;min-width:0}
+    .vg-mapa-tx strong{font-size:15.5px;color:#2b124d;font-weight:800}
+    .vg-mapa-tx small{font-size:12.5px;color:#6f6283}
+    .vg-mapa-go{margin-left:auto;font-weight:800;font-size:13px;color:#1e9e5a;white-space:nowrap}
     .vg-resp-av{width:56px;height:56px;border-radius:50%;background:#fff center/cover;flex-shrink:0;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)}
     .vg-resp strong{display:block;font-size:16px;color:#2b124d;font-weight:800}
     .vg-resp span{font-size:13px;color:#6f6283}
@@ -323,6 +330,12 @@ function renderVaga(v, slug, FALLBACK_WA) {
       ${atividades.length ? `<div class="vg-block"><h2>Principais atividades</h2><ul>${liList(atividades)}</ul></div>` : ''}
       ${requisitos.length ? `<div class="vg-block"><h2>Requisitos e perfil</h2><ul>${liList(requisitos)}</ul></div>` : ''}
       ${detalhes.length ? `<div class="vg-block"><h2>Detalhes da vaga</h2><ul>${liListTexto(detalhes)}</ul></div>` : ''}
+      ${v.endereco ? `<div class="vg-block"><h2>Como chegar</h2>
+        <a class="vg-mapa" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([v.endereco, v.cidade, v.estado_uf].filter(Boolean).join(', '))}" target="_blank" rel="noopener">
+          <span class="vg-mapa-ic">📍</span>
+          <span class="vg-mapa-tx"><strong>${esc(v.endereco)}</strong><small>${esc([v.localidade || v.cidade, v.estado_uf].filter(Boolean).join(' · '))} · abrir no Google Maps</small></span>
+          <span class="vg-mapa-go">Ver no mapa →</span>
+        </a></div>` : ''}
 
       ${v.pdf_url ? `<div class="vg-block">
         <h2>Saiba mais sobre a empresa</h2>

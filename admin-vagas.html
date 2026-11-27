@@ -308,6 +308,7 @@
           '<div class="field"><label>UF</label>'+f('v-estado_uf',v.estado_uf)+'</div>'+
           '<div class="field"><label>Região/zona <span class="dica">(localidade)</span></label>'+f('v-localidade',v.localidade)+'</div>'+
         '</div>'+
+        '<div class="field"><label>Endereço do plantão/empreendimento <span class="dica">(rua e número — vira “Como chegar” com link do Google Maps)</span></label>'+f('v-endereco',v.endereco)+'</div>'+
         '<div class="cols-3">'+
           '<div class="field"><label>Modalidade</label>'+f('v-modalidade',v.modalidade)+'</div>'+
           '<div class="field"><label>Remuneração</label>'+f('v-remuneracao',v.remuneracao)+'</div>'+
@@ -520,7 +521,7 @@
     }
 
     async function salvar(vagaId){
-      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og','pdf_url','pdf_label'];
+      var campos=['titulo','categoria','selo','cidade','estado_uf','localidade','endereco','modalidade','remuneracao','horario','resumo','destaques','sobre_empresa','requisitos','atividades','detalhes','responsavel_nome','responsavel_whatsapp','responsavel_empresa','responsavel_cargo','responsavel_email','responsavel_foto_url','instagram_url','imagem_url','imagem_og','pdf_url','pdf_label'];
       var payload={ acao: vagaId?'editar_vaga':'criar_vaga' };
       if(vagaId) payload.vaga_id=vagaId; else { var vid=val('v-vaga_id'); if(vid) payload.vaga_id=vid; }
       campos.forEach(function(c){ payload[c]=val('v-'+c); });
