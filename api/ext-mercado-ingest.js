@@ -66,6 +66,18 @@ function parseEndereco(end) {
   return out;
 }
 
+// Chave ESTÁVEL do lugar, pra o card (central) e o lugar aberto (coleta) do
+// MESMO lugar virarem UM registro só. Prioriza o ftid (!1s0x..:0x..), depois a
+// coordenada (!3d!4d), depois o nome no /place/<nome>/. Sem isso, a URL inteira
+// (do card) difere da URL do lugar aberto e o mesmo lugar contava 2×.
+function canonPlaceKey(url) {
+  const u = String(url || '');
+  let m = u.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i); if (m) return m[1].toLowerCase();
+  m = u.match(/!3d(-?\d[\d.]+)!4d(-?\d[\d.]+)/); if (m) return m[1] + ',' + m[2];
+  m = u.match(/\/maps\/place\/([^/@]+)/); if (m) { try { return decodeURIComponent(m[1]).toLowerCase(); } catch (_) { return m[1].toLowerCase(); } }
+  return u.split('?')[0];
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Use POST' });
@@ -90,7 +102,7 @@ export default async function handler(req, res) {
   for (const r of rows) {
     if (!r || typeof r !== 'object') continue;
     const place_url = s(r.place_url || r.placeUrl || r.href, 600);
-    const place_key = s(r.place_key, 400) || place_url; // sem chave explícita, usa a URL
+    const place_key = (s(r.place_key, 400) || canonPlaceKey(place_url)).slice(0, 400); // chave estável (card e lugar aberto = 1 só)
     if (!place_key) continue;
     const { lat, lng } = coordsDaUrl(place_url);
     const endereco = s(r.endereco, 300);
@@ -141,14 +153,18 @@ export default async function handler(req, res) {
     return send(res, 502, { ok: false, error: falta ? 'Falta rodar o SQL MERCADO_MAPS_1 no projeto RHI' : msg });
   }
 
-  // Marca QUEM coletou (pro CSV e pra "completar faltantes"). Não quebra o ingest
-  // se o SQL MERCADO_MAPS_10 ainda não tiver sido rodado.
+  // Marca QUEM coletou (pro operador ver TUDO que coletou + CSV + "completar
+  // faltantes"). É AWAIT de propósito: sem esperar, o serverless devolve a
+  // resposta e congela antes de gravar — e a prévia do operador vinha incompleta.
+  // Não quebra o ingest se o SQL MERCADO_MAPS_10 ainda não tiver sido rodado.
   if (login) {
-    fetch(`${RHI.url}/rest/v1/rpc/rhi_mercado_registrar_coleta`, {
-      method: 'POST',
-      headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_place_keys: limpos.map(o => o.place_key), p_login: login })
-    }).catch(() => {});
+    try {
+      await fetch(`${RHI.url}/rest/v1/rpc/rhi_mercado_registrar_coleta`, {
+        method: 'POST',
+        headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_place_keys: limpos.map(o => o.place_key), p_login: login })
+      });
+    } catch (_) {}
   }
 
   return send(res, 200, { ok: true, login, recebidos: rows.length, validos: limpos.length, filtrados, gravados: data.gravados, estagio });
