@@ -41,6 +41,8 @@ export default async function handler(req, res) {
         case 'criar_vaga':         return await criarVaga(res, headers, body);
         case 'editar_vaga':        return await editarVaga(res, headers, body);
         case 'alterar_status_vaga':return await alterarStatus(res, headers, body);
+        case 'definir_estado':     return await definirEstado(res, headers, body);
+        case 'gerar_edit_token':   return await gerarEditToken(res, headers, body);
         case 'excluir_vaga':       return await excluirVaga(res, headers, body);
         default:                   return send(res, 400, { error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao });
       }
@@ -76,6 +78,7 @@ async function criarVaga(res, headers, body) {
   CAMPOS.forEach(c => { if (body[c] !== undefined && c !== 'slug') row[c] = body[c] == null ? '' : body[c]; });
   row.status = body.status || 'ATIVA';
   row.prioridade = numOrNull(body.prioridade); if (row.prioridade == null) row.prioridade = 50;
+  if (body.na_grade !== undefined) row.na_grade = body.na_grade !== false && body.na_grade !== 'false';
   if (!row.whatsapp_destino) row.whatsapp_destino = 'MARIANA';
 
   const r = await fetch(`${SB_URL}/rest/v1/${TABELA}`, {
@@ -92,6 +95,7 @@ async function editarVaga(res, headers, body) {
   CAMPOS.forEach(c => { if (body[c] !== undefined && c !== 'slug') patch[c] = body[c] == null ? '' : body[c]; });
   if (body.status !== undefined) patch.status = body.status;
   if (body.prioridade !== undefined) patch.prioridade = numOrNull(body.prioridade);
+  if (body.na_grade !== undefined) patch.na_grade = body.na_grade !== false && body.na_grade !== 'false';
 
   const r = await fetch(`${SB_URL}/rest/v1/${TABELA}?vaga_id=eq.${encodeURIComponent(body.vaga_id)}`, {
     method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
@@ -110,6 +114,47 @@ async function alterarStatus(res, headers, body) {
   return send(res, 200, { ok: true });
 }
 
+// Três estados num comando só (grade | fora | desativada):
+//   grade  → ATIVA + na_grade=true   (aparece na grade /vagas)
+//   fora   → ATIVA + na_grade=false  (pública por link, fora da grade)
+//   desativada → INATIVA             (sai do ar)
+async function definirEstado(res, headers, body) {
+  if (!body.vaga_id || !body.estado) return send(res, 400, { error: 'validacao', message: 'vaga_id e estado são obrigatórios.' });
+  const mapa = {
+    grade:      { status: 'ATIVA',   na_grade: true },
+    fora:       { status: 'ATIVA',   na_grade: false },
+    desativada: { status: 'INATIVA', na_grade: false },
+  };
+  const alvo = mapa[body.estado];
+  if (!alvo) return send(res, 400, { error: 'validacao', message: 'Estado inválido: ' + body.estado });
+  const r = await fetch(`${SB_URL}/rest/v1/${TABELA}?vaga_id=eq.${encodeURIComponent(body.vaga_id)}`, {
+    method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+    body: JSON.stringify({ ...alvo, updated_at: new Date().toISOString() })
+  });
+  if (!r.ok) return supabaseErr(res, r);
+  return send(res, 200, { ok: true });
+}
+
+// Gera (ou reaproveita) o token de edição da vaga e devolve o link do dono.
+// O token é o segredo que deixa o dono editar só aquela vaga, sem o token-mestre.
+async function gerarEditToken(res, headers, body) {
+  if (!body.vaga_id) return send(res, 400, { error: 'validacao', message: 'vaga_id é obrigatório.' });
+  const sel = await fetch(`${SB_URL}/rest/v1/${TABELA}?select=edit_token&vaga_id=eq.${encodeURIComponent(body.vaga_id)}&limit=1`, { headers });
+  if (!sel.ok) return supabaseErr(res, sel);
+  const linhas = await sel.json();
+  if (!Array.isArray(linhas) || !linhas.length) return send(res, 404, { error: 'nao_encontrada', message: 'Vaga não encontrada.' });
+  let token = linhas[0].edit_token;
+  if (!token) {
+    token = novoToken();
+    const up = await fetch(`${SB_URL}/rest/v1/${TABELA}?vaga_id=eq.${encodeURIComponent(body.vaga_id)}`, {
+      method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify({ edit_token: token })
+    });
+    if (!up.ok) return supabaseErr(res, up);
+  }
+  const link = `https://www.rhimob.com.br/editar-vaga?v=${encodeURIComponent(body.vaga_id)}&t=${encodeURIComponent(token)}`;
+  return send(res, 200, { ok: true, edit_token: token, link });
+}
+
 async function excluirVaga(res, headers, body) {
   if (!body.vaga_id) return send(res, 400, { error: 'validacao', message: 'vaga_id é obrigatório.' });
   const r = await fetch(`${SB_URL}/rest/v1/${TABELA}?vaga_id=eq.${encodeURIComponent(body.vaga_id)}`, {
@@ -126,6 +171,13 @@ async function supabaseErr(res, r) {
   return send(res, 502, { error: 'supabase', status: r.status, message: t.slice(0, 400) });
 }
 function numOrNull(v) { if (v === '' || v == null) return null; const n = Number(v); return isFinite(n) ? n : null; }
+function novoToken() {
+  // token curto, aleatório e sem caracteres ambíguos — só pra autorizar a edição
+  // daquela vaga pelo dono (não é login; o admin segue protegido pelo token-mestre).
+  const a = 'abcdefghijkmnpqrstuvwxyz23456789';
+  let s = ''; for (let i = 0; i < 24; i++) s += a[Math.floor(Math.random() * a.length)];
+  return s;
+}
 function slug(s) {
   return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);

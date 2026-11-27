@@ -40,6 +40,7 @@
     .vaga-meta{font-size:12px;color:#8c809d;margin-top:2px}
     .badge{font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;white-space:nowrap;margin-left:8px}
     .badge.ativa{background:#dcfce7;color:#166534}
+    .badge.fora{background:#dbeafe;color:#1e40af}
     .badge.inativa,.badge.pausada{background:#fee2e2;color:#991b1b}
     .vaga-acoes{display:flex;gap:6px;flex-wrap:wrap}
     .empty{color:#8c809d;text-align:center;padding:40px 0}
@@ -154,27 +155,52 @@
       document.getElementById('contador').textContent=VAGAS.length+' vagas · '+ativas+' ativas';
       if(!arr.length){ document.getElementById('lista').innerHTML='<div class="empty">Nenhuma vaga'+(q?' para “'+esc(q)+'”':'')+'.</div>'; return; }
       document.getElementById('lista').innerHTML=arr.map(function(v){
-        var ativa=v.status==='ATIVA';
-        var st=(v.status||'').toLowerCase();
+        var est=estadoVaga(v);
+        var bcls=est==='grade'?'ativa':(est==='fora'?'fora':'inativa');
+        var btxt=est==='grade'?'🟢 Na grade':(est==='fora'?'🔵 Fora da grade':'⚫ Desativada');
+        var vid=esc(v.vaga_id);
         return '<div class="vaga">'+
           '<div class="vaga-info">'+
-            '<p class="vaga-titulo">'+esc(v.titulo||'(sem título)')+'<span class="badge '+st+'">'+esc(v.status||'')+'</span></p>'+
+            '<p class="vaga-titulo">'+esc(v.titulo||'(sem título)')+'<span class="badge '+bcls+'">'+btxt+'</span></p>'+
             '<p class="vaga-meta">'+esc([v.categoria,v.localidade||((v.cidade||'')+'/'+(v.estado_uf||''))].filter(Boolean).join(' · '))+' · prio '+(v.prioridade!=null?v.prioridade:'—')+'</p>'+
           '</div>'+
           '<div class="vaga-acoes">'+
+            '<select class="btn btn-ghost btn-sm" title="Estado de publicação" onchange="definirEstado(\''+vid+'\',this.value,this)">'+
+              '<option value="grade"'+(est==='grade'?' selected':'')+'>🟢 Na grade</option>'+
+              '<option value="fora"'+(est==='fora'?' selected':'')+'>🔵 Fora da grade</option>'+
+              '<option value="desativada"'+(est==='desativada'?' selected':'')+'>⚫ Desativada</option>'+
+            '</select>'+
             '<a class="btn btn-ghost btn-sm" href="/vaga/'+encodeURIComponent(v.vaga_id)+'" target="_blank" rel="noopener">Ver</a>'+
-            '<button class="btn btn-ghost btn-sm" onclick="abrirModal(\''+esc(v.vaga_id)+'\')">Editar</button>'+
-            '<button class="btn btn-ghost btn-sm" onclick="alternarStatus(\''+esc(v.vaga_id)+'\',\''+(ativa?'INATIVA':'ATIVA')+'\',this)">'+(ativa?'Desativar':'Ativar')+'</button>'+
-            '<button class="btn btn-ghost btn-sm" style="color:#c53030;border-color:#fecaca" onclick="excluir(\''+esc(v.vaga_id)+'\')">Excluir</button>'+
+            '<button class="btn btn-ghost btn-sm" onclick="abrirModal(\''+vid+'\')">Editar</button>'+
+            '<button class="btn btn-ghost btn-sm" onclick="enviarProDono(\''+vid+'\',this)">🔗 Enviar pro dono</button>'+
+            '<button class="btn btn-ghost btn-sm" style="color:#c53030;border-color:#fecaca" onclick="excluir(\''+vid+'\')">Excluir</button>'+
           '</div>'+
         '</div>';
       }).join('');
     }
 
-    async function alternarStatus(vagaId,novo,btn){
-      btn.disabled=true;
-      try{ await postAcao({acao:'alterar_status_vaga',vaga_id:vagaId,status:novo}); await recarregar(); }
-      catch(e){ alert('Erro: '+e.message); btn.disabled=false; }
+    // Estado de publicação (grade | fora | desativada). "Fora da grade" = página
+    // pública por link, mas não aparece em /vagas (não polui, ex.: várias vagas
+    // da mesma empresa).
+    function estadoVaga(v){
+      if((v.status||'')!=='ATIVA') return 'desativada';
+      return v.na_grade===false ? 'fora' : 'grade';
+    }
+    async function definirEstado(vagaId,estado,el){
+      if(el) el.disabled=true;
+      try{ await postAcao({acao:'definir_estado',vaga_id:vagaId,estado:estado}); await recarregar(); }
+      catch(e){ alert('Erro: '+e.message); if(el) el.disabled=false; }
+    }
+    // Gera o link de edição do dono e copia pra área de transferência.
+    async function enviarProDono(vagaId,btn){
+      var txt=btn.textContent; btn.disabled=true; btn.textContent='Gerando…';
+      try{
+        var j=await postAcao({acao:'gerar_edit_token',vaga_id:vagaId});
+        var link=j.link;
+        try{ await navigator.clipboard.writeText(link); }catch(_){}
+        prompt('Link de edição do dono (copiado). Envie por WhatsApp:\n\nSó quem tem este link edita esta vaga. Ele publica direto no site.',link);
+      }catch(e){ alert('Erro ao gerar link: '+e.message); }
+      finally{ btn.disabled=false; btn.textContent=txt; }
     }
     async function excluir(vagaId){
       var v=VAGAS.find(function(x){return x.vaga_id===vagaId;});
@@ -225,8 +251,9 @@
 
         '<div class="grp-title">Publicação</div>'+
         '<div class="cols-2">'+
-          '<div class="field"><label>Status</label><select id="v-status">'+
-            ['ATIVA','INATIVA','PAUSADA'].map(function(s){return '<option'+((v.status||'ATIVA')===s?' selected':'')+'>'+s+'</option>';}).join('')+
+          '<div class="field"><label>Estado</label><select id="v-estado">'+
+            [['grade','🟢 Na grade (aparece em /vagas)'],['fora','🔵 Fora da grade (pública só por link)'],['desativada','⚫ Desativada (fora do ar)']]
+              .map(function(o){return '<option value="'+o[0]+'"'+((editar?estadoVaga(v):'grade')===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+
           '</select></div>'+
           '<div class="field"><label>Prioridade <span class="dica">(menor = aparece antes)</span></label><input id="v-prioridade" type="number" value="'+(v.prioridade!=null?v.prioridade:50)+'"></div>'+
         '</div>'+
@@ -241,7 +268,18 @@
           '<div class="field"><label>Cargo</label>'+f('v-responsavel_cargo',v.responsavel_cargo)+'</div>'+
           '<div class="field"><label>E-mail</label>'+f('v-responsavel_email',v.responsavel_email)+'</div>'+
         '</div>'+
-        '<div class="field"><label>Foto/logo do responsável <span class="dica">(URL — deixe vazio pra usar a foto da Mariana)</span></label>'+f('v-responsavel_foto_url',v.responsavel_foto_url)+'</div>'+
+        '<div class="field"><label>Foto/logo do responsável <span class="dica">(suba a imagem ou cole a URL — vazio usa a foto da Mariana)</span></label>'+
+          '<div id="vg-foto-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:12px;text-align:center;cursor:pointer;position:relative" ondragover="event.preventDefault();this.style.borderColor=\'#2b124d\'" ondragleave="this.style.borderColor=\'#e0dce8\'" ondrop="vgFotoDrop(event)" onclick="document.getElementById(\'vg-foto-file\').click()">'+
+            '<div id="vg-foto-ph" style="font-size:13px;color:#888;font-weight:700">👤 Clique ou arraste a foto/logo (máx 5 MB)</div>'+
+            '<div id="vg-foto-loading" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando…</div>'+
+            '<img id="vg-foto-preview" alt="" style="display:none;width:72px;height:72px;object-fit:cover;border-radius:50%;margin:0 auto;border:2px solid #fff;box-shadow:0 4px 12px rgba(43,18,77,.18)" />'+
+            '<input type="file" id="vg-foto-file" accept="image/*" style="display:none" onchange="vgFotoFile(this.files[0])">'+
+          '</div>'+
+          '<div style="display:flex;gap:8px;margin-top:8px;align-items:center">'+
+            '<input id="v-responsavel_foto_url" value="'+attr(v.responsavel_foto_url)+'" placeholder="ou cole a URL da foto" oninput="vgFotoShow(this.value)" style="flex:1">'+
+            '<button type="button" class="btn btn-ghost" onclick="vgFotoClear()">Remover</button>'+
+          '</div>'+
+        '</div>'+
 
         '<div class="grp-title">Mídia (opcional)</div>'+
         '<div class="field"><label>Instagram (URL do post) <span class="dica">(opcional)</span></label>'+f('v-instagram_url',v.instagram_url)+'</div>'+
@@ -269,6 +307,32 @@
       document.getElementById('vgm-bg').classList.add('on');
       document.getElementById('vgm-bg').scrollTop=0;
       vgImgInit();
+      vgFotoShow(val('v-responsavel_foto_url'));
+    }
+
+    // ── Upload da foto/logo do responsável (mesmo bucket das notícias) ──
+    function vgFotoShow(url){
+      var ph=document.getElementById('vg-foto-ph'), img=document.getElementById('vg-foto-preview'); if(!img) return;
+      if(url){ img.src=url; img.style.display='block'; if(ph) ph.style.display='none'; }
+      else { img.removeAttribute('src'); img.style.display='none'; if(ph) ph.style.display='block'; }
+    }
+    function vgFotoClear(){ var i=document.getElementById('v-responsavel_foto_url'); if(i) i.value=''; var fl=document.getElementById('vg-foto-file'); if(fl) fl.value=''; vgFotoShow(''); }
+    function vgFotoDrop(e){ e.preventDefault(); var a=document.getElementById('vg-foto-area'); if(a) a.style.borderColor='#e0dce8'; var file=e.dataTransfer.files[0]; if(file&&file.type.indexOf('image/')===0) vgFotoFile(file); }
+    async function vgFotoFile(file){
+      if(!file) return;
+      if(file.size>5*1024*1024){ alert('Imagem muito grande (máx 5 MB).'); return; }
+      var ph=document.getElementById('vg-foto-ph'), ld=document.getElementById('vg-foto-loading'), area=document.getElementById('vg-foto-area');
+      if(ph) ph.style.display='none'; if(ld) ld.style.display='block'; if(area) area.style.pointerEvents='none';
+      try{
+        var ext=(file.name.split('.').pop()||'jpg').toLowerCase(); if(ext==='jfif'||ext==='jpe') ext='jpg';
+        var caminho='noticias/resp-'+Date.now()+'.'+ext;
+        var res=await fetch(SB_URL+'/storage/v1/object/'+caminho,{ method:'POST', headers:{ 'Authorization':'Bearer '+SB_KEY, 'apikey':SB_KEY, 'Content-Type':file.type||'image/jpeg', 'x-upsert':'true' }, body:file });
+        if(!res.ok){ throw new Error(await res.text()); }
+        var publicUrl=SB_URL+'/storage/v1/object/public/'+caminho;
+        var i=document.getElementById('v-responsavel_foto_url'); if(i) i.value=publicUrl;
+        vgFotoShow(publicUrl);
+      }catch(e){ alert('Erro no upload: '+e.message); if(ph) ph.style.display='block'; }
+      finally{ if(ld) ld.style.display='none'; if(area) area.style.pointerEvents=''; }
     }
 
     // ── Upload da imagem do anúncio (bucket público, igual às notícias) ──
@@ -354,7 +418,11 @@
       // (RH, SP, RE/MAX). UF sempre em maiúsculas.
       ['categoria','responsavel_cargo','cidade','localidade'].forEach(function(c){ payload[c]=tituloTxt(payload[c]); });
       if(payload.estado_uf) payload.estado_uf=payload.estado_uf.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
-      payload.status=val('v-status'); payload.prioridade=val('v-prioridade');
+      // Estado (grade|fora|desativada) → status + na_grade
+      var estado=val('v-estado')||'grade';
+      payload.status = estado==='desativada' ? 'INATIVA' : 'ATIVA';
+      payload.na_grade = estado==='grade';
+      payload.prioridade=val('v-prioridade');
       if(payload.instagram_url && !payload.imagem_url) payload.midia_tipo='instagram';
       if(!payload.titulo) return modalErr('Informe o título.');
       var btn=document.getElementById('m-save'); btn.disabled=true; btn.textContent='Salvando...';

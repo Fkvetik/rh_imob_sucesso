@@ -255,6 +255,10 @@
     const params = new URLSearchParams();
     params.set('select', selectFields.join(','));
     params.set('status', 'eq.ATIVA');
+    // Só as marcadas "na grade". As ATIVAS fora da grade seguem públicas pela
+    // página /vaga/<id> (por link), mas não poluem a grade. na_grade default
+    // true no banco, então vagas antigas continuam aparecendo normalmente.
+    params.set('na_grade', 'eq.true');
     params.set('order', 'prioridade.asc,updated_at.desc');
 
     const url = `${base}/rest/v1/${SITE_VAGAS_TABLE}?${params.toString()}`;
