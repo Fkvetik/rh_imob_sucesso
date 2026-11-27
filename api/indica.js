@@ -29,7 +29,7 @@ const SOLUCOES = [
   { id: 'Extensão Recrutadora', icone: '🧩', titulo: 'Extensão Recrutadora', selo: 'Comece por aqui',
     texto: 'Para quem tem equipe de recrutamento e quer ganhar tempo.',
     itens: ['Coleta candidatos sozinha a partir do seu filtro', 'Painel Kanban com o histórico de cada um', 'Primeira mensagem no WhatsApp, o dia inteiro, com intervalo seguro'],
-    preco: 'R$ 999', per: '/mês · 2 logins', obs: 'R$ 799/mês no plano anual · sem fidelidade no mensal' },
+    preco: 'R$ 999', per: '/mês · 1 login · banco ilimitado', obs: 'R$ 799/mês no plano anual · sem fidelidade no mensal' },
   { id: 'Plataformas de profissionais', icone: '🏠', titulo: 'Plataformas Corretores e Novos Talentos',
     texto: 'Para quem quer uma lista qualificada para abordar.',
     itens: ['80 mil+ corretores com CRECI ativo', '90 mil+ novos talentos em 180+ cidades', 'Filtro por cidade e perfil, funil e mensagens prontas'],
@@ -43,7 +43,7 @@ const SOLUCOES = [
 const PERGUNTAS = [
   ['Tem fidelidade?', 'Nos planos mensais, não: dá para cancelar quando quiser, sem multa. O mês já pago não é reembolsado.'],
   ['Quem instala e configura?', 'A RH IMOB instala a extensão com a sua equipe e configura os filtros de busca e as mensagens de abordagem.'],
-  ['Quantos acessos vêm na extensão?', 'Todos os planos da extensão incluem 2 logins, cada recrutadora com o seu, e o gestor acompanha os números de cada uma.'],
+  ['Quantos acessos vêm na extensão?', 'Cada assinatura é 1 login, com acesso ilimitado ao banco de dados da operação. Se a equipe tem mais recrutadoras, cada uma tem a sua assinatura (o seu login), e o gestor acompanha os números de todas.'],
   ['Funciona na minha cidade?', 'O banco de novos talentos cobre mais de 180 cidades. Na conversa a gente confere quantos profissionais tem na sua região.'],
   ['Preciso ter Catho?', 'A extensão coleta candidatos da Catho com a assinatura da sua empresa. Se ainda não tiver, a RH IMOB disponibiliza o acesso à parte.']
 ];
