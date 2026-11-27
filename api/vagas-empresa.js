@@ -9,6 +9,20 @@ const KEY  = 'sb_publishable_hYJDyj6C0f2uBZF__t35Yw_E1S9SIEj';
 const BASE = 'https://www.rhimob.com.br';
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+// Mesma prévia de WhatsApp das vagas: imagens do storage passam pelo /api/og-image
+// (recorte 1200x630). Sem imagem, cai no OG padrão do site.
+function ogImageUrl(rawUrl){
+  if (!rawUrl) return null;
+  if (rawUrl.includes('supabase.co/storage/v1/object/public/')) return `${BASE}/api/og-image?url=${encodeURIComponent(rawUrl)}&c=2`;
+  return rawUrl;
+}
+// Escolhe a imagem da empresa: a da vaga de maior prioridade que tiver imagem.
+function imagemDaEmpresa(vagas){
+  const comImg = vagas.filter(v => v.imagem_og || v.imagem_url)
+    .sort((a,b) => (a.prioridade==null?999:a.prioridade) - (b.prioridade==null?999:b.prioridade));
+  const v = comImg[0];
+  return v ? (v.imagem_og || v.imagem_url) : null;
+}
 function slug(s){
   return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -21,7 +35,7 @@ export default async function handler(req, res) {
 
   let vagas = [];
   try {
-    const sel = 'vaga_id,titulo,localidade,cidade,estado_uf,modalidade,remuneracao,resumo,selo,categoria,responsavel_empresa,responsavel_nome,imagem_url';
+    const sel = 'vaga_id,titulo,localidade,cidade,estado_uf,modalidade,remuneracao,resumo,selo,categoria,responsavel_empresa,responsavel_nome,imagem_url,imagem_og,prioridade';
     const r = await fetch(`${SB}/rest/v1/site_vagas_publicas?status=eq.ATIVA&select=${sel}&order=prioridade.asc,updated_at.desc`,
       { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
     const data = await r.json();
@@ -68,6 +82,8 @@ function render(nomeEmpresa, alvo, vagas) {
   ).join('');
   const titulo = `Vagas ${esc(nomeEmpresa)} — RH IMOB`;
   const total = vagas.length;
+  const rawImg = imagemDaEmpresa(vagas);
+  const ogImg = ogImageUrl(rawImg) || `${BASE}/assets/og-vaga.jpg`;
 
   return `<!doctype html><html lang="pt-BR"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -80,12 +96,23 @@ function render(nomeEmpresa, alvo, vagas) {
 <meta property="og:description" content="Escolha a vaga mais perto de você e candidate-se pelo WhatsApp."/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="${BASE}/vagas/empresa/${alvo}"/>
+<meta property="og:image" content="${esc(ogImg)}"/>
+<meta property="og:image:secure_url" content="${esc(ogImg)}"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="${esc(ogImg)}"/>
 <link rel="stylesheet" href="/styles.css?v=20260713evolucao"/>
 <style>
   .hero{background:linear-gradient(135deg,#1a0a30,#3b1a6b);color:#fff;padding:54px 0 40px}
   .hero .kick{color:#fb923c;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
   .hero h1{font-size:clamp(26px,4.5vw,42px);font-weight:900;letter-spacing:-.03em;margin:0 0 10px;max-width:800px}
   .hero p{color:rgba(255,255,255,.78);font-size:16px;margin:0;max-width:680px}
+  .hero-inner{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+  .hero-txt{flex:1;min-width:280px}
+  .hero-img{flex:0 0 300px;max-width:300px}
+  .hero-img img{width:100%;border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.35);display:block}
+  @media(max-width:720px){.hero-img{flex-basis:100%;max-width:100%}}
   .wrap{max-width:1000px;margin:0 auto;padding:40px 20px 60px}
   .grp{margin-bottom:34px}
   .grp h2{font-size:18px;font-weight:900;color:#2b124d;margin:0 0 14px;display:flex;align-items:center;gap:10px}
@@ -108,10 +135,13 @@ function render(nomeEmpresa, alvo, vagas) {
   <a class="btn btn-cta btn-header" href="/vagas">Todas as vagas</a>
 </div></header>
 <main>
-  <section class="hero"><div class="container">
-    <div class="kick">Vagas · ${esc(nomeEmpresa)}</div>
-    <h1>Seja corretor(a) nos empreendimentos da ${esc(nomeEmpresa)}</h1>
-    <p>${total} oportunidade${total>1?'s':''} abertas em São Paulo. Escolha o plantão mais perto de você e candidate-se pelo WhatsApp — a proposta é a mesma em todas.</p>
+  <section class="hero"><div class="container hero-inner">
+    <div class="hero-txt">
+      <div class="kick">Vagas · ${esc(nomeEmpresa)}</div>
+      <h1>Seja corretor(a) nos empreendimentos da ${esc(nomeEmpresa)}</h1>
+      <p>${total} oportunidade${total>1?'s':''} abertas em São Paulo. Escolha o plantão mais perto de você e candidate-se pelo WhatsApp — a proposta é a mesma em todas.</p>
+    </div>
+    ${rawImg ? `<div class="hero-img"><img src="${esc(rawImg)}" alt="${esc(nomeEmpresa)}" loading="eager"/></div>` : ''}
   </div></section>
   <div class="wrap">
     ${secoes}
