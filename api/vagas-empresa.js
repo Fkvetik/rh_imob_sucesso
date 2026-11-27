@@ -106,7 +106,7 @@ function render(nomeEmpresa, alvo, vagas) {
 <style>
   .hero{background:linear-gradient(135deg,#1a0a30,#3b1a6b);color:#fff;padding:54px 0 40px}
   .hero .kick{color:#fb923c;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
-  .hero h1{font-size:clamp(26px,4.5vw,42px);font-weight:900;letter-spacing:-.03em;margin:0 0 10px;max-width:800px}
+  .hero h1{color:#fff;font-size:clamp(26px,4.5vw,42px);font-weight:900;letter-spacing:-.03em;margin:0 0 10px;max-width:800px}
   .hero p{color:rgba(255,255,255,.78);font-size:16px;margin:0;max-width:680px}
   .hero-inner{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
   .hero-txt{flex:1;min-width:280px}
