@@ -47,6 +47,7 @@ export default async function handler(req, res) {
         case 'alterar_status_vaga':return await alterarStatus(res, headers, body);
         case 'definir_estado':     return await definirEstado(res, headers, body);
         case 'gerar_edit_token':   return await gerarEditToken(res, headers, body);
+        case 'propagar_foto':      return await propagarFotoAcao(res, headers, body);
         case 'excluir_vaga':       return await excluirVaga(res, headers, body);
         default:                   return send(res, 400, { error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao });
       }
@@ -91,6 +92,8 @@ async function criarVaga(res, headers, body) {
   if (!r.ok) return supabaseErr(res, r);
   const created = await r.json();
   const nova = Array.isArray(created) ? created[0] : created;
+  // Foto segue o responsável: se veio foto, aplica a todas as vagas do mesmo telefone.
+  if (row.responsavel_foto_url && row.responsavel_whatsapp) await propagarFotoResponsavel(headers, row.responsavel_whatsapp, row.responsavel_foto_url);
   // Avisa os buscadores na hora (só se entrou pública). Best-effort.
   if (nova && nova.status === 'ATIVA') await pingIndexNow(`${SITE}/vaga/${nova.vaga_id}`);
   return send(res, 200, { ok: true, vaga: nova });
@@ -108,6 +111,8 @@ async function editarVaga(res, headers, body) {
     method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
   });
   if (!r.ok) return supabaseErr(res, r);
+  // Foto segue o responsável: salvou foto → aplica a todas as vagas do mesmo telefone.
+  if (patch.responsavel_foto_url && body.responsavel_whatsapp) await propagarFotoResponsavel(headers, body.responsavel_whatsapp, patch.responsavel_foto_url);
   await pingIndexNow(`${SITE}/vaga/${body.vaga_id}`); // reindexar após editar
   return send(res, 200, { ok: true });
 }
@@ -180,6 +185,30 @@ async function supabaseErr(res, r) {
   return send(res, 502, { error: 'supabase', status: r.status, message: t.slice(0, 400) });
 }
 function numOrNull(v) { if (v === '' || v == null) return null; const n = Number(v); return isFinite(n) ? n : null; }
+
+// A foto segue o RESPONSÁVEL (o telefone): ao salvar uma foto numa vaga, todas
+// as outras vagas com o mesmo WhatsApp recebem a mesma foto. Assim a operadora
+// define a foto uma vez e ela vale pra todas as vagas daquele responsável
+// (ex.: todas da Karina, todas do Caio). Só propaga quando há foto e telefone.
+async function propagarFotoResponsavel(headers, whatsapp, foto) {
+  const tel = String(whatsapp || '').trim();
+  const url = String(foto || '').trim();
+  if (!tel || !url) return;
+  try {
+    await fetch(`${SB_URL}/rest/v1/${TABELA}?responsavel_whatsapp=eq.${encodeURIComponent(tel)}`, {
+      method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+      body: JSON.stringify({ responsavel_foto_url: url })
+    });
+  } catch (_) {}
+}
+// Ação explícita: aplica uma foto a todas as vagas de um telefone (backfill).
+async function propagarFotoAcao(res, headers, body) {
+  const tel = String(body.whatsapp || body.responsavel_whatsapp || '').trim();
+  const foto = String(body.foto || body.responsavel_foto_url || '').trim();
+  if (!tel || !foto) return send(res, 400, { error: 'validacao', message: 'whatsapp e foto são obrigatórios.' });
+  await propagarFotoResponsavel(headers, tel, foto);
+  return send(res, 200, { ok: true });
+}
 function novoToken() {
   // token curto, aleatório e sem caracteres ambíguos — só pra autorizar a edição
   // daquela vaga pelo dono (não é login; o admin segue protegido pelo token-mestre).

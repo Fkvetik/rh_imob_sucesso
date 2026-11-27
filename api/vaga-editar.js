@@ -47,6 +47,18 @@ export default async function handler(req, res) {
         method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(patch)
       });
       if (!r.ok) return supabaseErr(res, r);
+      // Foto segue o responsável: se o dono salvou foto, aplica a todas as vagas
+      // com o mesmo telefone (o do patch, ou o que já estava na vaga).
+      const foto = patch.responsavel_foto_url;
+      const tel = String(patch.responsavel_whatsapp || vaga.responsavel_whatsapp || '').trim();
+      if (foto && tel) {
+        try {
+          await fetch(`${SB_URL}/rest/v1/${TABELA}?responsavel_whatsapp=eq.${encodeURIComponent(tel)}`, {
+            method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({ responsavel_foto_url: foto })
+          });
+        } catch (_) {}
+      }
       await pingIndexNow(`https://www.rhimob.com.br/vaga/${vagaId}`); // dono publicou → avisa buscadores
       return send(res, 200, { ok: true });
     }
