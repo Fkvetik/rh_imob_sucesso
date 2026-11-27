@@ -198,6 +198,7 @@
             '<div class="emp-acoes"><a class="btn btn-ghost btn-sm" href="'+link+'" target="_blank" rel="noopener">Abrir</a>'+
             '<button class="btn btn-ghost btn-sm" onclick="copiarLink(event,\''+link+'\')">Copiar</button></div>'+
             '<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px" onclick="duplicarOperacao(\''+e.slug+'\')">⧉ Duplicar operação (nova assistente)</button>'+
+            '<button class="btn btn-primary btn-sm" style="width:100%;margin-top:4px" onclick="enviarPainelEmpresa(\''+e.slug+'\',this)">🛠️ Enviar painel de edição pro gestor</button>'+
           '</div>';
         }).join('')+'</div>';
     }
@@ -225,6 +226,18 @@
       }
       alert('✅ '+okc+' vaga(s) criada(s) para '+nome+(fail?(' · '+fail+' falha(s)'):'')+'.\nEntraram FORA DA GRADE. Agora é só subir a foto da '+nome+' em uma delas — vale pra todas (segue o telefone).');
       recarregar();
+    }
+
+    // Gera e copia o link do PAINEL DA EMPRESA (sem senha) pra mandar pro gestor:
+    // ele vê todas as vagas da empresa e edita cada uma (com prévia ao vivo).
+    async function enviarPainelEmpresa(sl, btn){
+      var txt=btn.textContent; btn.disabled=true; btn.textContent='Gerando…';
+      try{
+        var j=await postAcao({acao:'gerar_painel_empresa', empresa:sl});
+        try{ await navigator.clipboard.writeText(j.link); }catch(_){}
+        prompt('Link do painel da empresa (copiado). Mande pro gestor:\n\nCom este link ele vê e edita TODAS as vagas da empresa, sem senha.', j.link);
+      }catch(e){ alert('Erro ao gerar link: '+e.message); }
+      finally{ btn.disabled=false; btn.textContent=txt; }
     }
 
     function render(){

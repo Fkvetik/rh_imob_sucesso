@@ -9,6 +9,7 @@
 // sem apagar. Excluir remove de vez.
 
 import { pingIndexNow } from './_indexnow.js';
+import crypto from 'crypto';
 
 const SB_URL = 'https://pufxvskozfdvfscqnays.supabase.co';
 const TABELA = 'site_vagas_publicas';
@@ -48,6 +49,7 @@ export default async function handler(req, res) {
         case 'definir_estado':     return await definirEstado(res, headers, body);
         case 'gerar_edit_token':   return await gerarEditToken(res, headers, body);
         case 'propagar_foto':      return await propagarFotoAcao(res, headers, body);
+        case 'gerar_painel_empresa': return await gerarPainelEmpresa(res, body);
         case 'excluir_vaga':       return await excluirVaga(res, headers, body);
         default:                   return send(res, 400, { error: 'acao_invalida', message: 'Ação desconhecida: ' + body.acao });
       }
@@ -167,6 +169,19 @@ async function gerarEditToken(res, headers, body) {
   }
   const link = `https://www.rhimob.com.br/editar-vaga?v=${encodeURIComponent(body.vaga_id)}&t=${encodeURIComponent(token)}`;
   return send(res, 200, { ok: true, edit_token: token, link });
+}
+
+// Link do painel da empresa (sem senha): token = HMAC do slug da empresa com o
+// segredo do servidor. Mesmo segredo usado por /api/painel-empresa pra validar.
+function tokenEmpresa(sl) {
+  const secret = process.env.LEADS_ADMIN_TOKEN || '';
+  return crypto.createHmac('sha256', secret).update('empresa:' + sl).digest('base64url').slice(0, 24);
+}
+async function gerarPainelEmpresa(res, body) {
+  const sl = slug(body.empresa || '');
+  if (!sl) return send(res, 400, { error: 'validacao', message: 'Empresa é obrigatória.' });
+  const link = `https://www.rhimob.com.br/painel-empresa?e=${encodeURIComponent(sl)}&t=${tokenEmpresa(sl)}`;
+  return send(res, 200, { ok: true, link });
 }
 
 async function excluirVaga(res, headers, body) {

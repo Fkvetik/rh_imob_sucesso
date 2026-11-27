@@ -75,6 +75,10 @@
       "destination": "/api/vagas-empresa?empresa=:empresa"
     },
     {
+      "source": "/painel-empresa",
+      "destination": "/api/painel-empresa"
+    },
+    {
       "source": "/vaga/:slug",
       "destination": "/api/vaga?slug=:slug"
     },
