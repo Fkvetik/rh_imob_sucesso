@@ -84,6 +84,10 @@ function render(nomeEmpresa, alvo, vagas) {
   const total = vagas.length;
   const rawImg = imagemDaEmpresa(vagas);
   const ogImg = ogImageUrl(rawImg) || `${BASE}/assets/og-vaga.jpg`;
+  const pageUrl = `${BASE}/vagas/empresa/${alvo}`;
+  const urlEnc = encodeURIComponent(pageUrl);
+  const txtEnc = encodeURIComponent(`Vagas ${nomeEmpresa} — escolha a mais perto de você`);
+  const waShare = `https://api.whatsapp.com/send?text=${encodeURIComponent(`Vagas ${nomeEmpresa} — escolha a mais perto de você e candidate-se:\n${pageUrl}`)}`;
 
   return `<!doctype html><html lang="pt-BR"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -113,6 +117,14 @@ function render(nomeEmpresa, alvo, vagas) {
   .hero-img{flex:0 0 300px;max-width:300px}
   .hero-img img{width:100%;border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.35);display:block}
   @media(max-width:720px){.hero-img{flex-basis:100%;max-width:100%}}
+  .share{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:22px}
+  .share-l{color:rgba(255,255,255,.6);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-right:2px}
+  .sb{width:42px;height:42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:none;cursor:pointer;transition:transform .18s;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .sb:hover{transform:scale(1.12)}
+  .sb-wa{background:#25d366;color:#fff}.sb-fb{background:#1877f2;color:#fff}.sb-x{background:#000;color:#fff}.sb-li{background:#0077b5;color:#fff}
+  .sb-copy{background:rgba(255,255,255,.16);color:#fff;border:1.5px solid rgba(255,255,255,.32)}
+  .emp-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b124d;color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(43,18,77,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:999}
+  .emp-toast.show{opacity:1}
   .wrap{max-width:1000px;margin:0 auto;padding:40px 20px 60px}
   .grp{margin-bottom:34px}
   .grp h2{font-size:18px;font-weight:900;color:#2b124d;margin:0 0 14px;display:flex;align-items:center;gap:10px}
@@ -140,6 +152,14 @@ function render(nomeEmpresa, alvo, vagas) {
       <div class="kick">Vagas · ${esc(nomeEmpresa)}</div>
       <h1>Seja corretor(a) nos empreendimentos da ${esc(nomeEmpresa)}</h1>
       <p>${total} oportunidade${total>1?'s':''} abertas em São Paulo. Escolha o plantão mais perto de você e candidate-se pelo WhatsApp — a proposta é a mesma em todas.</p>
+      <div class="share">
+        <span class="share-l">Compartilhar</span>
+        <a class="sb sb-wa" href="${waShare}" target="_blank" rel="noopener" title="WhatsApp"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.528 5.845L.057 23.928l6.235-1.635A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></a>
+        <a class="sb sb-fb" href="https://www.facebook.com/sharer/sharer.php?u=${urlEnc}" target="_blank" rel="noopener" title="Facebook"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+        <a class="sb sb-x" href="https://twitter.com/intent/tweet?text=${txtEnc}&url=${urlEnc}" target="_blank" rel="noopener" title="X"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a class="sb sb-li" href="https://www.linkedin.com/sharing/share-offsite/?url=${urlEnc}" target="_blank" rel="noopener" title="LinkedIn"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        <button class="sb sb-copy" onclick="copiarEmp()" title="Copiar link"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button>
+      </div>
     </div>
     ${rawImg ? `<div class="hero-img"><img src="${esc(rawImg)}" alt="${esc(nomeEmpresa)}" loading="eager"/></div>` : ''}
   </div></section>
@@ -152,6 +172,14 @@ function render(nomeEmpresa, alvo, vagas) {
   <span>© 2026 RH IMOB · Recrutamento imobiliário especializado</span>
   <a href="/politica.html">Política de privacidade</a>
 </div></footer>
+<div class="emp-toast" id="emp-toast"></div>
+<script>
+  function copiarEmp(){
+    var url='${pageUrl}';
+    function done(){var t=document.getElementById('emp-toast');t.textContent='Link copiado!';t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000);}
+    try{ navigator.clipboard.writeText(url).then(done,function(){prompt('Copie o link:',url)}); }catch(e){ prompt('Copie o link:',url); }
+  }
+</script>
 </body></html>`;
 }
 
