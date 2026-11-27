@@ -306,7 +306,7 @@
         '</div>'+
         '<div class="field"><label>PDF da empresa <span class="dica">(apresentação, lançamentos, pipeline — vira botão “Saiba mais” na vaga)</span></label>'+
           '<div id="vg-pdf-area" style="border:2px dashed #e0dce8;border-radius:12px;padding:12px;text-align:center;cursor:pointer" ondragover="event.preventDefault();this.style.borderColor=\'#2b124d\'" ondragleave="this.style.borderColor=\'#e0dce8\'" ondrop="vgPdfDrop(event)" onclick="document.getElementById(\'vg-pdf-file\').click()">'+
-            '<div id="vg-pdf-ph" style="font-size:13px;color:#888;font-weight:700">📄 Clique ou arraste o PDF (máx 15 MB)</div>'+
+            '<div id="vg-pdf-ph" style="font-size:13px;color:#888;font-weight:700">📄 Clique ou arraste o PDF (máx 50 MB)</div>'+
             '<div id="vg-pdf-ld" style="display:none;font-size:13px;color:#888;font-weight:700">⏳ Enviando PDF…</div>'+
             '<div id="vg-pdf-ok" style="display:none;font-size:13px;color:#166534;font-weight:700">✅ PDF anexado</div>'+
             '<input type="file" id="vg-pdf-file" accept="application/pdf" style="display:none" onchange="vgPdfFile(this.files[0])">'+
@@ -342,7 +342,7 @@
     async function vgPdfFile(file){
       if(!file) return;
       if(file.type!=='application/pdf'){ alert('Envie um arquivo PDF.'); return; }
-      if(file.size>15*1024*1024){ alert('PDF muito grande (máx 15 MB).'); return; }
+      if(file.size>50*1024*1024){ alert('PDF muito grande (máx 50 MB).'); return; }
       var ph=document.getElementById('vg-pdf-ph'), ld=document.getElementById('vg-pdf-ld'), ok=document.getElementById('vg-pdf-ok'), area=document.getElementById('vg-pdf-area');
       if(ph) ph.style.display='none'; if(ok) ok.style.display='none'; if(ld) ld.style.display='block'; if(area) area.style.pointerEvents='none';
       try{
