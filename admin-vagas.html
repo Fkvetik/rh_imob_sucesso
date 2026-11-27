@@ -144,6 +144,13 @@
 
     function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
     function attr(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+    // Formata o WhatsApp pra leitura: tira o 55, mostra (DD) 9xxxx-xxxx.
+    function fmtTel(v){
+      var d=String(v||'').replace(/\D/g,''); if(d.length>11&&d.indexOf('55')===0) d=d.slice(2);
+      if(d.length===11) return '('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7);
+      if(d.length===10) return '('+d.slice(0,2)+') '+d.slice(2,6)+'-'+d.slice(6);
+      return v;
+    }
 
     function render(){
       var q=(document.getElementById('busca').value||'').toLowerCase().trim();
@@ -163,6 +170,7 @@
           '<div class="vaga-info">'+
             '<p class="vaga-titulo">'+esc(v.titulo||'(sem título)')+'<span class="badge '+bcls+'">'+btxt+'</span></p>'+
             '<p class="vaga-meta">'+esc([v.categoria,v.localidade||((v.cidade||'')+'/'+(v.estado_uf||''))].filter(Boolean).join(' · '))+' · prio '+(v.prioridade!=null?v.prioridade:'—')+'</p>'+
+            '<p class="vaga-meta" style="color:#5a1fd4">👤 '+esc(v.responsavel_nome||'Mariana')+(v.responsavel_whatsapp?' · 📱 '+esc(fmtTel(v.responsavel_whatsapp)):'')+'</p>'+
           '</div>'+
           '<div class="vaga-acoes">'+
             '<select class="btn btn-ghost btn-sm" title="Estado de publicação" onchange="definirEstado(\''+vid+'\',this.value,this)">'+
