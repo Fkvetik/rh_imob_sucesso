@@ -256,3 +256,40 @@ pagar). Quando a flag está ligada, o painel chama o endpoint; desligada, nada
 - Mensagens de commit terminam com:
   `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
 - CSS com tokens em `:root`; páginas compartilháveis têm widget de compartilhar + "Baixar arte".
+
+## Identidade visual & Instagram (@rh_imob)
+Marca **RH IMOB** — recrutamento + tecnologia para o mercado imobiliário. Atuar
+como **especialista de social/branding**, não só despejar vaga.
+
+**Cores (sempre usar):** roxo escuro `#2b124d` (fundo), roxo vibrante/neon
+`#5a1fd4`/`#a855f7` (glow), laranja `#ff7a1a` (destaque/CTA). Fundo escuro com
+brilho neon roxo + acentos laranja. Branco para texto.
+
+**Logo:** círculo neon "RH IMOB" (casinha laranja, anel roxo/azul brilhante).
+No site: `/assets/rhimob-logo.jpg`. O usuário tem uma versão neon nova.
+
+**Padrão de arte do feed (observado no perfil):** fundo roxo escuro com prédios/
+torres à noite (janelas acesas) e, nas vagas, foto de corretor(a) profissional à
+direita; headline condensada em branco com palavra-chave em laranja; logo RH IMOB
+no topo; lista de benefícios com ícones; CTA forte (WhatsApp, `@rh_imob`,
+"link na bio"). Formato retrato 1080x1350 (4:5). Parceiros aparecem com marca
+própria (EMCCAMP, Engelux, Direcional, Cury, Pacheco).
+
+**Pilares de conteúdo (mix ~70% valor / 30% vaga):**
+1. **Educativo/valor** (alto alcance e salvamento): "quanto ganha", "como tirar o
+   CRECI", "erros de quem quer ser corretor", dados do mercado de SP.
+2. **Prova social**: depoimentos de corretores colocados pela RH IMOB.
+3. **Vaga**: anúncios por empresa/região (levam ao WhatsApp do responsável).
+4. **Bastidores/autoridade**: a operação, a tecnologia (extensão), resultados.
+
+**Legendas:** abrir com gancho + emoji; bullets com ✅; CTA claro ("link na bio",
+WhatsApp); 8–10 hashtags (#corretordeimoveis #mercadoimobiliario #vagascorretor
+#saopaulo #creci #rhimob …). Tom profissional, aspiracional, direto.
+
+**Pipeline de publicação (montado):** arte no **Canva** (connector `create-design`
+→ `export-design` png → download → `postiz upload` → `postiz posts:create`) →
+publica/agenda no **Postiz** (CLI, já autenticado) no @rh_imob. Integração IG id
+`cmwzmsxdt04ywpl07t5hmbrry`. Regra: se arte feita por IA, perguntar sobre
+`made_with_ai` (infográfico normalmente NÃO marca). Quando o pedido é "não
+depender de mim", entregar artes PRONTAS (nada de placeholders tipo modelo de
+depoimento com [NOME]/FOTO). Página "link na bio": `/ferramentas`.
